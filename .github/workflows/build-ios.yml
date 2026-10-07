@@ -58,7 +58,18 @@ jobs:
         run: flutter pub get
 
       - name: Build iOS (release, unsigned)
-        run: flutter build ios --release --no-codesign
+        run: |
+          set +e
+          flutter build ios --release --no-codesign -v > /tmp/ios-build.log 2>&1
+          rc=$?
+          echo "flutter build exit code = $rc"
+          echo "=================== 关键错误 ==================="
+          grep -n -i -E "error:|error ;|❌|Undefined symbol|not found|failed with|no such module|does not support|deployment target" /tmp/ios-build.log | tail -120
+          echo "=================== 末尾 120 行 ==================="
+          tail -120 /tmp/ios-build.log
+          echo "=================== 日志大小 ==================="
+          wc -l /tmp/ios-build.log
+          exit $rc
 
       - name: Package artifacts
         run: |
