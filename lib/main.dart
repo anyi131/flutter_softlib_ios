@@ -62,12 +62,11 @@ void _logError(String tag, Object error, StackTrace? stack) {
 ///
 /// ★ iOS 专用：iOS 后台会话通过该回调把下载状态回传给 Dart 侧
 ///   （App 被系统唤醒时也能收到）。Android 不使用，行为不变。
+///
+/// 注意签名必须与插件 `DownloadCallback = void Function(String id, int status, int progress)`
+/// 一致：**status 是 int（插件内部状态码），不是 DownloadTaskStatus 枚举**。
 @pragma('vm:entry-point')
-void flutterDownloaderCallback(
-  String id,
-  DownloadTaskStatus status,
-  int progress,
-) {
+void flutterDownloaderCallback(String id, int status, int progress) {
   debugPrint('[Softlib][downloader] $id -> $status $progress%');
 }
 
