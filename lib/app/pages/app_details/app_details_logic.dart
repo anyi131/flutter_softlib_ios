@@ -23,7 +23,9 @@ import '../../api/api_host.dart';
 import '../../api/soft_service.dart';
 import '../../api/user_service.dart';
 import '../../utils/apk_installer.dart';
+import '../../utils/install_helper.dart';
 import '../../utils/jump_util.dart';
+import '../../utils/platform_util.dart';
 import '../../utils/toast_util.dart';
 import '../../widgets/posters/posters_widget.dart';
 
@@ -422,13 +424,15 @@ class AppDetailsLogic extends GetxController {
       fileName += '_${DateTime.now().millisecondsSinceEpoch}.apk';
     }
 
+    // ★ 跨平台：Android 仍是 /storage/emulated/0/Download（行为不变），
+    //   iOS 用沙盒 Documents/Download
     final newTaskId = await FlutterDownloader.enqueue(
       url: parseUrl,
       fileName: fileName,
-      savedDir: '/storage/emulated/0/Download',
+      savedDir: await PlatUtil.downloadDir(),
       showNotification: true,
-      saveInPublicStorage: true,
-      openFileFromNotification: true,
+      saveInPublicStorage: PlatUtil.saveInPublicStorage,
+      openFileFromNotification: PlatUtil.openFileFromNotification,
     );
     if (newTaskId == null) {
       ResolveOverlay.dismiss();
@@ -572,7 +576,16 @@ class AppDetailsLogic extends GetxController {
     // 2) 找安装包本地路径
     final path = await _findApkPath();
     if (path == null) {
-      ToastUtil.error('未找到安装包，请在下载管理中查看');
+      ToastUtil.error(
+        PlatUtil.isAndroid ? '未找到安装包，请在下载管理中查看' : '未找到下载文件，请在下载管理中查看',
+      );
+      return;
+    }
+
+    // ★ iOS：系统不允许安装 APK，降级为「存储/分享」「用其他应用打开」
+    //   （Android 不走这里，下面 3)、4) 的原生安装链路一字未改）
+    if (!PlatUtil.isAndroid) {
+      await InstallHelper.openOnIos(path, name: appInfo?.fileName);
       return;
     }
 

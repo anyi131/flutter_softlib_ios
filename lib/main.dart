@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:dio/dio.dart';
@@ -57,10 +58,28 @@ void _logError(String tag, Object error, StackTrace? stack) {
   if (stack != null) debugPrint(stack.toString());
 }
 
+/// flutter_downloader 后台状态回调
+///
+/// ★ iOS 专用：iOS 后台会话通过该回调把下载状态回传给 Dart 侧
+///   （App 被系统唤醒时也能收到）。Android 不使用，行为不变。
+@pragma('vm:entry-point')
+void flutterDownloaderCallback(
+  String id,
+  DownloadTaskStatus status,
+  int progress,
+) {
+  debugPrint('[Softlib][downloader] $id -> $status $progress%');
+}
+
 /// 初始化应用服务
 Future<void> _initializeServices() async {
   // 初始化下载器
   await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
+  // ★ iOS：注册后台下载回调（iOS 需要用回调接收后台/被唤醒时的下载状态；
+  //   Android 侧保持原有行为不变，不做改动）
+  if (Platform.isIOS) {
+    await FlutterDownloader.registerCallback(flutterDownloaderCallback);
+  }
   // 设备信息（供后台操作日志记录型号/系统版本，需求 #10）
   await DeviceInfo.init();
   // 初始化数据库

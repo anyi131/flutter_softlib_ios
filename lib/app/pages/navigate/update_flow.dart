@@ -8,7 +8,9 @@ import '../../api/soft_service.dart';
 import '../../design/app_anim.dart';
 import '../../design/ui.dart';
 import '../../utils/apk_installer.dart';
+import '../../utils/install_helper.dart';
 import '../../utils/jump_util.dart';
+import '../../utils/platform_util.dart';
 import '../../utils/toast_util.dart';
 
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
@@ -137,13 +139,16 @@ class _UpdateCardState extends State<_UpdateCard> {
       return;
     }
     setState(() => _phase = 'downloading');
+    // ★ 跨平台：Android 仍是 /storage/emulated/0/Download（行为不变）；
+    //   iOS 为沙盒 Documents/Download（iOS 不允许写沙盒外）
+    final savedDir = await PlatUtil.downloadDir();
     final taskId = await FlutterDownloader.enqueue(
       url: direct,
       fileName: 'softlib_update_${DateTime.now().millisecondsSinceEpoch}.apk',
-      savedDir: '/storage/emulated/0/Download',
+      savedDir: savedDir,
       showNotification: true,
-      saveInPublicStorage: true,
-      openFileFromNotification: true,
+      saveInPublicStorage: PlatUtil.saveInPublicStorage,
+      openFileFromNotification: PlatUtil.openFileFromNotification,
     );
     if (taskId == null) {
       _fallbackBrowser();
@@ -164,9 +169,14 @@ class _UpdateCardState extends State<_UpdateCard> {
         setState(() => _phase = 'done');
         await Future.delayed(const Duration(milliseconds: 500));
         final path = '${tk.savedDir}/${tk.filename}';
-        try {
-          await ApkInstaller.install(path);
-        } catch (_) {}
+        if (PlatUtil.isAndroid) {
+          try {
+            await ApkInstaller.install(path);
+          } catch (_) {}
+        } else {
+          // iOS 不支持安装 APK → 降级为「存储/分享」或「用其他应用打开」
+          await InstallHelper.openOnIos(path, name: tk.filename);
+        }
         if (mounted && !widget.forced) Navigator.of(context).pop();
       } else if (tk.status == DownloadTaskStatus.failed ||
           tk.status == DownloadTaskStatus.canceled) {

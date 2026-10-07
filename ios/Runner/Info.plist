@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>zh_CN</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>zh_CN</string>
+		<string>en</string>
+	</array>
+	<key>CFBundleDisplayName</key>
+	<string>软件库</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>软件库</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<!-- ============ iOS 适配新增 ============ -->
+
+	<!-- 1) 下载器后台模式：flutter_downloader 使用 background URLSession，
+	        必须声明 fetch / processing，否则 App 切后台下载会中断 -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
+	<!-- flutter_downloader 最大并发下载数（与安卓侧 MAX_CONCURRENT_TASKS=3 一致） -->
+	<key>FDMaximumConcurrentTasks</key>
+	<integer>3</integer>
+
+	<!-- 2) 网络：部分直链（蓝奏云等）为 http，且 App 使用 ignoreSsl 下载 -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+
+	<!-- 3) 权限用途说明（iOS 必须声明，否则调用即闪退） -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>需要访问相册，以便你选择图片作为头像、海报或开屏图，以及保存截图</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>需要保存图片到相册（如生成的海报、分享卡片）</string>
+	<key>NSCameraUsageDescription</key>
+	<string>需要使用相机，以便你拍照上传头像或发布动态</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>需要使用麦克风，以便你拍摄视频发布动态</string>
+
+	<!-- 4) url_launcher 检测自定义 scheme 需要白名单（QQ 群/客服跳转） -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>mqqapi</string>
+		<string>mqq</string>
+		<string>mqqwpa</string>
+		<string>mqqopensdkapiV2</string>
+		<string>weixin</string>
+		<string>weixinULAPI</string>
+		<string>alipay</string>
+		<string>alipays</string>
+	</array>
+
+	<!-- 5) 出口合规：未使用非豁免加密算法，免去每次上传的合规问答 -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+
+	<!-- ============ 以下为模板原有内容 ============ -->
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+	</array>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+</dict>
+</plist>

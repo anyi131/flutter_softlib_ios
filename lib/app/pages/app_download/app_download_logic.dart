@@ -10,6 +10,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../utils/apk_installer.dart';
+import '../../utils/install_helper.dart';
+import '../../utils/platform_util.dart';
 import '../../utils/toast_util.dart';
 
 ///下载信息类
@@ -274,7 +276,13 @@ class AppDownloadLogic extends GetxController {
     }
     final path = await _findPath(taskId);
     if (path == null) {
-      ToastUtil.error('未找到安装包');
+      ToastUtil.error(PlatUtil.isAndroid ? '未找到安装包' : '未找到下载文件');
+      return;
+    }
+    // ★ iOS：系统不允许安装 APK，降级为「存储/分享」「用其他应用打开」
+    //   （Android 不走这里，下面原生安装 + open_filex 兜底一字未改）
+    if (!PlatUtil.isAndroid) {
+      await InstallHelper.openOnIos(path, name: dowInfo?.appName);
       return;
     }
     if (await ApkInstaller.install(path)) return;

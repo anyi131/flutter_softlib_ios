@@ -1,0 +1,93 @@
+name: Build iOS
+
+# 本仓库 = 软件库 App 的 iOS 适配版（独立仓库，不影响安卓仓库 flutter_softlib）
+#
+# 产物说明：
+#   · Runner.app        —— 未签名真机产物（用于验证编译，需自行签名后才能安装）
+#   · softlib-ios-unsigned.ipa —— 未签名 IPA，可用 AltStore / Sideloadly 等工具自签安装
+#
+# 想装到自己手机上：需要一台 Mac + Xcode（免费 Apple ID 即可），
+# 或用上面这些自签工具，详见 README-iOS.md。
+
+on:
+  push:
+    branches: ["master", "main"]
+  pull_request:
+    branches: ["master", "main"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-ios
+  cancel-in-progress: false
+
+jobs:
+  build-ios:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.38.7
+          channel: stable
+          cache: true
+
+      - name: Show toolchain versions
+        run: |
+          flutter --version
+          xcodebuild -version
+          pod --version || true
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+          key: ${{ runner.os }}-iospods-${{ hashFiles('pubspec.lock', 'ios/Podfile', 'ios/Podfile.lock') }}
+          restore-keys: ${{ runner.os }}-iospods-
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build iOS (release, unsigned)
+        run: flutter build ios --release --no-codesign
+
+      - name: Package artifacts
+        run: |
+          set -e
+          APP=build/ios/iphoneos/Runner.app
+          ls -la "$APP"
+          # 1) Runner.app 压缩包
+          (cd build/ios/iphoneos && zip -qry ../../../softlib-ios-Runner.app.zip Runner.app)
+          # 2) 未签名 IPA（Payload 结构，供自签工具使用）
+          rm -rf /tmp/ipa && mkdir -p /tmp/ipa/Payload
+          cp -R "$APP" /tmp/ipa/Payload/
+          (cd /tmp/ipa && zip -qry "$GITHUB_WORKSPACE/softlib-ios-unsigned.ipa" Payload)
+          ls -la "$GITHUB_WORKSPACE"/*.zip "$GITHUB_WORKSPACE"/*.ipa
+          du -h "$GITHUB_WORKSPACE"/softlib-ios-unsigned.ipa
+
+      - name: Upload Runner.app
+        uses: actions/upload-artifact@v4
+        with:
+          name: softlib-ios-Runner-app
+          path: build/ios/iphoneos/Runner.app
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: softlib-ios-unsigned-ipa
+          path: softlib-ios-unsigned.ipa
+
+      - name: Attach to Release (tag builds only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: softlib-ios-unsigned.ipa

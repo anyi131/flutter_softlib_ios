@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'platform_util.dart';
+
 /// 处理常用应用权限的工具类。
 class PermissionUtils {
   /// 请求应用所需的所有权限。
@@ -27,6 +29,23 @@ class PermissionUtils {
   static Future<void> _requestMediaAndStoragePermissions(
     BuildContext context,
   ) async {
+    // ★ iOS 分支：iOS 没有「存储权限」，Permission.storage / Permission.videos
+    //   在 iOS 上不受支持（恒为 denied）；相册权限统一用 Permission.photos
+    //   （iOS 14+ 的 limited/full 即覆盖照片与视频）。
+    if (PlatUtil.isIOS) {
+      final status = await Permission.photos.status;
+      if (status != PermissionStatus.granted) {
+        final newStatus = await Permission.photos.request();
+        if (newStatus != PermissionStatus.granted) {
+          _handlePermissionDenial(context, '相册权限', {
+            Permission.photos: newStatus,
+          });
+        }
+      }
+      return;
+    }
+
+    // ═════════ 以下为原有 Android 逻辑（保持完全不变）═════════
     // 在 Android 13+上，优先使用照片、视频权限。
     // 在 Android 12 及以下版本，使用存储权限。
     final List<Permission> mediaPermissions = [
