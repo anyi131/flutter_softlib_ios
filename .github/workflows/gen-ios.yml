@@ -1,0 +1,39 @@
+name: Bootstrap iOS scaffold
+
+# 一次性引导工作流：用官方 Flutter 模板生成 ios/ 平台目录，导出为 artifact。
+# 生成物合入仓库后本文件即删除。
+
+on:
+  push:
+    branches: ["master"]
+  workflow_dispatch:
+
+jobs:
+  scaffold:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.38.7
+          channel: stable
+          cache: true
+
+      - name: Generate ios/ from official template
+        run: |
+          set -e
+          flutter --version
+          cd "$RUNNER_TEMP"
+          flutter create --platforms=ios --org com.softlib --project-name flutter_softlib scaffold
+          echo "--- generated tree ---"
+          find scaffold/ios -maxdepth 3 | head -60
+
+      - name: Upload ios scaffold
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-scaffold
+          path: ${{ runner.temp }}/scaffold/ios
+          include-hidden-files: true
