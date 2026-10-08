@@ -12,6 +12,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../utils/apk_installer.dart';
 import '../../utils/install_helper.dart';
 import '../../utils/platform_util.dart';
+import '../../utils/share_util.dart';
 import '../../utils/toast_util.dart';
 
 ///下载信息类
@@ -251,9 +252,11 @@ class AppDownloadLogic extends GetxController {
       return;
     }
     try {
+      // ★ iOS：iPad 分享面板需锚点，否则会崩（安卓忽略该参数）
       await Share.shareXFiles([
         XFile(path),
-      ], text: dowInfo?.appName ?? '分享一个安装包');
+      ], text: dowInfo?.appName ?? '分享一个安装包',
+          sharePositionOrigin: ShareUtil.origin());
     } catch (e) {
       ToastUtil.error('分享失败：$e');
     }

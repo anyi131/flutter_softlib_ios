@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'share_util.dart';
 import 'toast_util.dart';
 
 /// **iOS 专用**：安装包的打开 / 分享动作
@@ -107,19 +108,10 @@ class InstallHelper {
   /// 直接调起系统分享面板
   static Future<void> share(String path, {String? name}) async {
     try {
-      // iPad 必须给 sharePositionOrigin，否则会崩
-      Rect? origin;
-      final ctx = Get.context;
-      if (ctx != null) {
-        final box = ctx.findRenderObject() as RenderBox?;
-        if (box != null && box.hasSize) {
-          origin = box.localToGlobal(Offset.zero) & box.size;
-        }
-      }
       await Share.shareXFiles(
         [XFile(path)],
         text: (name == null || name.isEmpty) ? null : name,
-        sharePositionOrigin: origin,
+        sharePositionOrigin: ShareUtil.origin(),
       );
     } catch (e) {
       ToastUtil.error('分享失败：$e');

@@ -5,6 +5,7 @@ import '../../../design/app_anim.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../utils/share_util.dart';
 import '../../../utils/toast_util.dart';
 
 import 'package:flutter/material.dart';
@@ -71,7 +72,12 @@ class _InvitePageState extends State<InvitePage> {
   }
 
   Future<void> _share() async {
-    await Share.share(_shareText, subject: '安逸软件库邀请');
+    // ★ iOS：iPad 的分享面板是 popover，必须给锚点，否则会崩（安卓忽略该参数）
+    await Share.share(
+      _shareText,
+      subject: '安逸软件库邀请',
+      sharePositionOrigin: ShareUtil.origin(context),
+    );
   }
 
   @override
