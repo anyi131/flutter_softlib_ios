@@ -203,6 +203,7 @@ class _UpdateCardState extends State<_UpdateCard> {
       'dark' => _tplDark(),
       'poster' => _tplPoster(),
       'compact' => _tplCompact(),
+      'ticket' => _tplTicket(),
       _ => _tplClassic(),
     };
   }
@@ -442,6 +443,103 @@ class _UpdateCardState extends State<_UpdateCard> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// 模板六：ticket —— 票券风（两侧圆孔 + 虚线分隔）
+  Widget _tplTicket() {
+    final isDark = context.isDark;
+    return AppScaleIn(
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? C.bg2 : Colors.white,
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 22, 24, 14),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(
+                      gradient: C.brandGradient,
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: const Icon(Icons.confirmation_number_rounded,
+                        color: Colors.white, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('升级通知',
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: isDark ? C.t1 : C.lt1)),
+                        const SizedBox(height: 3),
+                        Text('v${widget.version} 已发布',
+                            style: TextStyle(
+                                fontSize: 11.5,
+                                color: isDark ? C.t3 : C.lt3)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 虚线 + 打孔
+            Row(
+              children: [
+                _ticketNotch(isDark, Alignment.centerLeft),
+                Expanded(
+                  child: LayoutBuilder(builder: (c, box) {
+                    return Flex(
+                      direction: Axis.horizontal,
+                      mainAxisSize: MainAxisSize.max,
+                      children: List.generate(
+                          (box.maxWidth / 9).floor(), (i) {
+                        return Container(
+                          width: 5,
+                          height: 1.4,
+                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                          color: context.t3.withAlpha(70),
+                        );
+                      }),
+                    );
+                  }),
+                ),
+                _ticketNotch(isDark, Alignment.centerRight),
+              ],
+            ),
+            _tplBody(isDark),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 10, 24, 20),
+              child: _actionRow(isDark),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _ticketNotch(bool isDark, Alignment align) {
+    return Container(
+      width: 20,
+      height: 20,
+      alignment: align,
+      child: Container(
+        width: 20,
+        height: 20,
+        decoration: BoxDecoration(
+          color: isDark ? C.bg1 : C.lbg1,
+          shape: BoxShape.circle,
         ),
       ),
     );

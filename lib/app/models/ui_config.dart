@@ -44,6 +44,7 @@ class UiConfig {
   final String aboutTemplate; // card / hero / minimal（关于）
   final String authTemplate; // classic / gradient / minimal（登录注册找回）
   final String noticeTemplate; // card / banner / minimal（公告弹窗）
+  final String inviteTemplate; // classic / hero / minimal（邀请页）
 
   // ── 首页快捷入口开关（v52g #7 热更新布局）──
   final bool quickSign;
@@ -77,6 +78,7 @@ class UiConfig {
     this.aboutTemplate = 'card',
     this.authTemplate = 'classic',
     this.noticeTemplate = 'card',
+    this.inviteTemplate = 'classic',
     this.quickSign = true,
     this.quickVip = true,
     this.quickService = true,
@@ -123,6 +125,7 @@ class UiConfig {
       aboutTemplate: _s(json['about_template'], 'card'),
       authTemplate: _s(json['auth_template'], 'classic'),
       noticeTemplate: _s(json['notice_template'], 'card'),
+      inviteTemplate: _s(json['invite_template'], 'classic'),
       quickSign: _b(home['quick_sign'], true),
       quickVip: _b(home['quick_vip'], true),
       quickService: _b(home['quick_service'], true),
@@ -152,6 +155,7 @@ class UiConfig {
       aboutTemplate: base.aboutTemplate,
       authTemplate: base.authTemplate,
       noticeTemplate: base.noticeTemplate,
+      inviteTemplate: base.inviteTemplate,
       quickSign: base.quickSign,
       quickVip: base.quickVip,
       quickService: base.quickService,

@@ -225,6 +225,18 @@ class UserService {
         msg.contains('token') && msg.contains('失效');
   }
 
+  /// v52q：邀请统计（我的邀请码/已邀人数/累计奖励）
+  Future<Map<String, dynamic>> inviteStats() async {
+    if (_token.isEmpty) throw Exception('请先登录');
+    final r = _unwrap(
+      await _dio.post('/api/softlib/user/invite_stats', data: {'token': _token}),
+    );
+    if (r['code'] == 1 && r['data'] is Map) {
+      return Map<String, dynamic>.from(r['data']);
+    }
+    throw Exception(r['msg'] ?? '获取失败');
+  }
+
   /// v52f #3：下载成功上报操作日志（fire-and-forget，失败静默）
   Future<void> downloadLog(String appName) async {
     if (_token.isEmpty) return;
@@ -267,6 +279,7 @@ class UserService {
     required String password,
     String nickname = '',
     String qq = '',
+    String invite = '',
   }) async {
     final r = _unwrap(
       await _dio.post(
@@ -274,6 +287,7 @@ class UserService {
         data: {
           'email': email,
           'code': code,
+          if (invite.isNotEmpty) 'invite': invite,
           'password': password,
           'nickname': nickname,
           'qq': qq,

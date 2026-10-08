@@ -17,6 +17,7 @@ import 'package:flutter_softlib/app/pages/vip_center/vip_page.dart';
 import 'package:flutter_softlib/app/pages/wallet/recharge_page.dart';
 import 'package:flutter_softlib/app/pages/appinfo/about_page.dart';
 import 'package:flutter_softlib/app/pages/appinfo/agreement_page.dart';
+import 'package:flutter_softlib/app/pages/navigate/mine/invite_page.dart';
 import 'package:flutter_softlib/app/pages/message/message_page.dart';
 import 'package:get/get.dart';
 
@@ -38,6 +39,10 @@ class AppPages {
     GetPage(
       name: _Paths.about,
       page: () => const AboutPage(),
+    ),
+    GetPage(
+      name: _Paths.invite,
+      page: () => const InvitePage(),
     ),
     GetPage(
       name: _Paths.agreement,

@@ -51,7 +51,7 @@ class MineComponent extends StatelessWidget {
                       context.pagePadding,
                       context.tabSpace + 40,
                     ),
-                    children: _mineBody(context, logic),
+                    children: _mineBody(context, logic, SoftService.instance.configVersion.value),
                   ),
                 );
               },
@@ -95,7 +95,8 @@ class MineComponent extends StatelessWidget {
 
   // ───────── ① 头像卡 ─────────
   /// v52m #5：我的页面模板 classic / clean / gradient
-  List<Widget> _mineBody(BuildContext context, MineLogic logic) {
+  List<Widget> _mineBody(
+      BuildContext context, MineLogic logic, int configVer) {
     final tpl =
         SoftService.instance.cachedConfig?.uiConfig.mineTemplate ?? 'classic';
     if (tpl == 'clean') {
@@ -103,6 +104,69 @@ class MineComponent extends StatelessWidget {
         _title(context),
         const SizedBox(height: 16),
         _profileCard(context, logic),
+        const SizedBox(height: 20),
+        _sectionTitle(context, '我的服务'),
+        const SizedBox(height: 10),
+        _serviceGrid(context, logic),
+      ];
+    }
+    if (tpl == 'dark_card') {
+      // v52t：深色卡模板（数据条与服务格之间加深色统计卡）
+      return [
+        _title(context),
+        const SizedBox(height: 16),
+        _profileCard(context, logic),
+        const SizedBox(height: 14),
+        _statsRow(context, logic),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: context.isDark ? C.bg0 : C.bg1,
+            borderRadius: BorderRadius.circular(R.lg),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.workspace_premium_rounded,
+                  color: C.gold, size: 26),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('会员中心',
+                        style: TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w800,
+                            color: context.t1)),
+                    const SizedBox(height: 3),
+                    Text(logic.isVip ? '感谢支持 · 会员生效中' : '开通享全站资源',
+                        style:
+                            TextStyle(fontSize: 11.5, color: context.t3)),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded,
+                  size: 18, color: context.t3),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        _sectionTitle(context, '我的服务'),
+        const SizedBox(height: 10),
+        _serviceGrid(context, logic),
+        const SizedBox(height: 18),
+        _actionButton(context, logic),
+      ];
+    }
+    if (tpl == 'split') {
+      // v52t：分组表格式模板（无大卡，紧凑列表风格）
+      return [
+        _title(context),
+        const SizedBox(height: 16),
+        _profileCard(context, logic),
+        const SizedBox(height: 14),
+        _statsRow(context, logic),
         const SizedBox(height: 20),
         _sectionTitle(context, '我的服务'),
         const SizedBox(height: 10),
@@ -459,7 +523,18 @@ class MineComponent extends StatelessWidget {
       SectionHeader(title: t);
 
   Widget _serviceGrid(BuildContext context, MineLogic logic) {
+    return Obx(() => _serviceGridInner(context, logic, SoftService.instance.configVersion.value));
+  }
+
+  Widget _serviceGridInner(BuildContext context, MineLogic logic, int _) {
     final items = <_S>[
+      if (_uiCfg.featureInvite)
+        _S(
+          '邀请好友',
+          Icons.card_giftcard_rounded,
+          C.rose,
+          () => Get.toNamed(Routes.invite),
+        ),
       _S(
         '充值余额',
         Icons.account_balance_wallet_rounded,

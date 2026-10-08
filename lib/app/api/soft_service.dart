@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 
 import 'api_host.dart';
@@ -51,6 +52,9 @@ class SoftService {
   /// v52m #11：同步取最近一次配置（未拉取过返回 null）
   AppConfig? get cachedConfig => _configCache;
 
+  /// v52p #11：配置版本号 —— 每次成功拉取+1，UI 监听它即时重建
+  final RxInt configVersion = 0.obs;
+
   Future<AppConfig?> fetchConfig({bool force = false}) async {
     if (!force &&
         _configCache != null &&
@@ -77,6 +81,7 @@ class SoftService {
         final cfg = AppConfig.fromJson(Map<String, dynamic>.from(data['data']));
         _configCache = cfg;
         _configAt = DateTime.now();
+        configVersion.value++;
         return cfg;
       }
     } catch (e) {

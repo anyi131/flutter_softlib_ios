@@ -90,7 +90,13 @@ class _SplashPageState extends State<SplashPage> {
     _entered = true;
     Navigator.of(context).pushReplacementNamed(Routes.index);
     final cfg = _config;
-    if (cfg != null && cfg.noticeEnable && cfg.noticeContent.trim().isNotEmpty) {
+    // v52p #11：后台功能开关 notice=0 → 启动公告也不弹
+    final noticeOn =
+        (SoftService.instance.cachedConfig?.uiConfig.featureNotice ?? true);
+    if (cfg != null &&
+        noticeOn &&
+        cfg.noticeEnable &&
+        cfg.noticeContent.trim().isNotEmpty) {
       // 等主界面挂载后再弹公告
       Future.delayed(const Duration(milliseconds: 600), () {
         _showNotice(cfg);
@@ -107,6 +113,83 @@ class _SplashPageState extends State<SplashPage> {
     final title = cfg?.splashTitle ?? '';
     final desc = cfg?.splashDesc ?? '';
 
+    if (tpl == 'split') {
+      // v52t：左右分栏（左文字/logo，右图）
+      return Row(
+        children: [
+          Expanded(
+            flex: 5,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.rocket_launch_rounded,
+                    color: C.brand, size: 52),
+                const SizedBox(height: 16),
+                if (title.isNotEmpty)
+                  Text(title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: C.brand)),
+                if (desc.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(desc,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 13, color: Colors.grey[600])),
+                ],
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 6,
+            child: _localSplash.isNotEmpty
+                ? Image.file(File(_localSplash),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _defaultSplash())
+                : _defaultSplash(),
+          ),
+        ],
+      );
+    }
+    if (tpl == 'greeting') {
+      // v52t：时段问候 + 渐变底
+      final h = DateTime.now().hour;
+      final greet = h < 5
+          ? '夜深了'
+          : h < 11
+              ? '早上好'
+              : h < 14
+                  ? '中午好'
+                  : h < 18
+                      ? '下午好'
+                      : '晚上好';
+      return Container(
+        decoration: BoxDecoration(gradient: C.brandGradient),
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(greet,
+                style: TextStyle(
+                    color: Colors.white.withAlpha(190), fontSize: 15)),
+            const SizedBox(height: 10),
+            Text(title,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900)),
+            if (desc.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(desc,
+                  style: TextStyle(
+                      color: Colors.white.withAlpha(200), fontSize: 13.5)),
+            ],
+          ],
+        ),
+      );
+    }
     if (tpl == 'fade') {
       // 品牌渐变 + 淡入标题（不用大图）
       return Container(
@@ -337,6 +420,97 @@ class _SplashPageState extends State<SplashPage> {
           ),
         ),
       );
+      return;
+    }
+
+    if (tpl == 'sheet') {
+      // v52t：底部弹出
+      showModalBottomSheet(
+        context: Get.context!,
+        isDismissible: !cfg.noticeForce,
+        enableDrag: !cfg.noticeForce,
+        backgroundColor: context.isDark ? C.bg2 : Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (ctx) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 34,
+                      height: 4,
+                      decoration: BoxDecoration(
+                          color: context.t3.withAlpha(60),
+                          borderRadius: BorderRadius.circular(2)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Icon(Icons.campaign_rounded, color: C.brand, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(cfg.noticeTitle,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: HtmlWidget(
+                      cfg.noticeContent,
+                      textStyle: const TextStyle(
+                          fontSize: 14.5, height: 1.6),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(mainAxisAlignment: MainAxisAlignment.end, children: actions),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (tpl == 'fullscreen') {
+      // v52t：全屏公告页
+      Navigator.of(Get.context!).push(MaterialPageRoute(
+        builder: (ctx) => Scaffold(
+          backgroundColor: context.isDark ? C.bg1 : Colors.white,
+          appBar: AppBar(
+            title: Text(cfg.noticeTitle),
+            backgroundColor: Colors.transparent,
+            automaticallyImplyLeading: !cfg.noticeForce,
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: HtmlWidget(
+              cfg.noticeContent,
+              textStyle: const TextStyle(fontSize: 15, height: 1.7),
+            ),
+          ),
+          bottomNavigationBar: actions.isEmpty
+              ? null
+              : SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(children: actions),
+                  ),
+                ),
+        ),
+      ));
       return;
     }
 

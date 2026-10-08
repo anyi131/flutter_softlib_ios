@@ -36,6 +36,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _pwd2 = TextEditingController();
 
   bool _obscure = true;
+  final _invite = TextEditingController();
   bool _obscure2 = true;
   bool _loading = false;
   bool _sending = false;
@@ -190,6 +191,7 @@ class _RegisterPageState extends State<RegisterPage> {
         password: pwd,
         nickname: nick,
         qq: qq,
+        invite: _invite.text.trim(),
       );
       if (!mounted) return;
       ToastUtil.success('注册成功，请登录');
@@ -426,6 +428,14 @@ class _RegisterPageState extends State<RegisterPage> {
               obscure: _obscure2,
               onToggleObscure: () =>
                   setState(() => _obscure2 = !_obscure2),
+              action: TextInputAction.next,
+            ),
+            // v52q：邀请码（选填，双方得积分）
+            AuthField(
+              controller: _invite,
+              label: '邀请码（选填）',
+              hint: '填写好友邀请码，双方各得积分',
+              icon: Icons.card_giftcard_rounded,
               action: TextInputAction.done,
               onSubmitted: _register,
             ),

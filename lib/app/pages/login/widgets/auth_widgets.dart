@@ -88,6 +88,71 @@ class AuthScaffold extends StatelessWidget {
         const SizedBox(height: 26),
       ];
     }
+    if (tpl == 'banner_top') {
+      // v52t：顶部全宽横幅（图占满，无圆角）
+      return [
+        Container(
+          margin: const EdgeInsets.only(bottom: 22),
+          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 18),
+          decoration: BoxDecoration(gradient: C.brandGradient),
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.white, size: 30),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w900)),
+                    const SizedBox(height: 4),
+                    Text(subtitle,
+                        style: TextStyle(
+                            color: Colors.white.withAlpha(200),
+                            fontSize: 12)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ];
+    }
+    if (tpl == 'centered') {
+      // v52t：居中窄卡模板（小图标居中 + 居中标题）
+      return [
+        const SizedBox(height: 14),
+        Center(
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: Deco.brandGradient,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: 28),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Center(
+          child: Text(title,
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: context.t1)),
+        ),
+        const SizedBox(height: 6),
+        Center(
+          child: Text(subtitle,
+              textAlign: TextAlign.center,
+              style: Ty.small.copyWith(color: context.t3)),
+        ),
+        const SizedBox(height: 26),
+      ];
+    }
     return [
       Container(
         width: 64,

@@ -20,6 +20,7 @@ abstract class Routes {
   static const postDetail = _Paths.postDetail;
   static const admin = _Paths.admin;
   static const about = _Paths.about;
+  static const invite = _Paths.invite;
   static const agreement = _Paths.agreement;
 }
 
@@ -42,5 +43,6 @@ abstract class _Paths {
   static const postDetail = '/postDetail';
   static const admin = '/admin';
   static const about = '/about';
+  static const invite = '/invite';
   static const agreement = '/agreement';
 }

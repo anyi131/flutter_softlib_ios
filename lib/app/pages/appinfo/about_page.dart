@@ -167,6 +167,107 @@ class _AboutPageState extends State<AboutPage> {
         _extraEntries(cfg),
       ];
     }
+    if (tpl == 'dark_card') {
+      // v52t：深色卡模板
+      return [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: context.isDark ? C.bg0 : const Color(0xFF15181F),
+            borderRadius: BorderRadius.circular(R.xl),
+          ),
+          child: Column(
+            children: [
+              Text(cfg?.aboutName ?? '安逸软件库',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900)),
+              if ((cfg?.aboutSlogan ?? '').isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(cfg!.aboutSlogan,
+                    style: TextStyle(
+                        color: Colors.white.withAlpha(170),
+                        fontSize: 12.5)),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        _hero(cfg),
+        const SizedBox(height: 22),
+        if ((cfg?.aboutDesc ?? '').isNotEmpty) ...[
+          _descCard(cfg!.aboutDesc),
+          const SizedBox(height: 14),
+        ],
+        _infoList(cfg),
+        const SizedBox(height: 16),
+        _extraEntries(cfg),
+      ];
+    }
+    if (tpl == 'desk') {
+      // v52t：桌面风模板（左logo右信息横向卡）
+      final logo = cfg?.aboutLogo ?? '';
+      return [
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: context.isDark
+                ? Colors.white.withAlpha(10)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(R.xl),
+            border: Border.all(
+                color: context.isDark
+                    ? Colors.white.withAlpha(18)
+                    : Colors.black.withAlpha(12)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 66,
+                height: 66,
+                clipBehavior: Clip.antiAlias,
+                decoration:
+                    BoxDecoration(borderRadius: BorderRadius.circular(18)),
+                child: logo.isEmpty
+                    ? _logoFallback()
+                    : CachedNetworkImage(
+                        imageUrl: logo,
+                        fit: BoxFit.cover,
+                        errorWidget: (_, __, ___) => _logoFallback(),
+                      ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(cfg?.aboutName ?? '安逸软件库',
+                        style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                            color: context.t1)),
+                    const SizedBox(height: 4),
+                    Text(cfg?.aboutSlogan ?? '',
+                        style: TextStyle(
+                            fontSize: 12, color: context.t3)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        if ((cfg?.aboutDesc ?? '').isNotEmpty) ...[
+          _descCard(cfg!.aboutDesc),
+          const SizedBox(height: 14),
+        ],
+        _infoList(cfg),
+        const SizedBox(height: 16),
+        _extraEntries(cfg),
+      ];
+    }
     return [
       _hero(cfg),
       const SizedBox(height: 22),
