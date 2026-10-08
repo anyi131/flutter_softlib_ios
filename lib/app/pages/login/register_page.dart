@@ -76,7 +76,7 @@ class _RegisterPageState extends State<RegisterPage> {
   /// 读后台的邮箱域名白名单
   Future<void> _loadEmailPolicy() async {
     try {
-      final cfg = await SoftService.instance.fetchConfig();
+      final cfg = await SoftService.instance.fetchConfig(force: true);
       final raw = cfg?.emailAllowDomains ?? '';
       if (!mounted) return;
       setState(() {

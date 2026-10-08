@@ -140,7 +140,14 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
 
   Future<void> _initFile() async {
     try {
-      final c = VideoPlayerController.networkUrl(Uri.parse(widget.url));
+      // ★ UA 头：部分 CDN 无 UA 直接 403；用 _url（刷新后可变）
+      final c = VideoPlayerController.networkUrl(
+        Uri.parse(_url),
+        httpHeaders: const {
+          'User-Agent':
+              'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36',
+        },
+      );
       await c.initialize();
       if (!mounted) {
         c.dispose();
