@@ -206,7 +206,28 @@ class _AboutPageState extends State<AboutPage> {
         _extraEntries(cfg),
       ];
     }
-    if (tpl == 'desk') {
+    if (tpl == 'plain') {
+      // v52w：纯文字排版（无卡无边框，编辑器风）
+      return [
+        Text(cfg?.aboutName ?? '安逸软件库',
+            style: Ty.display.copyWith(color: context.t1)),
+        if ((cfg?.aboutSlogan ?? '').isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text(cfg!.aboutSlogan,
+              style: TextStyle(fontSize: 13.5, color: context.t3)),
+        ],
+        const SizedBox(height: 22),
+        if ((cfg?.aboutDesc ?? '').isNotEmpty) ...[
+          Text(cfg!.aboutDesc,
+              style: TextStyle(fontSize: 14, height: 1.8, color: context.t2)),
+          const SizedBox(height: 22),
+        ],
+        _infoList(cfg),
+        const SizedBox(height: 16),
+        _extraEntries(cfg),
+      ];
+    }
+    if (tpl == 'dark_card') {
       // v52t：桌面风模板（左logo右信息横向卡）
       final logo = cfg?.aboutLogo ?? '';
       return [

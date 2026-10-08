@@ -159,7 +159,39 @@ class MineComponent extends StatelessWidget {
         _actionButton(context, logic),
       ];
     }
-    if (tpl == 'split') {
+    if (tpl == 'stats_hero') {
+      // v52w：数据英雄卡模板
+      return [
+        _title(context),
+        const SizedBox(height: 16),
+        _profileCard(context, logic),
+        const SizedBox(height: 14),
+        _statsRow(context, logic),
+        const SizedBox(height: 14),
+        _vipBanner(context, logic),
+        const SizedBox(height: 14),
+        _statsRow(context, logic),
+        const SizedBox(height: 20),
+        _sectionTitle(context, '我的服务'),
+        const SizedBox(height: 10),
+        _serviceGrid(context, logic),
+      ];
+    }
+    if (tpl == 'simple') {
+      // v52w：纯列表模板（无数据条/无横幅，直接服务格）
+      return [
+        _title(context),
+        const SizedBox(height: 16),
+        _profileCard(context, logic),
+        const SizedBox(height: 20),
+        _sectionTitle(context, '我的服务'),
+        const SizedBox(height: 10),
+        _serviceGrid(context, logic),
+        const SizedBox(height: 18),
+        _actionButton(context, logic),
+      ];
+    }
+    if (tpl == 'dark_card') {
       // v52t：分组表格式模板（无大卡，紧凑列表风格）
       return [
         _title(context),

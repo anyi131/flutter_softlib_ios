@@ -82,6 +82,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
                 'timeline' => _buildTimeline(context, report, logic),
                 'minimal_row' => _buildMiniRow(context, report, logic),
                 'rich' => _buildRich(context, report, logic),
+                'chat' => _buildChat(context, report, logic),
                 _ => _buildItem(context, report),
               };
             },
@@ -398,6 +399,67 @@ class _ReportListWidgetState extends State<ReportListWidget>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+
+  /// v52w：聊天流模板（头像圆点 + 气泡）
+  Widget _buildChat(
+      BuildContext context, ReportData report, ReportListLogic logic) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final ts = report.createtime ?? 0;
+    final dt = ts > 0
+        ? '${DateTime.fromMillisecondsSinceEpoch(ts * 1000).month}/${DateTime.fromMillisecondsSinceEpoch(ts * 1000).day}'
+        : '';
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 15,
+            child: Icon(Icons.campaign_rounded,
+                size: 15, color: Colors.white),
+            backgroundColor: C.brand.withAlpha(200),
+          ),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('线报速递 · $dt',
+                    style: TextStyle(
+                        fontSize: 10, color: isDark ? C.t3 : C.lt3)),
+                const SizedBox(height: 3),
+                InkWell(
+                  onTap: () => logic.goToReadPage(report),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 9),
+                    decoration: BoxDecoration(
+                      color: C.brand.withAlpha(isDark ? 30 : 18),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(4),
+                        topRight: Radius.circular(14),
+                        bottomLeft: Radius.circular(14),
+                        bottomRight: Radius.circular(14),
+                      ),
+                    ),
+                    child: Text(
+                      report.title ?? '',
+                      style: TextStyle(
+                          fontSize: 13,
+                          height: 1.4,
+                          color: isDark ? C.t1 : C.lt1),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

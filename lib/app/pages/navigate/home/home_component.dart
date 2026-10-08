@@ -61,6 +61,9 @@ class _HomeComponentState extends State<HomeComponent> {
     final uiCfg =
         SoftService.instance.cachedConfig?.uiConfig ?? const UiConfig();
     final tpl = uiCfg.homeTemplate;
+    final notice = SliverToBoxAdapter(child: _notice());
+    final referralTitle = _referralTitle();
+    final referralGrid = _referralGrid();
     if (tpl == 'clean') {
       // 极简模板：问候 + 公告 + 推荐直出
       return CustomScrollView(
@@ -101,6 +104,52 @@ class _HomeComponentState extends State<HomeComponent> {
           if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
           if (uiCfg.featureReferral) _referralTitle(),
           if (uiCfg.featureReferral) _referralGrid(),
+          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
+        ],
+      );
+    }
+    if (tpl == 'cards') {
+      // v52w：双列大卡模板（banner+宫格推荐）
+      return CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(child: _header()),
+          SliverToBoxAdapter(child: _banner()),
+          SliverToBoxAdapter(child: _quickGrid()),
+          SliverToBoxAdapter(child: _search()),
+          if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
+          if (uiCfg.featureReferral) _referralTitle(),
+          if (uiCfg.featureReferral) referralGrid,
+          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
+        ],
+      );
+    }
+    if (tpl == 'feed') {
+      // v52w：信息流模板（公告置顶+搜索+推荐，去横幅）
+      return CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(child: _header()),
+          SliverToBoxAdapter(child: _search()),
+          if (uiCfg.featureNotice) notice,
+          if (uiCfg.featureReferral) referralTitle,
+          if (uiCfg.featureReferral) referralGrid,
+          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
+        ],
+      );
+    }
+    if (tpl == 'compact_top') {
+      // v52w：紧凑顶部模板（全部压缩置顶：问候+搜索+快捷单行）
+      return CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(child: _header()),
+          SliverToBoxAdapter(child: _search()),
+          SliverToBoxAdapter(child: _quickGrid()),
+          SliverToBoxAdapter(child: _banner()),
+          if (uiCfg.featureNotice) notice,
+          if (uiCfg.featureReferral) referralTitle,
+          if (uiCfg.featureReferral) referralGrid,
           SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
         ],
       );

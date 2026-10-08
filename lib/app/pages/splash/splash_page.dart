@@ -190,6 +190,98 @@ class _SplashPageState extends State<SplashPage> {
         ),
       );
     }
+    if (tpl == 'poster_center') {
+      // v52w：居中海报框（图片带边框阴影居中）
+      return Container(
+        color: context.isDark ? C.bg1 : const Color(0xFFF2F4F8),
+        padding: const EdgeInsets.all(28),
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(26),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withAlpha(60),
+                      blurRadius: 30,
+                      offset: const Offset(0, 14)),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(26),
+                child: SizedBox(
+                  width: 220,
+                  height: 300,
+                  child: _localSplash.isNotEmpty
+                      ? Image.file(File(_localSplash),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _defaultSplash())
+                      : _defaultSplash(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 22),
+            if (title.isNotEmpty)
+              Text(title,
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: context.isDark ? C.t1 : C.lt1)),
+          ],
+        ),
+      );
+    }
+    if (tpl == 'brand_bar') {
+      // v52w：全屏图 + 底部品牌条（渐变条+标题白字）
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          if (_localSplash.isNotEmpty)
+            Image.file(File(_localSplash),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _defaultSplash())
+          else
+            _defaultSplash(),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(0, 40, 0, 46),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withAlpha(160),
+                  ],
+                ),
+              ),
+              child: Column(
+                children: [
+                  if (title.isNotEmpty)
+                    Text(title,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w900)),
+                  if (desc.isNotEmpty) ...[
+                    const SizedBox(height: 5),
+                    Text(desc,
+                        style: TextStyle(
+                            color: Colors.white.withAlpha(190),
+                            fontSize: 12.5)),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
     if (tpl == 'fade') {
       // 品牌渐变 + 淡入标题（不用大图）
       return Container(
@@ -511,6 +603,70 @@ class _SplashPageState extends State<SplashPage> {
                 ),
         ),
       ));
+      return;
+    }
+
+    if (tpl == 'banner_card') {
+      // v52w：渐变大横幅+圆角正文卡
+      showDialog(
+        context: Get.context!,
+        barrierDismissible: !cfg.noticeForce,
+        builder: (ctx) => PopScope(
+          canPop: !cfg.noticeForce,
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 26),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: C.brandGradient,
+                    borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(22)),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.notifications_active_rounded,
+                          color: Colors.white, size: 30),
+                      const SizedBox(height: 8),
+                      Text(cfg.noticeTitle,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900)),
+                    ],
+                  ),
+                ),
+                Container(
+                  color: context.isDark ? C.bg2 : Colors.white,
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: SingleChildScrollView(
+                          child: HtmlWidget(
+                            cfg.noticeContent,
+                            textStyle: const TextStyle(
+                                fontSize: 14.5, height: 1.65),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: actions),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
       return;
     }
 

@@ -204,6 +204,7 @@ class _UpdateCardState extends State<_UpdateCard> {
       'poster' => _tplPoster(),
       'compact' => _tplCompact(),
       'ticket' => _tplTicket(),
+      'side' => _tplSide(),
       _ => _tplClassic(),
     };
   }
@@ -441,6 +442,63 @@ class _UpdateCardState extends State<_UpdateCard> {
                   _actionRow(false),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 模板七：side —— 左渐变竖条
+  Widget _tplSide() {
+    final isDark = context.isDark;
+    return AppScaleIn(
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? C.bg2 : Colors.white,
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 20, 20, 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 5,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      gradient: C.brandGradient,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                  const SizedBox(width: 13),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('v${widget.version} 更新',
+                            style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w900,
+                                color: isDark ? C.t1 : C.lt1)),
+                        const SizedBox(height: 3),
+                        Text(widget.title,
+                            style: TextStyle(
+                                fontSize: 11.5,
+                                color: isDark ? C.t3 : C.lt3)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _tplBody(isDark),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 10, 18, 20),
+              child: _actionRow(isDark),
             ),
           ],
         ),

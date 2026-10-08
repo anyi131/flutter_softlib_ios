@@ -121,6 +121,42 @@ class AuthScaffold extends StatelessWidget {
         ),
       ];
     }
+    if (tpl == 'centered_gradient') {
+      // v52w：居中渐变大卡
+      return [
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 30),
+          decoration: BoxDecoration(
+            gradient: C.brandGradient,
+            borderRadius: BorderRadius.circular(R.xl),
+            boxShadow: [
+              BoxShadow(
+                  color: C.brand.withAlpha(60),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10)),
+            ],
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: Colors.white, size: 34),
+              const SizedBox(height: 10),
+              Text(title,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900)),
+              const SizedBox(height: 5),
+              Text(subtitle,
+                  style: TextStyle(
+                      color: Colors.white.withAlpha(200), fontSize: 12)),
+            ],
+          ),
+        ),
+        const SizedBox(height: 26),
+      ];
+    }
     if (tpl == 'centered') {
       // v52t：居中窄卡模板（小图标居中 + 居中标题）
       return [

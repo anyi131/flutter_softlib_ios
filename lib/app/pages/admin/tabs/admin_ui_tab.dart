@@ -56,11 +56,14 @@ class _AdminUiTabState extends State<AdminUiTab> {
   String _authTemplate = 'classic';
   String _noticeTemplate = 'card';
   String _inviteTemplate = 'classic';
+  // v52w：邀请配置
+  final _inviteScoreCtrl = TextEditingController();
   // 首页快捷入口（v52g #7）
   bool _qSign = true, _qVip = true, _qService = true, _qUpdate = true;
 
   bool _loading = true;
   bool _saving = false;
+  String _loadErr = '';
 
   @override
   void initState() {
@@ -119,6 +122,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _authTemplate = '${ui['auth_template'] ?? 'classic'}';
         _noticeTemplate = '${ui['notice_template'] ?? 'card'}';
         _inviteTemplate = '${ui['invite_template'] ?? 'classic'}';
+        _inviteScoreCtrl.text = '${ui['invite_score'] ?? 50}';
         _qSign = '${home['quick_sign'] ?? 1}' == '1';
         _qVip = '${home['quick_vip'] ?? 1}' == '1';
         _qService = '${home['quick_service'] ?? 1}' == '1';
@@ -160,6 +164,10 @@ class _AdminUiTabState extends State<AdminUiTab> {
 
   Future<void> _save() async {
     if (_saving) return;
+    if (_loadErr.isNotEmpty) {
+      ToastUtil.error('配置未加载成功，禁止保存（避免覆盖线上配置），请先重试');
+      return;
+    }
     setState(() => _saving = true);
     try {
       await _svc.saveConfig(_payload());
@@ -194,6 +202,25 @@ class _AdminUiTabState extends State<AdminUiTab> {
   Widget build(BuildContext context) {
     if (_loading) {
       return const Center(child: CircularProgressIndicator(strokeWidth: 2.4));
+    }
+    if (_loadErr.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline_rounded, size: 40, color: context.t3),
+            const SizedBox(height: 10),
+            Text('配置加载失败',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: context.t1)),
+            const SizedBox(height: 4),
+            Text(_loadErr,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 11.5, color: context.t3)),
+            const SizedBox(height: 14),
+            OutlinedButton(onPressed: _load, child: const Text('重试加载')),
+          ],
+        ),
+      );
     }
     return Stack(
       children: [
@@ -584,12 +611,54 @@ class _AdminUiTabState extends State<AdminUiTab> {
     );
   }
 
+  Widget _inviteConfig() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('新用户注册填写邀请码后，邀请人与新用户各得多少积分',
+            style: TextStyle(fontSize: 11.5, color: context.t3)),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            SizedBox(
+              width: 110,
+              child: TextFormField(
+                controller: _inviteScoreCtrl,
+                keyboardType: TextInputType.number,
+                style: TextStyle(fontSize: 14, color: context.t1),
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: context.isDark
+                      ? Colors.white.withAlpha(10)
+                      : const Color(0xFFF5F6FA),
+                  suffixText: '积分',
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 11),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text('填 0 = 关闭邀请奖励',
+                style: TextStyle(fontSize: 11.5, color: context.t3)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text('入口开关在上方「功能开关 → 邀请好友」',
+            style: TextStyle(fontSize: 11, color: context.t3)),
+      ],
+    );
+  }
+
   Widget _tipsTemplatePicker() => _chipRow(const [
         ('card', '卡片'),
         ('compact', '紧凑'),
         ('timeline', '时间轴'),
         ('minimal_row', '极简行'),
         ('rich', '大图卡'),
+        ('chat', '聊天流'),
       ], _tipsTemplate, (v) => setState(() => _tipsTemplate = v));
 
   Widget _mineTemplatePicker() => _chipRow(const [
@@ -598,6 +667,8 @@ class _AdminUiTabState extends State<AdminUiTab> {
         ('gradient', '渐变描边'),
         ('dark_card', '深色卡'),
         ('split', '分样式'),
+        ('stats_hero', '数据英雄'),
+        ('simple', '纯列表'),
       ], _mineTemplate, (v) => setState(() => _mineTemplate = v));
 
   Widget _splashTemplatePicker() => _chipRow(const [
@@ -606,6 +677,8 @@ class _AdminUiTabState extends State<AdminUiTab> {
         ('fade', '品牌渐变'),
         ('split', '左右分栏'),
         ('greeting', '时段问候'),
+        ('poster_center', '居中海报'),
+        ('brand_bar', '品牌底条'),
       ], _splashTemplate, (v) => setState(() => _splashTemplate = v));
 
   Widget _aboutTemplatePicker() => _chipRow(const [
@@ -614,6 +687,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         ('minimal', '极简'),
         ('dark_card', '深色卡'),
         ('desk', '桌面风'),
+        ('plain', '纯文字'),
       ], _aboutTemplate, (v) => setState(() => _aboutTemplate = v));
 
   Widget _authTemplatePicker() => _chipRow(const [
@@ -622,6 +696,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         ('minimal', '极简'),
         ('banner_top', '顶部横幅'),
         ('centered', '居中卡'),
+        ('centered_gradient', '居中渐变'),
       ], _authTemplate, (v) => setState(() => _authTemplate = v));
 
   Widget _noticeTemplatePicker() => _chipRow(const [
@@ -630,6 +705,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         ('minimal', '极简'),
         ('sheet', '底部弹出'),
         ('fullscreen', '全屏页'),
+        ('banner_card', '横幅+正文卡'),
       ], _noticeTemplate, (v) => setState(() => _noticeTemplate = v));
 
   Widget _inviteTemplatePicker() => _chipRow(const [
