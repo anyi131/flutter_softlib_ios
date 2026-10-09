@@ -228,6 +228,21 @@ class _AdminUiTabState extends State<AdminUiTab> {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 96),
           children: [
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: C.brandGradient,
+                borderRadius: BorderRadius.circular(R.lg),
+              ),
+              child: const Text(
+                '后台版本 v52z · 顶部无此横幅=装的旧包',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700),
+              ),
+            ),
             _card('主题配色', _palettePicker()),
             _card('明暗模式', _modePicker()),
             _card('底部导航开关', _tabSwitches()),

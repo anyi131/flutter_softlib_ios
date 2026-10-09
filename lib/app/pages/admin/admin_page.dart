@@ -156,7 +156,7 @@ class _AdminPageState extends State<AdminPage>
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '${UserService.instance.user?.nickname ?? '管理员'} · 全局配置 · 界面 · 采集 · 经营',
+                      '${UserService.instance.user?.nickname ?? '管理员'} · v1.0.3(52z) · 全局配置/界面/采集/经营',
                       style: Ty.small.copyWith(color: context.t3),
                     ),
                   ],
