@@ -210,12 +210,20 @@ class _AdminUiTabState extends State<AdminUiTab> {
           children: [
             Icon(Icons.error_outline_rounded, size: 40, color: context.t3),
             const SizedBox(height: 10),
-            Text('配置加载失败',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: context.t1)),
+            Text(
+              '配置加载失败',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: context.t1,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(_loadErr,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 11.5, color: context.t3)),
+            Text(
+              _loadErr,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11.5, color: context.t3),
+            ),
             const SizedBox(height: 14),
             OutlinedButton(onPressed: _load, child: const Text('重试加载')),
           ],
@@ -238,9 +246,10 @@ class _AdminUiTabState extends State<AdminUiTab> {
               child: const Text(
                 '后台版本 v52z · 顶部无此横幅=装的旧包',
                 style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700),
+                  color: Colors.white,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             _card('主题配色', _palettePicker()),
@@ -251,6 +260,15 @@ class _AdminUiTabState extends State<AdminUiTab> {
             _card('更新弹窗模板', _templatePicker()),
             _card('首页布局模板', _homeTemplatePicker()),
             _card('软件详情页模板', _detailStylePicker()),
+            // v53b：v52m/v52w 加的卡片此前补丁静默失败未挂载——现在补齐
+            _card('线报列表模板', _tipsTemplatePicker()),
+            _card('我的页面模板', _mineTemplatePicker()),
+            _card('开屏页模板', _splashTemplatePicker()),
+            _card('关于软件模板', _aboutTemplatePicker()),
+            _card('登录/注册模板', _authTemplatePicker()),
+            _card('公告弹窗模板', _noticeTemplatePicker()),
+            _card('邀请页模板', _inviteTemplatePicker()),
+            _card('邀请配置', _inviteConfig()),
             _card('首页快捷入口', _quickSwitches()),
           ],
         ),
@@ -590,8 +608,11 @@ class _AdminUiTabState extends State<AdminUiTab> {
     );
   }
 
-  Widget _chipRow(List<(String, String)> opts, String cur,
-      ValueChanged<String> onTap) {
+  Widget _chipRow(
+    List<(String, String)> opts,
+    String cur,
+    ValueChanged<String> onTap,
+  ) {
     return Wrap(
       spacing: 9,
       runSpacing: 9,
@@ -600,26 +621,29 @@ class _AdminUiTabState extends State<AdminUiTab> {
           AppPressable(
             onTap: () => onTap(o.$1),
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
               decoration: BoxDecoration(
                 color: cur == o.$1
                     ? C.brand.withAlpha(26)
                     : context.isDark
-                        ? Colors.white.withAlpha(8)
-                        : Colors.black.withAlpha(4),
+                    ? Colors.white.withAlpha(8)
+                    : Colors.black.withAlpha(4),
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(
-                    color: cur == o.$1
-                        ? C.brand.withAlpha(150)
-                        : Colors.transparent,
-                    width: 1.3),
+                  color: cur == o.$1
+                      ? C.brand.withAlpha(150)
+                      : Colors.transparent,
+                  width: 1.3,
+                ),
               ),
-              child: Text(o.$2,
-                  style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: cur == o.$1 ? C.brand : context.t2)),
+              child: Text(
+                o.$2,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: cur == o.$1 ? C.brand : context.t2,
+                ),
+              ),
             ),
           ),
       ],
@@ -630,8 +654,10 @@ class _AdminUiTabState extends State<AdminUiTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('新用户注册填写邀请码后，邀请人与新用户各得多少积分',
-            style: TextStyle(fontSize: 11.5, color: context.t3)),
+        Text(
+          '新用户注册填写邀请码后，邀请人与新用户各得多少积分',
+          style: TextStyle(fontSize: 11.5, color: context.t3),
+        ),
         const SizedBox(height: 10),
         Row(
           children: [
@@ -649,85 +675,116 @@ class _AdminUiTabState extends State<AdminUiTab> {
                       : const Color(0xFFF5F6FA),
                   suffixText: '积分',
                   contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 11),
+                    horizontal: 12,
+                    vertical: 11,
+                  ),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
             ),
             const SizedBox(width: 10),
-            Text('填 0 = 关闭邀请奖励',
-                style: TextStyle(fontSize: 11.5, color: context.t3)),
+            Text(
+              '填 0 = 关闭邀请奖励',
+              style: TextStyle(fontSize: 11.5, color: context.t3),
+            ),
           ],
         ),
         const SizedBox(height: 8),
-        Text('入口开关在上方「功能开关 → 邀请好友」',
-            style: TextStyle(fontSize: 11, color: context.t3)),
+        Text(
+          '入口开关在上方「功能开关 → 邀请好友」',
+          style: TextStyle(fontSize: 11, color: context.t3),
+        ),
       ],
     );
   }
 
-  Widget _tipsTemplatePicker() => _chipRow(const [
-        ('card', '卡片'),
-        ('compact', '紧凑'),
-        ('timeline', '时间轴'),
-        ('minimal_row', '极简行'),
-        ('rich', '大图卡'),
-        ('chat', '聊天流'),
-      ], _tipsTemplate, (v) => setState(() => _tipsTemplate = v));
+  Widget _tipsTemplatePicker() => _chipRow(
+    const [
+      ('card', '卡片'),
+      ('compact', '紧凑'),
+      ('timeline', '时间轴'),
+      ('minimal_row', '极简行'),
+      ('rich', '大图卡'),
+      ('chat', '聊天流'),
+    ],
+    _tipsTemplate,
+    (v) => setState(() => _tipsTemplate = v),
+  );
 
-  Widget _mineTemplatePicker() => _chipRow(const [
-        ('classic', '经典'),
-        ('clean', '极简'),
-        ('gradient', '渐变描边'),
-        ('dark_card', '深色卡'),
-        ('split', '分样式'),
-        ('stats_hero', '数据英雄'),
-        ('simple', '纯列表'),
-      ], _mineTemplate, (v) => setState(() => _mineTemplate = v));
+  Widget _mineTemplatePicker() => _chipRow(
+    const [
+      ('classic', '经典'),
+      ('clean', '极简'),
+      ('gradient', '渐变描边'),
+      ('dark_card', '深色卡'),
+      ('split', '分样式'),
+      ('stats_hero', '数据英雄'),
+      ('simple', '纯列表'),
+    ],
+    _mineTemplate,
+    (v) => setState(() => _mineTemplate = v),
+  );
 
-  Widget _splashTemplatePicker() => _chipRow(const [
-        ('fullscreen', '全屏图'),
-        ('banner', '卡片图'),
-        ('fade', '品牌渐变'),
-        ('split', '左右分栏'),
-        ('greeting', '时段问候'),
-        ('poster_center', '居中海报'),
-        ('brand_bar', '品牌底条'),
-      ], _splashTemplate, (v) => setState(() => _splashTemplate = v));
+  Widget _splashTemplatePicker() => _chipRow(
+    const [
+      ('fullscreen', '全屏图'),
+      ('banner', '卡片图'),
+      ('fade', '品牌渐变'),
+      ('split', '左右分栏'),
+      ('greeting', '时段问候'),
+      ('poster_center', '居中海报'),
+      ('brand_bar', '品牌底条'),
+    ],
+    _splashTemplate,
+    (v) => setState(() => _splashTemplate = v),
+  );
 
-  Widget _aboutTemplatePicker() => _chipRow(const [
-        ('card', '经典'),
-        ('hero', '渐变横幅'),
-        ('minimal', '极简'),
-        ('dark_card', '深色卡'),
-        ('desk', '桌面风'),
-        ('plain', '纯文字'),
-      ], _aboutTemplate, (v) => setState(() => _aboutTemplate = v));
+  Widget _aboutTemplatePicker() => _chipRow(
+    const [
+      ('card', '经典'),
+      ('hero', '渐变横幅'),
+      ('minimal', '极简'),
+      ('dark_card', '深色卡'),
+      ('desk', '桌面风'),
+      ('plain', '纯文字'),
+    ],
+    _aboutTemplate,
+    (v) => setState(() => _aboutTemplate = v),
+  );
 
-  Widget _authTemplatePicker() => _chipRow(const [
-        ('classic', '经典'),
-        ('gradient', '渐变横幅'),
-        ('minimal', '极简'),
-        ('banner_top', '顶部横幅'),
-        ('centered', '居中卡'),
-        ('centered_gradient', '居中渐变'),
-      ], _authTemplate, (v) => setState(() => _authTemplate = v));
+  Widget _authTemplatePicker() => _chipRow(
+    const [
+      ('classic', '经典'),
+      ('gradient', '渐变横幅'),
+      ('minimal', '极简'),
+      ('banner_top', '顶部横幅'),
+      ('centered', '居中卡'),
+      ('centered_gradient', '居中渐变'),
+    ],
+    _authTemplate,
+    (v) => setState(() => _authTemplate = v),
+  );
 
-  Widget _noticeTemplatePicker() => _chipRow(const [
-        ('card', '经典弹窗'),
-        ('banner', '渐变横幅'),
-        ('minimal', '极简'),
-        ('sheet', '底部弹出'),
-        ('fullscreen', '全屏页'),
-        ('banner_card', '横幅+正文卡'),
-      ], _noticeTemplate, (v) => setState(() => _noticeTemplate = v));
+  Widget _noticeTemplatePicker() => _chipRow(
+    const [
+      ('card', '经典弹窗'),
+      ('banner', '渐变横幅'),
+      ('minimal', '极简'),
+      ('sheet', '底部弹出'),
+      ('fullscreen', '全屏页'),
+      ('banner_card', '横幅+正文卡'),
+    ],
+    _noticeTemplate,
+    (v) => setState(() => _noticeTemplate = v),
+  );
 
-  Widget _inviteTemplatePicker() => _chipRow(const [
-        ('classic', '经典卡片'),
-        ('hero', '渐变横幅'),
-        ('minimal', '极简'),
-      ], _inviteTemplate, (v) => setState(() => _inviteTemplate = v));
+  Widget _inviteTemplatePicker() => _chipRow(
+    const [('classic', '经典卡片'), ('hero', '渐变横幅'), ('minimal', '极简')],
+    _inviteTemplate,
+    (v) => setState(() => _inviteTemplate = v),
+  );
 
   Widget _templatePicker() {
     const opts = [
