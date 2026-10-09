@@ -659,7 +659,7 @@ class _InvitePageState extends State<InvitePage> {
             const SizedBox(height: 14),
             Text(
               _code.isEmpty ? '—' : _code,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 5,

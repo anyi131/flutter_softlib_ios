@@ -393,7 +393,6 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 height: tpl == AppDetailStyle.poster
                     ? 96
                     : (tpl == AppDetailStyle.compact ? 68 : 84),
-                height: 84,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(R.lg + 4),
                   border: Border.all(
