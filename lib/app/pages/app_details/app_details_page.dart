@@ -130,20 +130,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   context.pagePadding,
                   30,
                 ),
-                children: [
-                  _hero(),
-                  const SizedBox(height: 14),
-                  _info(),
-                  const SizedBox(height: 16),
-                  _tabBarCard(context.isDark),
-                  const SizedBox(height: 12),
-                  AnimatedBuilder(
-                    animation: _tab,
-                    builder: (context, _) => _tab.index == 0
-                        ? _detail(context.isDark)
-                        : ReviewTab(appId: item?.id ?? 0),
-                  ),
-                ],
+                children: _bodyChildren(context),
               );
             },
           ),
@@ -155,6 +142,64 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     );
   }
 
+  /// v53d：详情页 5 套大改版模板
+  List<Widget> _bodyChildren(BuildContext context) {
+    final tpl = AppStyleController.instance.detailStyle.value;
+    final isDark = context.isDark;
+    final tabArea = <Widget>[
+      const SizedBox(height: 16),
+      _tabBarCard(isDark),
+      const SizedBox(height: 12),
+      AnimatedBuilder(
+        animation: _tab,
+        builder: (context, _) =>
+            _tab.index == 0 ? _detail(isDark) : ReviewTab(appId: item?.id ?? 0),
+      ),
+    ];
+    switch (tpl) {
+      case AppDetailStyle.poster:
+        // 沉浸海报版：全屏头图打底 + 悬浮玻璃信息卡
+        return [_hero(), const SizedBox(height: 14), _info(), ...tabArea];
+      case AppDetailStyle.dark:
+        // 暗黑影院版：深底整卡包裹
+        return [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: C.bg0,
+              borderRadius: BorderRadius.circular(R.xl),
+              border: Border.all(color: C.brand.withAlpha(70)),
+            ),
+            child: Column(
+              children: [_hero(), const SizedBox(height: 12), _info()],
+            ),
+          ),
+          ...tabArea,
+        ];
+      case AppDetailStyle.minimal:
+        // 极简文档版：纯排版
+        return [_hero(), const SizedBox(height: 10), _info(), ...tabArea];
+      case AppDetailStyle.compact:
+        // 紧凑版：矮头图 + 紧凑间距
+        return [
+          _hero(),
+          const SizedBox(height: 10),
+          _info(),
+          const SizedBox(height: 12),
+          _tabBarCard(isDark),
+          const SizedBox(height: 10),
+          AnimatedBuilder(
+            animation: _tab,
+            builder: (context, _) => _tab.index == 0
+                ? _detail(isDark)
+                : ReviewTab(appId: item?.id ?? 0),
+          ),
+        ];
+      default:
+        return [_hero(), const SizedBox(height: 14), _info(), ...tabArea];
+    }
+  }
+
   /// 顶部返回/分享（悬浮玻璃）
   /// v52i #4：海报模板头图（截图 > 图标，都没有退品牌渐变）
   /// v52m #2：头图高度（compact=46，minimal=0，其它 106）
@@ -162,6 +207,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     final tpl = AppStyleController.instance.detailStyle.value;
     if (tpl == AppDetailStyle.minimal) return 0;
     if (tpl == AppDetailStyle.compact) return 46;
+    if (tpl == AppDetailStyle.poster) return 190;
     return 106;
   }
 
@@ -180,7 +226,8 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       );
     }
     if (tpl == AppDetailStyle.poster) {
-      final has = info != null &&
+      final has =
+          info != null &&
           (logic.item?.screenshots.isNotEmpty == true ||
               (info.fileIcon ?? '').isNotEmpty ||
               (logic.item?.icon ?? '').isNotEmpty);
@@ -190,10 +237,12 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             : null,
         gradient: has
             ? null
-            : LinearGradient(colors: [
-                C.brand.withAlpha(context.isDark ? 150 : 120),
-                C.violet.withAlpha(context.isDark ? 110 : 90),
-              ]),
+            : LinearGradient(
+                colors: [
+                  C.brand.withAlpha(context.isDark ? 150 : 120),
+                  C.violet.withAlpha(context.isDark ? 110 : 90),
+                ],
+              ),
         borderRadius: radius,
       );
     }
@@ -277,6 +326,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   Widget _hero() {
     final it = item;
     final info = logic.appInfo;
+    final tpl = AppStyleController.instance.detailStyle.value;
     final isVipItem = it?.isVipItem ?? false;
     final hasP = it?.hasPrice ?? false;
     final priceTxt = it?.vipPrice ?? '';
@@ -332,12 +382,17 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 ],
               ),
             ),
-            // 悬浮图标
+            // 悬浮图标（v53d：poster 96px 居左出血感，compact 68px）
             Positioned(
-              left: 18,
+              left: tpl == AppDetailStyle.compact ? 14 : 18,
               bottom: 0,
               child: Container(
-                width: 84,
+                width: tpl == AppDetailStyle.poster
+                    ? 96
+                    : (tpl == AppDetailStyle.compact ? 68 : 84),
+                height: tpl == AppDetailStyle.poster
+                    ? 96
+                    : (tpl == AppDetailStyle.compact ? 68 : 84),
                 height: 84,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(R.lg + 4),

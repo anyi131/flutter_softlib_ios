@@ -798,7 +798,13 @@ class _AdminUiTabState extends State<AdminUiTab> {
   );
 
   Widget _inviteTemplatePicker() => _chipRow(
-    const [('classic', '经典卡片'), ('hero', '渐变横幅'), ('minimal', '极简')],
+    const [
+      ('classic', '经典卡片'),
+      ('hero', '渐变横幅'),
+      ('minimal', '极简'),
+      ('ticket', '票券'),
+      ('gradient_dark', '深色霓虹'),
+    ],
     _inviteTemplate,
     (v) => setState(() => _inviteTemplate = v),
   );

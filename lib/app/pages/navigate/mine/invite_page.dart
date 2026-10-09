@@ -1,4 +1,3 @@
-
 import '../../../api/soft_service.dart';
 import '../../../api/user_service.dart';
 import '../../../design/app_anim.dart';
@@ -118,6 +117,8 @@ class _InvitePageState extends State<InvitePage> {
                             children: switch (tpl) {
                               'hero' => _bodyHero(context),
                               'minimal' => _bodyMinimal(context),
+                              'ticket' => _bodyTicket(context),
+                              'gradient_dark' => _bodyDark(context),
                               _ => _bodyClassic(context),
                             },
                           ),
@@ -533,5 +534,169 @@ class _InvitePageState extends State<InvitePage> {
         ),
       ],
     );
+  }
+
+  /// v53d：票券模板（打孔分隔 + 白底码区）
+  List<Widget> _bodyTicket(BuildContext context) {
+    return [
+      Container(
+        decoration: BoxDecoration(
+          color: context.isDark ? C.bg2 : Colors.white,
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: C.brandGradient,
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: const Icon(
+                      Icons.confirmation_number_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      '邀请券',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: C.brand.withAlpha(context.isDark ? 30 : 16),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    _code.isEmpty ? '—' : _code,
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 5,
+                      color: C.brand,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  AppPressable(
+                    onTap: _copy,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: C.brandGradient,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Text(
+                        '复制邀请码',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 14),
+      _statsRow(context),
+      const SizedBox(height: 14),
+      _ruleCard(context),
+      const SizedBox(height: 14),
+      _actions(context),
+    ];
+  }
+
+  /// v53d：深色渐变模板
+  List<Widget> _bodyDark(BuildContext context) {
+    return [
+      Container(
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          color: C.bg0,
+          borderRadius: BorderRadius.circular(R.xl),
+          border: Border.all(color: C.brand.withAlpha(90)),
+          boxShadow: [
+            BoxShadow(
+              color: C.brand.withAlpha(50),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              '邀请好友 · 双方得积分',
+              style: TextStyle(
+                color: context.t1,
+                fontSize: 16.5,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              _code.isEmpty ? '—' : _code,
+              style: const TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 5,
+                color: C.brandBright,
+              ),
+            ),
+            const SizedBox(height: 12),
+            AppPressable(
+              onTap: _copy,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 11,
+                ),
+                decoration: BoxDecoration(
+                  gradient: C.brandGradient,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Text(
+                  '复制',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 14),
+      _statsRow(context),
+      const SizedBox(height: 14),
+      _ruleCard(context),
+      const SizedBox(height: 14),
+      _actions(context),
+    ];
   }
 }
