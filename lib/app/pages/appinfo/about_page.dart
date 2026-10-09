@@ -132,7 +132,7 @@ class _AboutPageState extends State<AboutPage> {
           ),
           child: Column(
             children: [
-              Text(cfg?.aboutName ?? '安逸软件库',
+              Text(cfg?.aboutName ?? '安逸软件汇',
                   style: const TextStyle(
                       color: Colors.white,
                       fontSize: 22,
@@ -179,7 +179,7 @@ class _AboutPageState extends State<AboutPage> {
           ),
           child: Column(
             children: [
-              Text(cfg?.aboutName ?? '安逸软件库',
+              Text(cfg?.aboutName ?? '安逸软件汇',
                   style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -209,7 +209,7 @@ class _AboutPageState extends State<AboutPage> {
     if (tpl == 'plain') {
       // v52w：纯文字排版（无卡无边框，编辑器风）
       return [
-        Text(cfg?.aboutName ?? '安逸软件库',
+        Text(cfg?.aboutName ?? '安逸软件汇',
             style: Ty.display.copyWith(color: context.t1)),
         if ((cfg?.aboutSlogan ?? '').isNotEmpty) ...[
           const SizedBox(height: 6),
@@ -264,7 +264,7 @@ class _AboutPageState extends State<AboutPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(cfg?.aboutName ?? '安逸软件库',
+                    Text(cfg?.aboutName ?? '安逸软件汇',
                         style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w900,
@@ -303,7 +303,7 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   Widget _hero(AppConfig? cfg) {
-    final name = cfg?.aboutName ?? '安逸软件库';
+    final name = cfg?.aboutName ?? '安逸软件汇';
     final logo = cfg?.aboutLogo ?? '';
     final slogan = cfg?.aboutSlogan ?? '';
     return Column(
@@ -505,8 +505,8 @@ class _AboutPageState extends State<AboutPage> {
     try {
       final box = context.findRenderObject() as RenderBox?;
       await Share.share(
-        '推荐一个好用的软件库：${_cfg?.aboutName ?? '安逸软件库'}\n${_cfg?.aboutWebsite ?? ''}',
-        subject: _cfg?.aboutName ?? '安逸软件库',
+        '推荐一个好用的软件库：${_cfg?.aboutName ?? '安逸软件汇'}\n${_cfg?.aboutWebsite ?? ''}',
+        subject: _cfg?.aboutName ?? '安逸软件汇',
         sharePositionOrigin:
             box != null ? box.localToGlobal(Offset.zero) & box.size : null,
       );

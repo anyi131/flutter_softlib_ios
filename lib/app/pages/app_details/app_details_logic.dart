@@ -643,7 +643,7 @@ class AppDetailsLogic extends GetxController {
     // 兜底：扫描公共下载目录
     for (final dir in [
       '/storage/emulated/0/Download',
-      '/storage/emulated/0/Android/data/com.softlib.flutter_softlib/files',
+      '/storage/emulated/0/Android/data/com.soft.anyi/files',
     ]) {
       try {
         final d = Directory(dir);

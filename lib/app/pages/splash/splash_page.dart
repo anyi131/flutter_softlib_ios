@@ -774,7 +774,7 @@ class _SplashPageState extends State<SplashPage> {
             child: Image.asset(Assets.imagesApp, width: 104, height: 104),
           ),
           const SizedBox(height: 22),
-          const Text('安逸软件库',
+          const Text('安逸软件汇',
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 26,

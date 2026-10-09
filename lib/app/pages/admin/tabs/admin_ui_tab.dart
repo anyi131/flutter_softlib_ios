@@ -261,7 +261,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
                 borderRadius: BorderRadius.circular(R.lg),
               ),
               child: const Text(
-                '后台版本 v52z · 顶部无此横幅=装的旧包',
+                '后台版本 v3.3 · 顶部无此横幅=装的旧包',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12.5,

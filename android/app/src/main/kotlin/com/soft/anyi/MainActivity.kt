@@ -1,4 +1,4 @@
-package com.softlib.flutter_softlib
+package com.soft.anyi
 
 import android.content.Intent
 import android.net.Uri

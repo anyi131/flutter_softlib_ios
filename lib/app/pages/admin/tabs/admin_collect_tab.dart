@@ -42,6 +42,11 @@ class _AdminCollectTabState extends State<AdminCollectTab>
   List<Map<String, dynamic>> _items = [];
   final Set<String> _selected = {};
 
+  /// 当前页已选数量（勾选计数显示）
+  int get _pageSelCount => _items
+      .where((it) => _selected.contains((it['appid'] ?? '').toString()))
+      .length;
+
   // 采集任务
   String _taskId = '';
   bool _running = false;
@@ -313,7 +318,9 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               const Spacer(),
               if (_selected.isNotEmpty) ...[
                 Text(
-                  '已选 ${_selected.length}',
+                  _pageSelCount > 0 && _pageSelCount != _selected.length
+                      ? '本页已选 $_pageSelCount · 跨页共选 ${_selected.length}'
+                      : '已选 ${_selected.length}',
                   style: Ty.tiny.copyWith(color: C.brand),
                 ),
                 const SizedBox(width: 8),
@@ -580,6 +587,13 @@ class _AdminCollectTabState extends State<AdminCollectTab>
   }
 
   Widget _bottomBar() {
+    // 当前页已选（真正会被采集的数量）
+    final pageCount = _pageSelCount;
+    final label = _selected.isEmpty
+        ? '请选择要采集的软件'
+        : (pageCount == _selected.length
+            ? '开始采集（$pageCount）'
+            : '开始采集本页（$pageCount） · 跨页共选 ${_selected.length}');
     return SafeArea(
       top: false,
       child: Padding(
@@ -590,10 +604,11 @@ class _AdminCollectTabState extends State<AdminCollectTab>
           10,
         ),
         child: PrimaryButton(
-          label: _selected.isEmpty ? '请选择要采集的软件' : '开始采集（${_selected.length}）',
+          label: label,
           icon: Icons.cloud_upload_rounded,
           height: 48,
-          enabled: _selected.isNotEmpty && !_running,
+          // ★ 只有「本页有勾选」才可开始：跨页残留的勾选不会提交
+          enabled: pageCount > 0 && !_running,
           onPressed: _start,
         ),
       ),
@@ -601,6 +616,8 @@ class _AdminCollectTabState extends State<AdminCollectTab>
   }
 
   Future<void> _start() async {
+    // ★ 需求 #5：跨页勾选只用于「计数展示」，
+    //   真正提交采集的始终只有【当前页面】勾选的软件
     final apps = _items
         .where((it) => _selected.contains((it['appid'] ?? '').toString()))
         .map(
@@ -615,12 +632,15 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         )
         .toList();
     if (apps.isEmpty) return;
+    final extra = _selected.length - apps.length;
     final go = await Get.dialog<bool>(
       AlertDialog(
         title: const Text('开始采集'),
         content: Text(
-          '将把选中的 ${apps.length} 个软件上传到【你自己的蓝奏云】目录，'
-          '完成后可一键导入软件库。\n\n是否继续？',
+          '本次将采集【当前页】选中的 ${apps.length} 个软件，上传到'
+          '【你自己的蓝奏云】目录，完成后可一键导入软件库。'
+          '${extra > 0 ? '\n\n另外 $extra 个是其它页面的勾选，本次不会提交。' : ''}'
+          '\n\n是否继续？',
         ),
         actions: [
           TextButton(

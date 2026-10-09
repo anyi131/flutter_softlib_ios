@@ -192,7 +192,7 @@ class SoftLibApp extends StatelessWidget {
                   Brightness.dark);
       _syncSystemBars(isDark);
       return GetMaterialApp(
-      title: '软件库App',
+      title: '安逸软件汇',
       debugShowCheckedModeBanner: false,
       initialRoute: Routes.splash,
       getPages: AppPages.routes,

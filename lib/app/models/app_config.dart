@@ -93,8 +93,8 @@ class AppConfig {
     this.userBtnOn = true,
     this.appSource = 'all',
     this.aboutEnable = true,
-    this.aboutName = '安逸软件库',
-    this.aboutVersion = '1.0.0',
+    this.aboutName = '安逸软件汇',
+    this.aboutVersion = '3.3.0',
     this.aboutLogo = '',
     this.aboutSlogan = '优质软件 · 持续更新',
     this.aboutDesc = '',
@@ -170,10 +170,10 @@ class AppConfig {
         ? _b(json['about_enable'])
         : true,
     aboutName: _s(json['about_name']).isEmpty
-        ? '安逸软件库'
+        ? '安逸软件汇'
         : _s(json['about_name']),
     aboutVersion: _s(json['about_version']).isEmpty
-        ? '1.0.0'
+        ? '3.3.0'
         : _s(json['about_version']),
     aboutLogo: _s(json['about_logo']),
     aboutSlogan: _s(json['about_slogan']),

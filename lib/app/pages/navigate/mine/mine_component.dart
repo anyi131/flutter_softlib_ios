@@ -292,7 +292,7 @@ class MineComponent extends StatelessWidget {
                         borderRadius: BorderRadius.circular(R.xs),
                       ),
                       child: Text(
-                        'v1.0.2',
+                        'v3.3',
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w800,

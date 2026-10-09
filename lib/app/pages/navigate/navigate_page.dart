@@ -52,7 +52,7 @@ class _NavigatePageState extends State<NavigatePage> {
           ],
         ),
         content: const Text(
-          '确定要退出「安逸软件库」吗？',
+          '确定要退出「安逸软件汇」吗？',
           style: TextStyle(fontSize: 14, height: 1.5),
         ),
         actions: [

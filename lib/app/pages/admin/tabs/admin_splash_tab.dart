@@ -190,7 +190,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         feedUserCtrl.text = '${cfg['feedback_user'] ?? ''}';
         // 关于软件
         aboutEnable = '${cfg['about_enable']}' != '0';
-        aboutNameCtrl.text = '${cfg['about_name'] ?? '安逸软件库'}';
+        aboutNameCtrl.text = '${cfg['about_name'] ?? '安逸软件汇'}';
         // 注册邮箱限制 + UI 风格（需求 #1 / #9）
         emailDomainsCtrl.text = '${cfg['email_allow_domains'] ?? ''}';
         emailNonQqOn = '${cfg['email_nonqq_on']}' == '1';
