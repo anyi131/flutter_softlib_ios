@@ -20,6 +20,19 @@ class NavigatePage extends StatefulWidget {
 class _NavigatePageState extends State<NavigatePage> {
   final NavigateLogic logic = Get.find<NavigateLogic>();
   DateTime? _lastBack;
+  /// v331c 分段挂载：首帧只画外壳，下一帧再挂页面
+  bool _pagesMounted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) setState(() => _pagesMounted = true);
+      });
+    });
+  }
 
   Future<bool> _onBack() async {
     if (logic.currentIndex != 0) {
@@ -84,21 +97,36 @@ class _NavigatePageState extends State<NavigatePage> {
         body: GetBuilder<NavigateLogic>(
           // v52i #1：Tab 开关后 PageView 必须跟着重建（之前只有底栏重建）
           id: 'navigate',
-          init: NavigateLogic(),
           builder: (logic) => Stack(
             children: [
               Deco.pageBackground(context),
-              PageView(
-                physics: const NeverScrollableScrollPhysics(),
-                controller: logic.pageController,
-                children: logic.pages,
-              ),
+              // v331c 分段挂载诊断：先显示外壳（证明 Scaffold/底栏正常），
+              // 首帧后再挂 PageView——若冻结则锁死在首页构建
+              if (_pagesMounted)
+                PageView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  controller: logic.pageController,
+                  children: logic.pages,
+                )
+              else
+                Center(
+                  child: Text(
+                    'main:shell ok · mounting pages…',
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : Colors.black54,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
         bottomNavigationBar: GetBuilder<NavigateLogic>(
+          // v331c：去掉 init: NavigateLogic()（build 中构造控制器是反模式）
           id: 'navigate',
-          // v54：底部导航模板（classic/glass/float/dock/curve）
+          // v54：底部导航模板（classic/glass/float/dock/curve/liquid）
           builder: (logic) => NavTemplates.bar(context, logic, inset),
         ),
       ),
