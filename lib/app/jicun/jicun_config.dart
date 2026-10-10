@@ -40,7 +40,7 @@ class JicunConfig {
     this.timeout = 20,
     this.retry = 3,
     this.minSplitSize = 8,
-    this.saveDirName = 'JicunDownload',
+    this.saveDirName = '安逸软件汇',
     this.historyLimit = 200,
     this.clearOnExit = false,
     this.qualityDefault = 'highest',
@@ -124,7 +124,7 @@ class JicunConfig {
     timeout: _i(json['timeout'], 20),
     retry: _i(json['retry'], 3),
     minSplitSize: _i(json['min_split_size'], 8),
-    saveDirName: _s(json['save_dir_name'], 'JicunDownload'),
+    saveDirName: _s(json['save_dir_name'], '安逸软件汇'),
     historyLimit: _i(json['history_limit'], 200),
     clearOnExit: _b(json['clear_on_exit'], false),
     qualityDefault: _s(json['quality_default'], 'highest'),
@@ -177,7 +177,7 @@ class JicunSettings extends GetxController {
   String get apiBackup => _cfg.apiBackup;
   int get historyLimit => _cfg.historyLimit;
   String get saveDirName =>
-      _cfg.saveDirName.isEmpty ? 'JicunDownload' : _cfg.saveDirName;
+      _cfg.saveDirName.isEmpty ? '安逸软件汇' : _cfg.saveDirName;
 
   /// 配置版本号:每次刷新 +1,UI 可监听。
   final RxInt version = 0.obs;
