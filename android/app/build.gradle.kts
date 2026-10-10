@@ -40,9 +40,13 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("debug")
-            // 资源裁剪 + 代码混淆，进一步缩小体积
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // 加固:R8 代码混淆 + 资源裁剪
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
