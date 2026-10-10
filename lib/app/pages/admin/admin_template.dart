@@ -103,7 +103,12 @@ class AdminTemplateShell extends StatelessWidget {
   Widget _views() => TabBarView(controller: tab, children: children);
 
   Widget _headerLight(BuildContext context) => Padding(
-    padding: EdgeInsets.fromLTRB(context.pagePadding, 12, 12, 4),
+    padding: EdgeInsets.fromLTRB(
+      context.pagePadding,
+      12,
+      context.pagePadding,
+      4,
+    ),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -401,7 +406,12 @@ class AdminTemplateShell extends StatelessWidget {
             child: Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.fromLTRB(context.pagePadding, 14, 16, 0),
+                  padding: EdgeInsets.fromLTRB(
+                    context.pagePadding,
+                    14,
+                    context.pagePadding,
+                    0,
+                  ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -762,6 +772,56 @@ class AdminTemplateShell extends StatelessWidget {
                   )
                 : Column(
                     children: [
+                      // 窄屏：紧凑页头（保留标题与刷新入口，间距与其他模板一致）
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          context.pagePadding,
+                          12,
+                          context.pagePadding,
+                          0,
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '管理后台',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  height: 1.1,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.5,
+                                  color: context.t1,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: onRefresh,
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: context.isDark
+                                      ? Colors.white.withAlpha(12)
+                                      : Colors.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: context.isDark
+                                        ? Colors.white.withAlpha(18)
+                                        : Colors.black.withAlpha(8),
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.refresh_rounded,
+                                  size: 19,
+                                  color: context.t2,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       // 窄屏：顶部横向图标条
                       SizedBox(
                         height: 64,

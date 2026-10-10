@@ -66,6 +66,34 @@ class AdminService {
         (await _post('sec_sign_check', {'sign_md5': signMd5}))['data'] ?? {},
       );
 
+  // ───── 安全增强 v1011b（审计/登录保护/限流）─────
+
+  /// 审计日志（分页）
+  Future<Map<String, dynamic>> secLogs({int page = 1, int size = 20}) async =>
+      Map<String, dynamic>.from(
+        (await _post('sec_logs', {'page': page, 'size': size}))['data'] ?? {},
+      );
+
+  /// 被限 IP 列表（登录保护）
+  Future<List<Map<String, dynamic>>> secLoginfails() async {
+    final d = (await _post('sec_loginfails'))['data'];
+    return List<Map<String, dynamic>>.from(
+      ((d?['list'] as List?) ?? []).map((e) => Map<String, dynamic>.from(e)),
+    );
+  }
+
+  /// 手动解封被限 IP（登录保护）
+  Future<void> secLoginfailClear(String ip) async =>
+      _post('sec_loginfail_clear', {'ip': ip});
+
+  /// 限流阈值保存（sys_config: sec_rate_limit，0=不限流）
+  Future<void> secRateSave(int rate) async =>
+      _post('sec_rate_save', {'rate': rate});
+
+  /// 清理过期 token
+  Future<Map<String, dynamic>> secCleanToken() async =>
+      Map<String, dynamic>.from((await _post('sec_clean_token'))['data'] ?? {});
+
   Future<List<Map<String, dynamic>>> apps({String keyword = ''}) async {
     final d = (await _post('apps', {'keyword': keyword}))['data'];
     return d is List ? d.map((e) => Map<String, dynamic>.from(e)).toList() : [];
