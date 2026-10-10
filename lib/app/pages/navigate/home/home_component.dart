@@ -1342,6 +1342,58 @@ class _HomeComponentState extends State<HomeComponent> {
   }
 
   // ───────── ⑥ 推荐 ─────────
+  /// 推荐区状态条：各推荐项热度胶囊（数据来自 referrals 计数字段，无则隐藏）
+  Widget _referralState() {
+    return GetBuilder<HomeLogic>(
+      id: 'referral',
+      builder: (logic) {
+        final list = logic.referrals;
+        if (list == null || list.length < 2) {
+          return const SizedBox.shrink();
+        }
+        final hot = list.take(4);
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+          child: Row(
+            children: [
+              for (var i = 0; i < hot.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: C.brand.withAlpha(14),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.local_fire_department_rounded,
+                            size: 14, color: C.brand),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            '${hot[i].title ?? ''}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _referralTitle() {
     return GetBuilder<HomeLogic>(
       id: 'referral',
