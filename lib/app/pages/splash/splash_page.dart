@@ -1031,21 +1031,29 @@ class _SplashPageState extends State<SplashPage> {
                     ),
                 ],
               ),
-              Transform.translate(
-                offset: const Offset(0, -24),
-                child: Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: pageBg,
-                      borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(28)),
+              Expanded(
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: -24,
+                      bottom: 0,
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: pageBg,
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(28)),
+                        ),
+                        padding: const EdgeInsets.fromLTRB(22, 50, 22, 12),
+                        child: SingleChildScrollView(
+                          child: content(15, 1.75),
+                        ),
+                      ),
                     ),
-                    padding: const EdgeInsets.fromLTRB(22, 26, 22, 12),
-                    child: SingleChildScrollView(
-                      child: content(15, 1.75),
-                    ),
-                  ),
+                  ],
                 ),
               ),
               if (actions.isNotEmpty)
