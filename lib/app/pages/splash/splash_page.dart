@@ -104,6 +104,17 @@ class _SplashPageState extends State<SplashPage> {
     }
   }
 
+  /// 公告用：全局主题明暗（**不依赖可能已销毁的 State context**）
+  bool _noticeIsDark() {
+    try {
+      final c = Get.context;
+      if (c == null) return false;
+      return Theme.of(c).brightness == Brightness.dark;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// 公告弹窗
   /// v52m #6：开屏三模板 fullscreen / banner / fade
   Widget _splashBody(AppConfig? cfg, String netImg) {
@@ -393,6 +404,13 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _showNotice(AppConfig cfg) {
+    // ★ 渲染失败绝不白屏：任何异常都静默降级为「不弹公告」
+    try {
+      _showNoticeInner(cfg);
+    } catch (_) {}
+  }
+
+  void _showNoticeInner(AppConfig cfg) {
     final tpl =
         SoftService.instance.cachedConfig?.uiConfig.noticeTemplate ?? 'card';
     final actions = [
@@ -428,7 +446,7 @@ class _SplashPageState extends State<SplashPage> {
             backgroundColor: Colors.transparent,
             child: Container(
               decoration: BoxDecoration(
-                color: context.isDark ? C.bg2 : Colors.white,
+                color: ctx.isDark ? C.bg2 : Colors.white,
                 borderRadius: BorderRadius.circular(22),
               ),
               child: Column(
@@ -482,7 +500,7 @@ class _SplashPageState extends State<SplashPage> {
         builder: (ctx) => PopScope(
           canPop: !cfg.noticeForce,
           child: Dialog(
-            backgroundColor: context.isDark ? C.bg2 : Colors.white,
+            backgroundColor: ctx.isDark ? C.bg2 : Colors.white,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             child: Padding(
@@ -527,7 +545,7 @@ class _SplashPageState extends State<SplashPage> {
         context: Get.context!,
         isDismissible: !cfg.noticeForce,
         enableDrag: !cfg.noticeForce,
-        backgroundColor: context.isDark ? C.bg2 : Colors.white,
+        backgroundColor: _noticeIsDark() ? C.bg2 : Colors.white,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
@@ -544,7 +562,7 @@ class _SplashPageState extends State<SplashPage> {
                       width: 34,
                       height: 4,
                       decoration: BoxDecoration(
-                          color: context.t3.withAlpha(60),
+                          color: ctx.t3.withAlpha(60),
                           borderRadius: BorderRadius.circular(2)),
                     ),
                   ],
@@ -586,7 +604,7 @@ class _SplashPageState extends State<SplashPage> {
       // v52t：全屏公告页
       Navigator.of(Get.context!).push(MaterialPageRoute(
         builder: (ctx) => Scaffold(
-          backgroundColor: context.isDark ? C.bg1 : Colors.white,
+          backgroundColor: ctx.isDark ? C.bg1 : Colors.white,
           appBar: AppBar(
             title: Text(cfg.noticeTitle),
             backgroundColor: Colors.transparent,
@@ -647,7 +665,7 @@ class _SplashPageState extends State<SplashPage> {
                   ),
                 ),
                 Container(
-                  color: context.isDark ? C.bg2 : Colors.white,
+                  color: ctx.isDark ? C.bg2 : Colors.white,
                   padding: const EdgeInsets.all(18),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,

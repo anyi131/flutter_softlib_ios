@@ -40,6 +40,13 @@ Future<void> main() async {
         return true; // 已处理，避免崩溃
       };
 
+      // ★ 兜底：任何页面/模板构建异常都不允许变成「整屏白屏」
+      //   （release 下 Flutter 默认给空白占位，看起来就是白屏）
+      ErrorWidget.builder = (FlutterErrorDetails details) {
+        _logError('ErrorWidget', details.exception, details.stack);
+        return const _UiFallback();
+      };
+
       try {
         await _initializeServices();
         runApp(const SoftLibApp());
@@ -270,4 +277,26 @@ Widget _buildErrorApp(String error) {
       ),
     ),
   );
+}
+
+/// 构建异常时的可见占位（替代 release 下的空白块，避免「整屏白屏」）
+class _UiFallback extends StatelessWidget {
+  const _UiFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Material(
+      color: Colors.transparent,
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text(
+            '这部分内容加载异常，请返回重试',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12.5, color: Color(0xFF8A8F98)),
+          ),
+        ),
+      ),
+    );
+  }
 }
