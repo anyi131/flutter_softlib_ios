@@ -259,7 +259,7 @@ class Downloader {
     }
     if (firstError != null && finished < items.length) {
       // 失败的条目不打断已成功的:这里把第一个失败原因报出去,由调用方决定提示。
-      throw firstError;
+      throw Exception(firstError.toString());
     }
     if (finished < items.length) throw const DownloadCancelled();
     onProgress(DownloadProgress(received: expected * 2, total: expected * 2));

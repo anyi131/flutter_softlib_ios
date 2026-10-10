@@ -492,7 +492,7 @@ class AdminTemplateShell extends StatelessWidget {
 
   // ─────────── brand：品牌渐变头部 + 彩色图标底 ───────────
   Widget _brand(BuildContext context) {
-    const colors = [
+    final colors = [
       C.brand,
       C.mint,
       C.gold,
