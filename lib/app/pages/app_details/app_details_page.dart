@@ -177,14 +177,14 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           ...tabArea,
         ];
       case AppDetailStyle.minimal:
-        // 极简文档版：纯排版
-        return [_hero(), const SizedBox(height: 10), _info(), ...tabArea];
+        // v54 极简文档版：无头图 + 扁平数据行（纯排版，无任何卡）
+        return [_hero(), const SizedBox(height: 10), _infoFlat(), ...tabArea];
       case AppDetailStyle.compact:
-        // 紧凑版：矮头图 + 紧凑间距
+        // v54 紧凑版：横向信息头条（无大头图，一行式骨架）
         return [
-          _hero(),
+          _heroCompact(),
           const SizedBox(height: 10),
-          _info(),
+          _infoFlat(),
           const SizedBox(height: 12),
           _tabBarCard(isDark),
           const SizedBox(height: 10),
@@ -207,7 +207,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     final tpl = AppStyleController.instance.detailStyle.value;
     if (tpl == AppDetailStyle.minimal) return 0;
     if (tpl == AppDetailStyle.compact) return 46;
-    if (tpl == AppDetailStyle.poster) return 190;
+    if (tpl == AppDetailStyle.poster) return 240;
     return 106;
   }
 
@@ -231,6 +231,8 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           (logic.item?.screenshots.isNotEmpty == true ||
               (info.fileIcon ?? '').isNotEmpty ||
               (logic.item?.icon ?? '').isNotEmpty);
+      // v54：poster 通栏出血 —— 只压底部圆角，顶到屏幕两缘
+      const bleedRadius = BorderRadius.vertical(bottom: Radius.circular(R.xl));
       return BoxDecoration(
         image: has
             ? DecorationImage(fit: BoxFit.cover, image: _posterProvider(info)!)
@@ -243,7 +245,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   C.violet.withAlpha(context.isDark ? 110 : 90),
                 ],
               ),
-        borderRadius: radius,
+        borderRadius: bleedRadius,
       );
     }
     return BoxDecoration(
@@ -348,37 +350,62 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           clipBehavior: Clip.none,
           children: [
             // v52m #2：详情页头图（5 模板装饰见 _headerDecoration）
+            // v54：poster 通栏出血（负外边距顶出 ListView 内边距）
             Container(
               height: _headerHeight(),
-              margin: const EdgeInsets.only(bottom: 42),
+              margin: tpl == AppDetailStyle.poster
+                  ? EdgeInsets.fromLTRB(
+                      -context.pagePadding,
+                      0,
+                      -context.pagePadding,
+                      42,
+                    )
+                  : const EdgeInsets.only(bottom: 42),
               decoration: _headerDecoration(context, info),
               child: Stack(
                 children: [
-                  // 装饰光斑
-                  Positioned(
-                    right: -20,
-                    top: -20,
-                    child: Container(
-                      width: 110,
-                      height: 110,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withAlpha(28),
+                  // 装饰光斑（poster 大图模式下去掉，避免盖在截图上）
+                  if (tpl != AppDetailStyle.poster) ...[
+                    Positioned(
+                      right: -20,
+                      top: -20,
+                      child: Container(
+                        width: 110,
+                        height: 110,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withAlpha(28),
+                        ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    left: -10,
-                    bottom: -30,
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withAlpha(18),
+                    Positioned(
+                      left: -10,
+                      bottom: -30,
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withAlpha(18),
+                        ),
                       ),
                     ),
-                  ),
+                  ] else
+                    // poster：底部压暗渐层，保证状态标签可读
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withAlpha(130),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -637,6 +664,143 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  /// v54：minimal/compact 扁平数据行（无玻璃卡，细分隔）
+  Widget _infoFlat() {
+    final it = item;
+    final info = logic.appInfo;
+    final cells = [
+      (Icons.sd_storage_rounded, info?.fileSize ?? it?.size ?? '-', '大小'),
+      (Icons.visibility_rounded, '${it?.views ?? 0}', '浏览'),
+      (
+        Icons.schedule_rounded,
+        it?.uploadDate.isNotEmpty == true ? it!.uploadDate : '-',
+        '上传',
+      ),
+      (Icons.face_rounded, it?.ageRating ?? '16+', '年龄'),
+    ];
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: context.isDark
+                ? Colors.white.withAlpha(16)
+                : Colors.black.withAlpha(12),
+          ),
+          bottom: BorderSide(
+            color: context.isDark
+                ? Colors.white.withAlpha(16)
+                : Colors.black.withAlpha(12),
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          for (int i = 0; i < cells.length; i++) ...[
+            if (i > 0)
+              Container(
+                width: 1,
+                height: 26,
+                color: context.isDark
+                    ? Colors.white.withAlpha(14)
+                    : Colors.black.withAlpha(10),
+              ),
+            Expanded(
+              child: Column(
+                children: [
+                  Icon(cells[i].$1, size: 15, color: context.t3),
+                  const SizedBox(height: 6),
+                  Text(
+                    cells[i].$2,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Ty.body.copyWith(
+                      color: context.t1,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(cells[i].$3, style: Ty.tiny.copyWith(color: context.t3)),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// v54：compact 横向信息头条（一行式骨架，无大头图）
+  Widget _heroCompact() {
+    final it = item;
+    final info = logic.appInfo;
+    final icon = info?.fileIcon ?? '';
+    final isVipItem = it?.isVipItem ?? false;
+    final hasP = it?.hasPrice ?? false;
+    final priceTxt = it?.vipPrice ?? '';
+    final String topLabel = hasP
+        ? '¥$priceTxt'
+        : (isVipItem ? '会员专享' : '免费');
+    final Color topColor = hasP ? C.mint : (isVipItem ? C.amber : C.mint);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: context.isDark ? Colors.white.withAlpha(8) : Colors.white,
+        borderRadius: BorderRadius.circular(R.lg),
+        border: Border.all(
+          color: context.isDark
+              ? Colors.white.withAlpha(18)
+              : Colors.black.withAlpha(10),
+        ),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(R.md),
+            child: icon.isEmpty
+                ? _phIcon()
+                : CachedNetworkImage(
+                    imageUrl: icon,
+                    width: 62,
+                    height: 62,
+                    fit: BoxFit.cover,
+                    memCacheWidth: 200,
+                    placeholder: (_, __) => _phIcon(),
+                    errorWidget: (_, __, ___) => _phIcon(),
+                  ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  it?.title ?? '未知软件',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Ty.h2.copyWith(color: context.t1, fontSize: 16.5),
+                ),
+                const SizedBox(height: 7),
+                Row(
+                  children: [
+                    _chip(topLabel, topColor, Icons.sell_outlined),
+                    const SizedBox(width: 6),
+                    _chip(
+                      'v${it?.version.isNotEmpty == true ? it!.version : '?'}',
+                      C.brandBright,
+                      Icons.tag_rounded,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

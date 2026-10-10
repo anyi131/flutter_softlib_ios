@@ -36,6 +36,13 @@ class HomeComponent extends StatefulWidget {
 class _HomeComponentState extends State<HomeComponent> {
   final HomeLogic logic = Get.find<HomeLogic>();
   int _carouselIdx = 0;
+  late final PageController _cardsPc = PageController(viewportFraction: 0.86);
+
+  @override
+  void dispose() {
+    _cardsPc.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,114 +68,14 @@ class _HomeComponentState extends State<HomeComponent> {
     final uiCfg =
         SoftService.instance.cachedConfig?.uiConfig ?? const UiConfig();
     final tpl = uiCfg.homeTemplate;
-    final notice = SliverToBoxAdapter(child: _notice());
-    final referralTitle = _referralTitle();
-    final referralGrid = _referralGrid();
-    if (tpl == 'clean') {
-      // 极简模板：问候 + 公告 + 推荐直出
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _header()),
-          if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-          if (uiCfg.featureReferral) _referralTitle(),
-          if (uiCfg.featureReferral) _referralGrid(),
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
-        ],
-      );
-    }
-    if (tpl == 'focus') {
-      // v52t：搜索突出模板
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _search()),
-          SliverToBoxAdapter(child: _header()),
-          SliverToBoxAdapter(child: _quickGrid()),
-          if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-          if (uiCfg.featureReferral) _referralTitle(),
-          if (uiCfg.featureReferral) _referralGrid(),
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
-        ],
-      );
-    }
-    if (tpl == 'banner_top') {
-      // v52t：大banner置顶模板
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _banner()),
-          SliverToBoxAdapter(child: _header()),
-          SliverToBoxAdapter(child: _search()),
-          SliverToBoxAdapter(child: _quickGrid()),
-          if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-          if (uiCfg.featureReferral) _referralTitle(),
-          if (uiCfg.featureReferral) _referralGrid(),
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
-        ],
-      );
-    }
-    if (tpl == 'cards') {
-      // v52w：双列大卡模板（banner+宫格推荐）
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _header()),
-          SliverToBoxAdapter(child: _banner()),
-          SliverToBoxAdapter(child: _quickGrid()),
-          SliverToBoxAdapter(child: _search()),
-          if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-          if (uiCfg.featureReferral) _referralTitle(),
-          if (uiCfg.featureReferral) referralGrid,
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
-        ],
-      );
-    }
-    if (tpl == 'feed') {
-      // v52w：信息流模板（公告置顶+搜索+推荐，去横幅）
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _header()),
-          SliverToBoxAdapter(child: _search()),
-          if (uiCfg.featureNotice) notice,
-          if (uiCfg.featureReferral) referralTitle,
-          if (uiCfg.featureReferral) referralGrid,
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
-        ],
-      );
-    }
-    if (tpl == 'compact_top') {
-      // v52w：紧凑顶部模板（全部压缩置顶：问候+搜索+快捷单行）
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _header()),
-          SliverToBoxAdapter(child: _search()),
-          SliverToBoxAdapter(child: _quickGrid()),
-          SliverToBoxAdapter(child: _banner()),
-          if (uiCfg.featureNotice) notice,
-          if (uiCfg.featureReferral) referralTitle,
-          if (uiCfg.featureReferral) referralGrid,
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
-        ],
-      );
-    }
-    if (tpl == 'grid_quick') {
-      // v52t：宫格快捷模板（双行宫格置顶）
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _header()),
-          SliverToBoxAdapter(child: _quickGrid()),
-          SliverToBoxAdapter(child: _search()),
-          if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-          if (uiCfg.featureReferral) _referralTitle(),
-          if (uiCfg.featureReferral) _referralGrid(),
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
-        ],
-      );
-    }
+    // v54：全模板骨架级差异化 —— 每套独立排版骨架，不再只是模块换序
+    if (tpl == 'clean') return _tplClean(uiCfg); // 纯排版无卡：行式列表
+    if (tpl == 'focus') return _tplFocus(uiCfg); // 搜索沉浸：渐变搜索 Hero
+    if (tpl == 'banner_top') return _tplBannerTop(uiCfg, logic); // 全屏沉浸头图
+    if (tpl == 'cards') return _tplCards(uiCfg, logic); // 横滑大卡 PageView
+    if (tpl == 'feed') return _tplFeed(uiCfg, logic); // 时间轴信息流
+    if (tpl == 'compact_top') return _tplCompactTop(uiCfg, logic); // 横排色条
+    if (tpl == 'grid_quick') return _tplGridQuick(uiCfg, logic); // 三列小网格
     // classic 标准模板（原版全模块）
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
@@ -182,6 +89,850 @@ class _HomeComponentState extends State<HomeComponent> {
         if (uiCfg.featureReferral) _referralGrid(),
         SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
       ],
+    );
+  }
+
+  // ═══════ v54 模板骨架库 ═══════
+  Widget _tplSpacer() => SliverToBoxAdapter(
+    child: SizedBox(height: context.tabSpace + 40),
+  );
+
+  SliverToBoxAdapter get _noticeSliver =>
+      SliverToBoxAdapter(child: _notice());
+
+  /// clean —— 纯排版无卡：扁平搜索条 + 推荐行式列表
+  Widget _tplClean(UiConfig uiCfg) {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(child: _header()),
+        SliverToBoxAdapter(child: _flatSearch()),
+        if (uiCfg.featureNotice) _noticeSliver,
+        if (uiCfg.featureReferral) _referralTitle(),
+        if (uiCfg.featureReferral)
+          SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
+            sliver: SliverToBoxAdapter(child: _referralRowList()),
+          ),
+        _tplSpacer(),
+      ],
+    );
+  }
+
+  /// 扁平搜索条（clean 专属：无玻璃、细边框、左对齐）
+  Widget _flatSearch() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        context.pagePadding,
+        14,
+        context.pagePadding,
+        0,
+      ),
+      child: GestureDetector(
+        onTap: () => Get.toNamed(Routes.appSearch),
+        child: Container(
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: context.isDark
+                ? Colors.white.withAlpha(8)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(R.md),
+            border: Border.all(
+              color: context.isDark
+                  ? Colors.white.withAlpha(22)
+                  : Colors.black.withAlpha(14),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.search_rounded, size: 18, color: context.t3),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '搜索软件…',
+                  style: Ty.small.copyWith(color: context.t3),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _referralRowList() {
+    return GetBuilder<HomeLogic>(
+      id: 'referral',
+      builder: (logic) {
+        final list = logic.referrals;
+        if (list == null || list.isEmpty) return const SizedBox.shrink();
+        return Column(
+          children: [
+            for (int i = 0; i < list.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _referralRow(list[i], logic),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _referralRow(ReferralData d, HomeLogic logic) {
+    return GestureDetector(
+      onTap: () => logic.onReferralTap(d),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: context.isDark ? Colors.white.withAlpha(8) : Colors.white,
+          borderRadius: BorderRadius.circular(R.md),
+          border: Border.all(
+            color: context.isDark
+                ? Colors.white.withAlpha(16)
+                : Colors.black.withAlpha(10),
+          ),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(R.sm),
+              child: CachedNetworkImage(
+                imageUrl: d.image ?? '',
+                width: 56,
+                height: 56,
+                fit: BoxFit.cover,
+                memCacheWidth: 200,
+                placeholder: (_, __) => Container(
+                  width: 56,
+                  height: 56,
+                  color: context.isDark ? C.bg2 : C.lbg2,
+                ),
+                errorWidget: (_, __, ___) => Image.asset(
+                  Assets.imagesSucceed,
+                  width: 56,
+                  height: 56,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    d.title ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Ty.body.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: context.t1,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    (d.content ?? '').isEmpty ? '官方精选推荐' : d.content!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Ty.tiny.copyWith(color: context.t3),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(Icons.chevron_right_rounded, size: 18, color: context.t3),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// focus —— 搜索沉浸：全宽品牌渐变搜索 Hero 打底，内容下沉
+  Widget _tplFocus(UiConfig uiCfg) {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(
+          child: Container(
+            margin: EdgeInsets.symmetric(horizontal: -context.pagePadding),
+            padding: EdgeInsets.fromLTRB(
+              context.pagePadding,
+              16,
+              context.pagePadding,
+              28,
+            ),
+            decoration: BoxDecoration(
+              gradient: C.brandGradient,
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(24),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ShaderMask(
+                  shaderCallback: (r) => Deco.aurora().createShader(r),
+                  child: Text(
+                    '搜你想搜',
+                    style: Ty.display.copyWith(color: Colors.white),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '海量软件 · 一键直达',
+                  style: Ty.small.copyWith(
+                    color: Colors.white.withAlpha(210),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                // Hero 搜索条：白底胶囊、带投影，视觉重量全给搜索
+                GestureDetector(
+                  onTap: () => Get.toNamed(Routes.appSearch),
+                  child: Container(
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(R.full),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(50),
+                          blurRadius: 24,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.search_rounded, size: 20, color: C.brand),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            '输入软件名，立即找到',
+                            style: Ty.body.copyWith(color: context.t3),
+                          ),
+                        ),
+                        Container(
+                          height: 32,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                          ),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            gradient: C.brandGradient,
+                            borderRadius: BorderRadius.circular(R.full),
+                          ),
+                          child: const Text(
+                            '搜索',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(child: _quickGrid()),
+        if (uiCfg.featureNotice) _noticeSliver,
+        if (uiCfg.featureReferral) _referralTitle(),
+        if (uiCfg.featureReferral) _referralGrid(),
+        _tplSpacer(),
+      ],
+    );
+  }
+
+  /// banner_top —— 全屏沉浸：首帧 banner 通栏出血铺顶，底部圆角压内容
+  Widget _tplBannerTop(UiConfig uiCfg, HomeLogic logic) {
+    return GetBuilder<HomeLogic>(
+      id: 'carousel',
+      builder: (l) {
+        final list = l.carouses;
+        final first = (list == null || list.isEmpty) ? null : list.first;
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _fullBleedHero(first, l)),
+            SliverToBoxAdapter(child: _header()),
+            SliverToBoxAdapter(child: _quickGrid()),
+            if (uiCfg.featureNotice) _noticeSliver,
+            if (uiCfg.featureReferral) _referralTitle(),
+            if (uiCfg.featureReferral) _referralGrid(),
+            _tplSpacer(),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _fullBleedHero(CarouselModel? item, HomeLogic logic) {
+    return GestureDetector(
+      onTap: item == null ? null : () => logic.onCarouselTap(item),
+      child: Container(
+        height: 232,
+        margin: EdgeInsets.symmetric(horizontal: -context.pagePadding),
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(
+            bottom: Radius.circular(24),
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if ((item?.image ?? '').isNotEmpty)
+                CachedNetworkImage(
+                  imageUrl: item!.image!,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 1000,
+                  placeholder: (_, __) => Container(
+                    decoration: BoxDecoration(
+                      gradient: C.brandGradient,
+                    ),
+                  ),
+                  errorWidget: (_, __, ___) => Container(
+                    decoration: BoxDecoration(
+                      gradient: C.brandGradient,
+                    ),
+                  ),
+                )
+              else
+                Container(decoration: BoxDecoration(gradient: C.brandGradient)),
+              // 底部压暗渐层（非 const）
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withAlpha(120),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: context.pagePadding,
+                bottom: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(38),
+                    borderRadius: BorderRadius.circular(R.full),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.local_fire_department_rounded,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                      SizedBox(width: 5),
+                      Text(
+                        '精选推荐',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// cards —— 横滑大卡：推荐转全宽 PageView 大卡（轮播页卡骨架）
+  Widget _tplCards(UiConfig uiCfg, HomeLogic logic) {
+    return GetBuilder<HomeLogic>(
+      id: 'referral',
+      builder: (l) {
+        final list = l.referrals ?? const <ReferralData>[];
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _header()),
+            if (list.isNotEmpty)
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 244,
+                  child: PageView.builder(
+                    controller: _cardsPc,
+                    itemCount: list.length,
+                    itemBuilder: (context, i) => Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 10,
+                      ),
+                      child: _bigPageCard(list[i], l),
+                    ),
+                  ),
+                ),
+              ),
+            SliverToBoxAdapter(child: _quickGrid()),
+            if (uiCfg.featureNotice) _noticeSliver,
+            _tplSpacer(),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _bigPageCard(ReferralData d, HomeLogic logic) {
+    return GestureDetector(
+      onTap: () => logic.onReferralTap(d),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(R.xl),
+          boxShadow: [
+            BoxShadow(
+              color: C.brand.withAlpha(context.isDark ? 40 : 26),
+              blurRadius: 26,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(R.xl),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CachedNetworkImage(
+                imageUrl: d.image ?? '',
+                fit: BoxFit.cover,
+                memCacheWidth: 800,
+                placeholder: (_, __) =>
+                    Container(color: context.isDark ? C.bg2 : C.lbg2),
+                errorWidget: (_, __, ___) =>
+                    Image.asset(Assets.imagesSucceed, fit: BoxFit.cover),
+              ),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withAlpha(190),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 14,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      d.title ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      (d.content ?? '').isEmpty ? '立即查看' : d.content!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(200),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// feed —— 时间轴信息流：左侧时间轴导轨 + 圆点节点
+  Widget _tplFeed(UiConfig uiCfg, HomeLogic logic) {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(child: _header()),
+        SliverToBoxAdapter(child: _search()),
+        if (uiCfg.featureNotice) _noticeSliver,
+        if (uiCfg.featureReferral)
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              context.pagePadding,
+              18,
+              context.pagePadding,
+              0,
+            ),
+            sliver: SliverToBoxAdapter(child: _referralTimeline(logic)),
+          ),
+        _tplSpacer(),
+      ],
+    );
+  }
+
+  Widget _referralTimeline(HomeLogic logic) {
+    return GetBuilder<HomeLogic>(
+      id: 'referral',
+      builder: (l) {
+        final list = l.referrals;
+        if (list == null || list.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '推荐时间线',
+              style: Ty.h3.copyWith(color: context.t1, fontSize: 15),
+            ),
+            const SizedBox(height: 14),
+            for (int i = 0; i < list.length; i++)
+              _timelineTile(list[i], l, i == list.length - 1),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _timelineTile(ReferralData d, HomeLogic logic, bool last) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // 左导轨：圆点 + 竖线
+          SizedBox(
+            width: 18,
+            child: Column(
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  margin: const EdgeInsets.only(top: 16),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: C.brandBright,
+                    border: Border.all(
+                      color: C.brand.withAlpha(90),
+                      width: 2,
+                    ),
+                  ),
+                ),
+                if (!last)
+                  Expanded(
+                    child: Container(
+                      width: 2,
+                      margin: const EdgeInsets.only(top: 4),
+                      color: C.brand.withAlpha(50),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: GestureDetector(
+                onTap: () => logic.onReferralTap(d),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: context.isDark
+                        ? Colors.white.withAlpha(8)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(R.md),
+                    border: Border.all(
+                      color: context.isDark
+                          ? Colors.white.withAlpha(16)
+                          : Colors.black.withAlpha(10),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              d.title ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Ty.body.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: context.t1,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              (d.content ?? '').isEmpty
+                                  ? '官方精选推荐'
+                                  : d.content!,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: Ty.tiny.copyWith(color: context.t3),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(R.sm),
+                        child: CachedNetworkImage(
+                          imageUrl: d.image ?? '',
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 160,
+                          placeholder: (_, __) => Container(
+                            width: 48,
+                            height: 48,
+                            color: context.isDark ? C.bg2 : C.lbg2,
+                          ),
+                          errorWidget: (_, __, ___) => Image.asset(
+                            Assets.imagesSucceed,
+                            width: 48,
+                            height: 48,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// compact_top —— 横排色条：快捷入口改为通栏色条行（条形清单骨架）
+  Widget _tplCompactTop(UiConfig uiCfg, HomeLogic logic) {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(child: _header()),
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(
+            context.pagePadding,
+            14,
+            context.pagePadding,
+            0,
+          ),
+          sliver: SliverToBoxAdapter(child: _quickBars()),
+        ),
+        SliverToBoxAdapter(child: _banner()),
+        if (uiCfg.featureNotice) _noticeSliver,
+        if (uiCfg.featureReferral) _referralTitle(),
+        if (uiCfg.featureReferral) _referralGrid(),
+        _tplSpacer(),
+      ],
+    );
+  }
+
+  /// 快捷入口色条（compact_top 专属骨架）
+  Widget _quickBars() {
+    final ui = logic.configData?.uiConfig;
+    final all = [
+      (
+        _QI(Icons.emoji_events_rounded, '每日签到', C.amber),
+        () => Get.find<NavigateLogic>().changePage(4),
+        ui?.quickSign ?? true,
+      ),
+      (
+        _QI(Icons.workspace_premium_rounded, 'VIP会员', C.gold),
+        () => Get.toNamed(Routes.vip),
+        ui?.quickVip ?? true,
+      ),
+      (
+        _QI(Icons.headset_mic_rounded, '联系客服', C.cyan),
+        () => logic.joinUser(),
+        ui?.quickService ?? true,
+      ),
+      (
+        _QI(Icons.auto_awesome_rounded, '检查更新', C.violet),
+        () => UpdateFlow.check(showLatestTip: true),
+        ui?.quickUpdate ?? true,
+      ),
+    ];
+    final items = all.where((e) => e.$3).map((e) => (e.$1, e.$2)).toList();
+    return Column(
+      children: [
+        for (final it in items)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: GestureDetector(
+              onTap: it.$2,
+              child: Container(
+                height: 48,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: it.$1.color.withAlpha(context.isDark ? 22 : 14),
+                  borderRadius: BorderRadius.circular(R.md),
+                  border: Border.all(
+                    color: it.$1.color.withAlpha(60),
+                    width: 0.8,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    // 左侧色条标识
+                    Container(
+                      width: 4,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: it.$1.color,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Icon(it.$1.icon, size: 20, color: it.$1.color),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        it.$1.label,
+                        style: Ty.body.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: context.t1,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.chevron_right_rounded, size: 18, color: context.t3),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// grid_quick —— 三列小网格：推荐改 3 列密排瓷砖（网格骨架）
+  Widget _tplGridQuick(UiConfig uiCfg, HomeLogic logic) {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(child: _header()),
+        SliverToBoxAdapter(child: _quickGrid()),
+        if (uiCfg.featureNotice) _noticeSliver,
+        if (uiCfg.featureReferral) _referralTitle(),
+        if (uiCfg.featureReferral)
+          SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 0.78,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, i) => _tileCard(logic.referrals![i], logic, i),
+                childCount: logic.referrals?.length ?? 0,
+              ),
+            ),
+          ),
+        _tplSpacer(),
+      ],
+    );
+  }
+
+  static final List<Color> _tileTints = [
+    C.brand,
+    C.violet,
+    C.cyan,
+    C.mint,
+    C.amber,
+    C.rose,
+  ];
+
+  Widget _tileCard(ReferralData d, HomeLogic logic, int i) {
+    final tint = _tileTints[i % _tileTints.length];
+    return GestureDetector(
+      onTap: () => logic.onReferralTap(d),
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.isDark ? Colors.white.withAlpha(8) : Colors.white,
+          borderRadius: BorderRadius.circular(R.md),
+          border: Border.all(color: tint.withAlpha(50), width: 0.8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(R.md),
+                ),
+                child: CachedNetworkImage(
+                  imageUrl: d.image ?? '',
+                  fit: BoxFit.cover,
+                  memCacheWidth: 300,
+                  placeholder: (_, __) => Container(color: tint.withAlpha(26)),
+                  errorWidget: (_, __, ___) =>
+                      Image.asset(Assets.imagesSucceed, fit: BoxFit.cover),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 7, 8, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 18,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: tint,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    d.title ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      color: context.t1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -474,7 +1225,7 @@ class _HomeComponentState extends State<HomeComponent> {
                                   16,
                                   14,
                                 ),
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     begin: Alignment.bottomCenter,
                                     end: Alignment.topCenter,
@@ -674,12 +1425,14 @@ class _HomeComponentState extends State<HomeComponent> {
               errorWidget: (_, __, ___) =>
                   Image.asset(Assets.imagesSucceed, fit: BoxFit.cover),
             ),
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Color(0xE6000000), Color(0x00000000)],
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [Color(0xE6000000), Color(0x00000000)],
+                  ),
                 ),
               ),
             ),

@@ -122,33 +122,93 @@ class _AboutPageState extends State<AboutPage> {
     final tpl =
         SoftService.instance.cachedConfig?.uiConfig.aboutTemplate ?? 'card';
     if (tpl == 'hero') {
+      // v54：通栏沉浸式 —— 品牌渐变出血铺顶（底部圆角），内容下沉
+      final logo = cfg?.aboutLogo ?? '';
       return [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+          margin: EdgeInsets.symmetric(horizontal: -context.pagePadding),
+          padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
           decoration: BoxDecoration(
             gradient: C.brandGradient,
-            borderRadius: BorderRadius.circular(R.xl),
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(R.xl),
+            ),
           ),
           child: Column(
             children: [
-              Text(cfg?.aboutName ?? '安逸软件汇',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900)),
+              Container(
+                width: 84,
+                height: 84,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(40),
+                  border: Border.all(
+                    color: Colors.white.withAlpha(140),
+                    width: 2,
+                  ),
+                ),
+                child: ClipOval(
+                  child: logo.isEmpty
+                      ? _logoFallback()
+                      : CachedNetworkImage(
+                          imageUrl: logo,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 200,
+                          placeholder: (_, __) => _logoFallback(),
+                          errorWidget: (_, __, ___) => _logoFallback(),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                cfg?.aboutName ?? '安逸软件汇',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
               if ((cfg?.aboutSlogan ?? '').isNotEmpty) ...[
                 const SizedBox(height: 6),
-                Text(cfg!.aboutSlogan,
-                    style: TextStyle(
-                        color: Colors.white.withAlpha(210), fontSize: 13)),
+                Text(
+                  cfg!.aboutSlogan,
+                  style: TextStyle(
+                    color: Colors.white.withAlpha(210),
+                    fontSize: 13,
+                  ),
+                ),
               ],
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: _localVersion));
+                  ToastUtil.success('版本号已复制');
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(40),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'v${cfg?.aboutVersion ?? _localVersion}',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
         const SizedBox(height: 20),
-        _hero(cfg),
-        const SizedBox(height: 22),
         if ((cfg?.aboutDesc ?? '').isNotEmpty) ...[
           _descCard(cfg!.aboutDesc),
           const SizedBox(height: 14),
@@ -159,48 +219,127 @@ class _AboutPageState extends State<AboutPage> {
       ];
     }
     if (tpl == 'minimal') {
+      // v54：居中纯排版 —— 小圆标 + 扁平信息行（无任何卡片）
+      final logo = cfg?.aboutLogo ?? '';
       return [
-        _hero(cfg),
-        const SizedBox(height: 16),
-        _infoList(cfg),
+        const SizedBox(height: 8),
+        Column(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: C.brand.withAlpha(90),
+                  width: 1.6,
+                ),
+              ),
+              child: logo.isEmpty
+                  ? _logoFallback()
+                  : CachedNetworkImage(
+                      imageUrl: logo,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 160,
+                      placeholder: (_, __) => _logoFallback(),
+                      errorWidget: (_, __, ___) => _logoFallback(),
+                    ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              cfg?.aboutName ?? '安逸软件汇',
+              style: Ty.h1.copyWith(fontSize: 20, color: context.t1),
+            ),
+            if ((cfg?.aboutSlogan ?? '').isNotEmpty) ...[
+              const SizedBox(height: 5),
+              Text(
+                cfg!.aboutSlogan,
+                style: Ty.small.copyWith(color: context.t3),
+              ),
+            ],
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: _localVersion));
+                ToastUtil.success('版本号已复制');
+              },
+              child: Text(
+                'v${cfg?.aboutVersion ?? _localVersion}',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w800,
+                  color: C.brand,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        _infoList(cfg, flat: true),
         const SizedBox(height: 16),
         _extraEntries(cfg),
       ];
     }
     if (tpl == 'dark_card') {
-      // v52t：深色卡模板
+      // v54：暗色影院块 —— 深底大卡装品牌信息 + 简介白字直排
       return [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            color: context.isDark ? C.bg0 : const Color(0xFF15181F),
+            color: const Color(0xFF15181F),
             borderRadius: BorderRadius.circular(R.xl),
+            border: Border.all(color: C.brand.withAlpha(90)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(context.isDark ? 90 : 40),
+                blurRadius: 30,
+                offset: const Offset(0, 12),
+              ),
+            ],
           ),
           child: Column(
             children: [
-              Text(cfg?.aboutName ?? '安逸软件汇',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900)),
+              Text(
+                cfg?.aboutName ?? '安逸软件汇',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
               if ((cfg?.aboutSlogan ?? '').isNotEmpty) ...[
                 const SizedBox(height: 6),
-                Text(cfg!.aboutSlogan,
-                    style: TextStyle(
-                        color: Colors.white.withAlpha(170),
-                        fontSize: 12.5)),
+                Text(
+                  cfg!.aboutSlogan,
+                  style: TextStyle(
+                    color: Colors.white.withAlpha(170),
+                    fontSize: 12.5,
+                  ),
+                ),
               ],
+              const SizedBox(height: 12),
+              Divider(
+                height: 1,
+                thickness: 0.5,
+                color: Colors.white.withAlpha(20),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                (cfg?.aboutDesc ?? '').isEmpty
+                    ? '发现好软件，从这里开始。'
+                    : cfg!.aboutDesc,
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.8,
+                  color: Colors.grey[300],
+                ),
+              ),
             ],
           ),
         ),
-        const SizedBox(height: 20),
-        _hero(cfg),
-        const SizedBox(height: 22),
-        if ((cfg?.aboutDesc ?? '').isNotEmpty) ...[
-          _descCard(cfg!.aboutDesc),
-          const SizedBox(height: 14),
-        ],
+        const SizedBox(height: 18),
         _infoList(cfg),
         const SizedBox(height: 16),
         _extraEntries(cfg),
@@ -402,7 +541,7 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   // ── 信息列表 ──
-  Widget _infoList(AppConfig? cfg) {
+  Widget _infoList(AppConfig? cfg, {bool flat = false}) {
     // ★ 每行带自己的 onTap（修复「按键没功能」）
     final rows = <({IconData icon, Color color, String label, String value, VoidCallback? onTap})>[];
     void add(IconData i, Color c, String label, String value,
@@ -429,6 +568,60 @@ class _AboutPageState extends State<AboutPage> {
         onTap: () => Get.toNamed('/agreement', arguments: {'type': 'privacy'}));
 
     if (rows.isEmpty) return const SizedBox.shrink();
+
+    // v54：flat 模式（minimal 专属）—— 去卡片、细分隔线直排
+    if (flat) {
+      return Column(
+        children: [
+          for (int i = 0; i < rows.length; i++) ...[
+            if (i > 0)
+              Divider(
+                height: 1,
+                thickness: 0.5,
+                color: context.isDark
+                    ? Colors.white.withAlpha(14)
+                    : Colors.black.withAlpha(10),
+              ),
+            InkWell(
+              onTap: rows[i].onTap ??
+                  (rows[i].value.isEmpty ? null : () => _copy(rows[i].value)),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 11),
+                child: Row(
+                  children: [
+                    Icon(rows[i].icon, size: 16, color: rows[i].color),
+                    const SizedBox(width: 10),
+                    Text(
+                      rows[i].label,
+                      style: Ty.body.copyWith(
+                        fontSize: 13.5,
+                        color: context.t2,
+                      ),
+                    ),
+                    const Spacer(),
+                    Flexible(
+                      child: Text(
+                        rows[i].value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Ty.small.copyWith(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: rows[i].onTap != null
+                              ? C.brand
+                              : context.t1,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      );
+    }
 
     return KitCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),

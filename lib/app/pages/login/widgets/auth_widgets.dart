@@ -80,43 +80,60 @@ class AuthScaffold extends StatelessWidget {
       ];
     }
     if (tpl == 'minimal') {
+      // v54：极简排版 —— 纯文字标题 + 品牌短横下划（无任何装饰）
       return [
-        Text(title,
-            style: Ty.display.copyWith(color: context.t1)),
-        const SizedBox(height: 7),
+        Text(title, style: Ty.display.copyWith(color: context.t1)),
+        const SizedBox(height: 10),
+        Container(
+          width: 32,
+          height: 4,
+          decoration: BoxDecoration(
+            gradient: C.brandGradient,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(height: 12),
         Text(subtitle, style: Ty.small.copyWith(color: context.t3)),
         const SizedBox(height: 26),
       ];
     }
     if (tpl == 'banner_top') {
-      // v52t：顶部全宽横幅（图占满，无圆角）
+      // v54：顶部全宽横幅 —— 通栏出血顶到屏幕边（无圆角无内边距）
       return [
         Container(
-          margin: const EdgeInsets.only(bottom: 22),
+          margin: EdgeInsets.fromLTRB(
+            -context.pagePadding,
+            -12,
+            -context.pagePadding,
+            22,
+          ),
           padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 18),
           decoration: BoxDecoration(gradient: C.brandGradient),
-          child: Row(
-            children: [
-              Icon(icon, color: Colors.white, size: 30),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 19,
-                            fontWeight: FontWeight.w900)),
-                    const SizedBox(height: 4),
-                    Text(subtitle,
-                        style: TextStyle(
-                            color: Colors.white.withAlpha(200),
-                            fontSize: 12)),
-                  ],
+          child: SafeArea(
+            bottom: false,
+            child: Row(
+              children: [
+                Icon(icon, color: Colors.white, size: 30),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 19,
+                              fontWeight: FontWeight.w900)),
+                      const SizedBox(height: 4),
+                      Text(subtitle,
+                          style: TextStyle(
+                              color: Colors.white.withAlpha(200),
+                              fontSize: 12)),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ];

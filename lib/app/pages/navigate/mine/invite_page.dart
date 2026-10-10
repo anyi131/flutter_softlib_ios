@@ -633,57 +633,75 @@ class _InvitePageState extends State<InvitePage> {
     ];
   }
 
-  /// v53d：深色渐变模板
+  /// v54：深色渐变模板 —— 通栏出血深色头版（底部圆角，终端感大字邀请码）
   List<Widget> _bodyDark(BuildContext context) {
     return [
       Container(
-        padding: const EdgeInsets.all(22),
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(horizontal: -context.pagePadding),
+        padding: const EdgeInsets.fromLTRB(22, 26, 22, 26),
         decoration: BoxDecoration(
           color: C.bg0,
-          borderRadius: BorderRadius.circular(R.xl),
+          borderRadius: const BorderRadius.vertical(
+            bottom: Radius.circular(R.xl),
+          ),
           border: Border.all(color: C.brand.withAlpha(90)),
           boxShadow: [
             BoxShadow(
               color: C.brand.withAlpha(50),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
+              blurRadius: 26,
+              offset: const Offset(0, 12),
             ),
           ],
         ),
         child: Column(
           children: [
-            Text(
-              '邀请好友 · 双方得积分',
-              style: TextStyle(
-                color: context.t1,
-                fontSize: 16.5,
-                fontWeight: FontWeight.w900,
-              ),
+            Row(
+              children: [
+                Icon(Icons.bolt_rounded, color: C.brandBright, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '邀请好友 · 双方得积分',
+                    style: TextStyle(
+                      color: context.t1,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
+            // 终端感大字码（字距拉开 + 下划虚线）
             Text(
               _code.isEmpty ? '—' : _code,
               style: TextStyle(
-                fontSize: 30,
+                fontSize: 32,
                 fontWeight: FontWeight.w900,
-                letterSpacing: 5,
+                letterSpacing: 6,
                 color: C.brandBright,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 6),
+            Container(
+              width: 180,
+              height: 1,
+              color: C.brand.withAlpha(90),
+            ),
+            const SizedBox(height: 14),
             AppPressable(
               onTap: _copy,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 22,
-                  vertical: 11,
-                ),
+                height: 44,
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 decoration: BoxDecoration(
                   gradient: C.brandGradient,
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: BorderRadius.circular(R.full),
                 ),
                 child: const Text(
-                  '复制',
+                  '复制邀请码',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 13.5,
@@ -695,12 +713,45 @@ class _InvitePageState extends State<InvitePage> {
           ],
         ),
       ),
-      const SizedBox(height: 14),
-      _statsRow(context),
+      const SizedBox(height: 16),
+      // 竖排数据条（与其他模板的横排双卡区分）
+      KitCard(
+        radius: R.lg,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Column(
+          children: [
+            _darkStatLine(context, '已邀请好友', '$_count 位'),
+            Divider(
+              height: 1,
+              thickness: 0.5,
+              color: context.isDark
+                  ? Colors.white.withAlpha(14)
+                  : Colors.black.withAlpha(10),
+            ),
+            _darkStatLine(context, '累计赚积分', '$_score 分'),
+          ],
+        ),
+      ),
       const SizedBox(height: 14),
       _ruleCard(context),
       const SizedBox(height: 14),
       _actions(context),
     ];
+  }
+
+  Widget _darkStatLine(BuildContext context, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Text(label, style: Ty.small.copyWith(color: context.t3)),
+          const Spacer(),
+          Text(
+            value,
+            style: Ty.h3.copyWith(color: context.t1, fontSize: 15),
+          ),
+        ],
+      ),
+    );
   }
 }
