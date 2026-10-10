@@ -61,8 +61,9 @@ class _InvitePageState extends State<InvitePage> {
 
   /// ★ 邀请分享文案：优先用后台自定义；支持 {code} / {score} 占位符
   String get _shareText {
-    final tpl = (SoftService.instance.cachedConfig?.uiConfig.inviteShareText ?? '')
-        .trim();
+    final tpl =
+        (SoftService.instance.cachedConfig?.uiConfig.inviteShareText ?? '')
+            .trim();
     if (tpl.isEmpty) {
       return '【安逸软件汇】发现一个宝藏软件库，资源全、更新快！'
           '注册时填我的邀请码 $_code，你我都能得 $_each 积分~';
@@ -544,6 +545,7 @@ class _InvitePageState extends State<InvitePage> {
   List<Widget> _bodyTicket(BuildContext context) {
     return [
       Container(
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: context.isDark ? C.bg2 : Colors.white,
           borderRadius: BorderRadius.circular(22),
@@ -578,6 +580,55 @@ class _InvitePageState extends State<InvitePage> {
                   ),
                 ],
               ),
+            ),
+            // 打孔分隔线：左右半圆缺口 + 虚线（真票券骨架）
+            Row(
+              children: [
+                Transform.translate(
+                  offset: const Offset(-10, 0),
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: context.isDark ? C.bg0 : C.lbg0,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, box) {
+                      final dashW = 7.0;
+                      final n = (box.maxWidth / (dashW + 6)).floor().clamp(
+                        4,
+                        60,
+                      );
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: List.generate(
+                          n,
+                          (_) => Container(
+                            width: dashW,
+                            height: 1.4,
+                            color: C.brand.withAlpha(context.isDark ? 90 : 70),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Transform.translate(
+                  offset: const Offset(10, 0),
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: context.isDark ? C.bg0 : C.lbg0,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
             ),
             Container(
               width: double.infinity,
@@ -684,11 +735,7 @@ class _InvitePageState extends State<InvitePage> {
               ),
             ),
             const SizedBox(height: 6),
-            Container(
-              width: 180,
-              height: 1,
-              color: C.brand.withAlpha(90),
-            ),
+            Container(width: 180, height: 1, color: C.brand.withAlpha(90)),
             const SizedBox(height: 14),
             AppPressable(
               onTap: _copy,
@@ -746,10 +793,7 @@ class _InvitePageState extends State<InvitePage> {
         children: [
           Text(label, style: Ty.small.copyWith(color: context.t3)),
           const Spacer(),
-          Text(
-            value,
-            style: Ty.h3.copyWith(color: context.t1, fontSize: 15),
-          ),
+          Text(value, style: Ty.h3.copyWith(color: context.t1, fontSize: 15)),
         ],
       ),
     );

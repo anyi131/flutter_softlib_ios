@@ -344,11 +344,7 @@ class _UpdateCardState extends State<_UpdateCard> {
               padding: const EdgeInsets.fromLTRB(22, 22, 22, 8),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.bolt_rounded,
-                    color: C.brandBright,
-                    size: 24,
-                  ),
+                  Icon(Icons.bolt_rounded, color: C.brandBright, size: 24),
                   const SizedBox(width: 9),
                   Expanded(
                     child: Text(
@@ -439,56 +435,80 @@ class _UpdateCardState extends State<_UpdateCard> {
     );
   }
 
-  /// 模板七：side —— 左渐变竖条
+  /// 模板七：side —— 左全高渐变竖轨（边缘到边缘的通栏侧栏骨架）
   Widget _tplSide() {
     final isDark = context.isDark;
     return AppScaleIn(
       child: Container(
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: isDark ? C.bg2 : Colors.white,
           borderRadius: BorderRadius.circular(22),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 20, 20, 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            // 左侧通高渐变竖轨（含图标点缀，区别于 minimal 的短条）
+            Container(
+              width: 9,
+              decoration: BoxDecoration(gradient: C.brandGradient),
+            ),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 5,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      gradient: C.brandGradient,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-                  const SizedBox(width: 13),
-                  Expanded(
-                    child: Column(
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 20, 20, 8),
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('v${widget.version} 更新',
-                            style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w900,
-                                color: isDark ? C.t1 : C.lt1)),
-                        const SizedBox(height: 3),
-                        Text(widget.title,
-                            style: TextStyle(
-                                fontSize: 11.5,
-                                color: isDark ? C.t3 : C.lt3)),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            gradient: C.brandGradient,
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          child: const Icon(
+                            Icons.system_update_alt_rounded,
+                            color: Colors.white,
+                            size: 21,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'v${widget.version} 更新',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w900,
+                                  color: isDark ? C.t1 : C.lt1,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                widget.title,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: isDark ? C.t3 : C.lt3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
+                  _tplBody(isDark),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 10, 18, 20),
+                    child: _actionRow(isDark),
+                  ),
                 ],
               ),
-            ),
-            _tplBody(isDark),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 10, 18, 20),
-              child: _actionRow(isDark),
             ),
           ],
         ),
@@ -525,24 +545,33 @@ class _UpdateCardState extends State<_UpdateCard> {
                       gradient: C.brandGradient,
                       borderRadius: BorderRadius.circular(13),
                     ),
-                    child: const Icon(Icons.confirmation_number_rounded,
-                        color: Colors.white, size: 22),
+                    child: const Icon(
+                      Icons.confirmation_number_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('升级通知',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                                color: isDark ? C.t1 : C.lt1)),
+                        Text(
+                          '升级通知',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: isDark ? C.t1 : C.lt1,
+                          ),
+                        ),
                         const SizedBox(height: 3),
-                        Text('v${widget.version} 已发布',
-                            style: TextStyle(
-                                fontSize: 11.5,
-                                color: isDark ? C.t3 : C.lt3)),
+                        Text(
+                          'v${widget.version} 已发布',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: isDark ? C.t3 : C.lt3,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -550,17 +579,22 @@ class _UpdateCardState extends State<_UpdateCard> {
                   // 版本 NEW 渐变徽章
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 5),
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       gradient: C.brandGradient,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text('NEW',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1)),
+                    child: const Text(
+                      'NEW',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -570,21 +604,24 @@ class _UpdateCardState extends State<_UpdateCard> {
               children: [
                 _ticketNotch(isDark, Alignment.centerLeft),
                 Expanded(
-                  child: LayoutBuilder(builder: (c, box) {
-                    return Flex(
-                      direction: Axis.horizontal,
-                      mainAxisSize: MainAxisSize.max,
-                      children: List.generate(
-                          (box.maxWidth / 9).floor(), (i) {
-                        return Container(
-                          width: 5,
-                          height: 1.4,
-                          margin: const EdgeInsets.symmetric(horizontal: 2),
-                          color: context.t3.withAlpha(70),
-                        );
-                      }),
-                    );
-                  }),
+                  child: LayoutBuilder(
+                    builder: (c, box) {
+                      return Flex(
+                        direction: Axis.horizontal,
+                        mainAxisSize: MainAxisSize.max,
+                        children: List.generate((box.maxWidth / 9).floor(), (
+                          i,
+                        ) {
+                          return Container(
+                            width: 5,
+                            height: 1.4,
+                            margin: const EdgeInsets.symmetric(horizontal: 2),
+                            color: context.t3.withAlpha(70),
+                          );
+                        }),
+                      );
+                    },
+                  ),
                 ),
                 _ticketNotch(isDark, Alignment.centerRight),
               ],
