@@ -8,6 +8,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
@@ -45,6 +46,17 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     // 后台配置拉一次(剪贴板/公告等即时生效)
     _settings.refresh();
+    _ensureStorage();
+  }
+
+  /// Android 11+ 公共目录(/storage/emulated/0/安逸软件汇)需要「所有文件访问」授权
+  Future<void> _ensureStorage() async {
+    if (!Platform.isAndroid) return;
+    try {
+      final m = Permission.manageExternalStorage;
+      if (await m.isGranted) return;
+      await m.request();
+    } catch (_) {}
   }
 
   @override

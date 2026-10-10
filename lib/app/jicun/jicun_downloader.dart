@@ -269,18 +269,37 @@ class Downloader {
   ///
   /// 目录 = 平台应用外部存储 / Documents 下的 [JicunSettings.saveDirName]
   /// (后台 save_dir_name 可配)。同名文件自动追加序号,绝不覆盖。
-  static Future<File> _publishToFile(DownloadItem item, File file) async {
-    Directory base;
+  /// 公共下载根目录:安卓优先 /storage/emulated/0（sdcard），失败降级应用目录。
+  static Future<Directory> _publicBase() async {
+    if (Platform.isAndroid) {
+      for (final cand in ['/storage/emulated/0', '/sdcard']) {
+        try {
+          final d = Directory(cand);
+          if (d.existsSync()) {
+            // 可写探测:建一个探针文件
+            final probe = File('${cand}/.jicun_write_test');
+            await probe.writeAsString('t', mode: FileMode.append);
+            await probe.delete();
+            return d;
+          }
+        } catch (_) {}
+      }
+    }
     try {
       base = await getApplicationDocumentsDirectory();
       if (Platform.isAndroid) {
         final ext = await getExternalStorageDirectory();
-        if (ext != null) base = ext;
+        if (ext != null) return ext;
       }
+      return base;
     } catch (e) {
       jicunSwallow('publish.dir', e);
-      base = await getTemporaryDirectory();
+      return getTemporaryDirectory();
     }
+  }
+
+  static Future<File> _publishToFile(DownloadItem item, File file) async {
+    final base = await _publicBase();
     final dir = Directory('${base.path}/${JicunSettings.instance.saveDirName}');
     if (!dir.existsSync()) dir.createSync(recursive: true);
     var name = item.fileName;
@@ -307,16 +326,7 @@ class Downloader {
 
   /// 应用下载目录的可读路径(给 UI 提示用)。
   static Future<String> downloadDirPath() async {
-    Directory base;
-    try {
-      base = await getApplicationDocumentsDirectory();
-      if (Platform.isAndroid) {
-        final ext = await getExternalStorageDirectory();
-        if (ext != null) base = ext;
-      }
-    } catch (_) {
-      base = await getTemporaryDirectory();
-    }
+    final base = await _publicBase();
     return '${base.path}/${JicunSettings.instance.saveDirName}';
   }
 
