@@ -87,6 +87,7 @@ class _HomeComponentState extends State<HomeComponent> {
         if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
         if (uiCfg.featureReferral) _referralTitle(),
         if (uiCfg.featureReferral) _referralGrid(),
+        if (uiCfg.featureReferral) _referralState(),
         SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
       ],
     );
@@ -112,6 +113,7 @@ class _HomeComponentState extends State<HomeComponent> {
             padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
             sliver: SliverToBoxAdapter(child: _referralRowList()),
           ),
+        if (uiCfg.featureReferral) _referralState(),
         _tplSpacer(),
       ],
     );
@@ -337,6 +339,7 @@ class _HomeComponentState extends State<HomeComponent> {
         if (uiCfg.featureNotice) _noticeSliver,
         if (uiCfg.featureReferral) _referralTitle(),
         if (uiCfg.featureReferral) _referralGrid(),
+        if (uiCfg.featureReferral) _referralState(),
         _tplSpacer(),
       ],
     );
@@ -358,6 +361,7 @@ class _HomeComponentState extends State<HomeComponent> {
             if (uiCfg.featureNotice) _noticeSliver,
             if (uiCfg.featureReferral) _referralTitle(),
             if (uiCfg.featureReferral) _referralGrid(),
+            if (uiCfg.featureReferral) _referralState(),
             _tplSpacer(),
           ],
         );
@@ -475,6 +479,7 @@ class _HomeComponentState extends State<HomeComponent> {
                 ),
               ),
             SliverToBoxAdapter(child: _quickGrid()),
+            if (uiCfg.featureReferral) _referralState(),
             if (uiCfg.featureNotice) _noticeSliver,
             _tplSpacer(),
           ],
@@ -577,6 +582,7 @@ class _HomeComponentState extends State<HomeComponent> {
             ),
             sliver: SliverToBoxAdapter(child: _referralTimeline(logic)),
           ),
+        if (uiCfg.featureReferral) _referralState(),
         _tplSpacer(),
       ],
     );
@@ -731,6 +737,7 @@ class _HomeComponentState extends State<HomeComponent> {
         if (uiCfg.featureNotice) _noticeSliver,
         if (uiCfg.featureReferral) _referralTitle(),
         if (uiCfg.featureReferral) _referralGrid(),
+        if (uiCfg.featureReferral) _referralState(),
         _tplSpacer(),
       ],
     );
@@ -842,6 +849,7 @@ class _HomeComponentState extends State<HomeComponent> {
               ),
             ),
           ),
+        if (uiCfg.featureReferral) _referralState(),
         _tplSpacer(),
       ],
     );

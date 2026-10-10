@@ -231,8 +231,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           (logic.item?.screenshots.isNotEmpty == true ||
               (info.fileIcon ?? '').isNotEmpty ||
               (logic.item?.icon ?? '').isNotEmpty);
-      // v54：poster 通栏出血 —— 只压底部圆角，顶到屏幕两缘
-      const bleedRadius = BorderRadius.vertical(bottom: Radius.circular(R.xl));
+      // v54-fix：poster 头图不再通栏出血（去掉负外边距），统一内嵌圆角
       return BoxDecoration(
         image: has
             ? DecorationImage(fit: BoxFit.cover, image: _posterProvider(info)!)
@@ -245,7 +244,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   C.violet.withAlpha(context.isDark ? 110 : 90),
                 ],
               ),
-        borderRadius: bleedRadius,
+        borderRadius: radius,
       );
     }
     return BoxDecoration(
@@ -269,6 +268,9 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     return null;
   }
 
+  bool _descExpanded = false;
+
+  /// v54-fix：顶部标题过长时省略，避免 Row 溢出
   Widget _topBar() {
     return Positioned(
       top: 0,
@@ -289,9 +291,14 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               children: [
                 _topBtn(Icons.arrow_back_ios_new_rounded, () => Get.back()),
                 const Spacer(),
-                Text(
-                  item?.title ?? '软件详情',
-                  style: Ty.h3.copyWith(color: context.t1, fontSize: 15),
+                Expanded(
+                  child: Text(
+                    item?.title ?? '软件详情',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: Ty.h3.copyWith(color: context.t1, fontSize: 15),
+                  ),
                 ),
                 const Spacer(),
                 _topBtn(
@@ -353,14 +360,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             // v54：poster 通栏出血（负外边距顶出 ListView 内边距）
             Container(
               height: _headerHeight(),
-              margin: tpl == AppDetailStyle.poster
-                  ? EdgeInsets.fromLTRB(
-                      -context.pagePadding,
-                      0,
-                      -context.pagePadding,
-                      42,
-                    )
-                  : const EdgeInsets.only(bottom: 42),
+              margin: const EdgeInsets.only(bottom: 42),
               decoration: _headerDecoration(context, info),
               child: Stack(
                 children: [
@@ -744,9 +744,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     final isVipItem = it?.isVipItem ?? false;
     final hasP = it?.hasPrice ?? false;
     final priceTxt = it?.vipPrice ?? '';
-    final String topLabel = hasP
-        ? '¥$priceTxt'
-        : (isVipItem ? '会员专享' : '免费');
+    final String topLabel = hasP ? '¥$priceTxt' : (isVipItem ? '会员专享' : '免费');
     final Color topColor = hasP ? C.mint : (isVipItem ? C.amber : C.mint);
     return Container(
       padding: const EdgeInsets.all(14),
@@ -891,8 +889,11 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           ],
         ),
         const SizedBox(height: 13),
+        // v54-fix：长简介默认折叠（6 行），可展开/收起
         Text(
           desc.isEmpty ? '暂无详细介绍' : desc,
+          maxLines: _descExpanded ? null : 6,
+          overflow: _descExpanded ? null : TextOverflow.ellipsis,
           style: TextStyle(
             fontSize: 14,
             height: 1.9,
@@ -900,6 +901,32 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             color: isDark ? Colors.grey[300] : const Color(0xFF41454B),
           ),
         ),
+        if (desc.length > 120) ...[
+          const SizedBox(height: 6),
+          GestureDetector(
+            onTap: () => setState(() => _descExpanded = !_descExpanded),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _descExpanded ? '收起' : '展开全部',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    color: C.brand,
+                  ),
+                ),
+                Icon(
+                  _descExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  size: 16,
+                  color: C.brand,
+                ),
+              ],
+            ),
+          ),
+        ],
         if (shots.isNotEmpty) ...[
           const SizedBox(height: 24),
           const Text(

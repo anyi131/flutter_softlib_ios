@@ -107,13 +107,16 @@ class _AppComponentState extends State<AppComponent> {
     );
   }
 
-  Future<void> _load({bool reset = false}) async {
+  Future<void> _load({bool reset = false, bool showLoading = true}) async {
     final cat = _currentCat;
     final isFolder = cat != null && cat.isFolder;
     if (reset) {
       _page = 1;
       _hasMore = true;
-      setState(() => _loading = true);
+      // v54-fix：下拉刷新时EasyRefresh 自带指示器；
+      // 若这里再切全屏 LoadingState，会把 EasyRefresh 从树上摘掉，
+      // 导致随后 finishRefresh() 操作已失联的 controller。
+      if (showLoading) setState(() => _loading = true);
     } else {
       setState(() => _loadingMore = true);
     }
@@ -486,7 +489,7 @@ class _AppComponentState extends State<AppComponent> {
       header: const MaterialHeader(),
       footer: const MaterialFooter(),
       onRefresh: () async {
-        await _load(reset: true);
+        await _load(reset: true, showLoading: false);
         _refreshCtrl.finishRefresh();
       },
       onLoad: () async {
