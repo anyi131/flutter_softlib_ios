@@ -51,7 +51,11 @@ class MineComponent extends StatelessWidget {
                       context.pagePadding,
                       context.tabSpace + 40,
                     ),
-                    children: _mineBody(context, logic, SoftService.instance.configVersion.value),
+                    children: _mineBody(
+                      context,
+                      logic,
+                      SoftService.instance.configVersion.value,
+                    ),
                   ),
                 );
               },
@@ -95,8 +99,7 @@ class MineComponent extends StatelessWidget {
 
   // ───────── ① 头像卡 ─────────
   /// v52m #5：我的页面模板 classic / clean / gradient
-  List<Widget> _mineBody(
-      BuildContext context, MineLogic logic, int configVer) {
+  List<Widget> _mineBody(BuildContext context, MineLogic logic, int configVer) {
     final tpl =
         SoftService.instance.cachedConfig?.uiConfig.mineTemplate ?? 'classic';
     if (tpl == 'clean') {
@@ -127,27 +130,29 @@ class MineComponent extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(Icons.workspace_premium_rounded,
-                  color: C.gold, size: 26),
+              Icon(Icons.workspace_premium_rounded, color: C.gold, size: 26),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('会员中心',
-                        style: TextStyle(
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w800,
-                            color: context.t1)),
+                    Text(
+                      '会员中心',
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                        color: context.t1,
+                      ),
+                    ),
                     const SizedBox(height: 3),
-                    Text(logic.isVip ? '感谢支持 · 会员生效中' : '开通享全站资源',
-                        style:
-                            TextStyle(fontSize: 11.5, color: context.t3)),
+                    Text(
+                      logic.isVip ? '感谢支持 · 会员生效中' : '开通享全站资源',
+                      style: TextStyle(fontSize: 11.5, color: context.t3),
+                    ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right_rounded,
-                  size: 18, color: context.t3),
+              Icon(Icons.chevron_right_rounded, size: 18, color: context.t3),
             ],
           ),
         ),
@@ -228,123 +233,123 @@ class MineComponent extends StatelessWidget {
 
   Widget _profileCardInner(BuildContext context, MineLogic logic, bool logged) {
     return Row(
-        children: [
-          // 头像 + 光晕环
-          GestureDetector(
-            onTap: () => logged ? logic.openProfileEdit() : logic.openLogin(),
+      children: [
+        // 头像 + 光晕环
+        GestureDetector(
+          onTap: () => logged ? logic.openProfileEdit() : logic.openLogin(),
+          child: Container(
+            padding: const EdgeInsets.all(2.5),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: logged ? Deco.goldGradient : Deco.brandGradient,
+            ),
             child: Container(
-              padding: const EdgeInsets.all(2.5),
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: logged ? Deco.goldGradient : Deco.brandGradient,
+                color: context.isDark ? C.bg2 : Colors.white,
               ),
-              child: Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: context.isDark ? C.bg2 : Colors.white,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: logic.avatarUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: logic.avatarUrl,
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) => _defaultAvatar(context),
-                        errorWidget: (_, __, ___) => _defaultAvatar(context),
-                      )
-                    : _defaultAvatar(context),
-              ),
+              clipBehavior: Clip.antiAlias,
+              child: logic.avatarUrl.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: logic.avatarUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => _defaultAvatar(context),
+                      errorWidget: (_, __, ___) => _defaultAvatar(context),
+                    )
+                  : _defaultAvatar(context),
             ),
           ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: () =>
-                      logged ? logic.openProfileEdit() : logic.openLogin(),
-                  child: Text(
-                    logic.nickname.isEmpty ? '点击登录' : logic.nickname,
-                    style: Ty.h1.copyWith(color: context.t1, fontSize: 21),
+        ),
+        const SizedBox(width: 15),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onTap: () =>
+                    logged ? logic.openProfileEdit() : logic.openLogin(),
+                child: Text(
+                  logic.nickname.isEmpty ? '点击登录' : logic.nickname,
+                  style: Ty.h1.copyWith(color: context.t1, fontSize: 21),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      logged
+                          ? ((UserService.instance.user?.qq ?? '').isNotEmpty
+                                ? 'QQ ${UserService.instance.user!.qq}'
+                                : '账号 ${logic.uid}')
+                          : '登录后享受完整功能',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Ty.small.copyWith(color: context.t3),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        logged
-                            ? ((UserService.instance.user?.qq ?? '').isNotEmpty
-                                  ? 'QQ ${UserService.instance.user!.qq}'
-                                  : '账号 ${logic.uid}')
-                            : '登录后享受完整功能',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Ty.small.copyWith(color: context.t3),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: C.brand.withAlpha(30),
+                      borderRadius: BorderRadius.circular(R.xs),
+                    ),
+                    child: Text(
+                      'v3.3',
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        color: C.brandBright,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: C.brand.withAlpha(30),
-                        borderRadius: BorderRadius.circular(R.xs),
-                      ),
-                      child: Text(
-                        'v3.3',
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w800,
-                          color: C.brandBright,
-                        ),
-                      ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              // ★ 必须用 Wrap：三个徽标在窄屏 Row 里会溢出，
+              //   右侧「未开通 VIP」被裁掉（截图里可见）
+              Wrap(
+                spacing: 7,
+                runSpacing: 6,
+                children: [
+                  if (logged) ...[
+                    // ★ 积分徽标：可点击进「积分兑换」，带金币图标更醒目
+                    _tappableBadge(
+                      context,
+                      '积分 ${logic.points}',
+                      C.violet,
+                      icon: Icons.monetization_on_rounded,
+                      onTap: _uiCfg.featureExchange
+                          ? () => logic.pointsExchange()
+                          : null,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // ★ 必须用 Wrap：三个徽标在窄屏 Row 里会溢出，
-                //   右侧「未开通 VIP」被裁掉（截图里可见）
-                Wrap(
-                  spacing: 7,
-                  runSpacing: 6,
-                  children: [
-                    if (logged) ...[
-                      // ★ 积分徽标：可点击进「积分兑换」，带金币图标更醒目
-                      _tappableBadge(
-                        context,
-                        '积分 ${logic.points}',
-                        C.violet,
-                        icon: Icons.monetization_on_rounded,
-                        onTap: _uiCfg.featureExchange
-                            ? () => logic.pointsExchange()
-                            : null,
-                      ),
-                      _badge(
-                        context,
-                        '余额 ¥${logic.money}',
-                        C.mint,
-                        icon: Icons.account_balance_wallet_rounded,
-                      ),
-                    ],
                     _badge(
                       context,
-                      logic.isVip ? 'VIP 会员' : '未开通 VIP',
-                      logic.isVip ? C.amber : C.t3,
-                      icon: Icons.workspace_premium_rounded,
+                      '余额 ¥${logic.money}',
+                      C.mint,
+                      icon: Icons.account_balance_wallet_rounded,
                     ),
                   ],
-                ),
-              ],
-            ),
+                  _badge(
+                    context,
+                    logic.isVip ? 'VIP 会员' : '未开通 VIP',
+                    logic.isVip ? C.amber : C.t3,
+                    icon: Icons.workspace_premium_rounded,
+                  ),
+                ],
+              ),
+            ],
           ),
-          Icon(Icons.chevron_right_rounded, color: context.t3, size: 22),
-        ],
-      );
+        ),
+        Icon(Icons.chevron_right_rounded, color: context.t3, size: 22),
+      ],
+    );
   }
 
   /// split 模板专属：渐变问候横幅（按时段问候，品牌渐变 + 投影）
@@ -354,12 +359,12 @@ class MineComponent extends StatelessWidget {
     final greet = hour < 6
         ? '夜深了'
         : hour < 12
-            ? '早上好'
-            : hour < 14
-                ? '中午好'
-                : hour < 18
-                    ? '下午好'
-                    : '晚上好';
+        ? '早上好'
+        : hour < 14
+        ? '中午好'
+        : hour < 18
+        ? '下午好'
+        : '晚上好';
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 17, 18, 16),
       decoration: BoxDecoration(
@@ -393,16 +398,21 @@ class MineComponent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(logged ? greet : '欢迎回来',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.5,
-                        fontWeight: FontWeight.w900)),
+                Text(
+                  logged ? greet : '欢迎回来',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.5,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
                 const SizedBox(height: 3),
                 Text(
                   logged ? '今日也要元气满满哦' : '登录后体验更多功能',
                   style: TextStyle(
-                      color: Colors.white.withAlpha(200), fontSize: 12),
+                    color: Colors.white.withAlpha(200),
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -416,7 +426,7 @@ class MineComponent extends StatelessWidget {
     final logged = logic.isLoggedIn;
     final grad =
         (SoftService.instance.cachedConfig?.uiConfig.mineTemplate ?? '') ==
-            'gradient';
+        'gradient';
     if (grad) {
       // v52m #5：gradient 模板 —— 渐变描边
       return Container(
@@ -497,10 +507,12 @@ class MineComponent extends StatelessWidget {
         C.mint,
       ),
       (
+        '已签',
         _uiCfg.featureCheckin
-            ? (!logic.isLoggedIn ? '-' : (logic.signedToday ? '已签' : '签到'))
-            : '-',
-        _uiCfg.featureCheckin ? '' : '未开放',
+            ? (!logic.isLoggedIn
+                  ? '-'
+                  : (logic.signedToday ? logic.signedDate : '未签'))
+            : '未开放',
         Icons.verified_rounded,
         C.amber,
       ),
@@ -528,7 +540,7 @@ class MineComponent extends StatelessWidget {
                     logic.openLogin();
                     return;
                   }
-                  if (items[i].$1 == '签到') {
+                  if (items[i].$1 == '已签') {
                     if (_uiCfg.featureCheckin) logic.signIn();
                   } else if (items[i].$1 == '消息') {
                     logic.openMessages();
@@ -646,7 +658,13 @@ class MineComponent extends StatelessWidget {
       SectionHeader(title: t);
 
   Widget _serviceGrid(BuildContext context, MineLogic logic) {
-    return Obx(() => _serviceGridInner(context, logic, SoftService.instance.configVersion.value));
+    return Obx(
+      () => _serviceGridInner(
+        context,
+        logic,
+        SoftService.instance.configVersion.value,
+      ),
+    );
   }
 
   Widget _serviceGridInner(BuildContext context, MineLogic logic, int _) {

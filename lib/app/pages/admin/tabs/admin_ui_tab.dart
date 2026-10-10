@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../../../api/admin_service.dart';
 import '../../../api/soft_service.dart';
 import '../../../design/app_anim.dart';
+import '../../../design/app_style.dart';
 import '../../../design/app_style_controller.dart';
 import '../../../design/theme_controller.dart';
 import '../../../design/theme_palette.dart';
@@ -204,6 +205,10 @@ class _AdminUiTabState extends State<AdminUiTab> {
           });
           ThemeController.instance.applyServerPalette(ui.themePalette);
           AppStyleController.instance.applyServerDefault(ui.listStyle);
+          // ★ 详情模板也热应用（修复切换不生效）
+          AppStyleController.instance.detailStyle.value = parseDetailStyle(
+            ui.detailStyle,
+          );
           try {
             Get.find<NavigateLogic>().applyUiConfig(force: true);
           } catch (_) {}
@@ -560,7 +565,6 @@ class _AdminUiTabState extends State<AdminUiTab> {
     (v) => setState(() => _homeTemplate = v),
   );
 
-
   Widget _detailStylePicker() => _chipRow(
     const [
       ('standard', '标准'),
@@ -572,7 +576,6 @@ class _AdminUiTabState extends State<AdminUiTab> {
     _detailStyle,
     (v) => setState(() => _detailStyle = v),
   );
-
 
   Widget _chipRow(
     List<(String, String)> opts,
@@ -675,11 +678,11 @@ class _AdminUiTabState extends State<AdminUiTab> {
             fillColor: context.isDark
                 ? Colors.white.withAlpha(10)
                 : const Color(0xFFF5F6FA),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 11,
             ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           ),
         ),
         const SizedBox(height: 8),
