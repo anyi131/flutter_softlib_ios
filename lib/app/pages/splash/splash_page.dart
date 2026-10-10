@@ -69,33 +69,49 @@ class _SplashPageState extends State<SplashPage> {
     final cfg = await cfgFuture;
     if (mounted) setState(() => _diag = 'boot:cfg done');
     if (!mounted) return;
-
-    // 维护模式：直接显示维护页，不进入主界面
-    if (cfg != null && cfg.maintainEnable) {
-      setState(() => _config = cfg);
-      return;
-    }
-
-    final seconds = (cfg?.splashEnable ?? true)
-        ? (cfg?.splashSeconds ?? 2).clamp(1, 10)
-        : 0;
-    setState(() {
-      _config = cfg;
-      _left = seconds;
-    });
-
-    if (seconds <= 0) {
-      _enter();
-      return;
-    }
-    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) return t.cancel();
-      setState(() => _left--);
-      if (_left <= 0) {
-        t.cancel();
-        _enter();
+    try {
+      // 维护模式：直接显示维护页，不进入主界面
+      if (cfg != null && cfg.maintainEnable) {
+        if (mounted) setState(() => _diag = 'boot:maintain');
+        setState(() => _config = cfg);
+        return;
       }
-    });
+
+      final seconds = (cfg?.splashEnable ?? true)
+          ? (cfg?.splashSeconds ?? 2).clamp(1, 10)
+          : 0;
+      if (mounted) setState(() => _diag = 'boot:seconds=$seconds');
+      setState(() {
+        _config = cfg;
+        _left = seconds;
+      });
+
+      if (seconds <= 0) {
+        _enter();
+        return;
+      }
+      _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+        if (!mounted) return t.cancel();
+        if (mounted) setState(() {
+          _left--;
+          _diag = 'tick:$_left';
+        });
+        if (_left <= 0) {
+          t.cancel();
+          _enter();
+        }
+      });
+    } catch (e, st) {
+      // 异常直接显示在开屏页上，定位卡点
+      if (mounted) {
+        setState(() => _diag = 'ERR ${e.runtimeType}: $e'.substring(0, 140));
+      }
+      debugPrint('[Splash][FATAL] $e\n$st');
+      // 3 秒后仍然强制进入，不让用户卡死
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted && !_entered) _enter();
+      });
+    }
   }
 
   /// 进入主界面（并弹出公告）
