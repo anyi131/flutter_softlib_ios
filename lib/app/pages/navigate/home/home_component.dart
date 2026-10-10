@@ -1351,7 +1351,7 @@ class _HomeComponentState extends State<HomeComponent> {
         if (list == null || list.length < 2) {
           return const SizedBox.shrink();
         }
-        final hot = list.take(4);
+        final hot = list.take(4).toList();
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
           child: Row(
