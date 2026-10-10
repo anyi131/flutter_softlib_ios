@@ -519,7 +519,7 @@ class _SplashPageState extends State<SplashPage> {
                   // 顶部渐变横条
                   Container(
                     height: 6,
-                    decoration: const BoxDecoration(gradient: C.brandGradient),
+                    decoration: BoxDecoration(gradient: C.brandGradient),
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
@@ -649,7 +649,7 @@ class _SplashPageState extends State<SplashPage> {
                         width: double.infinity,
                         padding:
                             const EdgeInsets.fromLTRB(24, 30, 24, 40),
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           gradient: C.brandGradient,
                         ),
                         child: Column(
@@ -966,7 +966,7 @@ class _SplashPageState extends State<SplashPage> {
                   Container(
                     height: 218,
                     width: double.infinity,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: C.brandGradient,
                     ),
                     padding: const EdgeInsets.fromLTRB(24, 0, 24, 44),
