@@ -70,18 +70,16 @@ class MainActivity : FlutterActivity() {
                     "getSignature" -> {
                         // 安全防护：读取自身 APK 签名证书的 MD5（供远程比对防重打包）
                         try {
-                            val bytes: ByteArray =
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                    val si = packageManager.getPackageInfo(
-                                        packageName, android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
-                                    ).signingInfo
-                                    si!!.apkContentsSigners!![0].toByteArray()
-                                } else {
-                                    @Suppress("DEPRECATION")
-                                    packageManager.getPackageInfo(
-                                        packageName, android.content.pm.PackageManager.GET_SIGNATURES
-                                    )?.signatures?.get(0)?.toByteArray()
-                                }
+                            val pi = packageManager.getPackageInfo(
+                                packageName, android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
+                            )
+                            val sig = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                pi.signingInfo!!.apkContentsSigners!![0]
+                            } else {
+                                @Suppress("DEPRECATION")
+                                pi.signatures!![0]
+                            }
+                            val bytes: ByteArray = sig.toByteArray()
                             val md = MessageDigest.getInstance("MD5").digest(bytes)
                             result.success(md.joinToString("") { "%02x".format(it) })
                         } catch (e: Exception) {
