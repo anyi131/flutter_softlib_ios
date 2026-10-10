@@ -75,7 +75,7 @@ class MainActivity : FlutterActivity() {
                                     val si = packageManager.getPackageInfo(
                                         packageName, android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
                                     ).signingInfo
-                                    si!!.apkContentsSigners[0].toByteArray()
+                                    si!!.apkContentsSigners!![0].toByteArray()
                                 } else {
                                     @Suppress("DEPRECATION")
                                     packageManager.getPackageInfo(
