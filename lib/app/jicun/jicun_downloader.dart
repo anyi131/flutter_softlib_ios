@@ -286,7 +286,7 @@ class Downloader {
       }
     }
     try {
-      base = await getApplicationDocumentsDirectory();
+      final base = await getApplicationDocumentsDirectory();
       if (Platform.isAndroid) {
         final ext = await getExternalStorageDirectory();
         if (ext != null) return ext;
