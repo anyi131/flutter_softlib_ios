@@ -9,6 +9,7 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
+import java.security.MessageDigest
 
 /**
  * 主 Activity —— 提供原生「安装 APK」通道
@@ -64,6 +65,27 @@ class MainActivity : FlutterActivity() {
                             } catch (e2: Exception) {
                                 result.error("NO_SETTINGS", e2.message, null)
                             }
+                        }
+                    }
+                    "getSignature" -> {
+                        // 安全防护：读取自身 APK 签名证书的 MD5（供远程比对防重打包）
+                        try {
+                            val bytes: ByteArray =
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                    val si = packageManager.getPackageInfo(
+                                        packageName, android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
+                                    ).signingInfo
+                                    si!!.apkContentsSigners[0].toByteArray()
+                                } else {
+                                    @Suppress("DEPRECATION")
+                                    packageManager.getPackageInfo(
+                                        packageName, android.content.pm.PackageManager.GET_SIGNATURES
+                                    ).signatures[0].toByteArray()
+                                }
+                            val md = MessageDigest.getInstance("MD5").digest(bytes)
+                            result.success(md.joinToString("") { "%02x".format(it) })
+                        } catch (e: Exception) {
+                            result.error("SIGN_FAIL", e.message, null)
                         }
                     }
                     else -> result.notImplemented()

@@ -7,25 +7,30 @@ import 'api_host.dart';
 import 'user_service.dart';
 import '../utils/device_info_util.dart';
 
-
 /// 内嵌管理系统服务（需管理员账号登录）
 class AdminService {
   AdminService._();
   static final AdminService instance = AdminService._();
 
-  final Dio _dio = Dio(BaseOptions(
-    headers: DeviceInfo.headers,
-    baseUrl: ApiHost.base,
-    connectTimeout: const Duration(seconds: 12),
-    receiveTimeout: const Duration(seconds: 25),
-  ));
+  final Dio _dio = Dio(
+    BaseOptions(
+      headers: DeviceInfo.headers,
+      baseUrl: ApiHost.base,
+      connectTimeout: const Duration(seconds: 12),
+      receiveTimeout: const Duration(seconds: 25),
+    ),
+  );
 
   /// 统一 POST（自动带 token）
-  Future<Map<String, dynamic>> _post(String action,
-      [Map<String, dynamic> extra = const {}]) async {
+  Future<Map<String, dynamic>> _post(
+    String action, [
+    Map<String, dynamic> extra = const {},
+  ]) async {
     try {
-      final r = await _dio.post('/api/softlib/admin/$action',
-          data: {...extra, 'token': UserService.instance.token});
+      final r = await _dio.post(
+        '/api/softlib/admin/$action',
+        data: {...extra, 'token': UserService.instance.token},
+      );
       if (r.data is Map) {
         final m = Map<String, dynamic>.from(r.data);
         if (m['code'] != 1) throw Exception(m['msg'] ?? '操作失败');
@@ -39,6 +44,27 @@ class AdminService {
 
   Future<Map<String, dynamic>> dashboard() async =>
       Map<String, dynamic>.from((await _post('dashboard'))['data'] ?? {});
+
+  // ───── 安全防护（1011）─────
+  Future<Map<String, dynamic>> secReport() async =>
+      Map<String, dynamic>.from((await _post('sec_report'))['data'] ?? {});
+
+  Future<void> secBanIp(String ip, {String reason = '管理员手动封禁'}) async =>
+      _post('sec_ban_ip', {'ip': ip, 'reason': reason});
+
+  Future<void> secUnbanIp(String ip) async => _post('sec_unban_ip', {'ip': ip});
+
+  Future<Map<String, dynamic>> secKillall() async => Map<String, dynamic>.from(
+    (await _post('sec_killall', {'confirm': 'yes'}))['data'] ?? {},
+  );
+
+  Future<void> secSign(String signMd5, {String note = '线上APK签名'}) async =>
+      _post('sec_sign', {'sign_md5': signMd5, 'note': note});
+
+  Future<Map<String, dynamic>> secSignCheck(String signMd5) async =>
+      Map<String, dynamic>.from(
+        (await _post('sec_sign_check', {'sign_md5': signMd5}))['data'] ?? {},
+      );
 
   Future<List<Map<String, dynamic>>> apps({String keyword = ''}) async {
     final d = (await _post('apps', {'keyword': keyword}))['data'];
@@ -61,11 +87,16 @@ class AdminService {
     return d is Map ? Map<String, dynamic>.from(d) : {};
   }
 
-  Future<void> saveApp(Map<String, dynamic> data) async => _post('app_save', data);
+  Future<void> saveApp(Map<String, dynamic> data) async =>
+      _post('app_save', data);
 
   /// ★ 一键补全缺失参数（单选/多选/全部）
   /// ids 为空且 all=false 时会报错；返回 {total, filled, skipped, failed, details}
-  Future<Map<String, dynamic>> appFill({List<int>? ids, bool all = false, int limit = 100}) async {
+  Future<Map<String, dynamic>> appFill({
+    List<int>? ids,
+    bool all = false,
+    int limit = 100,
+  }) async {
     final d = (await _post('app_fill', {
       if (all) 'all': 1,
       if (ids != null && ids.isNotEmpty) 'ids': ids.join(','),
@@ -80,16 +111,19 @@ class AdminService {
     String? customIp,
     String? customAddr,
     bool? on,
-  }) async =>
-      _post('user_custom_ip', {
-        'id': id,
-        if (customIp != null) 'custom_ip': customIp,
-        if (customAddr != null) 'custom_addr': customAddr,
-        if (on != null) 'custom_ip_on': on ? 1 : 0,
-      });
+  }) async => _post('user_custom_ip', {
+    'id': id,
+    if (customIp != null) 'custom_ip': customIp,
+    if (customAddr != null) 'custom_addr': customAddr,
+    if (on != null) 'custom_ip_on': on ? 1 : 0,
+  });
 
   /// 解析蓝奏云链接 / 本地文件 → 自动带出软件信息
-  Future<Map<String, dynamic>> parse({required String type, String url = '', String filePath = ''}) async {
+  Future<Map<String, dynamic>> parse({
+    required String type,
+    String url = '',
+    String filePath = '',
+  }) async {
     final d = (await _post('parse', {
       'type': type,
       if (url.isNotEmpty) 'url': url,
@@ -101,13 +135,17 @@ class AdminService {
   /// 上传图片（图标/截图/横幅）
   Future<String> uploadImage(File file) async {
     final form = FormData.fromMap({
-      'file': await MultipartFile.fromFile(file.path,
-          filename: file.path.split('/').last),
+      'file': await MultipartFile.fromFile(
+        file.path,
+        filename: file.path.split('/').last,
+      ),
       'token': UserService.instance.token,
     });
-    final r = await _dio.post('/api/softlib/admin/upload_image',
-        data: form,
-        options: Options(receiveTimeout: const Duration(seconds: 90)));
+    final r = await _dio.post(
+      '/api/softlib/admin/upload_image',
+      data: form,
+      options: Options(receiveTimeout: const Duration(seconds: 90)),
+    );
     if (r.data is Map && r.data['code'] == 1) {
       return (r.data['data']['url'] ?? '').toString();
     }
@@ -117,13 +155,17 @@ class AdminService {
   /// 上传本地安装包（multipart）
   Future<Map<String, dynamic>> uploadFile(File file) async {
     final form = FormData.fromMap({
-      'file': await MultipartFile.fromFile(file.path,
-          filename: file.path.split('/').last),
+      'file': await MultipartFile.fromFile(
+        file.path,
+        filename: file.path.split('/').last,
+      ),
       'token': UserService.instance.token,
     });
-    final r = await _dio.post('/api/softlib/admin/upload',
-        data: form,
-        options: Options(receiveTimeout: const Duration(seconds: 120)));
+    final r = await _dio.post(
+      '/api/softlib/admin/upload',
+      data: form,
+      options: Options(receiveTimeout: const Duration(seconds: 120)),
+    );
     if (r.data is Map && r.data['code'] == 1) {
       return Map<String, dynamic>.from(r.data['data'] ?? {});
     }
@@ -167,7 +209,9 @@ class AdminService {
 
   // ── 线报详情/分类 ──
   Future<Map<String, dynamic>> reportDetail(int id) async =>
-      Map<String, dynamic>.from((await _post('report_detail', {'id': id}))['data'] ?? {});
+      Map<String, dynamic>.from(
+        (await _post('report_detail', {'id': id}))['data'] ?? {},
+      );
 
   Future<List<Map<String, dynamic>>> reportCats() async {
     final d = (await _post('report_cats'))['data'];
@@ -195,8 +239,7 @@ class AdminService {
   Future<void> saveVersion(Map<String, dynamic> data) async =>
       _post('version_save', data);
 
-  Future<void> deleteVersion(int id) async =>
-      _post('version_del', {'id': id});
+  Future<void> deleteVersion(int id) async => _post('version_del', {'id': id});
 
   Future<void> saveReport(Map<String, dynamic> data) async =>
       _post('report_save', data);
@@ -213,10 +256,16 @@ class AdminService {
   Future<void> deleteSource(int id) async => _post('source_del', {'id': id});
 
   /// 同步数据源（分批抓取蓝奏云文件夹内容到本地缓存）
-  Future<Map<String, dynamic>> syncSource(int id,
-      {int fromPage = 1, int pages = 10}) async {
-    final d = (await _post('source_sync',
-        {'id': id, 'from_page': fromPage, 'pages': pages}))['data'];
+  Future<Map<String, dynamic>> syncSource(
+    int id, {
+    int fromPage = 1,
+    int pages = 10,
+  }) async {
+    final d = (await _post('source_sync', {
+      'id': id,
+      'from_page': fromPage,
+      'pages': pages,
+    }))['data'];
     return d is Map ? Map<String, dynamic>.from(d) : {};
   }
 
@@ -265,11 +314,7 @@ class AdminService {
 
   /// 批量操作：op = vip | ban | unban | delete
   Future<void> userBatch(List<int> ids, String op, {int days = 30}) async =>
-      _post('user_batch', {
-        'ids': jsonEncode(ids),
-        'op': op,
-        'days': days,
-      });
+      _post('user_batch', {'ids': jsonEncode(ids), 'op': op, 'days': days});
 
   /// 导出用户 CSV 文本
   Future<String> userExportCsv({String filter = 'all'}) async {
@@ -282,17 +327,16 @@ class AdminService {
     int id,
     int days, {
     String mode = 'add',
-  }) async =>
-      Map<String, dynamic>.from((await _post('user_vip', {
-        'id': id,
-        'days': days,
-        'mode': mode,
-      }))['data'] ?? {});
+  }) async => Map<String, dynamic>.from(
+    (await _post('user_vip', {'id': id, 'days': days, 'mode': mode}))['data'] ??
+        {},
+  );
 
   /// 查看用户明文密码（管理员协助找回）
   Future<Map<String, dynamic>> userPassword(int id) async =>
       Map<String, dynamic>.from(
-          (await _post('user_password', {'id': id}))['data'] ?? {});
+        (await _post('user_password', {'id': id}))['data'] ?? {},
+      );
 
   /// 重置用户密码（同时保存可查看的加密副本）
   Future<void> resetUserPassword(int id, String password) async =>
@@ -347,7 +391,9 @@ class AdminService {
 
   /// 某用户的详细日志（含设备/IP 汇总）
   Future<Map<String, dynamic>> userLogs(int id) async =>
-      Map<String, dynamic>.from((await _post('user_logs', {'id': id}))['data'] ?? {});
+      Map<String, dynamic>.from(
+        (await _post('user_logs', {'id': id}))['data'] ?? {},
+      );
 
   /// 清理日志：all=true 清空全部；否则清理 N 天前
   Future<void> clearOpLogs({int days = 30, bool all = false}) async =>
@@ -408,11 +454,13 @@ class AdminService {
   Future<Map<String, dynamic>> collectLogin({
     required String user,
     String pass = '',
-  }) async =>
-      Map<String, dynamic>.from((await _post('collect_login', {
-        'user': user,
-        if (pass.isNotEmpty) 'pass': pass,
-      }))['data'] ?? {});
+  }) async => Map<String, dynamic>.from(
+    (await _post('collect_login', {
+          'user': user,
+          if (pass.isNotEmpty) 'pass': pass,
+        }))['data'] ??
+        {},
+  );
 
   /// 退出采集平台登录
   Future<void> collectLogout() async => _post('collect_logout');
@@ -431,7 +479,10 @@ class AdminService {
   }
 
   /// 采集平台的软件列表
-  Future<Map<String, dynamic>> collectList({int page = 1, String keyword = ''}) async {
+  Future<Map<String, dynamic>> collectList({
+    int page = 1,
+    String keyword = '',
+  }) async {
     final r = await _post('collect_list', {'page': page, 'keyword': keyword});
     final d = r['data'];
     return d is Map ? Map<String, dynamic>.from(d) : <String, dynamic>{};
@@ -447,18 +498,21 @@ class AdminService {
   /// 查询采集进度（含结果链接）
   Future<Map<String, dynamic>> collectStatus(String taskId) async =>
       Map<String, dynamic>.from(
-          (await _post('collect_status', {'task_id': taskId}))['data'] ?? {});
+        (await _post('collect_status', {'task_id': taskId}))['data'] ?? {},
+      );
 
   /// ★ 补齐采集结果：站点 task_status 不返回已完成任务的 results，
   ///   完成后调用这里，从站点「采集日志」页按名称匹配出蓝奏云链接
   Future<Map<String, dynamic>> collectResults(
     List<String> names, {
     int at = 0,
-  }) async =>
-      Map<String, dynamic>.from((await _post('collect_results', {
-        'names': jsonEncode(names),
-        'at': at,
-      }))['data'] ?? {});
+  }) async => Map<String, dynamic>.from(
+    (await _post('collect_results', {
+          'names': jsonEncode(names),
+          'at': at,
+        }))['data'] ??
+        {},
+  );
 
   /// 采集平台的目录配置（哪个目录 / 关键词 / 屏蔽词 / 兜底 / 启用状态）
   Future<List<Map<String, dynamic>>> collectDirs() async {
@@ -476,9 +530,10 @@ class AdminService {
       _post('collect_dir_save', data);
 
   /// 启用 / 禁用目录
-  Future<void> collectDirToggle(int configId, bool enabled) async =>
-      _post('collect_dir_toggle',
-          {'config_id': configId, 'status': enabled ? 1 : 0});
+  Future<void> collectDirToggle(int configId, bool enabled) async => _post(
+    'collect_dir_toggle',
+    {'config_id': configId, 'status': enabled ? 1 : 0},
+  );
 
   /// 删除目录
   Future<void> collectDirDelete(int configId) async =>
@@ -491,25 +546,32 @@ class AdminService {
   /// 采集平台的「蓝奏云 Cookie」配置状态
   Future<Map<String, dynamic>> collectLzyCookie() async =>
       Map<String, dynamic>.from(
-          (await _post('collect_lzycookie'))['data'] ?? {});
+        (await _post('collect_lzycookie'))['data'] ?? {},
+      );
 
   /// 提交蓝奏云账号密码，让采集平台去获取并保存 Cookie
   Future<Map<String, dynamic>> collectLzyCookieSave({
     required String user,
     required String pass,
-  }) async =>
-      Map<String, dynamic>.from((await _post('collect_lzycookie_save', {
-        'lzy_user': user,
-        'lzy_pass': pass,
-      }))['data'] ?? {});
+  }) async => Map<String, dynamic>.from(
+    (await _post('collect_lzycookie_save', {
+          'lzy_user': user,
+          'lzy_pass': pass,
+        }))['data'] ??
+        {},
+  );
 
   /// 清空采集平台上的蓝奏云 Cookie
   Future<void> collectLzyCookieClear() async =>
       _post('collect_lzycookie_clear');
 
   /// 把采集结果导入软件库
-  Future<Map<String, dynamic>> collectImport(List<Map<String, dynamic>> items,
-      {int? catId, int? isVip, String? vipPrice}) async {
+  Future<Map<String, dynamic>> collectImport(
+    List<Map<String, dynamic>> items, {
+    int? catId,
+    int? isVip,
+    String? vipPrice,
+  }) async {
     final d = (await _post('collect_import', {
       'items': jsonEncode(items),
       if (catId != null) 'cat_id': catId,
@@ -528,8 +590,7 @@ class AdminService {
   Future<void> saveToolCat(Map<String, dynamic> data) async =>
       _post('tool_cat_save', data);
 
-  Future<void> deleteToolCat(int id) async =>
-      _post('tool_cat_del', {'id': id});
+  Future<void> deleteToolCat(int id) async => _post('tool_cat_del', {'id': id});
 
   Future<List<Map<String, dynamic>>> tools({int catId = 0}) async {
     final d = (await _post('tools', {if (catId > 0) 'cat_id': catId}))['data'];
@@ -556,11 +617,12 @@ class AdminService {
   Future<void> saveJzsCat(Map<String, dynamic> data) async =>
       _post('jzs_cat_save', data);
 
-  Future<void> deleteJzsCat(int id) async =>
-      _post('jzs_cat_del', {'id': id});
+  Future<void> deleteJzsCat(int id) async => _post('jzs_cat_del', {'id': id});
 
-  Future<List<Map<String, dynamic>>> jzsTools(
-      {int catId = 0, String keyword = ''}) async {
+  Future<List<Map<String, dynamic>>> jzsTools({
+    int catId = 0,
+    String keyword = '',
+  }) async {
     final d = (await _post('jzs_tools', {
       if (catId > 0) 'cat_id': catId,
       if (keyword.isNotEmpty) 'kw': keyword,
@@ -576,8 +638,7 @@ class AdminService {
   Future<void> saveJzsTool(Map<String, dynamic> data) async =>
       _post('jzs_tool_save', data);
 
-  Future<void> deleteJzsTool(int id) async =>
-      _post('jzs_tool_del', {'id': id});
+  Future<void> deleteJzsTool(int id) async => _post('jzs_tool_del', {'id': id});
 
   Future<List<Map<String, dynamic>>> jzsBanners() async {
     final d = (await _post('jzs_banners'))['data'];

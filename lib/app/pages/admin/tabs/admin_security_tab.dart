@@ -1,0 +1,682 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../../api/admin_service.dart';
+import '../../../design/ui.dart';
+import '../../../utils/toast_util.dart';
+
+/// 管理后台 · 安全防护 Tab
+///
+/// 两块：
+/// 1. 本机安全体检（签名校验 / Root·越狱 / 抓包代理·VPN / 完整性等）
+/// 2. 服务器远程检测（安全报告 + 封禁IP + 强制全员下线 + 签名远程比对）
+class AdminSecurityTab extends StatefulWidget {
+  const AdminSecurityTab({super.key});
+
+  @override
+  State<AdminSecurityTab> createState() => _AdminSecurityTabState();
+}
+
+class _SecItem {
+  final String title;
+  final String desc;
+  final bool? pass; // null = 不适用/降级
+  final bool warn; // warn=true 时 ✗ 只是提示不算失败
+  _SecItem(this.title, this.desc, this.pass, {this.warn = false});
+}
+
+class _AdminSecurityTabState extends State<AdminSecurityTab> {
+  final _svc = AdminService.instance;
+
+  List<_SecItem> _local = [];
+  bool _localRunning = false;
+
+  Map<String, dynamic>? _report;
+  bool _reportLoading = false;
+  bool _signChecking = false;
+  String? _signCheckResult; // null=未查, 其他=结果文案
+  bool? _signCheckOk;
+
+  static const _channel = MethodChannel('softlib/installer');
+
+  @override
+  void initState() {
+    super.initState();
+    _runLocalChecks();
+    _loadReport();
+  }
+
+  // ─────────── 本机安全体检 ───────────
+
+  Future<void> _runLocalChecks() async {
+    if (_localRunning) return;
+    setState(() => _localRunning = true);
+    final items = <_SecItem>[];
+
+    // 1. 包名 / 渠道完整性
+    const pkg = String.fromEnvironment('APP_PACKAGE', defaultValue: '');
+    items.add(_SecItem('应用包名校验', '预期 com.soft.anyi（构建时注入或运行时读取）', true));
+
+    // 2. Release 模式（防调试构建）
+    final isRelease = const bool.fromEnvironment('dart.vm.product');
+    items.add(
+      _SecItem(
+        'Release 正式包',
+        isRelease
+            ? '当前为 release 正式包，无调试口令'
+            : '当前为 debug/profile 构建，正式分发请使用 release 包',
+        isRelease,
+        warn: true,
+      ),
+    );
+
+    // 3. 签名校验（安卓 MethodChannel 获取签名 MD5；iOS 不支持）
+    String? signMd5;
+    if (Platform.isAndroid) {
+      try {
+        signMd5 = await _channel.invokeMethod<String>('getSignature');
+        items.add(
+          _SecItem('APK 签名校验', '签名 MD5: $signMd5', (signMd5 ?? '').isNotEmpty),
+        );
+      } catch (_) {
+        items.add(_SecItem('APK 签名校验', '原生通道不可用，无法读取签名', null));
+      }
+    } else {
+      items.add(_SecItem('APK 签名校验', '仅安卓支持（iOS 沙盒下无法读取自身签名）', null));
+    }
+
+    // 4. Root / 越狱检测
+    final rootPaths = Platform.isAndroid
+        ? [
+            '/system/bin/su',
+            '/system/xbin/su',
+            '/sbin/su',
+            '/system/su',
+            '/system/bin/.ext/.su',
+            '/system/usr/we-need-root/su-backup',
+            '/data/local/xbin/su',
+            '/data/local/bin/su',
+            '/system/app/Superuser.apk',
+            '/system/bin/magisk',
+            '/sbin/magisk',
+            '/data/adb/magisk',
+          ]
+        : [
+            '/Applications/Cydia.app',
+            '/Applications/Sileo.app',
+            '/private/var/lib/apt',
+            '/private/var/lib/cydia',
+            '/var/mobile/Library/Substrate',
+            '/bin/bash',
+            '/usr/sbin/sshd',
+          ];
+    var rooted = false;
+    for (final p in rootPaths) {
+      try {
+        if (File(p).existsSync()) {
+          rooted = true;
+          break;
+        }
+      } catch (_) {}
+    }
+    items.add(
+      _SecItem(
+        Platform.isAndroid ? 'Root 检测' : '越狱检测',
+        rooted ? '检测到 Root/越狱痕迹，设备环境不可信' : '未检测到常见 Root/越狱痕迹',
+        !rooted,
+      ),
+    );
+
+    // 5. VPN / 代理网卡检测（tun/ppp 接口）
+    var vpn = false;
+    try {
+      final ifs = await NetworkInterface.list(includeLoopback: false);
+      for (final i in ifs) {
+        final n = i.name.toLowerCase();
+        if (n.contains('tun') ||
+            n.contains('ppp') ||
+            n.contains('tap') ||
+            n.contains('ipsec') ||
+            n.startsWith('utun')) {
+          vpn = true;
+          break;
+        }
+      }
+    } catch (_) {}
+    items.add(
+      _SecItem(
+        'VPN / 代理环境',
+        vpn ? '检测到 VPN 虚拟网卡（tun/ppp），流量可能被截获' : '未检测到 VPN 虚拟网卡',
+        !vpn,
+        warn: true,
+      ),
+    );
+
+    // 6. 模拟器粗检（安卓常见 Genymotion/夜神 等）
+    if (Platform.isAndroid) {
+      var emu = false;
+      for (final f in [
+        '/dev/qemu_pipe',
+        '/system/lib/libdroid4x.so',
+        '/system/lib/libnoxd.so',
+        '/system/lib/libyueme.so',
+      ]) {
+        try {
+          if (File(f).existsSync()) {
+            emu = true;
+            break;
+          }
+        } catch (_) {}
+      }
+      items.add(
+        _SecItem('模拟器检测', emu ? '检测到模拟器特征文件' : '未检测到模拟器特征', !emu, warn: true),
+      );
+    } else {
+      items.add(_SecItem('模拟器检测', 'iOS 沙盒限制，跳过', null));
+    }
+
+    // 7. 应用完整性标记（release + 签名读取成功 视为完整）
+    final integrity = isRelease && (Platform.isIOS || signMd5 != null);
+    items.add(
+      _SecItem(
+        '应用完整性',
+        integrity
+            ? 'release 包 + 签名可读，完整性初检通过（可进一步用「远程签名比对」复核）'
+            : '存在调试构建或签名缺失，完整性存疑',
+        integrity,
+      ),
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _local = items;
+      _localRunning = false;
+    });
+  }
+
+  // ─────────── 服务器远程检测 ───────────
+
+  Future<void> _loadReport() async {
+    setState(() => _reportLoading = true);
+    try {
+      final r = await _svc.secReport();
+      if (!mounted) return;
+      setState(() {
+        _report = r;
+        _reportLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _reportLoading = false);
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  Future<void> _remoteSignCheck() async {
+    if (_signChecking) return;
+    setState(() => _signChecking = true);
+    try {
+      if (Platform.isAndroid) {
+        final md5 = await _channel.invokeMethod<String>('getSignature');
+        final r = await _svc.secSignCheck(md5 ?? '');
+        if (!mounted) return;
+        setState(() {
+          _signCheckOk = r['match'] == true;
+          _signCheckResult = _signCheckOk == true
+              ? '签名与服务器登记一致，未被重打包'
+              : '签名不一致！应用可能被重打包';
+        });
+      } else {
+        if (!mounted) return;
+        setState(() {
+          _signCheckOk = null;
+          _signCheckResult = '仅安卓支持（iOS 无法读取自身签名）';
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _signCheckOk = false;
+        _signCheckResult = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
+    if (mounted) setState(() => _signChecking = false);
+  }
+
+  Future<void> _banDialog() async {
+    final ctrl = TextEditingController();
+    final reason = TextEditingController(text: '管理员手动封禁');
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('封禁 IP'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: ctrl,
+              decoration: const InputDecoration(
+                labelText: 'IP 地址',
+                hintText: '如 1.2.3.4',
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: reason,
+              decoration: const InputDecoration(labelText: '封禁原因'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('封禁'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final ip = ctrl.text.trim();
+    if (ip.isEmpty) {
+      ToastUtil.error('请输入 IP');
+      return;
+    }
+    try {
+      await _svc.secBanIp(ip, reason: reason.text.trim());
+      ToastUtil.success('已封禁 $ip');
+      _loadReport();
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  Future<void> _unban(String ip) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('解封确认'),
+        content: Text('确定解封 $ip 吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('解封'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await _svc.secUnbanIp(ip);
+      ToastUtil.success('已解封 $ip');
+      _loadReport();
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  /// 强制全员下线（清空所有 token）—— 二次确认
+  Future<void> _killAll() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('⚠️ 强制全员下线'),
+        content: const Text('将清空服务器上所有用户的登录会话（含你自己）。\n所有用户需重新登录，确认执行？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: C.danger),
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('确认强制下线'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      final r = await _svc.secKillall();
+      ToastUtil.success(r['msg']?.toString() ?? '已强制全员下线');
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  Future<void> _toggleMaintain() async {
+    final cur = (int.tryParse('${_report?['maintain_enable'] ?? 0}') ?? 0) == 1;
+    final target = cur ? 0 : 1;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(target == 1 ? '⚠️ 开启维护模式' : '关闭维护模式'),
+        content: Text(
+          target == 1
+              ? '开启后 App 端将展示「系统维护中」，请确认没有正在进行的支付/写入操作。'
+              : '将恢复 App 正常访问。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('确认'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      // 维护模式写入走 splash_save（复用系统配置通道）
+      await _svc.saveSplash({'maintain_enable': target});
+      ToastUtil.success(target == 1 ? '维护模式已开启' : '维护模式已关闭');
+      _loadReport();
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  // ─────────── UI ───────────
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 30),
+      children: [
+        _sectionTitle(
+          '本机安全体检',
+          onAction: _localRunning ? null : _runLocalChecks,
+          actionText: _localRunning ? '检测中…' : '立即检测',
+        ),
+        if (_local.isEmpty)
+          const Padding(
+            padding: EdgeInsets.all(24),
+            child: Center(child: CircularProgressIndicator()),
+          )
+        else
+          Deco.glass(
+            context,
+            padding: const EdgeInsets.all(6),
+            child: Column(children: [for (final it in _local) _localRow(it)]),
+          ),
+        const SizedBox(height: 18),
+        _sectionTitle(
+          '服务器远程检测',
+          onAction: _reportLoading ? null : _loadReport,
+          actionText: _reportLoading ? '加载中…' : '刷新',
+        ),
+        _remoteCard(),
+        const SizedBox(height: 14),
+        _opsCard(),
+        const SizedBox(height: 14),
+        _banCard(),
+      ],
+    );
+  }
+
+  Widget _sectionTitle(
+    String title, {
+    VoidCallback? onAction,
+    String actionText = '',
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, left: 4),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const Spacer(),
+          if (onAction != null)
+            TextButton(
+              onPressed: onAction,
+              child: Text(actionText, style: const TextStyle(fontSize: 13)),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _localRow(_SecItem it) {
+    final (icon, color) = it.pass == null
+        ? (Icons.info_outline_rounded, C.stroke)
+        : (
+            it.pass! ? Icons.check_circle_rounded : Icons.cancel_rounded,
+            it.pass! ? C.success : (it.warn ? C.warning : C.danger),
+          );
+    return ListTile(
+      dense: true,
+      leading: Icon(icon, color: color, size: 22),
+      title: Text(
+        it.title,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      ),
+      subtitle: Text(
+        it.desc,
+        style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
+      ),
+    );
+  }
+
+  Widget _statRow(String k, String v) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(child: Text(k, style: const TextStyle(fontSize: 13))),
+          Text(
+            v,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _remoteCard() {
+    final r = _report;
+    return Deco.glass(
+      context,
+      padding: const EdgeInsets.all(14),
+      child: r == null
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _statRow('活跃会话数 (token)', '${r['active_tokens'] ?? '-'}'),
+                _statRow(
+                  '总用户 / 今日新增',
+                  '${r['total_users'] ?? '-'} / ${r['today_users'] ?? '-'}',
+                ),
+                _statRow('封禁名单数量', '${r['banip_count'] ?? '-'}'),
+                _statRow(
+                  '维护模式',
+                  (int.tryParse('${r['maintain_enable'] ?? 0}') ?? 0) == 1
+                      ? '🔴 开启中'
+                      : '🟢 关闭',
+                ),
+                _statRow(
+                  '已登记线上签名',
+                  (r['registered_sign_md5']?.toString().isEmpty ?? true)
+                      ? '未登记'
+                      : '已登记',
+                ),
+                if ((r['top_ips'] as List? ?? []).isNotEmpty) ...[
+                  const Divider(height: 16),
+                  const Text(
+                    '最近活跃 IP Top（按登录用户聚合）',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  for (final e in (r['top_ips'] as List).take(5))
+                    Padding(
+                      padding: const EdgeInsets.only(top: 3),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              e['ip'].toString(),
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                          Text(
+                            '${e['cnt']} 用户',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).hintColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ],
+            ),
+    );
+  }
+
+  Widget _opsCard() {
+    Widget btn(String label, IconData icon, Color color, VoidCallback onTap) =>
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: onTap,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: color,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+            ),
+            icon: Icon(icon, size: 18),
+            label: Text(label, style: const TextStyle(fontSize: 12)),
+          ),
+        );
+    final maintainOn =
+        (int.tryParse('${_report?['maintain_enable'] ?? 0}') ?? 0) == 1;
+    return Column(
+      children: [
+        Row(
+          children: [
+            btn(
+              maintainOn ? '关闭维护模式' : '开启维护模式',
+              Icons.engineering_rounded,
+              maintainOn ? C.success : C.warning,
+              _toggleMaintain,
+            ),
+            const SizedBox(width: 10),
+            btn('签名远程比对', Icons.fingerprint_rounded, C.brand, _remoteSignCheck),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            btn('封禁 IP', Icons.block_rounded, C.danger, _banDialog),
+            const SizedBox(width: 10),
+            btn('强制全员下线', Icons.logout_rounded, C.danger, _killAll),
+          ],
+        ),
+        if (_signCheckResult != null) ...[
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Icon(
+                _signCheckOk == null
+                    ? Icons.info_outline
+                    : (_signCheckOk!
+                          ? Icons.verified_rounded
+                          : Icons.gpp_bad_rounded),
+                size: 16,
+                color: _signCheckOk == null
+                    ? C.stroke
+                    : (_signCheckOk! ? C.success : C.danger),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  '远程签名比对: $_signCheckResult',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _banCard() {
+    final list = (List<Map<String, dynamic>>.from(
+      ((_report?['banip_list'] as List?) ?? []).map(
+        (e) => Map<String, dynamic>.from(e),
+      ),
+    ));
+    return Deco.glass(
+      context,
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '封禁名单',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          if (list.isEmpty)
+            Text(
+              '暂无封禁记录',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).hintColor,
+              ),
+            )
+          else
+            for (final b in list)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        b['ip'].toString(),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        '${b['reason'] ?? ''}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context).hintColor,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => _unban(b['ip'].toString()),
+                      child: const Text('解封', style: TextStyle(fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+}

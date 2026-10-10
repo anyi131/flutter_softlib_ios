@@ -12,6 +12,7 @@ import 'tabs/admin_content_tab.dart';
 import 'tabs/admin_logs_tab.dart';
 import 'tabs/admin_orders_tab.dart';
 import 'tabs/admin_splash_tab.dart';
+import 'tabs/admin_security_tab.dart';
 import 'tabs/admin_ui_tab.dart';
 import 'tabs/admin_users_tab.dart';
 
@@ -25,7 +26,7 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage>
     with SingleTickerProviderStateMixin {
-  late final TabController _tab = TabController(length: 9, vsync: this);
+  late final TabController _tab = TabController(length: 10, vsync: this);
 
   bool _checking = true;
   bool _isAdmin = false;
@@ -114,6 +115,7 @@ class _AdminPageState extends State<AdminPage>
                       AdminUiTab(),
                       AdminLogsTab(),
                       AdminSplashTab(),
+                      AdminSecurityTab(),
                     ],
                   ),
                 ),
@@ -201,6 +203,7 @@ class _AdminPageState extends State<AdminPage>
       (Icons.palette_rounded, '界面'),
       (Icons.history_rounded, '日志'),
       (Icons.settings_rounded, '配置'),
+      (Icons.security_rounded, '安全'),
     ];
     return SizedBox(
       height: 52,
