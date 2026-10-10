@@ -174,6 +174,197 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
     );
   }
 
+  /// ★ 批量设置分类：多选=应用到选中；单条=快速设置该软件
+  Future<void> _batchSetCat([List<int>? ids]) async {
+    final target = (ids ?? _sel.toList()).where((v) => v > 0).toList();
+    if (target.isEmpty) {
+      ToastUtil.info('请先勾选要设置的软件');
+      return;
+    }
+    List<Map<String, dynamic>> cats = [];
+    try {
+      cats = await _svc.appCats();
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      return;
+    }
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        constraints:
+            BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.6),
+        decoration: BoxDecoration(
+          color: ctx.isDark ? C.bg1 : Colors.white,
+          borderRadius:
+              const BorderRadius.vertical(top: Radius.circular(R.xl)),
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('设置分类（已选 ${target.length} 个）',
+                style: Ty.h2.copyWith(fontSize: 17, color: ctx.t1)),
+            const SizedBox(height: 10),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.category_outlined,
+                        color: C.t3, size: 20),
+                    title:
+                        Text('未分类', style: Ty.small.copyWith(color: ctx.t2)),
+                    onTap: () => Navigator.pop(ctx, 0),
+                  ),
+                  ...cats.map((c) => ListTile(
+                        leading: const Icon(Icons.category_rounded,
+                            color: C.violet, size: 20),
+                        title: Text('${c['title']}',
+                            style: Ty.small.copyWith(color: ctx.t2)),
+                        subtitle: c['count'] != null
+                            ? Text('${c['count']} 款软件',
+                                style: Ty.tiny.copyWith(color: ctx.t3))
+                            : null,
+                        onTap: () => Navigator.pop(
+                            ctx, int.tryParse('${c['id']}') ?? 0),
+                      )),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ).then((catId) async {
+      if (catId == null || !mounted) return;
+      await _doBatch(target, catId: catId as int);
+    });
+  }
+
+  /// ★ 批量设置会员下载：免费 / 会员专享（+价格）
+  Future<void> _batchSetVip([List<int>? ids]) async {
+    final target = (ids ?? _sel.toList()).where((v) => v > 0).toList();
+    if (target.isEmpty) {
+      ToastUtil.info('请先勾选要设置的软件');
+      return;
+    }
+    final isVip = ValueNotifier<bool>(false);
+    final price = TextEditingController();
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (dctx) => ValueListenableBuilder<bool>(
+        valueListenable: isVip,
+        builder: (ctx, vip, __) => AlertDialog(
+          title: Text('设置会员下载（已选 ${target.length} 个）'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<bool>(
+                value: false,
+                groupValue: vip,
+                onChanged: (v) => isVip.value = v ?? false,
+                title: const Text('免费下载'),
+              ),
+              RadioListTile<bool>(
+                value: true,
+                groupValue: vip,
+                onChanged: (v) => isVip.value = v ?? true,
+                title: const Text('会员专享'),
+              ),
+              if (vip) ...[
+                TextField(
+                  controller: price,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: '会员价 / 购买价（¥，可留空）',
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text('填了价格后：会员可免费下，非会员需用余额购买',
+                    style: Ty.tiny.copyWith(color: ctx.t3)),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(dctx, false),
+                child: const Text('取消')),
+            FilledButton(
+                onPressed: () => Navigator.pop(dctx, true),
+                child: const Text('应用')),
+          ],
+        ),
+      ),
+    );
+    if (go != true || !mounted) return;
+    await _doBatch(
+      target,
+      isVip: isVip.value ? 1 : 0,
+      vipPrice: isVip.value ? price.text.trim() : null,
+    );
+  }
+
+  /// 统一执行批量设置并刷新
+  Future<void> _doBatch(
+    List<int> target, {
+    int? catId,
+    int? isVip,
+    String? vipPrice,
+  }) async {
+    if (catId == null && isVip == null && vipPrice == null) return;
+    try {
+      final r = await _svc.appBatch(
+        ids: target,
+        catId: catId,
+        isVip: isVip,
+        vipPrice: vipPrice,
+      );
+      if (!mounted) return;
+      setState(() {
+        _selMode = false;
+        _sel.clear();
+      });
+      ToastUtil.success('已更新 ${r['updated'] ?? target.length} 个软件');
+      await _load();
+    } catch (e) {
+      if (mounted) {
+        ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      }
+    }
+  }
+
+  /// 单条快速设置（行内按钮）：弹菜单选 设分类 / 设会员
+  Future<void> _quickSet(int id) async {
+    final act = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.category_rounded,
+                  color: C.violet, size: 20),
+              title: const Text('设分类'),
+              onTap: () => Navigator.pop(ctx, 'cat'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.workspace_premium_rounded,
+                  color: C.gold, size: 20),
+              title: const Text('设会员下载'),
+              onTap: () => Navigator.pop(ctx, 'vip'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (act == 'cat') await _batchSetCat([id]);
+    if (act == 'vip') await _batchSetVip([id]);
+  }
+
   /// 小胶囊按钮（工具栏用）
   Widget _miniBtn({
     required IconData icon,
@@ -284,6 +475,24 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                     ),
                     const SizedBox(width: 8),
                     _miniBtn(
+                      icon: Icons.category_rounded,
+                      label: '设分类',
+                      color: C.violet,
+                      onTap: _sel.isEmpty
+                          ? null
+                          : () => _batchSetCat(_sel.toList()),
+                    ),
+                    const SizedBox(width: 8),
+                    _miniBtn(
+                      icon: Icons.workspace_premium_rounded,
+                      label: '设会员',
+                      color: C.gold,
+                      onTap: _sel.isEmpty
+                          ? null
+                          : () => _batchSetVip(_sel.toList()),
+                    ),
+                    const SizedBox(width: 8),
+                    _miniBtn(
                       icon: Icons.select_all_rounded,
                       label: _sel.isNotEmpty && _sel.length == _list.length
                           ? '取消全选'
@@ -391,6 +600,12 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                               ),
                             ),
                             if (!_selMode) ...[
+                              IconButton(
+                                tooltip: '快速设置分类/会员',
+                                icon: const Icon(Icons.tune_rounded,
+                                    size: 19, color: C.violet),
+                                onPressed: () => _quickSet(aid),
+                              ),
                               IconButton(
                                 tooltip: '补全此软件',
                                 icon: const Icon(

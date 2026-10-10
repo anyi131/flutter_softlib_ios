@@ -45,6 +45,22 @@ class AdminService {
     return d is List ? d.map((e) => Map<String, dynamic>.from(e)).toList() : [];
   }
 
+  /// ★ 批量设置分类/会员下载（只更新传入的字段）
+  Future<Map<String, dynamic>> appBatch({
+    required List<int> ids,
+    int? catId,
+    int? isVip,
+    String? vipPrice,
+  }) async {
+    final d = (await _post('app_batch', {
+      'ids': ids.join(','),
+      if (catId != null) 'cat_id': catId,
+      if (isVip != null) 'is_vip': isVip,
+      if (vipPrice != null) 'vip_price': vipPrice,
+    }))['data'];
+    return d is Map ? Map<String, dynamic>.from(d) : {};
+  }
+
   Future<void> saveApp(Map<String, dynamic> data) async => _post('app_save', data);
 
   /// ★ 一键补全缺失参数（单选/多选/全部）
@@ -493,9 +509,15 @@ class AdminService {
 
   /// 把采集结果导入软件库
   Future<Map<String, dynamic>> collectImport(List<Map<String, dynamic>> items,
-          {int catId = 0}) async =>
-      Map<String, dynamic>.from((await _post('collect_import',
-          {'items': jsonEncode(items), 'cat_id': catId}))['data'] ?? {});
+      {int? catId, int? isVip, String? vipPrice}) async {
+    final d = (await _post('collect_import', {
+      'items': jsonEncode(items),
+      if (catId != null) 'cat_id': catId,
+      if (isVip != null) 'is_vip': isVip,
+      if (vipPrice != null) 'vip_price': vipPrice,
+    }))['data'];
+    return d is Map ? Map<String, dynamic>.from(d) : {};
+  }
 
   // ───────── 工具管理（v43 #5）─────────
   Future<List<Map<String, dynamic>>> toolCats() async {

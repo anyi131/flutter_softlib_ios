@@ -1055,11 +1055,19 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         )
         .toList();
     if (items.isEmpty) return;
+    // ★ 导入前批量设置 分类 / 会员下载（对应「采集入库前批量设置」需求）
+    final batch = await _pickBatchSettings();
+    if (batch == null) return; // 用户取消
     // 导入前让用户确认/修改数据（对应需求 #10）
     final edited = await _editBeforeImport(items);
     if (edited == null || edited.isEmpty) return;
     try {
-      final r = await _svc.collectImport(edited);
+      final r = await _svc.collectImport(
+        edited,
+        catId: batch['cat_id'] as int?,
+        isVip: batch['is_vip'] as int?,
+        vipPrice: batch['vip_price'] as String?,
+      );
       ToastUtil.success('已导入 ${r['added']} 条，跳过重复 ${r['skipped']} 条');
       setState(() {
         _results = [];
@@ -1068,6 +1076,102 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     } catch (e) {
       ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
     }
+  }
+
+  /// ★ 导入前批量设置：分类（可跳过=保持默认）+ 会员下载/价格
+  /// 返回 {cat_id?, is_vip?, vip_price?}；null=取消导入
+  Future<Map<String, dynamic>?> _pickBatchSettings() async {
+    List<Map<String, dynamic>> cats = [];
+    try {
+      cats = await _svc.appCats();
+    } catch (_) {}
+    int? catId; // null = 不设置（走服务端默认）
+    bool isVip = false;
+    final price = TextEditingController();
+    final go = await Get.dialog<bool>(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: StatefulBuilder(
+          builder: (ctx, setD) => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('批量设置（导入前）',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 4),
+              Text('为本次导入的软件统一设置分类与下载权限',
+                  style: Ty.tiny.copyWith(color: ctx.t3)),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<int>(
+                initialValue: catId,
+                decoration: const InputDecoration(
+                  labelText: '所属分类（不选=未分类）',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: [
+                  const DropdownMenuItem(value: null, child: Text('不设置')),
+                  const DropdownMenuItem(value: 0, child: Text('未分类')),
+                  ...cats.map((c) => DropdownMenuItem(
+                        value: int.tryParse('${c['id']}') ?? 0,
+                        child: Text('${c['title']}'),
+                      )),
+                ],
+                onChanged: (v) => setD(() => catId = v),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Icon(Icons.workspace_premium_rounded,
+                      size: 18, color: C.gold),
+                  const SizedBox(width: 8),
+                  const Expanded(child: Text('会员专享')),
+                  Switch(
+                    value: isVip,
+                    activeThumbColor: C.gold,
+                    onChanged: (v) => setD(() => isVip = v),
+                  ),
+                ],
+              ),
+              if (isVip)
+                TextField(
+                  controller: price,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: '会员价 / 购买价（¥，可留空）',
+                    isDense: true,
+                  ),
+                ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(result: false),
+                      child: const Text('取消导入'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () => Get.back(result: true),
+                      child: const Text('下一步'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (go != true) return null;
+    return {
+      if (catId != null) 'cat_id': catId,
+      'is_vip': isVip ? 1 : 0,
+      if (isVip) 'vip_price': price.text.trim(),
+    };
   }
 
   /// 导入前编辑：逐条可修改名称/大小/版本/分类/截图，避免脏数据入库
