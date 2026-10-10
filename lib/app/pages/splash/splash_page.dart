@@ -46,8 +46,14 @@ class _SplashPageState extends State<SplashPage> {
 
   Future<void> _boot() async {
     // ★ 本地开屏图 与 服务器配置 并行拉取（避免串行等待导致启动变慢）
+    // v331b：整体兜底 8 秒——无论配置/权限/任何环节挂起，超时必进主界面
     final localFuture = LocalSplash.get();
-    final cfgFuture = SoftService.instance.fetchConfig();
+    final cfgFuture = SoftService.instance
+        .fetchConfig()
+        .timeout(const Duration(seconds: 8), onTimeout: () => null);
+    Future.delayed(const Duration(seconds: 8), () {
+      if (mounted && !_entered) _enter();
+    });
 
     _localSplash = await localFuture;
     if (mounted && _localSplash.isNotEmpty) {
