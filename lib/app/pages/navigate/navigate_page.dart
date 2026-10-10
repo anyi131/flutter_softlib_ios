@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -7,13 +5,11 @@ import 'package:get/get.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'navigate_logic.dart';
+import 'nav_templates.dart';
 
-/// 主框架 —— iOS 26/27 风格玻璃底部 Tab
+/// 主框架 —— 底部导航栏由 ui_config.nav_template 决定（5 套模板，见 nav_templates.dart）
 ///
-/// 特征：
-///  · 完全通透的玻璃胶囊（无实色底，强模糊 + 高光描边）
-///  · 选中项为独立的渐变浮岛（带光晕），未选中仅图标
-///  · 沉浸式延伸（内容穿过 Tab 显示）
+///  classic 玻璃岛 / glass 毛玻璃胶囊 / float 分离凸起 / dock 纯图标气泡 / curve 缺口FAB
 class NavigatePage extends StatefulWidget {
   const NavigatePage({super.key});
 
@@ -102,106 +98,8 @@ class _NavigatePageState extends State<NavigatePage> {
         ),
         bottomNavigationBar: GetBuilder<NavigateLogic>(
           id: 'navigate',
-          builder: (logic) => _glassBar(context, logic, inset),
-        ),
-      ),
-    );
-  }
-
-  /// iOS 26/27 玻璃 Tab
-  Widget _glassBar(BuildContext context, NavigateLogic logic, double inset) {
-    final isDark = context.isDark;
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20, 0, 20, (inset > 0 ? inset : 8) + 6),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(R.full),
-        child: BackdropFilter(
-          // 强模糊 + 极低不透明度 = iOS 26 的"液态玻璃"
-          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-          child: Container(
-            height: 66,
-            decoration: BoxDecoration(
-              // 几乎完全透明，只保留一点点底色让图标可辨识
-              color: isDark
-                  ? Colors.white.withAlpha(20)
-                  : Colors.white.withAlpha(120),
-              borderRadius: BorderRadius.circular(R.full),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withAlpha(38)
-                    : Colors.white.withAlpha(220),
-                width: 1.1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(isDark ? 90 : 26),
-                  blurRadius: 30,
-                  offset: const Offset(0, 12),
-                ),
-              ],
-            ),
-            child: Row(
-              children: List.generate(
-                logic.labels.length,
-                (i) => Expanded(child: _item(context, logic, i)),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 单个 Tab 项
-  Widget _item(BuildContext context, NavigateLogic logic, int i) {
-    final sel = logic.currentIndex == i;
-    final dest = logic.labels[i];
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => logic.changePage(i),
-      child: Center(
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-          padding: EdgeInsets.symmetric(horizontal: sel ? 15 : 11, vertical: 8),
-          decoration: BoxDecoration(
-            gradient: sel ? Deco.brandGradient : null,
-            borderRadius: BorderRadius.circular(R.full),
-            boxShadow: sel
-                ? [
-                    BoxShadow(
-                      color: C.brand.withAlpha(110),
-                      blurRadius: 18,
-                      offset: const Offset(0, 6),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconTheme(
-                data: IconThemeData(
-                  size: 21,
-                  color: sel ? Colors.white : context.t2,
-                ),
-                child:
-                    (sel ? dest.selectedIcon : dest.icon) ??
-                    const SizedBox.shrink(),
-              ),
-              if (sel) ...[
-                const SizedBox(width: 6),
-                Text(
-                  dest.label,
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ],
-          ),
+          // v54：底部导航模板（classic/glass/float/dock/curve）
+          builder: (logic) => NavTemplates.bar(context, logic, inset),
         ),
       ),
     );

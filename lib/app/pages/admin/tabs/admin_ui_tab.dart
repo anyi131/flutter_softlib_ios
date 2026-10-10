@@ -11,6 +11,7 @@ import '../../../design/app_style_controller.dart';
 import '../../../design/theme_controller.dart';
 import '../../../design/theme_palette.dart';
 import '../../../design/ui.dart';
+import '../admin_template.dart';
 import '../../../utils/toast_util.dart';
 import '../../../pages/navigate/navigate_logic.dart';
 
@@ -57,6 +58,9 @@ class _AdminUiTabState extends State<AdminUiTab> {
   String _authTemplate = 'classic';
   String _noticeTemplate = 'card';
   String _inviteTemplate = 'classic';
+  // v54：界面模板体系
+  String _navTemplate = 'classic';
+  String _adminTemplate = 'light_card';
   // v52w：邀请配置
   final _inviteScoreCtrl = TextEditingController();
   // ★ 邀请分享文案（可自定义，留空用内置默认）
@@ -130,6 +134,8 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _authTemplate = '${ui['auth_template'] ?? 'classic'}';
         _noticeTemplate = '${ui['notice_template'] ?? 'card'}';
         _inviteTemplate = '${ui['invite_template'] ?? 'classic'}';
+        _navTemplate = '${ui['nav_template'] ?? 'classic'}';
+        _adminTemplate = '${ui['admin_template'] ?? 'light_card'}';
         _inviteScoreCtrl.text = '${ui['invite_score'] ?? 50}';
         _inviteShareCtrl.text = '${ui['invite_share_text'] ?? ''}';
         _qSign = '${home['quick_sign'] ?? 1}' == '1';
@@ -208,6 +214,8 @@ class _AdminUiTabState extends State<AdminUiTab> {
           'quick_update': _qUpdate ? 1 : 0,
           'invite_score': int.tryParse(_inviteScoreCtrl.text.trim()) ?? 50,
         },
+        'nav_template': _navTemplate,
+        'admin_template': _adminTemplate,
         'invite_share_text': _inviteShareCtrl.text.trim(),
       },
     };
@@ -238,8 +246,12 @@ class _AdminUiTabState extends State<AdminUiTab> {
           AppStyleController.instance.detailStyle.value = parseDetailStyle(
             ui.detailStyle,
           );
+          // ★ v54：导航/后台模板热切换
           try {
             Get.find<NavigateLogic>().applyUiConfig(force: true);
+          } catch (_) {}
+          try {
+            adminTemplateNotifier.value = ui.adminTemplate;
           } catch (_) {}
         }
       } catch (_) {}
@@ -323,6 +335,8 @@ class _AdminUiTabState extends State<AdminUiTab> {
             _card('登录/注册模板', _authTemplatePicker()),
             _card('公告弹窗模板', _noticeTemplatePicker()),
             _card('邀请页模板', _inviteTemplatePicker()),
+            _card('底部导航栏模板', _navTemplatePicker()),
+            _card('管理后台整体模板', _adminTemplatePicker()),
             _card('邀请配置', _inviteConfig()),
             _card('首页快捷入口', _quickSwitches()),
           ],
@@ -813,6 +827,32 @@ class _AdminUiTabState extends State<AdminUiTab> {
     ],
     _inviteTemplate,
     (v) => setState(() => _inviteTemplate = v),
+  );
+
+  // v54：底部导航栏模板
+  Widget _navTemplatePicker() => _chipRow(
+    const [
+      ('classic', '经典玻璃岛'),
+      ('glass', '毛玻璃胶囊'),
+      ('float', '分离凸起'),
+      ('dock', '纯图标Dock'),
+      ('curve', '凹陷缺口FAB'),
+    ],
+    _navTemplate,
+    (v) => setState(() => _navTemplate = v),
+  );
+
+  // v54：管理后台整体模板
+  Widget _adminTemplatePicker() => _chipRow(
+    const [
+      ('light_card', '浅色卡片'),
+      ('dark_console', '暗色控制台'),
+      ('minimal', '极简排版'),
+      ('brand', '品牌渐变'),
+      ('desk', '桌面工作台'),
+    ],
+    _adminTemplate,
+    (v) => setState(() => _adminTemplate = v),
   );
 
   Widget _templatePicker() {

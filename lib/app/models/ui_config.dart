@@ -47,6 +47,11 @@ class UiConfig {
   final String inviteTemplate; // classic / hero / minimal（邀请页）
   final String inviteShareText; // ★ 邀请分享文案（后台可自定义，空=用内置默认）
 
+  // ── v54 界面模板体系 ──
+  final String navTemplate; // 底部导航模板：classic/glass/float/dock/curve
+  final String
+  adminTemplate; // 管理后台模板：light_card/dark_console/minimal/brand/desk
+
   // ── 首页快捷入口开关（v52g #7 热更新布局）──
   final bool quickSign;
   final bool quickVip;
@@ -81,6 +86,8 @@ class UiConfig {
     this.noticeTemplate = 'card',
     this.inviteTemplate = 'classic',
     this.inviteShareText = '',
+    this.navTemplate = 'classic',
+    this.adminTemplate = 'light_card',
     this.quickSign = true,
     this.quickVip = true,
     this.quickService = true,
@@ -129,6 +136,8 @@ class UiConfig {
       noticeTemplate: _s(json['notice_template'], 'card'),
       inviteTemplate: _s(json['invite_template'], 'classic'),
       inviteShareText: _s(json['invite_share_text'], ''),
+      navTemplate: _s(json['nav_template'], 'classic'),
+      adminTemplate: _s(json['admin_template'], 'light_card'),
       quickSign: _b(home['quick_sign'], true),
       quickVip: _b(home['quick_vip'], true),
       quickService: _b(home['quick_service'], true),
@@ -160,6 +169,8 @@ class UiConfig {
       noticeTemplate: base.noticeTemplate,
       inviteTemplate: base.inviteTemplate,
       inviteShareText: base.inviteShareText,
+      navTemplate: base.navTemplate,
+      adminTemplate: base.adminTemplate,
       quickSign: base.quickSign,
       quickVip: base.quickVip,
       quickService: base.quickService,

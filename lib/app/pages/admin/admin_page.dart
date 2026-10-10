@@ -6,6 +6,7 @@ import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
+import 'admin_template.dart';
 import 'tabs/admin_apps_tab.dart';
 import 'tabs/admin_collect_tab.dart';
 import 'tabs/admin_content_tab.dart';
@@ -35,11 +36,18 @@ class _AdminPageState extends State<AdminPage>
   @override
   void initState() {
     super.initState();
+    // v54：后台模板热切换（「界面」Tab 保存后即时生效）
+    adminTemplateNotifier.addListener(_onTplChanged);
     _check();
+  }
+
+  void _onTplChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    adminTemplateNotifier.removeListener(_onTplChanged);
     _tab.dispose();
     super.dispose();
   }
@@ -92,195 +100,28 @@ class _AdminPageState extends State<AdminPage>
       );
     }
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          Deco.pageBackground(context),
-          SafeArea(
-            bottom: false,
-            child: Column(
-              children: [
-                _header(),
-                _tabBar(),
-                Expanded(
-                  child: TabBarView(
-                    controller: _tab,
-                    children: const [
-                      _OverviewTab(),
-                      AdminAppsTab(),
-                      AdminUsersTab(),
-                      AdminOrdersTab(),
-                      AdminCollectTab(),
-                      AdminContentTab(),
-                      AdminUiTab(),
-                      AdminJicunTab(),
-                      AdminLogsTab(),
-                      AdminSplashTab(),
-                      AdminSecurityTab(),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ───── 头部 ─────
-  Widget _header() {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(context.pagePadding, 12, 12, 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ShaderMask(
-                  shaderCallback: (r) => Deco.aurora().createShader(r),
-                  child: Text(
-                    '管理后台',
-                    style: Ty.display.copyWith(color: Colors.white),
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Row(
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: C.mint,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${UserService.instance.user?.nickname ?? '管理员'} · v3.3 · 全局配置/界面/采集/经营',
-                      style: Ty.small.copyWith(color: context.t3),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          _iconBtn(Icons.refresh_rounded, () => setState(() {})),
-        ],
-      ),
-    );
-  }
-
-  Widget _iconBtn(IconData i, VoidCallback f) => GestureDetector(
-    onTap: f,
-    child: Container(
-      width: 40,
-      height: 40,
-      margin: const EdgeInsets.only(left: 6),
-      decoration: BoxDecoration(
-        color: context.isDark ? Colors.white.withAlpha(12) : Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: context.isDark
-              ? Colors.white.withAlpha(20)
-              : Colors.black.withAlpha(8),
-        ),
-      ),
-      child: Icon(i, size: 19, color: context.t2),
-    ),
-  );
-
-  // ───── Tab 栏（玻璃胶囊）─────
-  Widget _tabBar() {
-    const items = [
-      (Icons.dashboard_rounded, '概览'),
-      (Icons.apps_rounded, '软件'),
-      (Icons.people_rounded, '用户'),
-      (Icons.receipt_long_rounded, '订单'),
-      (Icons.cloud_download_rounded, '采集'),
-      (Icons.article_rounded, '内容'),
-      (Icons.palette_rounded, '界面'),
-      (Icons.download_rounded, '解析'),
-      (Icons.history_rounded, '日志'),
-      (Icons.settings_rounded, '配置'),
-      (Icons.security_rounded, '安全'),
-    ];
-    return SizedBox(
-      height: 52,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.fromLTRB(
-          context.pagePadding,
-          10,
-          context.pagePadding,
-          6,
-        ),
-        itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (context, i) {
-          final sel = _tab.index == i;
-          return GestureDetector(
-            onTap: () => setState(() => _tab.animateTo(i)),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                gradient: sel ? Deco.brandGradient : null,
-                color: sel
-                    ? null
-                    : (context.isDark
-                          ? Colors.white.withAlpha(12)
-                          : Colors.white),
-                borderRadius: BorderRadius.circular(R.full),
-                border: Border.all(
-                  color: sel
-                      ? Colors.transparent
-                      : (context.isDark
-                            ? Colors.white.withAlpha(20)
-                            : Colors.black.withAlpha(8)),
-                ),
-                boxShadow: sel
-                    ? [
-                        BoxShadow(
-                          color: C.brand.withAlpha(70),
-                          blurRadius: 14,
-                          offset: const Offset(0, 5),
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    items[i].$1,
-                    size: 16,
-                    color: sel ? Colors.white : context.t2,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    items[i].$2,
-                    style: Ty.small.copyWith(
-                      fontSize: 13,
-                      fontWeight: sel ? FontWeight.w900 : FontWeight.w600,
-                      color: sel ? Colors.white : context.t2,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+    // v54：管理后台整体界面模板（light_card/dark_console/minimal/brand/desk）
+    final tpl = adminTemplateCurrent;
+    if (adminTemplateNotifier.value != tpl) adminTemplateNotifier.value = tpl;
+    return AdminTemplateShell(
+      tab: _tab,
+      onRefresh: () => setState(() {}),
+      children: const [
+        _OverviewTab(),
+        AdminAppsTab(),
+        AdminUsersTab(),
+        AdminOrdersTab(),
+        AdminCollectTab(),
+        AdminContentTab(),
+        AdminUiTab(),
+        AdminLogsTab(),
+        AdminSplashTab(),
+        AdminSecurityTab(),
+      ],
     );
   }
 }
 
-// ═══════════════ 概览 ═══════════════
 class _OverviewTab extends StatefulWidget {
   const _OverviewTab();
 
