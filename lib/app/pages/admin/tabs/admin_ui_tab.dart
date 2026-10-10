@@ -58,6 +58,8 @@ class _AdminUiTabState extends State<AdminUiTab> {
   String _inviteTemplate = 'classic';
   // v52w：邀请配置
   final _inviteScoreCtrl = TextEditingController();
+  // ★ 邀请分享文案（可自定义，留空用内置默认）
+  final _inviteShareCtrl = TextEditingController();
   // 首页快捷入口（v52g #7）
   bool _qSign = true, _qVip = true, _qService = true, _qUpdate = true;
 
@@ -123,6 +125,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _noticeTemplate = '${ui['notice_template'] ?? 'card'}';
         _inviteTemplate = '${ui['invite_template'] ?? 'classic'}';
         _inviteScoreCtrl.text = '${ui['invite_score'] ?? 50}';
+        _inviteShareCtrl.text = '${ui['invite_share_text'] ?? ''}';
         _qSign = '${home['quick_sign'] ?? 1}' == '1';
         _qVip = '${home['quick_vip'] ?? 1}' == '1';
         _qService = '${home['quick_service'] ?? 1}' == '1';
@@ -176,6 +179,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         'quick_update': _qUpdate ? 1 : 0,
         'invite_score': int.tryParse(_inviteScoreCtrl.text.trim()) ?? 50,
       },
+      'invite_share_text': _inviteShareCtrl.text.trim(),
     },
   };
 
@@ -541,89 +545,34 @@ class _AdminUiTabState extends State<AdminUiTab> {
     );
   }
 
-  Widget _homeTemplatePicker() {
-    const opts = [('classic', '标准首页'), ('clean', '极简首页')];
-    return Row(
-      children: [
-        for (final o in opts) ...[
-          Expanded(
-            child: AppPressable(
-              onTap: () => setState(() => _homeTemplate = o.$1),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 11),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: _homeTemplate == o.$1
-                      ? C.brand.withAlpha(26)
-                      : context.isDark
-                      ? Colors.white.withAlpha(8)
-                      : Colors.black.withAlpha(4),
-                  borderRadius: BorderRadius.circular(13),
-                  border: Border.all(
-                    color: _homeTemplate == o.$1
-                        ? C.brand.withAlpha(140)
-                        : Colors.transparent,
-                    width: 1.3,
-                  ),
-                ),
-                child: Text(
-                  o.$2,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: _homeTemplate == o.$1 ? C.brand : context.t2,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          if (o != opts.last) const SizedBox(width: 9),
-        ],
-      ],
-    );
-  }
+  Widget _homeTemplatePicker() => _chipRow(
+    const [
+      ('classic', '标准首页'),
+      ('clean', '极简首页'),
+      ('focus', '搜索突出'),
+      ('banner_top', 'Banner置顶'),
+      ('grid_quick', '宫格快捷'),
+      ('cards', '双列大卡'),
+      ('feed', '信息流'),
+      ('compact_top', '紧凑置顶'),
+    ],
+    _homeTemplate,
+    (v) => setState(() => _homeTemplate = v),
+  );
 
-  Widget _detailStylePicker() {
-    const opts = [('standard', '标准'), ('poster', '海报式')];
-    return Row(
-      children: [
-        for (final o in opts) ...[
-          Expanded(
-            child: AppPressable(
-              onTap: () => setState(() => _detailStyle = o.$1),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 11),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: _detailStyle == o.$1
-                      ? C.brand.withAlpha(26)
-                      : context.isDark
-                      ? Colors.white.withAlpha(8)
-                      : Colors.black.withAlpha(4),
-                  borderRadius: BorderRadius.circular(13),
-                  border: Border.all(
-                    color: _detailStyle == o.$1
-                        ? C.brand.withAlpha(140)
-                        : Colors.transparent,
-                    width: 1.3,
-                  ),
-                ),
-                child: Text(
-                  o.$2,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: _detailStyle == o.$1 ? C.brand : context.t2,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          if (o != opts.last) const SizedBox(width: 9),
-        ],
-      ],
-    );
-  }
+
+  Widget _detailStylePicker() => _chipRow(
+    const [
+      ('standard', '标准'),
+      ('poster', '海报式'),
+      ('dark', '暗黑'),
+      ('minimal', '极简'),
+      ('compact', '紧凑'),
+    ],
+    _detailStyle,
+    (v) => setState(() => _detailStyle = v),
+  );
+
 
   Widget _chipRow(
     List<(String, String)> opts,
@@ -707,6 +656,31 @@ class _AdminUiTabState extends State<AdminUiTab> {
               style: TextStyle(fontSize: 11.5, color: context.t3),
             ),
           ],
+        ),
+        const SizedBox(height: 14),
+        Text(
+          '邀请分享文案（留空用默认；支持 {code} 邀请码、{score} 积分占位符）',
+          style: TextStyle(fontSize: 11.5, color: context.t3),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _inviteShareCtrl,
+          maxLines: 3,
+          style: TextStyle(fontSize: 13.5, color: context.t1),
+          decoration: InputDecoration(
+            isDense: true,
+            filled: true,
+            hintText: '【安逸软件汇】宝藏软件库，资源全更新快！注册填我的邀请码 {code}，你我各得 {score} 积分~',
+            hintStyle: TextStyle(fontSize: 12.5, color: context.t3),
+            fillColor: context.isDark
+                ? Colors.white.withAlpha(10)
+                : const Color(0xFFF5F6FA),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
         ),
         const SizedBox(height: 8),
         Text(
@@ -816,6 +790,8 @@ class _AdminUiTabState extends State<AdminUiTab> {
       ('dark', '暗黑'),
       ('poster', '海报'),
       ('compact', '紧凑'),
+      ('ticket', '票券'),
+      ('side', '左竖条'),
     ];
     return Wrap(
       spacing: 9,

@@ -191,7 +191,7 @@ class MineComponent extends StatelessWidget {
         _actionButton(context, logic),
       ];
     }
-    if (tpl == 'dark_card') {
+    if (tpl == 'split') {
       // v52t：分组表格式模板（无大卡，紧凑列表风格）
       return [
         _title(context),

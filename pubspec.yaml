@@ -103,7 +103,6 @@ flutter:
   assets:
     - assets/images/succeed.png
     - assets/images/app.png
-    - assets/images/mascot.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

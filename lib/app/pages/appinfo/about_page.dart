@@ -227,7 +227,7 @@ class _AboutPageState extends State<AboutPage> {
         _extraEntries(cfg),
       ];
     }
-    if (tpl == 'dark_card') {
+    if (tpl == 'desk') {
       // v52t：桌面风模板（左logo右信息横向卡）
       final logo = cfg?.aboutLogo ?? '';
       return [

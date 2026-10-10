@@ -122,8 +122,11 @@ class _SplashPageState extends State<SplashPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.rocket_launch_rounded,
-                    color: C.brand, size: 52),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.asset(Assets.imagesApp,
+                      width: 52, height: 52, fit: BoxFit.cover),
+                ),
                 const SizedBox(height: 16),
                 if (title.isNotEmpty)
                   Text(title,
@@ -290,8 +293,11 @@ class _SplashPageState extends State<SplashPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.rocket_launch_rounded,
-                color: Colors.white, size: 64),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: Image.asset(Assets.imagesApp,
+                  width: 64, height: 64, fit: BoxFit.cover),
+            ),
             const SizedBox(height: 18),
             Text(title,
                 style: const TextStyle(

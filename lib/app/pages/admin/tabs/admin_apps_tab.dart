@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../api/admin_service.dart';
+import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';
@@ -23,6 +24,10 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
   List<Map<String, dynamic>> _list = [];
   bool _loading = true;
   String _kw = '';
+  // ★ 一键补全缺失参数（支持单选/多选）
+  bool _selMode = false;
+  bool _filling = false;
+  final Set<int> _sel = {};
 
   @override
   void initState() {
@@ -44,47 +49,273 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
     }
   }
 
+  void _toggleSel(int id) {
+    if (id <= 0) return;
+    setState(() {
+      if (_sel.contains(id)) {
+        _sel.remove(id);
+      } else {
+        _sel.add(id);
+      }
+    });
+  }
+
+  /// ★ 一键补全缺失参数：ids 有值=补选中；all=true=补全部有缺失的
+  Future<void> _fill({List<int>? ids, bool all = false}) async {
+    if (!all && (ids == null || ids.isEmpty)) {
+      ToastUtil.info('请先勾选要补全的软件');
+      return;
+    }
+    setState(() => _filling = true);
+    try {
+      final r = await _svc.appFill(ids: ids, all: all);
+      final total = r['total'] ?? 0;
+      final filled = r['filled'] ?? 0;
+      final skipped = r['skipped'] ?? 0;
+      final failed = r['failed'] ?? 0;
+      if (!mounted) return;
+      setState(() {
+        _filling = false;
+        _selMode = false;
+        _sel.clear();
+      });
+      final raw = r['details'];
+      final details = raw is List ? raw : const [];
+      _showFillResult('检查 $total 个 · 补全 $filled · 已完整 $skipped · 失败 $failed', details);
+      await _load();
+    } catch (e) {
+      if (mounted) setState(() => _filling = false);
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  Future<void> _confirmFillAll() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('一键补全缺失参数'),
+        content: const Text(
+            '将扫描所有「信息不全」的蓝奏云软件，'
+            '自动补齐图标 / 大小 / 简介 / 版本号。\n\n'
+            '信息已完整的软件不会被改动，是否继续？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('开始补全')),
+        ],
+      ),
+    );
+    if (ok == true) await _fill(all: true);
+  }
+
+  void _showFillResult(String title, List details) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(ctx).size.height * 0.62,
+        decoration: BoxDecoration(
+          color: ctx.isDark ? C.bg1 : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(R.xl)),
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('补全结果', style: Ty.h2.copyWith(fontSize: 17, color: ctx.t1)),
+            const SizedBox(height: 4),
+            Text(title, style: Ty.small.copyWith(color: ctx.t3)),
+            const SizedBox(height: 12),
+            Expanded(
+              child: details.isEmpty
+                  ? Center(
+                      child: Text('没有需要补全的软件 ✅',
+                          style: Ty.small.copyWith(color: ctx.t3)))
+                  : ListView.separated(
+                      itemCount: details.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 7),
+                      itemBuilder: (_, i) {
+                        final d = Map<String, dynamic>.from(details[i] as Map);
+                        final success = '${d['ok'] ?? 0}' == '1';
+                        return Row(
+                          children: [
+                            Icon(
+                                success
+                                    ? Icons.check_circle_rounded
+                                    : Icons.error_rounded,
+                                size: 16,
+                                color: success ? C.success : C.danger),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text('${d['title'] ?? ''}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Ty.small.copyWith(color: ctx.t2)),
+                            ),
+                            const SizedBox(width: 8),
+                            Text('${d['note'] ?? ''}',
+                                style: Ty.tiny.copyWith(color: ctx.t3)),
+                          ],
+                        );
+                      },
+                    ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('知道了'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 小胶囊按钮（工具栏用）
+  Widget _miniBtn({
+    required IconData icon,
+    required String label,
+    required Color color,
+    VoidCallback? onTap,
+  }) {
+    final enabled = onTap != null;
+    final fg = enabled ? color : context.t3;
+    return AppPressable(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        decoration: BoxDecoration(
+          color: enabled ? color.withAlpha(24) : context.t3.withAlpha(12),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+              color: enabled ? color.withAlpha(110) : Colors.transparent,
+              width: 1.2),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 15, color: fg),
+            const SizedBox(width: 5),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w700, color: fg)),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
-          child: Row(
+          child: Column(
             children: [
-              Expanded(
-                child: SizedBox(
-                  height: 40,
-                  child: TextField(
-                    onSubmitted: (v) {
-                      _kw = v;
-                      _load();
-                    },
-                    style: const TextStyle(fontSize: 14),
-                    decoration: InputDecoration(
-                      hintText: '搜索软件名称',
-                      isDense: true,
-                      prefixIcon: const Icon(Icons.search, size: 18),
-                      contentPadding:
-                          const EdgeInsets.symmetric(vertical: 8),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(R.md)),
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 40,
+                      child: TextField(
+                        onSubmitted: (v) {
+                          _kw = v;
+                          _load();
+                        },
+                        style: const TextStyle(fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: '搜索软件名称',
+                          isDense: true,
+                          prefixIcon: const Icon(Icons.search, size: 18),
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 8),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(R.md)),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  SoftButton(
+                    label: '新增',
+                    icon: Icons.add_rounded,
+                    height: 40,
+                    onPressed: () => _edit(null),
+                  ),
+                  const SizedBox(width: 6),
+                  IconButton(
+                    tooltip: '分类管理',
+                    icon: const Icon(Icons.category_rounded,
+                        size: 21, color: C.violet),
+                    onPressed: _manageCats,
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              SoftButton(
-                label: '新增',
-                icon: Icons.add_rounded,
-                height: 40,
-                onPressed: () => _edit(null),
-              ),
-              const SizedBox(width: 6),
-              IconButton(
-                tooltip: '分类管理',
-                icon: const Icon(Icons.category_rounded, size: 21, color: C.violet),
-                onPressed: _manageCats,
+              const SizedBox(height: 9),
+              // ★ 一键补全缺失参数（单选 / 多选）
+              Row(
+                children: [
+                  _miniBtn(
+                    icon: Icons.auto_fix_high_rounded,
+                    label: _filling ? '补全中…' : '一键补全',
+                    color: C.success,
+                    onTap: _filling ? null : _confirmFillAll,
+                  ),
+                  const SizedBox(width: 8),
+                  if (!_selMode)
+                    _miniBtn(
+                      icon: Icons.checklist_rounded,
+                      label: '多选',
+                      color: C.brand,
+                      onTap: () => setState(() => _selMode = true),
+                    )
+                  else ...[
+                    _miniBtn(
+                      icon: Icons.auto_fix_high_rounded,
+                      label: '补全选中(${_sel.length})',
+                      color: C.success,
+                      onTap: (_filling || _sel.isEmpty)
+                          ? null
+                          : () => _fill(ids: _sel.toList()),
+                    ),
+                    const SizedBox(width: 8),
+                    _miniBtn(
+                      icon: Icons.select_all_rounded,
+                      label: _sel.isNotEmpty && _sel.length == _list.length
+                          ? '取消全选'
+                          : '全选',
+                      color: C.cyan,
+                      onTap: () => setState(() {
+                        if (_sel.isNotEmpty && _sel.length == _list.length) {
+                          _sel.clear();
+                        } else {
+                          _sel.clear();
+                          _sel.addAll(_list
+                              .map((a) => int.tryParse('${a['id']}') ?? 0)
+                              .where((v) => v > 0));
+                        }
+                      }),
+                    ),
+                    const SizedBox(width: 8),
+                    _miniBtn(
+                      icon: Icons.close_rounded,
+                      label: '取消',
+                      color: C.danger,
+                      onTap: () => setState(() {
+                        _selMode = false;
+                        _sel.clear();
+                      }),
+                    ),
+                  ],
+                  const Spacer(),
+                  if (_selMode && _sel.isNotEmpty)
+                    Text('已选 ${_sel.length}',
+                        style: Ty.tiny.copyWith(color: context.t3)),
+                ],
               ),
             ],
           ),
@@ -100,11 +331,24 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                     itemBuilder: (context, i) {
                       final a = _list[i];
                       final isLocal = a['provider'] == 'local';
+                      // ★ 一键补全：多选标记
+                      final aid = int.tryParse('${a['id']}') ?? 0;
+                      final picked = _sel.contains(aid);
                       return KitCard(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(12),
+                        onTap: _selMode ? () => _toggleSel(aid) : null,
                         child: Row(
                           children: [
+                            if (_selMode) ...[
+                              Icon(
+                                  picked
+                                      ? Icons.check_circle_rounded
+                                      : Icons.radio_button_unchecked,
+                                  size: 20,
+                                  color: picked ? C.brand : context.t3),
+                              const SizedBox(width: 8),
+                            ],
                             AppImage(
                               url: '${a['icon']}',
                               width: 44,
@@ -146,16 +390,27 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                 ],
                               ),
                             ),
-                            IconButton(
-                              icon: Icon(Icons.edit_outlined,
-                                  size: 19, color: C.brand),
-                              onPressed: () => _edit(a),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline,
-                                  size: 19, color: C.danger),
-                              onPressed: () => _del(a),
-                            ),
+                            if (!_selMode) ...[
+                              IconButton(
+                                tooltip: '补全此软件',
+                                icon: const Icon(
+                                    Icons.auto_fix_high_rounded,
+                                    size: 19, color: C.success),
+                                onPressed: _filling
+                                    ? null
+                                    : () => _fill(ids: [aid]),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.edit_outlined,
+                                    size: 19, color: C.brand),
+                                onPressed: () => _edit(a),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline,
+                                    size: 19, color: C.danger),
+                                onPressed: () => _del(a),
+                              ),
+                            ],
                           ],
                         ),
                       );

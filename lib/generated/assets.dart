@@ -5,5 +5,4 @@ class Assets {
   static const String htmlContent = 'assets/html/content.html';
   static const String imagesApp = 'assets/images/app.png';
   static const String imagesSucceed = 'assets/images/succeed.png';
-  static const String imagesMascot = 'assets/images/mascot.png';
 }

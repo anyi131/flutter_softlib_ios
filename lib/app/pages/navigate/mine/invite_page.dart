@@ -4,7 +4,6 @@ import '../../../design/app_anim.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
-import '../../../utils/share_util.dart';
 import '../../../utils/toast_util.dart';
 
 import 'package:flutter/material.dart';
@@ -60,9 +59,19 @@ class _InvitePageState extends State<InvitePage> {
   int get _score => int.tryParse('${_stats?['score'] ?? 0}') ?? 0;
   int get _each => int.tryParse('${_stats?['score_each'] ?? 50}') ?? 50;
 
-  String get _shareText =>
-      '【安逸软件汇】发现一个宝藏软件库，资源全、更新快！'
-      '注册时填我的邀请码 $_code，你我都能得 $_each 积分~';
+  /// ★ 邀请分享文案：优先用后台自定义；支持 {code} / {score} 占位符
+  String get _shareText {
+    final tpl = (SoftService.instance.cachedConfig?.uiConfig.inviteShareText ?? '')
+        .trim();
+    if (tpl.isEmpty) {
+      return '【安逸软件汇】发现一个宝藏软件库，资源全、更新快！'
+          '注册时填我的邀请码 $_code，你我都能得 $_each 积分~';
+    }
+    return tpl
+        .replaceAll('{code}', _code)
+        .replaceAll('{score}', '$_each')
+        .replaceAll('{each}', '$_each');
+  }
 
   Future<void> _copy() async {
     if (_code.isEmpty) return;
@@ -71,12 +80,7 @@ class _InvitePageState extends State<InvitePage> {
   }
 
   Future<void> _share() async {
-    // ★ iOS：iPad 的分享面板是 popover，必须给锚点，否则会崩（安卓忽略该参数）
-    await Share.share(
-      _shareText,
-      subject: '安逸软件汇邀请',
-      sharePositionOrigin: ShareUtil.origin(context),
-    );
+    await Share.share(_shareText, subject: '安逸软件汇邀请');
   }
 
   @override

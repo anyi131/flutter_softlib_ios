@@ -47,6 +47,31 @@ class AdminService {
 
   Future<void> saveApp(Map<String, dynamic> data) async => _post('app_save', data);
 
+  /// ★ 一键补全缺失参数（单选/多选/全部）
+  /// ids 为空且 all=false 时会报错；返回 {total, filled, skipped, failed, details}
+  Future<Map<String, dynamic>> appFill({List<int>? ids, bool all = false, int limit = 100}) async {
+    final d = (await _post('app_fill', {
+      if (all) 'all': 1,
+      if (ids != null && ids.isNotEmpty) 'ids': ids.join(','),
+      'limit': limit,
+    }))['data'];
+    return d is Map ? Map<String, dynamic>.from(d) : {};
+  }
+
+  /// ★ 自定义 IP 显示（管理员覆盖用户展示的 IP/归属地）
+  Future<void> userCustomIp({
+    required int id,
+    String? customIp,
+    String? customAddr,
+    bool? on,
+  }) async =>
+      _post('user_custom_ip', {
+        'id': id,
+        if (customIp != null) 'custom_ip': customIp,
+        if (customAddr != null) 'custom_addr': customAddr,
+        if (on != null) 'custom_ip_on': on ? 1 : 0,
+      });
+
   /// 解析蓝奏云链接 / 本地文件 → 自动带出软件信息
   Future<Map<String, dynamic>> parse({required String type, String url = '', String filePath = ''}) async {
     final d = (await _post('parse', {

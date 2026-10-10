@@ -582,6 +582,11 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                     icon: Icons.edit_outlined,
                     onTap: () => _editUser(u)),
                 MiniAction(
+                    label: '自定义IP',
+                    icon: Icons.location_on_outlined,
+                    color: C.cyan,
+                    onTap: () => _editCustomIp(u)),
+                MiniAction(
                   label: '重置密码',
                   icon: Icons.key_rounded,
                   color: C.violet,
@@ -801,6 +806,70 @@ class _AdminUsersTabState extends State<AdminUsersTab>
   }
 
   /// 密码管理：查看原密码 + 重置新密码（两个 Tab）
+  /// ★ 自定义 IP 显示：覆盖用户展示的 IP / 归属地
+  Future<void> _editCustomIp(Map u) async {
+    final id = int.tryParse('${u['id']}') ?? 0;
+    if (id <= 0) return;
+    final ipCtrl = TextEditingController(text: '${u['custom_ip'] ?? ''}');
+    final addrCtrl = TextEditingController(text: '${u['custom_addr'] ?? ''}');
+    bool on = '${u['custom_ip_on'] ?? 0}' == '1';
+    final ok = await Get.dialog<bool>(AlertDialog(
+      title: Text('自定义IP显示 · ${u['nickname'] ?? ''}'),
+      content: StatefulBuilder(
+        builder: (ctx, setD) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: ipCtrl,
+              decoration: const InputDecoration(
+                labelText: '显示 IP',
+                hintText: '留空 = 用真实登录 IP',
+                isDense: true,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: addrCtrl,
+              decoration: const InputDecoration(
+                labelText: '归属地',
+                hintText: '如：广东·深圳',
+                isDense: true,
+              ),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: const Text('启用自定义显示', style: TextStyle(fontSize: 14)),
+              value: on,
+              onChanged: (v) => setD(() => on = v),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消')),
+        FilledButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('保存')),
+      ],
+    ));
+    if (ok != true) return;
+    try {
+      await _svc.userCustomIp(
+        id: id,
+        customIp: ipCtrl.text.trim(),
+        customAddr: addrCtrl.text.trim(),
+        on: on,
+      );
+      ToastUtil.success('自定义IP显示已保存');
+      _load();
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
   Future<void> _resetPassword(Map u) async {
     final id = int.tryParse('${u['id']}') ?? 0;
     final c1 = TextEditingController();
