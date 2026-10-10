@@ -8,9 +8,7 @@ import '../../api/soft_service.dart';
 import '../../design/app_anim.dart';
 import '../../design/ui.dart';
 import '../../utils/apk_installer.dart';
-import '../../utils/install_helper.dart';
 import '../../utils/jump_util.dart';
-import '../../utils/platform_util.dart';
 import '../../utils/toast_util.dart';
 
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
@@ -139,16 +137,13 @@ class _UpdateCardState extends State<_UpdateCard> {
       return;
     }
     setState(() => _phase = 'downloading');
-    // ★ 跨平台：Android 仍是 /storage/emulated/0/Download（行为不变）；
-    //   iOS 为沙盒 Documents/Download（iOS 不允许写沙盒外）
-    final savedDir = await PlatUtil.downloadDir();
     final taskId = await FlutterDownloader.enqueue(
       url: direct,
       fileName: 'softlib_update_${DateTime.now().millisecondsSinceEpoch}.apk',
-      savedDir: savedDir,
+      savedDir: '/storage/emulated/0/Download',
       showNotification: true,
-      saveInPublicStorage: PlatUtil.saveInPublicStorage,
-      openFileFromNotification: PlatUtil.openFileFromNotification,
+      saveInPublicStorage: true,
+      openFileFromNotification: true,
     );
     if (taskId == null) {
       _fallbackBrowser();
@@ -169,14 +164,9 @@ class _UpdateCardState extends State<_UpdateCard> {
         setState(() => _phase = 'done');
         await Future.delayed(const Duration(milliseconds: 500));
         final path = '${tk.savedDir}/${tk.filename}';
-        if (PlatUtil.isAndroid) {
-          try {
-            await ApkInstaller.install(path);
-          } catch (_) {}
-        } else {
-          // iOS 不支持安装 APK → 降级为「存储/分享」或「用其他应用打开」
-          await InstallHelper.openOnIos(path, name: tk.filename);
-        }
+        try {
+          await ApkInstaller.install(path);
+        } catch (_) {}
         if (mounted && !widget.forced) Navigator.of(context).pop();
       } else if (tk.status == DownloadTaskStatus.failed ||
           tk.status == DownloadTaskStatus.canceled) {
@@ -514,6 +504,13 @@ class _UpdateCardState extends State<_UpdateCard> {
         decoration: BoxDecoration(
           color: isDark ? C.bg2 : Colors.white,
           borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: C.brand.withAlpha(isDark ? 40 : 55),
+              blurRadius: 26,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -548,6 +545,22 @@ class _UpdateCardState extends State<_UpdateCard> {
                                 color: isDark ? C.t3 : C.lt3)),
                       ],
                     ),
+                  ),
+                  const SizedBox(width: 8),
+                  // 版本 NEW 渐变徽章
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      gradient: C.brandGradient,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text('NEW',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1)),
                   ),
                 ],
               ),

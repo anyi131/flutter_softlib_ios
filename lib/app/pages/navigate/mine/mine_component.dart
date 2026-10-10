@@ -192,10 +192,12 @@ class MineComponent extends StatelessWidget {
       ];
     }
     if (tpl == 'split') {
-      // v52t：分组表格式模板（无大卡，紧凑列表风格）
+      // v53：split 增强 —— 顶部渐变问候横幅 + 分组列表，视觉与其他模板明显区分
       return [
         _title(context),
         const SizedBox(height: 16),
+        _splitHero(context, logic),
+        const SizedBox(height: 14),
         _profileCard(context, logic),
         const SizedBox(height: 14),
         _statsRow(context, logic),
@@ -203,6 +205,8 @@ class MineComponent extends StatelessWidget {
         _sectionTitle(context, '我的服务'),
         const SizedBox(height: 10),
         _serviceGrid(context, logic),
+        const SizedBox(height: 18),
+        _actionButton(context, logic),
       ];
     }
     return [
@@ -341,6 +345,71 @@ class MineComponent extends StatelessWidget {
           Icon(Icons.chevron_right_rounded, color: context.t3, size: 22),
         ],
       );
+  }
+
+  /// split 模板专属：渐变问候横幅（按时段问候，品牌渐变 + 投影）
+  Widget _splitHero(BuildContext context, MineLogic logic) {
+    final logged = logic.isLoggedIn;
+    final hour = DateTime.now().hour;
+    final greet = hour < 6
+        ? '夜深了'
+        : hour < 12
+            ? '早上好'
+            : hour < 14
+                ? '中午好'
+                : hour < 18
+                    ? '下午好'
+                    : '晚上好';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 17, 18, 16),
+      decoration: BoxDecoration(
+        gradient: C.brandGradient,
+        borderRadius: BorderRadius.circular(R.xl),
+        boxShadow: [
+          BoxShadow(
+            color: C.brand.withAlpha(context.isDark ? 55 : 75),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(46),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              logged ? Icons.waving_hand_rounded : Icons.person_add_alt_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(logged ? greet : '欢迎回来',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w900)),
+                const SizedBox(height: 3),
+                Text(
+                  logged ? '今日也要元气满满哦' : '登录后体验更多功能',
+                  style: TextStyle(
+                      color: Colors.white.withAlpha(200), fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _profileCard(BuildContext context, MineLogic logic) {
