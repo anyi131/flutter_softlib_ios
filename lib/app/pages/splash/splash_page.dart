@@ -28,6 +28,7 @@ class _SplashPageState extends State<SplashPage> {
   int _left = 2;
   Timer? _timer;
   bool _entered = false;
+
   /// 本地自定义开屏图路径（用户「替换开屏」选过才有）
   String _localSplash = '';
 
@@ -120,7 +121,7 @@ class _SplashPageState extends State<SplashPage> {
   Widget _splashBody(AppConfig? cfg, String netImg) {
     final tpl =
         SoftService.instance.cachedConfig?.uiConfig.splashTemplate ??
-            'fullscreen';
+        'fullscreen';
     final title = cfg?.splashTitle ?? '';
     final desc = cfg?.splashDesc ?? '';
 
@@ -135,23 +136,31 @@ class _SplashPageState extends State<SplashPage> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(15),
-                  child: Image.asset(Assets.imagesApp,
-                      width: 52, height: 52, fit: BoxFit.cover),
+                  child: Image.asset(
+                    Assets.imagesApp,
+                    width: 52,
+                    height: 52,
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 if (title.isNotEmpty)
-                  Text(title,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          color: C.brand)),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: C.brand,
+                    ),
+                  ),
                 if (desc.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  Text(desc,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 13, color: Colors.grey[600])),
+                  Text(
+                    desc,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                  ),
                 ],
               ],
             ),
@@ -159,9 +168,11 @@ class _SplashPageState extends State<SplashPage> {
           Expanded(
             flex: 6,
             child: _localSplash.isNotEmpty
-                ? Image.file(File(_localSplash),
+                ? Image.file(
+                    File(_localSplash),
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _defaultSplash())
+                    errorBuilder: (_, __, ___) => _defaultSplash(),
+                  )
                 : _defaultSplash(),
           ),
         ],
@@ -173,32 +184,43 @@ class _SplashPageState extends State<SplashPage> {
       final greet = h < 5
           ? '夜深了'
           : h < 11
-              ? '早上好'
-              : h < 14
-                  ? '中午好'
-                  : h < 18
-                      ? '下午好'
-                      : '晚上好';
+          ? '早上好'
+          : h < 14
+          ? '中午好'
+          : h < 18
+          ? '下午好'
+          : '晚上好';
       return Container(
         decoration: BoxDecoration(gradient: C.brandGradient),
         alignment: Alignment.center,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(greet,
-                style: TextStyle(
-                    color: Colors.white.withAlpha(190), fontSize: 15)),
+            Text(
+              greet,
+              style: TextStyle(
+                color: Colors.white.withAlpha(190),
+                fontSize: 15,
+              ),
+            ),
             const SizedBox(height: 10),
-            Text(title,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900)),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
             if (desc.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(desc,
-                  style: TextStyle(
-                      color: Colors.white.withAlpha(200), fontSize: 13.5)),
+              Text(
+                desc,
+                style: TextStyle(
+                  color: Colors.white.withAlpha(200),
+                  fontSize: 13.5,
+                ),
+              ),
             ],
           ],
         ),
@@ -218,9 +240,10 @@ class _SplashPageState extends State<SplashPage> {
                 borderRadius: BorderRadius.circular(26),
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withAlpha(60),
-                      blurRadius: 30,
-                      offset: const Offset(0, 14)),
+                    color: Colors.black.withAlpha(60),
+                    blurRadius: 30,
+                    offset: const Offset(0, 14),
+                  ),
                 ],
               ),
               child: ClipRRect(
@@ -229,20 +252,25 @@ class _SplashPageState extends State<SplashPage> {
                   width: 220,
                   height: 300,
                   child: _localSplash.isNotEmpty
-                      ? Image.file(File(_localSplash),
+                      ? Image.file(
+                          File(_localSplash),
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _defaultSplash())
+                          errorBuilder: (_, __, ___) => _defaultSplash(),
+                        )
                       : _defaultSplash(),
                 ),
               ),
             ),
             const SizedBox(height: 22),
             if (title.isNotEmpty)
-              Text(title,
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: context.isDark ? C.t1 : C.lt1)),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: context.isDark ? C.t1 : C.lt1,
+                ),
+              ),
           ],
         ),
       );
@@ -253,9 +281,11 @@ class _SplashPageState extends State<SplashPage> {
         fit: StackFit.expand,
         children: [
           if (_localSplash.isNotEmpty)
-            Image.file(File(_localSplash),
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _defaultSplash())
+            Image.file(
+              File(_localSplash),
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _defaultSplash(),
+            )
           else
             _defaultSplash(),
           Positioned(
@@ -288,32 +318,42 @@ class _SplashPageState extends State<SplashPage> {
                   ),
                   if (title.isNotEmpty) ...[
                     const SizedBox(height: 12),
-                    Text(title,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.6,
-                            shadows: [
-                              Shadow(
-                                  color: Colors.black45,
-                                  blurRadius: 10,
-                                  offset: Offset(0, 2)),
-                            ])),
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.6,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black45,
+                            blurRadius: 10,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                   if (desc.isNotEmpty) ...[
                     const SizedBox(height: 6),
-                    Text(desc,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.white.withAlpha(200), fontSize: 12.5)),
+                    Text(
+                      desc,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(200),
+                        fontSize: 12.5,
+                      ),
+                    ),
                   ],
                   const SizedBox(height: 18),
                   // 品牌胶囊条：图标 + 名称（毛玻璃质感）
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 9,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withAlpha(24),
                       borderRadius: BorderRadius.circular(40),
@@ -324,16 +364,23 @@ class _SplashPageState extends State<SplashPage> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(7),
-                          child: Image.asset(Assets.imagesApp,
-                              width: 22, height: 22, fit: BoxFit.cover),
+                          child: Image.asset(
+                            Assets.imagesApp,
+                            width: 22,
+                            height: 22,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        const Text('安逸软件汇',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.2)),
+                        const Text(
+                          '安逸软件汇',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -354,20 +401,31 @@ class _SplashPageState extends State<SplashPage> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(18),
-              child: Image.asset(Assets.imagesApp,
-                  width: 64, height: 64, fit: BoxFit.cover),
+              child: Image.asset(
+                Assets.imagesApp,
+                width: 64,
+                height: 64,
+                fit: BoxFit.cover,
+              ),
             ),
             const SizedBox(height: 18),
-            Text(title,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900)),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
             if (desc.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(desc,
-                  style: TextStyle(
-                      color: Colors.white.withAlpha(200), fontSize: 14)),
+              Text(
+                desc,
+                style: TextStyle(
+                  color: Colors.white.withAlpha(200),
+                  fontSize: 14,
+                ),
+              ),
             ],
           ],
         ),
@@ -387,24 +445,31 @@ class _SplashPageState extends State<SplashPage> {
                 child: AspectRatio(
                   aspectRatio: 4 / 3,
                   child: _localSplash.isNotEmpty
-                      ? Image.file(File(_localSplash), fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              _defaultSplash())
+                      ? Image.file(
+                          File(_localSplash),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _defaultSplash(),
+                        )
                       : _defaultSplash(),
                 ),
               ),
             ),
             const Spacer(),
             if (title.isNotEmpty)
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF181818))),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF181818),
+                ),
+              ),
             if (desc.isNotEmpty) ...[
               const SizedBox(height: 6),
-              Text(desc,
-                  style: TextStyle(fontSize: 13.5, color: Colors.grey[600])),
+              Text(
+                desc,
+                style: TextStyle(fontSize: 13.5, color: Colors.grey[600]),
+              ),
             ],
             const SizedBox(height: 46),
           ],
@@ -431,18 +496,22 @@ class _SplashPageState extends State<SplashPage> {
             bottom: 120,
             child: Column(
               children: [
-                Text(title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF181818))),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF181818),
+                  ),
+                ),
                 if (desc.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  Text(desc,
-                      textAlign: TextAlign.center,
-                      style:
-                          TextStyle(fontSize: 14, color: Colors.grey[600])),
+                  Text(
+                    desc,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  ),
                 ],
               ],
             ),
@@ -480,16 +549,12 @@ class _SplashPageState extends State<SplashPage> {
     final pageBg = dark ? C.bg1 : Colors.white;
     final cardBg = dark ? C.bg2 : Colors.white;
     final content = (double size, double height) => HtmlWidget(
-          cfg.noticeContent,
-          textStyle: TextStyle(fontSize: size, height: height),
-        );
+      cfg.noticeContent,
+      textStyle: TextStyle(fontSize: size, height: height),
+    );
 
-    // ─────────────────────────────────────────────────────────────
-    // v53 公告 6 套模板全面重做：每套独立设计语言，一眼可辨
-    // ─────────────────────────────────────────────────────────────
-
+    // card：紧凑对话框（图标章 + 分隔线 + 右对齐按钮行），最轻量的一套
     if (tpl == 'card') {
-      // 精致卡片：顶部彩色横条 + 圆角图标章 + 柔和投影
       showDialog(
         context: Get.context!,
         barrierDismissible: !cfg.noticeForce,
@@ -503,12 +568,12 @@ class _SplashPageState extends State<SplashPage> {
             child: Container(
               decoration: BoxDecoration(
                 color: cardBg,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: C.brand.withAlpha(dark ? 50 : 60),
-                    blurRadius: 40,
-                    offset: const Offset(0, 16),
+                    color: Colors.black.withAlpha(dark ? 70 : 44),
+                    blurRadius: 32,
+                    offset: const Offset(0, 14),
                   ),
                 ],
               ),
@@ -516,13 +581,8 @@ class _SplashPageState extends State<SplashPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 顶部渐变横条
-                  Container(
-                    height: 6,
-                    decoration: BoxDecoration(gradient: C.brandGradient),
-                  ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -530,74 +590,80 @@ class _SplashPageState extends State<SplashPage> {
                         Row(
                           children: [
                             Container(
-                              width: 44,
-                              height: 44,
+                              width: 42,
+                              height: 42,
                               decoration: BoxDecoration(
                                 gradient: C.brandGradient,
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
-                                  Icons.campaign_rounded,
-                                  color: Colors.white,
-                                  size: 24),
+                                Icons.campaign_rounded,
+                                color: Colors.white,
+                                size: 22,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 cfg.noticeTitle,
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 17,
-                                    height: 1.3),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 16,
+                                  height: 1.3,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
-                        Container(height: 1, color: ctx.t3.withAlpha(24)),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 14),
+                        Container(height: 1, color: ctx.t3.withAlpha(28)),
+                        const SizedBox(height: 14),
                         Flexible(
-                          child: SingleChildScrollView(child: content(14.5, 1.65)),
+                          child: SingleChildScrollView(
+                            child: content(14, 1.65),
+                          ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             if (cfg.noticeUrl.isNotEmpty)
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    JumpUtil.openUrl(cfg.noticeUrl);
-                                    if (!cfg.noticeForce) {
-                                      Navigator.of(Get.context!).pop();
-                                    }
-                                  },
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12)),
-                                    side: BorderSide(
-                                        color: C.brand.withAlpha(90)),
+                              TextButton(
+                                onPressed: () {
+                                  JumpUtil.openUrl(cfg.noticeUrl);
+                                  if (!cfg.noticeForce) {
+                                    Navigator.of(Get.context!).pop();
+                                  }
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: ctx.t2,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
                                   ),
-                                  child: const Text('查看详情'),
+                                ),
+                                child: const Text(
+                                  '查看详情',
+                                  style: TextStyle(fontSize: 14),
                                 ),
                               ),
-                            if (cfg.noticeUrl.isNotEmpty)
-                              const SizedBox(width: 10),
+                            const SizedBox(width: 8),
                             if (!cfg.noticeForce)
-                              Expanded(
-                                child: FilledButton(
-                                  onPressed: () =>
-                                      Navigator.of(Get.context!).pop(),
-                                  style: FilledButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12)),
+                              FilledButton(
+                                onPressed: () =>
+                                    Navigator.of(Get.context!).pop(),
+                                style: FilledButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 12,
                                   ),
-                                  child: const Text('我知道了'),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  '我知道了',
+                                  style: TextStyle(fontSize: 14),
                                 ),
                               ),
                           ],
@@ -614,8 +680,8 @@ class _SplashPageState extends State<SplashPage> {
       return;
     }
 
+    // banner：中屏布局 —— 顶部横幅固定 + 内容独立滚动 + 底部固定整宽按钮
     if (tpl == 'banner') {
-      // 整宽渐变横幅 + 居中大标题 + 下探圆角内容卡
       showDialog(
         context: Get.context!,
         barrierDismissible: !cfg.noticeForce,
@@ -625,17 +691,17 @@ class _SplashPageState extends State<SplashPage> {
           child: Dialog(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 0),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 18),
+              constraints: const BoxConstraints(maxHeight: 560),
               decoration: BoxDecoration(
                 color: cardBg,
-                borderRadius: BorderRadius.circular(26),
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withAlpha(dark ? 90 : 50),
-                    blurRadius: 44,
-                    offset: const Offset(0, 18),
+                    color: Colors.black.withAlpha(dark ? 86 : 52),
+                    blurRadius: 36,
+                    offset: const Offset(0, 16),
                   ),
                 ],
               ),
@@ -643,115 +709,121 @@ class _SplashPageState extends State<SplashPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Stack(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        padding:
-                            const EdgeInsets.fromLTRB(24, 30, 24, 40),
-                        decoration: BoxDecoration(
-                          gradient: C.brandGradient,
+                  // 顶部横幅（固定，不随内容滚动）
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                    decoration: BoxDecoration(gradient: C.brandGradient),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(44),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.notifications_active_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          ),
                         ),
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(46),
-                                shape: BoxShape.circle,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'NOTICE · 公告',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.5,
+                                ),
                               ),
-                              child: const Icon(
-                                  Icons.notifications_active_rounded,
+                              const SizedBox(height: 4),
+                              Text(
+                                cfg.noticeTitle,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
                                   color: Colors.white,
-                                  size: 28),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              cfg.noticeTitle,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.w900,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
                                   height: 1.3,
-                                  letterSpacing: 0.5),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Positioned(
-                        right: -18,
-                        top: -18,
-                        child: Container(
-                          width: 90,
-                          height: 90,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withAlpha(26),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: -12,
-                        bottom: -22,
-                        child: Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withAlpha(20),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Transform.translate(
-                    offset: const Offset(0, -18),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(22, 0, 22, 22),
-                      decoration: BoxDecoration(
-                        color: cardBg,
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(22)),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                            child: SingleChildScrollView(
-                                child: content(14.5, 1.7)),
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton(
-                              onPressed: () => Navigator.of(Get.context!).pop(),
-                              style: FilledButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 13),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14)),
+                                ),
                               ),
-                              child: const Text('我知道了'),
-                            ),
+                            ],
                           ),
-                          if (cfg.noticeUrl.isNotEmpty)
-                            TextButton(
+                        ),
+                      ],
+                    ),
+                  ),
+                  // 内容独立滚动
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+                      child: content(15, 1.7),
+                    ),
+                  ),
+                  // 底部固定按钮
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+                    decoration: BoxDecoration(
+                      color: cardBg,
+                      border: Border(
+                        top: BorderSide(
+                          color: ctx.t3.withAlpha(dark ? 36 : 24),
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        if (cfg.noticeUrl.isNotEmpty) ...[
+                          Expanded(
+                            child: OutlinedButton(
                               onPressed: () {
                                 JumpUtil.openUrl(cfg.noticeUrl);
                                 if (!cfg.noticeForce) {
                                   Navigator.of(Get.context!).pop();
                                 }
                               },
-                              child: Text('查看详情 →',
-                                  style: TextStyle(
-                                      fontSize: 13.5,
-                                      color: ctx.t2,
-                                      fontWeight: FontWeight.w600)),
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size(0, 46),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                side: BorderSide(color: C.brand.withAlpha(90)),
+                              ),
+                              child: const Text(
+                                '查看详情',
+                                style: TextStyle(fontSize: 15),
+                              ),
                             ),
+                          ),
+                          const SizedBox(width: 12),
                         ],
-                      ),
+                        if (!cfg.noticeForce)
+                          Expanded(
+                            child: FilledButton(
+                              onPressed: () => Navigator.of(Get.context!).pop(),
+                              style: FilledButton.styleFrom(
+                                minimumSize: const Size(0, 46),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                '我知道了',
+                                style: TextStyle(fontSize: 15),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],
@@ -763,47 +835,52 @@ class _SplashPageState extends State<SplashPage> {
       return;
     }
 
+    // minimal：纯文字排版 —— 无卡片容器、无渐变，仅字重/细线/留白分层
     if (tpl == 'minimal') {
-      // 极简排版：无图标无色块，大标题 + 细分隔线 + 充足留白
       showDialog(
         context: Get.context!,
         barrierDismissible: !cfg.noticeForce,
-        barrierColor: dark ? Colors.white.withAlpha(16) : Colors.black26,
+        barrierColor: dark ? Colors.black.withAlpha(150) : Colors.black38,
         builder: (ctx) => PopScope(
           canPop: !cfg.noticeForce,
           child: Dialog(
-            backgroundColor: cardBg,
-            elevation: dark ? 0 : 8,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            insetPadding: const EdgeInsets.symmetric(horizontal: 36),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(28, 30, 28, 20),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Container(
+              constraints: const BoxConstraints(maxHeight: 520),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('公告',
-                      style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 3,
-                          color: ctx.t3)),
-                  const SizedBox(height: 10),
-                  Text(cfg.noticeTitle,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 19,
-                          height: 1.35)),
-                  const SizedBox(height: 16),
-                  Container(
-                      height: 1,
-                      color: ctx.t3.withAlpha(dark ? 40 : 28)),
-                  const SizedBox(height: 16),
-                  Flexible(
-                    child: SingleChildScrollView(child: content(14.5, 1.75)),
+                  Text(
+                    '公告 · NOTICE',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 3,
+                      color: C.brand,
+                    ),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 12),
+                  Text(
+                    cfg.noticeTitle,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 23,
+                      height: 1.3,
+                      color: ctx.t1,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('发布于今天', style: TextStyle(fontSize: 12, color: ctx.t3)),
+                  const SizedBox(height: 18),
+                  Container(height: 1, color: ctx.t3.withAlpha(dark ? 56 : 36)),
+                  const SizedBox(height: 18),
+                  Flexible(
+                    child: SingleChildScrollView(child: content(15, 1.9)),
+                  ),
+                  const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -816,9 +893,16 @@ class _SplashPageState extends State<SplashPage> {
                             }
                           },
                           style: TextButton.styleFrom(
-                              foregroundColor: ctx.t2,
-                              textStyle: const TextStyle(
-                                  fontSize: 14, letterSpacing: 0.5)),
+                            foregroundColor: ctx.t2,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 14.5,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                           child: const Text('查看详情'),
                         ),
                       const SizedBox(width: 8),
@@ -826,11 +910,17 @@ class _SplashPageState extends State<SplashPage> {
                         TextButton(
                           onPressed: () => Navigator.of(Get.context!).pop(),
                           style: TextButton.styleFrom(
-                              foregroundColor: C.brand,
-                              textStyle: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.5)),
+                            foregroundColor: C.brand,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                           child: const Text('知道了'),
                         ),
                     ],
@@ -844,8 +934,8 @@ class _SplashPageState extends State<SplashPage> {
       return;
     }
 
+    // sheet：底部面板 —— 圆角把手 + 分组内容卡 + 整宽按钮
     if (tpl == 'sheet') {
-      // 底部弹出面板：拖动把手 + 图标徽章 + 整宽主按钮
       showModalBottomSheet(
         context: Get.context!,
         isDismissible: !cfg.noticeForce,
@@ -853,82 +943,90 @@ class _SplashPageState extends State<SplashPage> {
         isScrollControlled: true,
         backgroundColor: cardBg,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         builder: (ctx) => SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(22, 10, 22, 18),
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 顶部圆角把手
                 Center(
                   child: Container(
-                    width: 40,
+                    width: 44,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: ctx.t3.withAlpha(70),
+                      color: ctx.t3.withAlpha(dark ? 90 : 60),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
                 Row(
                   children: [
-                    Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        gradient: C.brandGradient,
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: C.brand.withAlpha(70),
-                            blurRadius: 14,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(Icons.campaign_rounded,
-                          color: Colors.white, size: 25),
-                    ),
-                    const SizedBox(width: 14),
                     Expanded(
-                      child: Text(cfg.noticeTitle,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w900, fontSize: 17)),
+                      child: Text(
+                        cfg.noticeTitle,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 17,
+                          color: ctx.t1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '公告',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 2,
+                        color: ctx.t3,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Container(height: 1, color: ctx.t3.withAlpha(22)),
-                const SizedBox(height: 4),
+                const SizedBox(height: 14),
+                // 分组内容：浅色分组容器承载正文
                 Flexible(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxHeight: 320),
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: content(14.5, 1.65),
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: ctx.t3.withAlpha(dark ? 16 : 10),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(14),
+                        child: content(14.5, 1.65),
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 16),
+                // 整宽按钮
                 if (cfg.noticeUrl.isNotEmpty)
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
                       onPressed: () {
                         JumpUtil.openUrl(cfg.noticeUrl);
-                        if (!cfg.noticeForce) Navigator.of(Get.context!).pop();
+                        if (!cfg.noticeForce) {
+                          Navigator.of(Get.context!).pop();
+                        }
                       },
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        minimumSize: const Size(0, 46),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         side: BorderSide(color: C.brand.withAlpha(90)),
                       ),
-                      child: const Text('查看详情'),
+                      child: const Text('查看详情', style: TextStyle(fontSize: 15)),
                     ),
                   ),
                 if (cfg.noticeUrl.isNotEmpty) const SizedBox(height: 10),
@@ -938,11 +1036,145 @@ class _SplashPageState extends State<SplashPage> {
                     child: FilledButton(
                       onPressed: () => Navigator.of(Get.context!).pop(),
                       style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        minimumSize: const Size(0, 46),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      child: const Text('我知道了'),
+                      child: const Text('我知道了', style: TextStyle(fontSize: 15)),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+    if (tpl == 'fullscreen') {
+      // 全屏沉浸：渐变 Hero 头图 + 上浮圆角内容卡 + 底部整宽按钮
+      Navigator.of(Get.context!).push(
+        MaterialPageRoute(
+          fullscreenDialog: true,
+          builder: (ctx) => Scaffold(
+            backgroundColor: pageBg,
+            body: Column(
+              children: [
+                Stack(
+                  children: [
+                    Container(
+                      height: 260,
+                      width: double.infinity,
+                      decoration: BoxDecoration(gradient: C.brandGradient),
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 52),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(11),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withAlpha(44),
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            child: const Icon(
+                              Icons.campaign_rounded,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            cfg.noticeTitle,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      right: -30,
+                      top: -30,
+                      child: Container(
+                        width: 150,
+                        height: 150,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withAlpha(24),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      right: 40,
+                      bottom: 40,
+                      child: Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withAlpha(20),
+                        ),
+                      ),
+                    ),
+                    if (!cfg.noticeForce)
+                      Positioned(
+                        top: 14,
+                        right: 10,
+                        child: IconButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: Colors.white,
+                            size: 26,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                Expanded(
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        top: -24,
+                        bottom: 0,
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: pageBg,
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(28),
+                            ),
+                          ),
+                          padding: const EdgeInsets.fromLTRB(22, 50, 22, 12),
+                          child: SingleChildScrollView(
+                            child: content(15, 1.75),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (actions.isNotEmpty)
+                  SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                      child: actions.isNotEmpty
+                          ? Row(
+                              children: [
+                                for (final a in actions) Expanded(child: a),
+                              ],
+                            )
+                          : const SizedBox.shrink(),
                     ),
                   ),
               ],
@@ -953,133 +1185,8 @@ class _SplashPageState extends State<SplashPage> {
       return;
     }
 
-    if (tpl == 'fullscreen') {
-      // 全屏沉浸：渐变 Hero 头图 + 上浮圆角内容卡 + 底部整宽按钮
-      Navigator.of(Get.context!).push(MaterialPageRoute(
-        fullscreenDialog: true,
-        builder: (ctx) => Scaffold(
-          backgroundColor: pageBg,
-          body: Column(
-            children: [
-              Stack(
-                children: [
-                  Container(
-                    height: 218,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: C.brandGradient,
-                    ),
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 44),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(11),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(44),
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          child: const Icon(Icons.campaign_rounded,
-                              color: Colors.white, size: 24),
-                        ),
-                        const SizedBox(height: 14),
-                        Text(cfg.noticeTitle,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                height: 1.3)),
-                      ],
-                    ),
-                  ),
-                  Positioned(
-                    right: -30,
-                    top: -30,
-                    child: Container(
-                      width: 150,
-                      height: 150,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withAlpha(24),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 40,
-                    bottom: 40,
-                    child: Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withAlpha(20),
-                      ),
-                    ),
-                  ),
-                  if (!cfg.noticeForce)
-                    Positioned(
-                      top: 14,
-                      right: 10,
-                      child: IconButton(
-                        onPressed: () => Navigator.of(ctx).pop(),
-                        icon: const Icon(Icons.close_rounded,
-                            color: Colors.white, size: 26),
-                      ),
-                    ),
-                ],
-              ),
-              Expanded(
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      top: -24,
-                      bottom: 0,
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: pageBg,
-                          borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(28)),
-                        ),
-                        padding: const EdgeInsets.fromLTRB(22, 50, 22, 12),
-                        child: SingleChildScrollView(
-                          child: content(15, 1.75),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (actions.isNotEmpty)
-                SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-                    child: actions.isNotEmpty
-                        ? Row(
-                            children: [
-                              for (final a in actions)
-                                Expanded(child: a),
-                            ],
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ));
-      return;
-    }
-
+    // banner_card：横向布局卡 —— 左侧渐变色条 + 右上角日期戳，唯一横排骨架
     if (tpl == 'banner_card') {
-      // 横幅 + 卡片组合：顶部渐变横幅，下方内容卡上浮交叠
       showDialog(
         context: Get.context!,
         barrierDismissible: !cfg.noticeForce,
@@ -1089,105 +1196,163 @@ class _SplashPageState extends State<SplashPage> {
           child: Dialog(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 22),
-            child: Stack(
-              children: [
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      height: 128,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: C.brandGradient,
-                        borderRadius: BorderRadius.circular(26),
-                        boxShadow: [
-                          BoxShadow(
-                            color: C.brand.withAlpha(dark ? 40 : 80),
-                            blurRadius: 30,
-                            offset: const Offset(0, 12),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.fromLTRB(22, 22, 22, 34),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(9),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withAlpha(44),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                    Icons.notifications_active_rounded,
-                                    color: Colors.white,
-                                    size: 20),
-                              ),
-                              const SizedBox(width: 10),
-                              const Text('重 要 通 知',
-                                  style: TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 2)),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(cfg.noticeTitle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 17.5,
-                                  fontWeight: FontWeight.w900)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                  ],
-                ),
-                // 上浮内容卡
-                Positioned(
-                  left: 14,
-                  right: 14,
-                  top: 98,
-                  child: Container(
-                    constraints: const BoxConstraints(maxHeight: 420),
-                    decoration: BoxDecoration(
-                      color: cardBg,
-                      borderRadius: BorderRadius.circular(22),
-                      border: dark
-                          ? Border.all(color: Colors.white.withAlpha(14))
-                          : null,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(dark ? 80 : 46),
-                          blurRadius: 34,
-                          offset: const Offset(0, 14),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(20),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Container(
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(dark ? 80 : 46),
+                    blurRadius: 32,
+                    offset: const Offset(0, 14),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                children: [
+                  // 主内容（左侧留出色条空间）
+                  Padding(
+                    padding: const EdgeInsets.only(left: 26),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Flexible(
-                          child: SingleChildScrollView(
-                              child: content(14.5, 1.65)),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(18, 18, 18, 0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '重要通知',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 2,
+                                    color: ctx.t3,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // 右上角日期戳
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: C.brand.withAlpha(dark ? 36 : 22),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${DateTime.now().month.toString().padLeft(2, '0')}.${DateTime.now().day.toString().padLeft(2, '0')}',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: C.brand,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: actions,
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
+                          child: Text(
+                            cfg.noticeTitle,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 17.5,
+                              fontWeight: FontWeight.w800,
+                              height: 1.35,
+                              color: ctx.t1,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
+                          child: Container(
+                            height: 1,
+                            color: ctx.t3.withAlpha(dark ? 36 : 24),
+                          ),
+                        ),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 340),
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(18, 12, 18, 8),
+                            child: content(14.5, 1.65),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(18, 6, 18, 16),
+                          child: Row(
+                            children: [
+                              if (cfg.noticeUrl.isNotEmpty) ...[
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: () {
+                                      JumpUtil.openUrl(cfg.noticeUrl);
+                                      if (!cfg.noticeForce) {
+                                        Navigator.of(Get.context!).pop();
+                                      }
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      minimumSize: const Size(0, 44),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      side: BorderSide(
+                                        color: C.brand.withAlpha(90),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      '查看详情',
+                                      style: TextStyle(fontSize: 14.5),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                              ],
+                              if (!cfg.noticeForce)
+                                Expanded(
+                                  child: FilledButton(
+                                    onPressed: () =>
+                                        Navigator.of(Get.context!).pop(),
+                                    style: FilledButton.styleFrom(
+                                      minimumSize: const Size(0, 44),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      '我知道了',
+                                      style: TextStyle(fontSize: 14.5),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ],
+                  // 左侧渐变色条（贯穿全高）
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 8,
+                    child: Container(
+                      decoration: BoxDecoration(gradient: C.brandGradient),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1202,15 +1367,18 @@ class _SplashPageState extends State<SplashPage> {
       builder: (ctx) => PopScope(
         canPop: !cfg.noticeForce,
         child: AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Row(
             children: [
               const Icon(Icons.campaign, color: Color(0xFF465CFF)),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(cfg.noticeTitle,
-                    style: const TextStyle(fontWeight: FontWeight.w800)),
+                child: Text(
+                  cfg.noticeTitle,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
               ),
             ],
           ),
@@ -1233,21 +1401,30 @@ class _SplashPageState extends State<SplashPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.construction_rounded,
-                    size: 72, color: Color(0xFF465CFF)),
+                const Icon(
+                  Icons.construction_rounded,
+                  size: 72,
+                  color: Color(0xFF465CFF),
+                ),
                 const SizedBox(height: 20),
-                const Text('系统维护中',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800)),
+                const Text(
+                  '系统维护中',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 Text(
                   (_config?.maintainText ?? '').isEmpty
                       ? '请稍后再试'
                       : _config?.maintainText ?? '',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white.withAlpha(180), height: 1.6),
+                  style: TextStyle(
+                    color: Colors.white.withAlpha(180),
+                    height: 1.6,
+                  ),
                 ),
                 const SizedBox(height: 26),
                 OutlinedButton(
@@ -1299,15 +1476,20 @@ class _SplashPageState extends State<SplashPage> {
             child: Image.asset(Assets.imagesApp, width: 104, height: 104),
           ),
           const SizedBox(height: 22),
-          const Text('安逸软件汇',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.5)),
+          const Text(
+            '安逸软件汇',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.5,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text('优质软件 · 持续更新',
-              style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 13)),
+          Text(
+            '优质软件 · 持续更新',
+            style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 13),
+          ),
         ],
       ),
     );
