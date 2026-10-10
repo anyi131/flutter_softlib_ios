@@ -80,7 +80,7 @@ class MainActivity : FlutterActivity() {
                                     @Suppress("DEPRECATION")
                                     packageManager.getPackageInfo(
                                         packageName, android.content.pm.PackageManager.GET_SIGNATURES
-                                    ).signatures[0].toByteArray()
+                                    )?.signatures?.get(0)?.toByteArray()
                                 }
                             val md = MessageDigest.getInstance("MD5").digest(bytes)
                             result.success(md.joinToString("") { "%02x".format(it) })
