@@ -725,42 +725,77 @@ class MineLogic extends GetxController {
     ),
   );
 
-  /// 积分兑换
+  /// 积分兑换（★ 主题自适应 + 信息更清楚）
   Future<void> pointsExchange() async {
     if (!isLoggedIn) return openLogin();
-    final goodsList = await _userService.exchangeGoods();
+    List<Map<String, dynamic>> goodsList = [];
+    try {
+      goodsList = await _userService.exchangeGoods();
+    } catch (_) {}
+    if (goodsList.isEmpty) {
+      toast('暂无可兑换的商品，稍后再来看看');
+      return;
+    }
     final goods = await Get.dialog<String>(
       AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
-            Icon(
-              Icons.monetization_on_rounded,
-              color: Color(0xFFFB923C),
-              size: 21,
-            ),
+            Icon(Icons.monetization_on_rounded,
+                color: Color(0xFFFB923C), size: 21),
             SizedBox(width: 9),
-            Text(
-              '积分兑换',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
-            ),
+            Text('积分兑换',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '当前积分：$points',
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 14),
-            for (final g in goodsList)
-              _exchangeItem(
-                '${g['key']}',
-                '${g['name']}',
-                int.tryParse('${g['cost']}') ?? 100,
-              ),
-          ],
+        content: Builder(
+          builder: (ctx) {
+            final dark = Theme.of(ctx).brightness == Brightness.dark;
+            final sub = dark ? C.t3 : C.lt3;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 当前积分：大号醒目卡片，一眼看清
+                Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFB923C).withAlpha(dark ? 36 : 22),
+                    borderRadius: BorderRadius.circular(12),
+                    border:
+                        Border.all(color: const Color(0xFFFB923C).withAlpha(70)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.savings_rounded, size: 16, color: sub),
+                      const SizedBox(width: 6),
+                      Text('当前积分', style: TextStyle(fontSize: 12.5, color: sub)),
+                      const Spacer(),
+                      Text('$points',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFFFB923C),
+                          )),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text('签到、邀请好友都能获得积分',
+                    style: TextStyle(fontSize: 11, color: sub)),
+                const SizedBox(height: 12),
+                for (final g in goodsList)
+                  _exchangeItem(
+                    ctx,
+                    '${g['key']}',
+                    '${g['name']}',
+                    int.tryParse('${g['cost']}') ?? 100,
+                  ),
+              ],
+            );
+          },
         ),
         actions: [TextButton(onPressed: Get.back, child: const Text('取消'))],
       ),
@@ -775,8 +810,12 @@ class MineLogic extends GetxController {
     }
   }
 
-  Widget _exchangeItem(String goods, String label, int cost) {
+  /// 兑换项（主题自适应；积分不够时提示「还差 N 积分」）
+  Widget _exchangeItem(BuildContext ctx, String goods, String label, int cost) {
     final enough = points >= cost;
+    final dark = Theme.of(ctx).brightness == Brightness.dark;
+    const warn = Color(0xFFFBBF24);
+    final sub = dark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -785,37 +824,42 @@ class MineLogic extends GetxController {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: enough ? const Color(0xFFFFF8E6) : Colors.grey.withAlpha(20),
+            color: enough
+                ? warn.withAlpha(dark ? 30 : 22)
+                : (dark ? Colors.white.withAlpha(8) : Colors.black.withAlpha(6)),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: enough
-                  ? const Color(0xFFFBBF24).withAlpha(120)
-                  : Colors.grey.withAlpha(40),
+                  ? warn.withAlpha(110)
+                  : (dark
+                      ? Colors.white.withAlpha(20)
+                      : Colors.black.withAlpha(14)),
             ),
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.card_giftcard_rounded,
-                size: 18,
-                color: Color(0xFFFBBF24),
-              ),
+              Icon(Icons.card_giftcard_rounded,
+                  size: 18, color: enough ? warn : sub),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   label,
-                  style: const TextStyle(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
+                    color: enough ? null : sub,
                   ),
                 ),
               ),
+              const SizedBox(width: 8),
               Text(
-                '$cost 积分',
+                enough ? '$cost 积分' : '还差 ${cost - points} 积分',
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w800,
-                  color: enough ? const Color(0xFFC9A227) : Colors.grey,
+                  color: enough ? const Color(0xFFC9A227) : sub,
                 ),
               ),
             ],

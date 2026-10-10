@@ -310,7 +310,16 @@ class MineComponent extends StatelessWidget {
                   runSpacing: 6,
                   children: [
                     if (logged) ...[
-                      _badge(context, '积分 ${logic.points}', C.violet),
+                      // ★ 积分徽标：可点击进「积分兑换」，带金币图标更醒目
+                      _tappableBadge(
+                        context,
+                        '积分 ${logic.points}',
+                        C.violet,
+                        icon: Icons.monetization_on_rounded,
+                        onTap: _uiCfg.featureExchange
+                            ? () => logic.pointsExchange()
+                            : null,
+                      ),
                       _badge(
                         context,
                         '余额 ¥${logic.money}',
@@ -380,6 +389,19 @@ class MineComponent extends StatelessWidget {
     IconData? icon,
   }) {
     return Pill(text, color: color, icon: icon);
+  }
+
+  /// 可点击徽标（积分 → 积分兑换）
+  Widget _tappableBadge(
+    BuildContext context,
+    String text,
+    Color color, {
+    IconData? icon,
+    VoidCallback? onTap,
+  }) {
+    final p = Pill(text, color: color, icon: icon);
+    if (onTap == null) return p;
+    return GestureDetector(onTap: onTap, child: p);
   }
 
   // ───────── ② 数据条 ─────────
