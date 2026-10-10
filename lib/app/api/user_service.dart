@@ -32,6 +32,9 @@ class UserInfo {
   /// 用户自定义开屏图
   final String splashImage;
 
+  /// 今日是否已签到（服务端权威值；null = 服务端未返回，回退本地缓存）
+  final bool? signedToday;
+
   UserInfo({
     required this.id,
     required this.username,
@@ -50,6 +53,7 @@ class UserInfo {
     this.isAdmin = false,
     this.title = '',
     this.splashImage = '',
+    this.signedToday,
   });
 
   factory UserInfo.fromJson(Map json) {
@@ -75,6 +79,9 @@ class UserInfo {
           s('is_admin') == '1',
       title: s('title'),
       splashImage: s('splash_image'),
+      signedToday: json.containsKey('signed_today')
+          ? (json['signed_today'] == true || s('signed_today') == 'true')
+          : null,
     );
   }
 

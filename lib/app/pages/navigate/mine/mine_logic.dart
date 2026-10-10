@@ -90,6 +90,11 @@ class MineLogic extends GetxController {
         isVipMember = u.isVip;
         final sp = await SharedPreferences.getInstance();
         signedDate = sp.getString(_kSignDate) ?? '';
+        // ★ 以服务端为准：换设备/重装后签到状态不漂移（服务端未返回时回退本地缓存）
+        if (u.signedToday != null) {
+          signedDate = u.signedToday! ? _today() : '';
+          await sp.setString(_kSignDate, signedDate);
+        }
         // 未读消息数（「消息」格子红点）
         messageCount = await MessageService.instance.unread();
         update();
