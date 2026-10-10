@@ -258,11 +258,7 @@ class MineComponent extends StatelessWidget {
     );
   }
 
-  Widget _heroStatCell(
-    BuildContext context,
-    String label,
-    String value,
-  ) {
+  Widget _heroStatCell(BuildContext context, String label, String value) {
     return Expanded(
       child: Column(
         children: [
@@ -291,11 +287,8 @@ class MineComponent extends StatelessWidget {
     );
   }
 
-  Widget _heroStatDivider() => Container(
-    width: 1,
-    height: 30,
-    color: Colors.white.withAlpha(60),
-  );
+  Widget _heroStatDivider() =>
+      Container(width: 1, height: 30, color: Colors.white.withAlpha(60));
 
   // ───────── ① 头像卡 ─────────
   /// v52m #5：我的页面模板 classic / clean / gradient
@@ -934,7 +927,12 @@ class MineComponent extends StatelessWidget {
           C.accentOrange,
           () => logic.pointsExchange(),
         ),
-      _S('关于软件', Icons.info_rounded, C.brandBright, () => logic.about(context)),
+      _S(
+        '关于软件',
+        Icons.info_rounded,
+        C.brandBright,
+        () => logic.about(Get.context!),
+      ),
       _S(
         '用户协议',
         Icons.description_rounded,

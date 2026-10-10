@@ -11,9 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-import '../../../design/kit.dart';
-import '../../../design/ui.dart';
-import '../../../utils/toast_util.dart';
+import '../../design/kit.dart';
+import '../../design/ui.dart';
+import '../../utils/toast_util.dart';
 import '../jicun_config.dart';
 import '../jicun_download_controller.dart';
 import '../jicun_history_store.dart';

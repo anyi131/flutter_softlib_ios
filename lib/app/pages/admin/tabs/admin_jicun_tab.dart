@@ -14,6 +14,8 @@ import 'package:get/get.dart';
 import '../../../api/admin_service.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../api/soft_service.dart';
+import '../../../design/adaptive.dart';
 import '../../../jicun/jicun_config.dart';
 import '../../../utils/toast_util.dart';
 
@@ -304,7 +306,7 @@ class _AdminJicunTabState extends State<AdminJicunTab> {
           _text(
             '公告文案',
             '即存页顶部公告,留空不显示',
-            _notice,
+            _notice.text,
             (v) => _notice.text = v,
             maxLines: 2,
             hint: '例如:解析接口已升级,支持更多平台',

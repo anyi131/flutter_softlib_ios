@@ -76,9 +76,6 @@ class HistoryStore {
 
   static const String _key = 'history.entries';
 
-  /// 保留条数上限。超了从最旧的开始丢。
-  static const int maxEntries = 200;
-
   /// 写盘防抖。批量删记录时,这一下能把 N 次全量写压成一次。
   static const Duration _debounce = Duration(milliseconds: 300);
 

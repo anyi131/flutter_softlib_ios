@@ -93,12 +93,10 @@ class _HomeComponentState extends State<HomeComponent> {
   }
 
   // ═══════ v54 模板骨架库 ═══════
-  Widget _tplSpacer() => SliverToBoxAdapter(
-    child: SizedBox(height: context.tabSpace + 40),
-  );
+  Widget _tplSpacer() =>
+      SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40));
 
-  SliverToBoxAdapter get _noticeSliver =>
-      SliverToBoxAdapter(child: _notice());
+  SliverToBoxAdapter get _noticeSliver => SliverToBoxAdapter(child: _notice());
 
   /// clean —— 纯排版无卡：扁平搜索条 + 推荐行式列表
   Widget _tplClean(UiConfig uiCfg) {
@@ -134,9 +132,7 @@ class _HomeComponentState extends State<HomeComponent> {
           height: 44,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: context.isDark
-                ? Colors.white.withAlpha(8)
-                : Colors.white,
+            color: context.isDark ? Colors.white.withAlpha(8) : Colors.white,
             borderRadius: BorderRadius.circular(R.md),
             border: Border.all(
               color: context.isDark
@@ -282,9 +278,7 @@ class _HomeComponentState extends State<HomeComponent> {
                 const SizedBox(height: 6),
                 Text(
                   '海量软件 · 一键直达',
-                  style: Ty.small.copyWith(
-                    color: Colors.white.withAlpha(210),
-                  ),
+                  style: Ty.small.copyWith(color: Colors.white.withAlpha(210)),
                 ),
                 const SizedBox(height: 18),
                 // Hero 搜索条：白底胶囊、带投影，视觉重量全给搜索
@@ -316,9 +310,7 @@ class _HomeComponentState extends State<HomeComponent> {
                         ),
                         Container(
                           height: 32,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             gradient: C.brandGradient,
@@ -373,7 +365,7 @@ class _HomeComponentState extends State<HomeComponent> {
     );
   }
 
-  Widget _fullBleedHero(CarouselModel? item, HomeLogic logic) {
+  Widget _fullBleedHero(CarouselData? item, HomeLogic logic) {
     return GestureDetector(
       onTap: item == null ? null : () => logic.onCarouselTap(item),
       child: Container(
@@ -395,14 +387,10 @@ class _HomeComponentState extends State<HomeComponent> {
                   fit: BoxFit.cover,
                   memCacheWidth: 1000,
                   placeholder: (_, __) => Container(
-                    decoration: BoxDecoration(
-                      gradient: C.brandGradient,
-                    ),
+                    decoration: BoxDecoration(gradient: C.brandGradient),
                   ),
                   errorWidget: (_, __, ___) => Container(
-                    decoration: BoxDecoration(
-                      gradient: C.brandGradient,
-                    ),
+                    decoration: BoxDecoration(gradient: C.brandGradient),
                   ),
                 )
               else
@@ -414,10 +402,7 @@ class _HomeComponentState extends State<HomeComponent> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withAlpha(120),
-                      ],
+                      colors: [Colors.transparent, Colors.black.withAlpha(120)],
                     ),
                   ),
                 ),
@@ -532,10 +517,7 @@ class _HomeComponentState extends State<HomeComponent> {
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
-                      colors: [
-                        Colors.black.withAlpha(190),
-                        Colors.transparent,
-                      ],
+                      colors: [Colors.black.withAlpha(190), Colors.transparent],
                     ),
                   ),
                 ),
@@ -639,10 +621,7 @@ class _HomeComponentState extends State<HomeComponent> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: C.brandBright,
-                    border: Border.all(
-                      color: C.brand.withAlpha(90),
-                      width: 2,
-                    ),
+                    border: Border.all(color: C.brand.withAlpha(90), width: 2),
                   ),
                 ),
                 if (!last)
@@ -692,9 +671,7 @@ class _HomeComponentState extends State<HomeComponent> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              (d.content ?? '').isEmpty
-                                  ? '官方精选推荐'
-                                  : d.content!,
+                              (d.content ?? '').isEmpty ? '官方精选推荐' : d.content!,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: Ty.tiny.copyWith(color: context.t3),
@@ -826,7 +803,11 @@ class _HomeComponentState extends State<HomeComponent> {
                         ),
                       ),
                     ),
-                    Icon(Icons.chevron_right_rounded, size: 18, color: context.t3),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 18,
+                      color: context.t3,
+                    ),
                   ],
                 ),
               ),

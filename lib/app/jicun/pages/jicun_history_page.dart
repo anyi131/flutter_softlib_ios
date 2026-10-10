@@ -8,9 +8,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../design/kit.dart';
-import '../../../design/ui.dart';
-import '../../../utils/toast_util.dart';
+import '../../design/kit.dart';
+import '../../design/ui.dart';
+import '../../utils/toast_util.dart';
 import '../jicun_history_store.dart';
 
 class JicunHistoryPage extends StatefulWidget {
