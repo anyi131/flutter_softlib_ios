@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'ui_config.dart';
 
+import '../jicun/jicun_config.dart';
+
 /// App 全局配置（来自 /api/softlib/config/index，后台可远程下发）
 class AppConfig {
   final String placard;
@@ -69,6 +71,9 @@ class AppConfig {
   /// ★ 全局界面配置（Tab开关/功能开关/主题/深色模式 —— 后台「界面配置」下发）
   final UiConfig uiConfig;
 
+  /// 即存「解析配置」（后台 ui_config.jicun 节点;拉不到为 null,客户端用默认值）
+  final dynamic jicunConfig;
+
   AppConfig({
     this.placard = '',
     this.feedbackGroup = '',
@@ -110,6 +115,7 @@ class AppConfig {
     this.themePalette = 'aurora',
     this.toolHomeStyle = 'group',
     this.uiConfig = const UiConfig(),
+    this.jicunConfig,
   });
 
   /// ★ v52g #6：ui_config 是嵌套 JSON（后台「界面」Tab 整体下发）
@@ -196,5 +202,24 @@ class AppConfig {
         ? 'glass'
         : _s(json['app_ui_style']),
     uiConfig: _parseUiConfig(json),
+    jicunConfig: _parseJicunConfig(json),
   );
+
+  /// 即存「解析配置」(后台 ui_config.jicun 节点;没有则 null,由客户端兜底默认)
+  static dynamic _parseJicunConfig(Map json) {
+    final raw = json['ui_config'];
+    Map? ui;
+    if (raw is Map) {
+      ui = raw;
+    } else if (raw is String && raw.trim().startsWith('{')) {
+      try {
+        final d = jsonDecode(raw);
+        if (d is Map) ui = d;
+      } catch (_) {}
+    }
+    if (ui == null) return null;
+    final j = ui['jicun'];
+    if (j is Map) return JicunConfig.fromJson(Map<String, dynamic>.from(j));
+    return null;
+  }
 }

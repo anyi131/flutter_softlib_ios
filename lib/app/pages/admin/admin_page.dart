@@ -9,6 +9,7 @@ import '../../utils/toast_util.dart';
 import 'tabs/admin_apps_tab.dart';
 import 'tabs/admin_collect_tab.dart';
 import 'tabs/admin_content_tab.dart';
+import 'tabs/admin_jicun_tab.dart';
 import 'tabs/admin_logs_tab.dart';
 import 'tabs/admin_orders_tab.dart';
 import 'tabs/admin_splash_tab.dart';
@@ -113,6 +114,7 @@ class _AdminPageState extends State<AdminPage>
                       AdminCollectTab(),
                       AdminContentTab(),
                       AdminUiTab(),
+                      AdminJicunTab(),
                       AdminLogsTab(),
                       AdminSplashTab(),
                       AdminSecurityTab(),
@@ -201,6 +203,7 @@ class _AdminPageState extends State<AdminPage>
       (Icons.cloud_download_rounded, '采集'),
       (Icons.article_rounded, '内容'),
       (Icons.palette_rounded, '界面'),
+      (Icons.download_rounded, '解析'),
       (Icons.history_rounded, '日志'),
       (Icons.settings_rounded, '配置'),
       (Icons.security_rounded, '安全'),

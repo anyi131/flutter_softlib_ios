@@ -14,6 +14,7 @@ import 'package:flutter_softlib/app/pages/navigate/tips/tips_component.dart';
 import 'package:flutter_softlib/app/pages/navigate/square/square_component.dart';
 import 'package:flutter_softlib/app/pages/navigate/mine/mine_component.dart';
 import 'package:flutter_softlib/app/utils/jump_util.dart';
+import 'package:flutter_softlib/app/jicun/pages/jicun_page.dart';
 import 'package:flutter_softlib/app/utils/toast_util.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
@@ -55,6 +56,11 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
       label: '我的',
       selectedIcon: Icon(Icons.person),
     ),
+    NavigationDestination(
+      icon: Icon(Icons.download_outlined),
+      label: '即存',
+      selectedIcon: Icon(Icons.download),
+    ),
   ];
   static List<Widget> _basePages() => [
     HomeComponent(),
@@ -62,6 +68,7 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
     SquareComponent(),
     TipsComponent(),
     MineComponent(),
+    JicunPage(),
   ];
 
   List<NavigationDestination> labels = [
@@ -119,6 +126,26 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
       add(ui.tabSquare, _baseLabels[2], _basePages()[2]);
       add(ui.tabTips, _baseLabels[3], _basePages()[3]);
       add(ui.tabMine, _baseLabels[4], _basePages()[4]);
+      // 即存 Tab(第 5 个):ui_config.jicun.enable 控制,默认显示。
+      // Tab 名由后台 tab_name 下发,拉不到配置时按默认常开处理。
+      var jicunOn = true;
+      var jicunName = '即存';
+      try {
+        final j = cfg.jicunConfig;
+        if (j != null) {
+          jicunOn = j.enable;
+          if (j.tabName.trim().isNotEmpty) jicunName = j.tabName.trim();
+        }
+      } catch (_) {}
+      add(
+        jicunOn,
+        NavigationDestination(
+          icon: const Icon(Icons.download_outlined),
+          label: jicunName,
+          selectedIcon: const Icon(Icons.download),
+        ),
+        _basePages()[5],
+      );
       labels = ls;
       pages = ps;
       if (currentIndex >= ps.length) {

@@ -65,6 +65,10 @@ class _AdminUiTabState extends State<AdminUiTab> {
   bool _qSign = true, _qVip = true, _qService = true, _qUpdate = true;
 
   bool _loading = true;
+
+  /// ⚠️ 完整 ui_config 快照:config_save 是整体覆盖,保存时把非本 Tab 管的
+  /// 节点(如 jicun)原样带回,否则会把别的 Tab 配置冲掉。
+  Map<String, dynamic> _rawUiAll = {};
   bool _saving = false;
   String _loadErr = '';
 
@@ -101,6 +105,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
           : <String, dynamic>{};
       if (!mounted) return;
       setState(() {
+        _rawUiAll = ui;
         _palette = '${theme['palette'] ?? cfg['theme_palette'] ?? 'aurora'}';
         _mode = '${theme['mode'] ?? 'light'}';
         _userToggle = '${theme['user_toggle'] ?? 0}' == '1';
@@ -141,48 +146,72 @@ class _AdminUiTabState extends State<AdminUiTab> {
     }
   }
 
-  Map<String, dynamic> _payload() => {
-    'ui_config': {
-      'theme': {
-        'palette': _palette,
-        'mode': _mode,
-        'user_toggle': _userToggle ? 1 : 0,
+  Map<String, dynamic> _payload() {
+    // ⚠️ 整体覆盖语义:带回完整 ui_config,把不归本 Tab 管的节点(如 jicun)
+    // 原样带回 —— 少了它,保存界面配置就会把「解析配置」冲掉。
+    final passthrough = <String, dynamic>{
+      for (final e in _rawUiAll.entries)
+        if (!{
+          'theme',
+          'tabs',
+          'features',
+          'home',
+          'update_template',
+          'tips_template',
+          'mine_template',
+          'splash_template',
+          'about_template',
+          'auth_template',
+          'notice_template',
+          'invite_template',
+          'invite_share_text',
+        }.contains(e.key))
+          e.key: e.value,
+    };
+    return {
+      'ui_config': {
+        ...passthrough,
+        'theme': {
+          'palette': _palette,
+          'mode': _mode,
+          'user_toggle': _userToggle ? 1 : 0,
+        },
+        'tabs': {
+          'home': _tabHome ? 1 : 0,
+          'square': _tabSquare ? 1 : 0,
+          'tips': _tabTips ? 1 : 0,
+          'mine': _tabMine ? 1 : 0,
+        },
+        'features': {
+          'checkin': _checkin ? 1 : 0,
+          'exchange': _exchange ? 1 : 0,
+          'donate_rank': _donate ? 1 : 0,
+          'invite': _invite ? 1 : 0,
+          'notice': _notice ? 1 : 0,
+          'referral': _referral ? 1 : 0,
+        },
+        'update_template': _updateTemplate,
+        'tips_template': _tipsTemplate,
+        'mine_template': _mineTemplate,
+        'splash_template': _splashTemplate,
+        'about_template': _aboutTemplate,
+        'auth_template': _authTemplate,
+        'notice_template': _noticeTemplate,
+        'invite_template': _inviteTemplate,
+        'home': {
+          'template': _homeTemplate,
+          'detail_style': _detailStyle,
+          'list_style': _listStyle,
+          'quick_sign': _qSign ? 1 : 0,
+          'quick_vip': _qVip ? 1 : 0,
+          'quick_service': _qService ? 1 : 0,
+          'quick_update': _qUpdate ? 1 : 0,
+          'invite_score': int.tryParse(_inviteScoreCtrl.text.trim()) ?? 50,
+        },
+        'invite_share_text': _inviteShareCtrl.text.trim(),
       },
-      'tabs': {
-        'home': _tabHome ? 1 : 0,
-        'square': _tabSquare ? 1 : 0,
-        'tips': _tabTips ? 1 : 0,
-        'mine': _tabMine ? 1 : 0,
-      },
-      'features': {
-        'checkin': _checkin ? 1 : 0,
-        'exchange': _exchange ? 1 : 0,
-        'donate_rank': _donate ? 1 : 0,
-        'invite': _invite ? 1 : 0,
-        'notice': _notice ? 1 : 0,
-        'referral': _referral ? 1 : 0,
-      },
-      'update_template': _updateTemplate,
-      'tips_template': _tipsTemplate,
-      'mine_template': _mineTemplate,
-      'splash_template': _splashTemplate,
-      'about_template': _aboutTemplate,
-      'auth_template': _authTemplate,
-      'notice_template': _noticeTemplate,
-      'invite_template': _inviteTemplate,
-      'home': {
-        'template': _homeTemplate,
-        'detail_style': _detailStyle,
-        'list_style': _listStyle,
-        'quick_sign': _qSign ? 1 : 0,
-        'quick_vip': _qVip ? 1 : 0,
-        'quick_service': _qService ? 1 : 0,
-        'quick_update': _qUpdate ? 1 : 0,
-        'invite_score': int.tryParse(_inviteScoreCtrl.text.trim()) ?? 50,
-      },
-      'invite_share_text': _inviteShareCtrl.text.trim(),
-    },
-  };
+    };
+  }
 
   Future<void> _save() async {
     if (_saving) return;
