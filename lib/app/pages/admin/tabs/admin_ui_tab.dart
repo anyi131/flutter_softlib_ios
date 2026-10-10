@@ -837,6 +837,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
       ('float', '分离凸起'),
       ('dock', '纯图标Dock'),
       ('curve', '凹陷缺口FAB'),
+      ('liquid', '液态玻璃'),
     ],
     _navTemplate,
     (v) => setState(() => _navTemplate = v),

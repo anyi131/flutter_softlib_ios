@@ -52,14 +52,14 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
       selectedIcon: Icon(Icons.tips_and_updates),
     ),
     NavigationDestination(
+      icon: const Icon(Icons.download_outlined),
+      label: '即存',
+      selectedIcon: const Icon(Icons.download),
+    ),
+    NavigationDestination(
       icon: Icon(Icons.person_outline),
       label: '我的',
       selectedIcon: Icon(Icons.person),
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.download_outlined),
-      label: '即存',
-      selectedIcon: Icon(Icons.download),
     ),
   ];
   static List<Widget> _basePages() => [
@@ -67,44 +67,14 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
     AppComponent(),
     SquareComponent(),
     TipsComponent(),
-    MineComponent(),
     JicunPage(),
+    MineComponent(),
   ];
 
-  List<NavigationDestination> labels = [
-    NavigationDestination(
-      icon: Icon(IconFont.home),
-      label: '首页',
-      selectedIcon: Icon(IconFont.homeFill),
-    ),
-    NavigationDestination(
-      icon: Icon(IconFont.appB),
-      label: '应用',
-      selectedIcon: Icon(IconFont.appBFill),
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.explore_outlined),
-      label: '广场',
-      selectedIcon: Icon(Icons.explore),
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.tips_and_updates_outlined),
-      label: '线报',
-      selectedIcon: Icon(Icons.tips_and_updates),
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.person_outline),
-      label: '我的',
-      selectedIcon: Icon(Icons.person),
-    ),
-  ];
-  List<Widget> pages = [
-    HomeComponent(),
-    AppComponent(),
-    SquareComponent(),
-    TipsComponent(),
-    MineComponent(),
-  ];
+  // v55：初始即为完整 6 Tab（首页/应用/广场/线报/即存/我的），
+  // 之前初始只有 5 个（缺即存），配置拉取失败时会少一个 Tab。
+  List<NavigationDestination> labels = List.of(_baseLabels);
+  List<Widget> pages = _basePages();
 
   /// 按后台配置裁剪 Tab（工具Tab已整体移除）
   Future<void> applyUiConfig({bool force = false}) async {
@@ -125,7 +95,6 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
       add(true, _baseLabels[1], _basePages()[1]); // 应用 Tab 常驻
       add(ui.tabSquare, _baseLabels[2], _basePages()[2]);
       add(ui.tabTips, _baseLabels[3], _basePages()[3]);
-      add(ui.tabMine, _baseLabels[4], _basePages()[4]);
       // 即存 Tab(第 5 个):ui_config.jicun.enable 控制,默认显示。
       // Tab 名由后台 tab_name 下发,拉不到配置时按默认常开处理。
       var jicunOn = true;
@@ -144,8 +113,10 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
           label: jicunName,
           selectedIcon: const Icon(Icons.download),
         ),
-        _basePages()[5],
+        _basePages()[4],
       );
+      // 我的 Tab 固定在最后（即存之后）
+      add(ui.tabMine, _baseLabels[5], _basePages()[5]);
       labels = ls;
       pages = ps;
       if (currentIndex >= ps.length) {
