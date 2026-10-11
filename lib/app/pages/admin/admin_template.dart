@@ -24,7 +24,7 @@ final ValueNotifier<String> adminTemplateNotifier = ValueNotifier('light_card');
 String get adminTemplateCurrent =>
     SoftService.instance.cachedConfig?.uiConfig.adminTemplate ?? 'light_card';
 
-class AdminTemplateShell extends StatelessWidget {
+class AdminTemplateShell extends StatefulWidget {
   const AdminTemplateShell({
     super.key,
     required this.tab,
@@ -35,6 +35,37 @@ class AdminTemplateShell extends StatelessWidget {
   final TabController tab;
   final VoidCallback onRefresh;
   final List<Widget> children;
+
+  @override
+  State<AdminTemplateShell> createState() => _AdminTemplateShellState();
+}
+
+/// v331g：必须监听 tab 变化重建，否则选中胶囊停在第一个 Tab
+class _AdminTemplateShellState extends State<AdminTemplateShell> {
+  @override
+  void initState() {
+    super.initState();
+    widget.tab.addListener(_onTab);
+  }
+
+  @override
+  void didUpdateWidget(covariant AdminTemplateShell old) {
+    super.didUpdateWidget(old);
+    if (old.tab != widget.tab) {
+      old.tab.removeListener(_onTab);
+      widget.tab.addListener(_onTab);
+    }
+  }
+
+  void _onTab() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    widget.tab.removeListener(_onTab);
+    super.dispose();
+  }
 
   static const _tabItems = [
     (Icons.dashboard_rounded, '概览'),
@@ -101,7 +132,7 @@ class AdminTemplateShell extends StatelessWidget {
     );
   }
 
-  Widget _views() => TabBarView(controller: tab, children: children);
+  Widget _views() => TabBarView(controller: widget.tab, children: widget.children);
 
   Widget _headerLight(BuildContext context) => Padding(
     padding: EdgeInsets.fromLTRB(
@@ -145,7 +176,7 @@ class AdminTemplateShell extends StatelessWidget {
             ],
           ),
         ),
-        _roundBtn(context, Icons.refresh_rounded, onRefresh),
+        _roundBtn(context, Icons.refresh_rounded, widget.onRefresh),
       ],
     ),
   );
@@ -184,7 +215,7 @@ class AdminTemplateShell extends StatelessWidget {
         itemCount: _tabItems.length,
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
-          final sel = tab.index == i;
+          final sel = widget.tab.index == i;
           return GestureDetector(
             onTap: () => onTab(i),
             child: AnimatedContainer(
@@ -242,7 +273,7 @@ class AdminTemplateShell extends StatelessWidget {
     );
   }
 
-  void onTab(int i) => tab.animateTo(i);
+  void onTab(int i) => widget.tab.animateTo(i);
 
   // ─────────── dark_console：暗色控制台 ───────────
   Widget _darkConsole(BuildContext context) {
@@ -312,7 +343,7 @@ class AdminTemplateShell extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    _conBtn(context, Icons.refresh_rounded, onRefresh),
+                    _conBtn(context, Icons.refresh_rounded, widget.onRefresh),
                   ],
                 ),
               ),
@@ -325,7 +356,7 @@ class AdminTemplateShell extends StatelessWidget {
                   itemCount: _tabItems.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 8),
                   itemBuilder: (context, i) {
-                    final sel = tab.index == i;
+                    final sel = widget.tab.index == i;
                     return GestureDetector(
                       onTap: () => onTab(i),
                       child: Container(
@@ -429,7 +460,7 @@ class AdminTemplateShell extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: onRefresh,
+                        onTap: widget.onRefresh,
                         child: Icon(
                           Icons.refresh_rounded,
                           size: 22,
@@ -455,7 +486,7 @@ class AdminTemplateShell extends StatelessWidget {
                     itemCount: _tabItems.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 20),
                     itemBuilder: (context, i) {
-                      final sel = tab.index == i;
+                      final sel = widget.tab.index == i;
                       return GestureDetector(
                         onTap: () => onTab(i),
                         child: Column(
@@ -564,7 +595,7 @@ class AdminTemplateShell extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: onRefresh,
+                        onTap: widget.onRefresh,
                         child: Container(
                           width: 36,
                           height: 36,
@@ -591,7 +622,7 @@ class AdminTemplateShell extends StatelessWidget {
                     itemCount: _tabItems.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (context, i) {
-                      final sel = tab.index == i;
+                      final sel = widget.tab.index == i;
                       return GestureDetector(
                         onTap: () => onTab(i),
                         child: AnimatedContainer(
@@ -711,7 +742,7 @@ class AdminTemplateShell extends StatelessWidget {
                                 separatorBuilder: (_, __) =>
                                     const SizedBox(height: 2),
                                 itemBuilder: (context, i) {
-                                  final sel = tab.index == i;
+                                  final sel = widget.tab.index == i;
                                   return GestureDetector(
                                     onTap: () => onTab(i),
                                     child: AnimatedContainer(
@@ -758,7 +789,7 @@ class AdminTemplateShell extends StatelessWidget {
                               ),
                             ),
                             GestureDetector(
-                              onTap: onRefresh,
+                              onTap: widget.onRefresh,
                               child: Icon(
                                 Icons.refresh_rounded,
                                 size: 20,
@@ -797,7 +828,7 @@ class AdminTemplateShell extends StatelessWidget {
                               ),
                             ),
                             GestureDetector(
-                              onTap: onRefresh,
+                              onTap: widget.onRefresh,
                               child: Container(
                                 width: 36,
                                 height: 36,
@@ -832,7 +863,7 @@ class AdminTemplateShell extends StatelessWidget {
                           itemCount: _tabItems.length,
                           separatorBuilder: (_, __) => const SizedBox(width: 6),
                           itemBuilder: (context, i) {
-                            final sel = tab.index == i;
+                            final sel = widget.tab.index == i;
                             return GestureDetector(
                               onTap: () => onTab(i),
                               child: Container(
