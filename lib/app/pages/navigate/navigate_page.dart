@@ -20,17 +20,25 @@ class NavigatePage extends StatefulWidget {
 class _NavigatePageState extends State<NavigatePage> {
   final NavigateLogic logic = Get.find<NavigateLogic>();
   DateTime? _lastBack;
-  /// v331c 分段挂载：首帧只画外壳，下一帧再挂页面
-  bool _pagesMounted = false;
+  /// v331c 分段挂载：逐页挂载（每 400ms 一页），冻结在挂载第几页一目了然
+  int _mountedCount = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _mountNext();
+    });
+  }
+
+  void _mountNext() {
+    if (!mounted) return;
+    Future.delayed(const Duration(milliseconds: 400), () {
       if (!mounted) return;
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (mounted) setState(() => _pagesMounted = true);
-      });
+      if (_mountedCount < logic.pages.length) {
+        setState(() => _mountedCount++);
+        _mountNext();
+      }
     });
   }
 
@@ -102,7 +110,7 @@ class _NavigatePageState extends State<NavigatePage> {
               Deco.pageBackground(context),
               // v331c 分段挂载诊断：先显示外壳（证明 Scaffold/底栏正常），
               // 首帧后再挂 PageView——若冻结则锁死在首页构建
-              if (_pagesMounted)
+              if (_mountedCount >= logic.pages.length)
                 PageView(
                   physics: const NeverScrollableScrollPhysics(),
                   controller: logic.pageController,
@@ -111,7 +119,7 @@ class _NavigatePageState extends State<NavigatePage> {
               else
                 Center(
                   child: Text(
-                    'main:shell ok · mounting pages…',
+                    'mounting page $_mountedCount/${logic.pages.length}…',
                     style: TextStyle(
                       color: Theme.of(context).brightness == Brightness.dark
                           ? Colors.white70
