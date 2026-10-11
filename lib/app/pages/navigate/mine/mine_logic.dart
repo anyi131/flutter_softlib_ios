@@ -727,7 +727,11 @@ class MineLogic extends GetxController {
 
   /// 积分兑换（★ 主题自适应 + 信息更清楚）
   Future<void> pointsExchange() async {
-    if (!isLoggedIn) return openLogin();
+    // v331k：未登录不再硬跳登录页（用户反馈「点积分乱返回」），先提示
+    if (!isLoggedIn) {
+      toast('登录后可查看和兑换积分');
+      return openLogin();
+    }
     List<Map<String, dynamic>> goodsList = [];
     try {
       goodsList = await _userService.exchangeGoods();

@@ -122,15 +122,18 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               }
               // 顶部留白避开悬浮玻璃顶栏，避免主卡被遮挡
               final topInset = MediaQuery.of(context).padding.top;
-              return ListView(
-                physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.fromLTRB(
-                  context.pagePadding,
-                  topInset + 56,
-                  context.pagePadding,
-                  30,
+              // v331j：Obx 包裹——后台切详情模板后（含 Get 路由复用实例）立即生效
+              return Obx(
+                () => ListView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(
+                    context.pagePadding,
+                    topInset + 56,
+                    context.pagePadding,
+                    30,
+                  ),
+                  children: _bodyChildren(context),
                 ),
-                children: _bodyChildren(context),
               );
             },
           ),
