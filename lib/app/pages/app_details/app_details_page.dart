@@ -1170,6 +1170,11 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             if (task != null) {
               return _progressPanel(download, task);
             }
+            // ★ 需求1（防首帧抖动）：无任务但 3 秒内刚点过下载 →
+            //   保持进度条初始态，不跳回「下载按钮」
+            if (download.pendingDownloadUi) {
+              return _pendingDownloadPanel(download);
+            }
             // 未下载
             final String label;
             final IconData icon;
@@ -1337,6 +1342,48 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               color: const Color(0xFF6B7280),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  /// ★ 需求1：进度条初始态（任务刚创建、DB 记录尚未落库时的过渡 UI）
+  Widget _pendingDownloadPanel(AppDetailsLogic download) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: C.brand.withAlpha(38),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.downloading_rounded,
+                size: 14,
+                color: C.brand,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              '正在创建下载任务…',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w800,
+                color: C.brand,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 9),
+        const KitProgress(value: 0, color: C.brand),
+        const SizedBox(height: 9),
+        Text(
+          '正在解析下载直链，请稍候',
+          style: TextStyle(fontSize: 11.5, color: context.t2),
         ),
       ],
     );

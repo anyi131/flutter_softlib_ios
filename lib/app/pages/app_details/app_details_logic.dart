@@ -60,6 +60,24 @@ class AppDetailsLogic extends GetxController {
   String? taskId;
   Timer? _progressTimer;
 
+  /// ★ 需求1（防乱闪）状态去抖：
+  ///   记录上一次真正渲染到 UI 的快照，只有快照真正变化才 update(['download'])；
+  ///   「有任务 → 查不到任务」需要连续两次确认（DB 写入延迟时文件名兜底会抖动）。
+  String? _renderedTaskId;
+  int _renderedStatus = -1;
+  int _renderedProgress = -1;
+  int _nullStreak = 0;
+
+  /// ★ 需求1：刚点过下载的宽限窗口（3 秒内 UI 保持进度条初始态，
+  ///   防止任务记录尚未落库时按钮闪回「下载」态）
+  DateTime? _lastDownloadTap;
+  bool get pendingDownloadUi {
+    final t = _lastDownloadTap;
+    if (t == null) return false;
+    if (downloadTask != null) return false;
+    return DateTime.now().difference(t).inMilliseconds < 3000;
+  }
+
   @pragma('vm:entry-point')
   static void downloadCallback(String id, int status, int progress) {
     final SendPort? send = IsolateNameServer.lookupPortByName(
@@ -373,6 +391,19 @@ class AppDetailsLogic extends GetxController {
               if (fn.startsWith(key) || fn.contains(key)) {
                 downloadTask = t;
                 taskId = t.taskId;
+                // ★ 需求1：兜底命中后把 taskId 写回 downloadTaskDao，
+                //   下次轮询直查 DB，不再走「文件名兜底」抖动路径
+                try {
+                  await downloadTaskDao.setDownloadTask(
+                    taskId: t.taskId,
+                    appId: appId,
+                    appName: appInfo?.fileName ?? (t.filename ?? ''),
+                    appSize: appInfo?.fileSize ?? '',
+                    appIcon: appInfo?.fileIcon ?? '',
+                  );
+                } catch (e) {
+                  logger.e('回写下载任务记录失败: $e');
+                }
                 break;
               }
             }
@@ -382,6 +413,29 @@ class AppDetailsLogic extends GetxController {
         }
       }
     }
+    // ★ 需求1（防乱闪）：快照去抖 —— 快照没变不重复 update；
+    //   「有任务 → 突然查不到」必须连续两次为 null 才回落到按钮态，
+    //   避免 DB 写入延迟导致 按钮↔进度条 交替闪烁。
+    if (downloadTask == null) {
+      _nullStreak++;
+      if (_renderedTaskId != null && _nullStreak < 2) {
+        // 保持上次渲染状态（进度条），本轮不刷新
+        return;
+      }
+    } else {
+      _nullStreak = 0;
+    }
+    final newId = downloadTask?.taskId;
+    final newStatus = downloadTask?.status.index ?? -1;
+    final newProgress = downloadTask?.progress ?? -1;
+    final changed =
+        newId != _renderedTaskId ||
+        newStatus != _renderedStatus ||
+        newProgress != _renderedProgress;
+    if (!changed && _renderedTaskId != null) return;
+    _renderedTaskId = newId;
+    _renderedStatus = newStatus;
+    _renderedProgress = newProgress;
     update(['download']);
   }
 
@@ -439,6 +493,14 @@ class AppDetailsLogic extends GetxController {
       ToastUtil.error('下载地址无效');
       return;
     }
+
+    // ★ 需求1：标记「刚点过下载」，3 秒内 UI 保持进度条初始态不闪回按钮
+    _lastDownloadTap = DateTime.now();
+    _renderedTaskId = null;
+    _renderedStatus = -1;
+    _renderedProgress = -1;
+    _nullStreak = 0;
+    update(['download']);
 
     fileName = fileName.trim().replaceAll(' ', '_');
     if (!fileName.contains('.')) fileName = '$fileName.apk';
@@ -556,6 +618,11 @@ class AppDetailsLogic extends GetxController {
     downloadTaskDao.deleteDownloadTask(appId);
     taskId = null;
     downloadTask = null;
+    _renderedTaskId = null;
+    _renderedStatus = -1;
+    _renderedProgress = -1;
+    _nullStreak = 0;
+    _lastDownloadTap = null;
     update(['download']);
   }
 
