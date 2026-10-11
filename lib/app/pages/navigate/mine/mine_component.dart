@@ -24,12 +24,14 @@ import 'mine_logic.dart';
 /// v331f 诊断用：我的页模块挂载进度
 class MineStage {
   static final v = ValueNotifier<int>(0);
-  static bool _started = false;
-  static void start() {
-    if (_started) return;
-    _started = true;
+  static int _gen = 0;
+  static void start(dynamic logic) {
+    // 每次 logic.update() 重建都重启推进：冻在重建后的哪个模块也能看出
+    final gen = ++_gen;
+    v.value = 0;
     Future.doWhile(() async {
       await Future.delayed(const Duration(milliseconds: 400));
+      if (gen != _gen) return false;
       if (v.value >= 6) return false;
       v.value++;
       return true;
@@ -57,7 +59,7 @@ class MineComponent extends StatelessWidget {
               init: Get.put(MineLogic(), tag: 'mine'),
               tag: 'mine',
               builder: (logic) {
-                MineStage.start();
+                MineStage.start(logic);
                 return ValueListenableBuilder<int>(
                   valueListenable: MineStage.v,
                   builder: (_, __, ___) => RefreshIndicator(
