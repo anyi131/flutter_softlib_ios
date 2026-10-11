@@ -255,6 +255,10 @@ class _AdminUiTabState extends State<AdminUiTab> {
           } catch (_) {}
         }
       } catch (_) {}
+      // v331h：保存成功后回读线上配置，输入框与线上一致（杜绝「配置完返回旧值」错觉）
+      try {
+        await _load();
+      } catch (_) {}
       if (mounted) {
         ToastUtil.success('已保存并即时生效');
       }
