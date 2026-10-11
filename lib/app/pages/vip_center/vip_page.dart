@@ -7,6 +7,7 @@ import '../../api/user_service.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
+import 'pay_notice_dialog.dart';
 
 /// 开通会员 / VIP 中心页
 /// VIP PRO 头卡 + 三档套餐 + 支付方式 + 立即开通 + 会员权益
@@ -536,6 +537,20 @@ class _VipPageState extends State<VipPage> {
     }
     final plan = _plans[_selectedPlan];
     final payType = ['alipay', 'wxpay', 'qqpay'][_payMethod];
+
+    // ★ 需求3：支付确认弹窗（美化版，后台 ui_config.pay_notice 可配；
+    //   enabled=0 时 confirm() 内部直接放行）
+    final methodLabel = ['支付宝', '微信', 'QQ'][_payMethod];
+    final confirmed = await PayNoticeDialog.confirm(
+      amount: plan.money,
+      methodLabel: methodLabel,
+      methodIcon: ['alipay', 'wxpay', 'qqpay'].indexOf(payType) == 0
+          ? Icons.account_balance_wallet_rounded
+          : (payType == 'wxpay'
+                ? Icons.chat_bubble_rounded
+                : Icons.pets_rounded),
+    );
+    if (!confirmed) return;
 
     setState(() => _submitting = true);
     try {

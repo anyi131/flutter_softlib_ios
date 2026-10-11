@@ -1,5 +1,47 @@
 import 'package:flutter/material.dart';
 
+/// 支付确认弹窗文案（后台 ui_config.pay_notice，enabled=0 时跳过弹窗）
+class PayNoticeConfig {
+  final bool enabled;
+  final String title;
+  final String subtitle;
+  final String cardNote; // 网站支付完成后…
+  final String appNote; // APP支付完成后…
+  final String button;
+
+  const PayNoticeConfig({
+    this.enabled = true,
+    this.title = '欢迎使用安全支付',
+    this.subtitle = '请仔细阅读以下支付说明',
+    this.cardNote = '网站支付完成后，会员状态会自动同步到账户。',
+    this.appNote = 'APP支付完成后，请勿关闭页面，稍等片刻即可到账。',
+    this.button = '我已了解，开始支付',
+  });
+
+  factory PayNoticeConfig.fromJson(Map json) => PayNoticeConfig(
+    enabled:
+        json['enabled'] == null ||
+        json['enabled'] == true ||
+        json['enabled'] == 1 ||
+        json['enabled'] == '1',
+    title: (json['title'] ?? '').toString(),
+    subtitle: (json['subtitle'] ?? '').toString(),
+    cardNote: (json['card_note'] ?? '').toString(),
+    appNote: (json['app_note'] ?? '').toString(),
+    button: (json['button'] ?? '').toString(),
+  );
+
+  /// 文案为空时回退内置默认（仅取展示字段）
+  PayNoticeConfig withDefaults() => PayNoticeConfig(
+    enabled: enabled,
+    title: title.isNotEmpty ? title : '欢迎使用安全支付',
+    subtitle: subtitle.isNotEmpty ? subtitle : '请仔细阅读以下支付说明',
+    cardNote: cardNote.isNotEmpty ? cardNote : '网站支付完成后，会员状态会自动同步到账户。',
+    appNote: appNote.isNotEmpty ? appNote : 'APP支付完成后，请勿关闭页面，稍等片刻即可到账。',
+    button: button.isNotEmpty ? button : '我已了解，开始支付',
+  );
+}
+
 /// 全局界面配置（后台 admin「界面配置」下发，App 启动时应用）
 ///
 /// 后端存储：sys_config['ui_config'] = JSON 字符串
@@ -52,6 +94,9 @@ class UiConfig {
   final String
   adminTemplate; // 管理后台模板：light_card/dark_console/minimal/brand/desk
 
+  // ── 支付确认弹窗文案（后台可配，空=用内置默认）──
+  final PayNoticeConfig payNotice;
+
   // ── 首页快捷入口开关（v52g #7 热更新布局）──
   final bool quickSign;
   final bool quickVip;
@@ -88,6 +133,8 @@ class UiConfig {
     this.inviteShareText = '',
     this.navTemplate = 'classic',
     this.adminTemplate = 'light_card',
+    this.payNotice = const PayNoticeConfig(),
+
     this.quickSign = true,
     this.quickVip = true,
     this.quickService = true,
@@ -138,6 +185,10 @@ class UiConfig {
       inviteShareText: _s(json['invite_share_text'], ''),
       navTemplate: _s(json['nav_template'], 'classic'),
       adminTemplate: _s(json['admin_template'], 'light_card'),
+      payNotice: PayNoticeConfig.fromJson(
+        json['pay_notice'] is Map ? (json['pay_notice'] as Map) : const {},
+      ),
+
       quickSign: _b(home['quick_sign'], true),
       quickVip: _b(home['quick_vip'], true),
       quickService: _b(home['quick_service'], true),
@@ -171,6 +222,7 @@ class UiConfig {
       inviteShareText: base.inviteShareText,
       navTemplate: base.navTemplate,
       adminTemplate: base.adminTemplate,
+      payNotice: base.payNotice,
       quickSign: base.quickSign,
       quickVip: base.quickVip,
       quickService: base.quickService,

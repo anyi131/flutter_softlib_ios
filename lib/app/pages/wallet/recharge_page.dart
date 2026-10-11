@@ -8,6 +8,7 @@ import '../../api/pay_service.dart';
 import '../../api/user_service.dart';
 import '../../utils/toast_util.dart';
 import '../../routes/app_pages.dart';
+import '../vip_center/pay_notice_dialog.dart';
 
 /// 余额充值（与「开通会员」完全分开的独立页面）
 class RechargePage extends StatefulWidget {
@@ -79,20 +80,40 @@ class _RechargePageState extends State<RechargePage> {
     }
     setState(() => _busy = true);
     try {
+      // ★ 需求3：支付确认弹窗（美化版，后台 pay_notice 可配）
+      final confirmed = await PayNoticeDialog.confirm(
+        amount: amt.toStringAsFixed(2),
+        methodLabel:
+            {'alipay': '支付宝', 'wxpay': '微信', 'qqpay': 'QQ'}[_payType] ??
+            _payType,
+        methodIcon: _payType == 'wxpay'
+            ? Icons.chat_bubble_rounded
+            : (_payType == 'qqpay'
+                  ? Icons.pets_rounded
+                  : Icons.account_balance_wallet_rounded),
+      );
+      if (!mounted) return;
+      if (!confirmed) {
+        setState(() => _busy = false);
+        return;
+      }
       final url = await _svc.createRecharge(
         money: amt.toStringAsFixed(2),
         payType: _payType,
       );
       if (!mounted) return;
       setState(() => _busy = false);
-      await Get.toNamed(Routes.payWeb, arguments: {
-        'pay_url': url,
-        'title': '余额充值',
-        'money': amt.toStringAsFixed(2),
-        'onReturn': () async {
-          await UserService.instance.refreshProfile();
+      await Get.toNamed(
+        Routes.payWeb,
+        arguments: {
+          'pay_url': url,
+          'title': '余额充值',
+          'money': amt.toStringAsFixed(2),
+          'onReturn': () async {
+            await UserService.instance.refreshProfile();
+          },
         },
-      });
+      );
       await UserService.instance.refreshProfile();
       if (mounted) setState(() {});
     } catch (e) {
@@ -115,7 +136,11 @@ class _RechargePageState extends State<RechargePage> {
           else
             ListView(
               padding: EdgeInsets.fromLTRB(
-                  context.pagePadding, topInset + 60, context.pagePadding, 30),
+                context.pagePadding,
+                topInset + 60,
+                context.pagePadding,
+                30,
+              ),
               children: [
                 _balanceCard(me?.money ?? '0.00'),
                 const SizedBox(height: 14),
@@ -135,17 +160,22 @@ class _RechargePageState extends State<RechargePage> {
                         }),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 18, vertical: 13),
+                            horizontal: 18,
+                            vertical: 13,
+                          ),
                           decoration: BoxDecoration(
                             gradient: sel ? Deco.brandGradient : null,
                             color: sel ? null : context.cardBg,
                             borderRadius: BorderRadius.circular(R.md),
                             border: sel ? null : Border.all(color: C.stroke),
                           ),
-                          child: Text('¥${p.money}',
-                              style: Ty.h3.copyWith(
-                                  fontSize: 15,
-                                  color: sel ? Colors.white : context.t1)),
+                          child: Text(
+                            '¥${p.money}',
+                            style: Ty.h3.copyWith(
+                              fontSize: 15,
+                              color: sel ? Colors.white : context.t1,
+                            ),
+                          ),
                         ),
                       );
                     }).toList(),
@@ -156,18 +186,24 @@ class _RechargePageState extends State<RechargePage> {
                 const SizedBox(height: 10),
                 TextField(
                   controller: _amtCtrl,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w800),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
                   decoration: InputDecoration(
                     prefixText: '¥ ',
                     hintText: '输入充值金额',
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 16),
+                      horizontal: 14,
+                      vertical: 16,
+                    ),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(R.md)),
+                      borderRadius: BorderRadius.circular(R.md),
+                    ),
                   ),
                   onChanged: (v) =>
                       setState(() => _selected = double.tryParse(v)),
@@ -179,8 +215,11 @@ class _RechargePageState extends State<RechargePage> {
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      _payChip('支付宝', 'alipay',
-                          Icons.account_balance_wallet_rounded),
+                      _payChip(
+                        '支付宝',
+                        'alipay',
+                        Icons.account_balance_wallet_rounded,
+                      ),
                       const SizedBox(width: 10),
                       _payChip('微信', 'wxpay', Icons.chat_rounded),
                       const SizedBox(width: 10),
@@ -198,9 +237,11 @@ class _RechargePageState extends State<RechargePage> {
                 ),
                 if (!_enabled) ...[
                   const SizedBox(height: 10),
-                  Text('支付功能未开启，请联系管理员',
-                      textAlign: TextAlign.center,
-                      style: Ty.tiny.copyWith(color: C.warning)),
+                  Text(
+                    '支付功能未开启，请联系管理员',
+                    textAlign: TextAlign.center,
+                    style: Ty.tiny.copyWith(color: C.warning),
+                  ),
                 ],
                 const SizedBox(height: 16),
                 Text(
@@ -235,16 +276,20 @@ class _RechargePageState extends State<RechargePage> {
         children: [
           Row(
             children: [
-              const Icon(Icons.account_balance_wallet_rounded,
-                  color: Colors.white, size: 20),
+              const Icon(
+                Icons.account_balance_wallet_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               const SizedBox(width: 8),
-              Text('当前余额',
-                  style: Ty.small.copyWith(color: Colors.white70)),
+              Text('当前余额', style: Ty.small.copyWith(color: Colors.white70)),
             ],
           ),
           const SizedBox(height: 10),
-          Text('¥$money',
-              style: Ty.display.copyWith(color: Colors.white, fontSize: 30)),
+          Text(
+            '¥$money',
+            style: Ty.display.copyWith(color: Colors.white, fontSize: 30),
+          ),
         ],
       ),
     );
@@ -270,10 +315,13 @@ class _RechargePageState extends State<RechargePage> {
               children: [
                 Icon(icon, size: 19, color: sel ? Colors.white : context.t2),
                 const SizedBox(height: 4),
-                Text(label,
-                    style: Ty.tiny.copyWith(
-                        color: sel ? Colors.white : context.t2,
-                        fontWeight: FontWeight.w700)),
+                Text(
+                  label,
+                  style: Ty.tiny.copyWith(
+                    color: sel ? Colors.white : context.t2,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
           ),
@@ -289,7 +337,11 @@ class _RechargePageState extends State<RechargePage> {
       right: 0,
       child: Padding(
         padding: EdgeInsets.only(
-            top: topInset + 8, left: 12, right: 12, bottom: 8),
+          top: topInset + 8,
+          left: 12,
+          right: 12,
+          bottom: 8,
+        ),
         child: Row(
           children: [
             GestureDetector(
@@ -302,13 +354,18 @@ class _RechargePageState extends State<RechargePage> {
                   shape: BoxShape.circle,
                   border: Border.all(color: C.stroke),
                 ),
-                child: Icon(Icons.arrow_back_ios_new_rounded,
-                    size: 16, color: context.t1),
+                child: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 16,
+                  color: context.t1,
+                ),
               ),
             ),
             const Spacer(),
-            Text('充值余额',
-                style: Ty.h3.copyWith(color: context.t1, fontSize: 15)),
+            Text(
+              '充值余额',
+              style: Ty.h3.copyWith(color: context.t1, fontSize: 15),
+            ),
             const Spacer(),
             const SizedBox(width: 36),
           ],

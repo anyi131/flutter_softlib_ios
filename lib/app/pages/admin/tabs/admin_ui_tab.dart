@@ -65,6 +65,13 @@ class _AdminUiTabState extends State<AdminUiTab> {
   final _inviteScoreCtrl = TextEditingController();
   // ★ 邀请分享文案（可自定义，留空用内置默认）
   final _inviteShareCtrl = TextEditingController();
+  // ★ 需求3：支付弹窗文案（ui_config.pay_notice）
+  bool _payNoticeEnabled = true;
+  final _payTitleCtrl = TextEditingController();
+  final _paySubtitleCtrl = TextEditingController();
+  final _payCardNoteCtrl = TextEditingController();
+  final _payAppNoteCtrl = TextEditingController();
+  final _payButtonCtrl = TextEditingController();
   // 首页快捷入口（v52g #7）
   bool _qSign = true, _qVip = true, _qService = true, _qUpdate = true;
 
@@ -138,6 +145,16 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _adminTemplate = '${ui['admin_template'] ?? 'light_card'}';
         _inviteScoreCtrl.text = '${ui['invite_score'] ?? 50}';
         _inviteShareCtrl.text = '${ui['invite_share_text'] ?? ''}';
+        // ★ 需求3：支付弹窗文案
+        final pn = (ui['pay_notice'] is Map)
+            ? Map<String, dynamic>.from(ui['pay_notice'] as Map)
+            : <String, dynamic>{};
+        _payNoticeEnabled = pn.isEmpty || '${pn['enabled'] ?? 1}' == '1';
+        _payTitleCtrl.text = '${pn['title'] ?? ''}';
+        _paySubtitleCtrl.text = '${pn['subtitle'] ?? ''}';
+        _payCardNoteCtrl.text = '${pn['card_note'] ?? ''}';
+        _payAppNoteCtrl.text = '${pn['app_note'] ?? ''}';
+        _payButtonCtrl.text = '${pn['button'] ?? ''}';
         _qSign = '${home['quick_sign'] ?? 1}' == '1';
         _qVip = '${home['quick_vip'] ?? 1}' == '1';
         _qService = '${home['quick_service'] ?? 1}' == '1';
@@ -217,6 +234,15 @@ class _AdminUiTabState extends State<AdminUiTab> {
         'nav_template': _navTemplate,
         'admin_template': _adminTemplate,
         'invite_share_text': _inviteShareCtrl.text.trim(),
+        // ★ 需求3：支付弹窗文案（后台可配）
+        'pay_notice': {
+          'enabled': _payNoticeEnabled ? 1 : 0,
+          'title': _payTitleCtrl.text.trim(),
+          'subtitle': _paySubtitleCtrl.text.trim(),
+          'card_note': _payCardNoteCtrl.text.trim(),
+          'app_note': _payAppNoteCtrl.text.trim(),
+          'button': _payButtonCtrl.text.trim(),
+        },
       },
     };
   }
@@ -342,6 +368,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
             _card('底部导航栏模板', _navTemplatePicker()),
             _card('管理后台整体模板', _adminTemplatePicker()),
             _card('邀请配置', _inviteConfig()),
+            _card('支付弹窗文案', _payNoticeConfig()),
             _card('首页快捷入口', _quickSwitches()),
           ],
         ),
@@ -663,6 +690,79 @@ class _AdminUiTabState extends State<AdminUiTab> {
             ),
           ),
       ],
+    );
+  }
+
+  /// ★ 需求3：支付弹窗文案编辑卡（沿用邀请配置卡模式）
+  Widget _payNoticeConfig() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.verified_user_rounded, size: 18, color: C.brand),
+            const SizedBox(width: 8),
+            const Expanded(child: Text('启用支付确认弹窗')),
+            Switch(
+              value: _payNoticeEnabled,
+              activeThumbColor: C.brand,
+              onChanged: (v) => setState(() => _payNoticeEnabled = v),
+            ),
+          ],
+        ),
+        Text(
+          '关闭后点支付将跳过弹窗直接支付；文案留空用 App 内置默认。',
+          style: TextStyle(fontSize: 11.5, color: context.t3),
+        ),
+        const SizedBox(height: 12),
+        _payField(_payTitleCtrl, '弹窗标题', '欢迎使用安全支付'),
+        _payField(_paySubtitleCtrl, '副标题', '请仔细阅读以下支付说明'),
+        _payField(
+          _payCardNoteCtrl,
+          '网站支付说明',
+          '网站支付完成后，会员状态会自动同步到账户。',
+          maxLines: 2,
+        ),
+        _payField(
+          _payAppNoteCtrl,
+          'APP 支付说明',
+          'APP支付完成后，请勿关闭页面，稍等片刻即可到账。',
+          maxLines: 2,
+        ),
+        _payField(_payButtonCtrl, '确认按钮文案', '我已了解，开始支付'),
+      ],
+    );
+  }
+
+  Widget _payField(
+    TextEditingController ctrl,
+    String label,
+    String hint, {
+    int maxLines = 1,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextFormField(
+        controller: ctrl,
+        maxLines: maxLines,
+        style: TextStyle(fontSize: 13.5, color: context.t1),
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          hintStyle: TextStyle(fontSize: 12.5, color: context.t3),
+          labelStyle: TextStyle(fontSize: 12, color: context.t2),
+          isDense: true,
+          filled: true,
+          fillColor: context.isDark
+              ? Colors.white.withAlpha(10)
+              : const Color(0xFFF5F6FA),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 11,
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      ),
     );
   }
 
