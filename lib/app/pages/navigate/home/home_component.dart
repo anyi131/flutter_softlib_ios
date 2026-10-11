@@ -37,6 +37,27 @@ class _HomeComponentState extends State<HomeComponent> {
   final HomeLogic logic = Get.find<HomeLogic>();
   int _carouselIdx = 0;
   late final PageController _cardsPc = PageController(viewportFraction: 0.86);
+  /// v331e 首页模块逐个挂载诊断
+  int _homeStage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _nextStage();
+    });
+  }
+
+  void _nextStage() {
+    if (!mounted) return;
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (!mounted) return;
+      if (_homeStage < 5) {
+        setState(() => _homeStage++);
+        _nextStage();
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -77,17 +98,20 @@ class _HomeComponentState extends State<HomeComponent> {
     if (tpl == 'compact_top') return _tplCompactTop(uiCfg, logic); // 横排色条
     if (tpl == 'grid_quick') return _tplGridQuick(uiCfg, logic); // 三列小网格
     // classic 标准模板（原版全模块）
+    // v331e 诊断：按 _homeStage 逐模块挂载（0=header,1=+search,2=+quickGrid,3=+banner,4=+notice,5=+referral）
+    final n = _homeStage;
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
         SliverToBoxAdapter(child: _header()),
-        SliverToBoxAdapter(child: _search()),
-        SliverToBoxAdapter(child: _quickGrid()),
-        SliverToBoxAdapter(child: _banner()),
-        if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-        if (uiCfg.featureReferral) _referralTitle(),
-        if (uiCfg.featureReferral) _referralGrid(),
-        if (uiCfg.featureReferral) _referralState(),
+        if (n >= 1) SliverToBoxAdapter(child: _search()),
+        if (n >= 2) SliverToBoxAdapter(child: _quickGrid()),
+        if (n >= 3) SliverToBoxAdapter(child: _banner()),
+        if (n >= 4 && uiCfg.featureNotice)
+          SliverToBoxAdapter(child: _notice()),
+        if (n >= 5 && uiCfg.featureReferral) _referralTitle(),
+        if (n >= 5 && uiCfg.featureReferral) _referralGrid(),
+        if (n >= 5 && uiCfg.featureReferral) _referralState(),
         SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
       ],
     );
