@@ -21,6 +21,22 @@ import 'mine_logic.dart';
 ///  ③ 会员横幅（金色渐变，独立视觉重量）
 ///  ④ 服务宫格（4 列，渐变图标）
 ///  ⑤ 退出/登录按钮
+/// v331f 诊断用：我的页模块挂载进度
+class MineStage {
+  static final v = ValueNotifier<int>(0);
+  static bool _started = false;
+  static void start() {
+    if (_started) return;
+    _started = true;
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(milliseconds: 400));
+      if (v.value >= 6) return false;
+      v.value++;
+      return true;
+    });
+  }
+}
+
 class MineComponent extends StatelessWidget {
   const MineComponent({super.key});
 
@@ -41,20 +57,24 @@ class MineComponent extends StatelessWidget {
               init: Get.put(MineLogic(), tag: 'mine'),
               tag: 'mine',
               builder: (logic) {
-                return RefreshIndicator(
-                  onRefresh: logic.load,
-                  child: ListView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(
-                      context.pagePadding,
-                      12,
-                      context.pagePadding,
-                      context.tabSpace + 40,
-                    ),
-                    children: _mineBody(
-                      context,
-                      logic,
-                      SoftService.instance.configVersion.value,
+                MineStage.start();
+                return ValueListenableBuilder<int>(
+                  valueListenable: MineStage.v,
+                  builder: (_, __, ___) => RefreshIndicator(
+                    onRefresh: logic.load,
+                    child: ListView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(
+                        context.pagePadding,
+                        12,
+                        context.pagePadding,
+                        context.tabSpace + 40,
+                      ),
+                      children: _mineBody(
+                        context,
+                        logic,
+                        SoftService.instance.configVersion.value,
+                      ),
                     ),
                   ),
                 );
@@ -404,21 +424,26 @@ class MineComponent extends StatelessWidget {
         _actionButton(context, logic),
       ];
     }
-    return [
+    // v331f 诊断：classic 逐模块挂载（冻在哪个模块=凶手）
+    final st = MineStage.v.value.clamp(0, 6);
+    final all = [
       _title(context),
-      const SizedBox(height: 16),
       _profileCard(context, logic),
-      const SizedBox(height: 14),
       _statsRow(context, logic),
-      const SizedBox(height: 14),
       _vipBanner(context, logic),
-      const SizedBox(height: 20),
       _sectionTitle(context, '我的服务'),
-      const SizedBox(height: 10),
       _serviceGrid(context, logic),
-      const SizedBox(height: 18),
       _actionButton(context, logic),
     ];
+    final out = <Widget>[all[0]];
+    const gaps = [16.0, 14.0, 14.0, 20.0, 10.0, 18.0];
+    for (var i = 1; i < all.length && i <= st; i++) {
+      out.add(SizedBox(height: gaps[i - 1]));
+      out.add(all[i]);
+    }
+    out.add(Text('mine stage $st/6',
+        style: const TextStyle(fontSize: 10, color: Colors.grey)));
+    return out;
   }
 
   Widget _profileCardInner(BuildContext context, MineLogic logic, bool logged) {
