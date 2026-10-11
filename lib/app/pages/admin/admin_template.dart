@@ -47,6 +47,7 @@ class AdminTemplateShell extends StatelessWidget {
     (Icons.history_rounded, '日志'),
     (Icons.settings_rounded, '配置'),
     (Icons.security_rounded, '安全'),
+    (Icons.download_rounded, '解析'),
   ];
 
   @override

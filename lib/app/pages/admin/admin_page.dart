@@ -117,6 +117,7 @@ class _AdminPageState extends State<AdminPage>
         AdminLogsTab(),
         AdminSplashTab(),
         AdminSecurityTab(),
+        AdminJicunTab(),
       ],
     );
   }
