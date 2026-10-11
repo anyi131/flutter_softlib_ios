@@ -33,7 +33,12 @@ class _NavigatePageState extends State<NavigatePage> {
 
   void _mountNext() {
     if (!mounted) return;
-    Future.delayed(const Duration(milliseconds: 400), () {
+    if (_mountedCount == 0) {
+      setState(() => _mountedCount = 1); // 先挂首页
+      _mountNext();
+      return;
+    }
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (!mounted) return;
       if (_mountedCount < logic.pages.length) {
         setState(() => _mountedCount++);
@@ -116,10 +121,16 @@ class _NavigatePageState extends State<NavigatePage> {
                   controller: logic.pageController,
                   children: logic.pages,
                 )
-              else
+              else ...[
+                // v331d 真挂载：take(count) 只构建已挂载页，冻在哪个页名一目了然
+                PageView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  controller: logic.pageController,
+                  children: logic.pages.take(_mountedCount).toList(),
+                ),
                 Center(
                   child: Text(
-                    'mounting page $_mountedCount/${logic.pages.length}…',
+                    'next: ${_mountedCount < logic.labels.length ? logic.labels[_mountedCount].label : '?'} ($_mountedCount/${logic.pages.length})',
                     style: TextStyle(
                       color: Theme.of(context).brightness == Brightness.dark
                           ? Colors.white70
@@ -128,6 +139,7 @@ class _NavigatePageState extends State<NavigatePage> {
                     ),
                   ),
                 ),
+              ],
             ],
           ),
         ),
