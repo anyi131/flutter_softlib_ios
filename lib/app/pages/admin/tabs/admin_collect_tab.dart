@@ -42,6 +42,22 @@ class _AdminCollectTabState extends State<AdminCollectTab>
   List<Map<String, dynamic>> _items = [];
   final Set<String> _selected = {};
 
+  /// ★ 需求2：库内状态缓存（key=软件名，value=服务端标注 in_lib/lib_id/lib_version/update_flag）
+  final Map<String, Map<String, dynamic>> _libInfo = {};
+  bool _checkingDup = false;
+
+  /// ★ 需求2：重复筛选 0=全部 1=只看已入库 2=只看未入库
+  int _dupFilter = 0;
+
+  /// 当前筛选后的可见项
+  List<Map<String, dynamic>> get _visibleItems => _dupFilter == 0
+      ? _items
+      : _items.where((it) {
+          final info = _libInfo[(it['name'] ?? '').toString()];
+          final inLib = info?['in_lib'] == 1 || info?['in_lib'] == true;
+          return _dupFilter == 1 ? inLib : !inLib;
+        }).toList();
+
   /// 当前页已选数量（勾选计数显示）
   int get _pageSelCount => _items
       .where((it) => _selected.contains((it['appid'] ?? '').toString()))
@@ -130,6 +146,12 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         _totalPages = (r['total_pages'] as num?)?.toInt() ?? 1;
         _loading = false;
       });
+      // ★ 需求2：服务端已随列表标注 in_lib 等字段 → 直接进缓存；
+      //   缺标注的（旧服务端）再用 collect_check 批量补一次
+      _absorbLibInfo(_items);
+      if (_items.any((it) => !_libInfo.containsKey('${it['name'] ?? ''}'))) {
+        await _checkDup();
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -138,6 +160,71 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         _err = _friendly(e);
       });
     }
+  }
+
+  /// ★ 需求2：把服务端标注并入 _libInfo
+  void _absorbLibInfo(List<Map<String, dynamic>> items) {
+    for (final it in items) {
+      final name = '${it['name'] ?? ''}'.trim();
+      if (name.isEmpty) continue;
+      if (it.containsKey('in_lib')) {
+        _libInfo[name] = {
+          'in_lib': it['in_lib'],
+          'lib_id': it['lib_id'] ?? 0,
+          'lib_version': '${it['lib_version'] ?? ''}',
+          'lib_updatetime': '${it['lib_updatetime'] ?? ''}',
+          'update_flag': '${it['update_flag'] ?? ''}',
+        };
+      }
+    }
+  }
+
+  /// ★ 需求2：「检测重复」批量扫描当前页（collect_check 批量预检）
+  Future<void> _checkDup() async {
+    if (_checkingDup || _items.isEmpty) return;
+    _checkingDup = true;
+    if (mounted) setState(() {});
+    try {
+      final names = _items
+          .map(
+            (it) => {
+              'name': '${it['name'] ?? ''}'.trim(),
+              'version': '${it['version'] ?? ''}'.trim(),
+            },
+          )
+          .where((e) => (e['name'] as String).isNotEmpty)
+          .toList();
+      if (names.isEmpty) return;
+      final r = await _svc.collectCheck(names);
+      _absorbLibInfo(
+        ((r['items'] as List?) ?? [])
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList(),
+      );
+      if (mounted) setState(() {});
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      _checkingDup = false;
+      if (mounted) setState(() {});
+    }
+  }
+
+  /// ★ 需求2：版本号按段比较（>0: a 更新）
+  int _verCmp(String a, String b) {
+    final pa = a.split(RegExp(r'[.\-_\s]+'));
+    final pb = b.split(RegExp(r'[.\-_\s]+'));
+    final n = pa.length > pb.length ? pa.length : pb.length;
+    for (var i = 0; i < n; i++) {
+      final sa = i < pa.length ? pa[i].trim() : '';
+      final sb = i < pb.length ? pb[i].trim() : '';
+      if (sa == sb) continue;
+      final na = int.tryParse(sa);
+      final nb = int.tryParse(sb);
+      if (na != null && nb != null) return na.compareTo(nb);
+      return sa.compareTo(sb);
+    }
+    return 0;
   }
 
   @override
@@ -342,7 +429,84 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               ),
             ],
           ),
+          // ★ 需求2：重复检测工具条（批量扫描 + 只看重复/未入库 筛选）
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _dupChip('全部', 0),
+              const SizedBox(width: 6),
+              _dupChip('已在库', 1),
+              const SizedBox(width: 6),
+              _dupChip('未入库', 2),
+              const Spacer(),
+              GestureDetector(
+                onTap: _checkingDup ? null : _checkDup,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: C.brand.withAlpha(context.isDark ? 30 : 20),
+                    borderRadius: BorderRadius.circular(R.full),
+                  ),
+                  child: Row(
+                    children: [
+                      _checkingDup
+                          ? const SizedBox(
+                              width: 11,
+                              height: 11,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.6,
+                                color: C.brand,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.plagiarism_rounded,
+                              size: 13,
+                              color: C.brand,
+                            ),
+                      const SizedBox(width: 5),
+                      Text(
+                        _checkingDup ? '检测中…' : '检测重复',
+                        style: Ty.tiny.copyWith(
+                          color: C.brand,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+
+  /// ★ 需求2：重复筛选胶囊
+  Widget _dupChip(String label, int value) {
+    final on = _dupFilter == value;
+    return GestureDetector(
+      onTap: () => setState(() => _dupFilter = value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: on
+              ? C.brand
+              : (context.isDark
+                    ? Colors.white.withAlpha(12)
+                    : Colors.black.withAlpha(6)),
+          borderRadius: BorderRadius.circular(R.full),
+        ),
+        child: Text(
+          label,
+          style: Ty.tiny.copyWith(
+            color: on ? Colors.white : context.t2,
+            fontWeight: on ? FontWeight.w800 : FontWeight.w500,
+          ),
+        ),
       ),
     );
   }
@@ -369,6 +533,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         action: SoftButton(label: '重新检测', onPressed: _init),
       );
     }
+    final visible = _visibleItems;
     return Column(
       children: [
         Expanded(
@@ -379,7 +544,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               context.pagePadding,
               12,
             ),
-            itemCount: _items.length + 1,
+            itemCount: visible.length + 1,
             separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (_, i) {
               // 列表头：采集账号入口（点开可改账号/重新登录）
@@ -389,7 +554,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                   child: _accountEntry(),
                 );
               }
-              return _itemCard(_items[i - 1]);
+              return _itemCard(visible[i - 1]);
             },
           ),
         ),
@@ -520,11 +685,20 @@ class _AdminCollectTabState extends State<AdminCollectTab>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  (it['name'] ?? '').toString(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Ty.h3.copyWith(fontSize: 14, color: context.t1),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        (it['name'] ?? '').toString(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Ty.h3.copyWith(fontSize: 14, color: context.t1),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // ★ 需求2：库内对比徽标
+                    ..._libBadges(it),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -532,6 +706,15 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Ty.tiny.copyWith(color: context.t3),
+                ),
+                const SizedBox(height: 3),
+                // ★ 需求2：更新日期（采集元数据，没有则显示「未知」）
+                Text(
+                  '更新日期：${('${it['updatetime'] ?? ''}'.trim().isEmpty ? '未知' : it['updatetime'])}'
+                  '${_libVersionSuffix(it)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Ty.tiny.copyWith(color: context.t3, fontSize: 11),
                 ),
               ],
             ),
@@ -545,6 +728,40 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         ],
       ),
     );
+  }
+
+  /// ★ 需求2：库内对比徽标（已在库/不在库 + 库内已更新/可更新）
+  List<Widget> _libBadges(Map<String, dynamic> it) {
+    final info = _libInfo['${it['name'] ?? ''}'.trim()];
+    if (info == null) return const [];
+    final inLib = info['in_lib'] == 1 || info['in_lib'] == true;
+    final flag = '${info['update_flag'] ?? ''}';
+    return [
+      Pill(
+        inLib ? '已在库' : '不在库',
+        color: inLib ? C.success : context.t3,
+        small: true,
+      ),
+      if (flag == 'updatable') ...[
+        const SizedBox(width: 4),
+        const Pill('可更新', color: C.warning, small: true),
+      ],
+      if (flag == 'lib_newer') ...[
+        const SizedBox(width: 4),
+        const Pill('库内已更新', color: C.brand, small: true),
+      ],
+    ];
+  }
+
+  /// ★ 需求2：已在库行尾追加「库内 id + 版本号」
+  String _libVersionSuffix(Map<String, dynamic> it) {
+    final info = _libInfo['${it['name'] ?? ''}'.trim()];
+    if (info == null) return '';
+    final inLib = info['in_lib'] == 1 || info['in_lib'] == true;
+    if (!inLib) return '';
+    final ver = '${info['lib_version'] ?? ''}'.trim();
+    final id = info['lib_id'] ?? 0;
+    return '  ·  库内 #$id${ver.isNotEmpty ? ' v$ver' : ''}';
   }
 
   Widget _pager() {
@@ -592,8 +809,8 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     final label = _selected.isEmpty
         ? '请选择要采集的软件'
         : (pageCount == _selected.length
-            ? '开始采集（$pageCount）'
-            : '开始采集本页（$pageCount） · 跨页共选 ${_selected.length}');
+              ? '开始采集（$pageCount）'
+              : '开始采集本页（$pageCount） · 跨页共选 ${_selected.length}');
     return SafeArea(
       top: false,
       child: Padding(
@@ -1067,8 +1284,15 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         catId: batch['cat_id'] as int?,
         isVip: batch['is_vip'] as int?,
         vipPrice: batch['vip_price'] as String?,
+        // ★ 需求2：跳过已入库 / 覆盖更新
+        skipExisting: (batch['skip_existing'] ?? 1) == 1,
+        updateExisting: (batch['update_existing'] ?? 0) == 1,
       );
-      ToastUtil.success('已导入 ${r['added']} 条，跳过重复 ${r['skipped']} 条');
+      final updated = (r['updated'] as num?)?.toInt() ?? 0;
+      ToastUtil.success(
+        '已导入 ${r['added']} 条，跳过重复 ${r['skipped']} 条'
+        '${updated > 0 ? '，覆盖更新 $updated 条' : ''}',
+      );
       setState(() {
         _results = [];
         _logs = [];
@@ -1087,6 +1311,9 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     } catch (_) {}
     int? catId; // null = 不设置（走服务端默认）
     bool isVip = false;
+    // ★ 需求2：跳过已入库（默认开）/ 覆盖更新（默认关）
+    bool skipExisting = true;
+    bool updateExisting = false;
     final price = TextEditingController();
     final go = await Get.dialog<bool>(
       Dialog(
@@ -1096,11 +1323,15 @@ class _AdminCollectTabState extends State<AdminCollectTab>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('批量设置（导入前）',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+              const Text(
+                '批量设置（导入前）',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+              ),
               const SizedBox(height: 4),
-              Text('为本次导入的软件统一设置分类与下载权限',
-                  style: Ty.tiny.copyWith(color: ctx.t3)),
+              Text(
+                '为本次导入的软件统一设置分类与下载权限',
+                style: Ty.tiny.copyWith(color: ctx.t3),
+              ),
               const SizedBox(height: 12),
               DropdownButtonFormField<int>(
                 initialValue: catId,
@@ -1112,18 +1343,23 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                 items: [
                   const DropdownMenuItem(value: null, child: Text('不设置')),
                   const DropdownMenuItem(value: 0, child: Text('未分类')),
-                  ...cats.map((c) => DropdownMenuItem(
-                        value: int.tryParse('${c['id']}') ?? 0,
-                        child: Text('${c['title']}'),
-                      )),
+                  ...cats.map(
+                    (c) => DropdownMenuItem(
+                      value: int.tryParse('${c['id']}') ?? 0,
+                      child: Text('${c['title']}'),
+                    ),
+                  ),
                 ],
                 onChanged: (v) => setD(() => catId = v),
               ),
               const SizedBox(height: 10),
               Row(
                 children: [
-                  const Icon(Icons.workspace_premium_rounded,
-                      size: 18, color: C.gold),
+                  const Icon(
+                    Icons.workspace_premium_rounded,
+                    size: 18,
+                    color: C.gold,
+                  ),
                   const SizedBox(width: 8),
                   const Expanded(child: Text('会员专享')),
                   Switch(
@@ -1136,13 +1372,46 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               if (isVip)
                 TextField(
                   controller: price,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(
                     labelText: '会员价 / 购买价（¥，可留空）',
                     isDense: true,
                   ),
                 ),
+              const SizedBox(height: 12),
+              // ★ 需求2：批量操作增强（跳过已入库 / 覆盖更新）
+              Row(
+                children: [
+                  const Icon(
+                    Icons.filter_alt_off_rounded,
+                    size: 18,
+                    color: C.mint,
+                  ),
+                  const SizedBox(width: 8),
+                  const Expanded(child: Text('跳过已入库')),
+                  Switch(
+                    value: skipExisting,
+                    activeThumbColor: C.mint,
+                    onChanged: updateExisting
+                        ? null
+                        : (v) => setD(() => skipExisting = v),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  const Icon(Icons.update_rounded, size: 18, color: C.gold),
+                  const SizedBox(width: 8),
+                  const Expanded(child: Text('覆盖更新（源版本更新时更新版本/链接/日期/大小）')),
+                  Switch(
+                    value: updateExisting,
+                    activeThumbColor: C.gold,
+                    onChanged: (v) => setD(() => updateExisting = v),
+                  ),
+                ],
+              ),
               const SizedBox(height: 14),
               Row(
                 children: [
@@ -1171,6 +1440,8 @@ class _AdminCollectTabState extends State<AdminCollectTab>
       if (catId != null) 'cat_id': catId,
       'is_vip': isVip ? 1 : 0,
       if (isVip) 'vip_price': price.text.trim(),
+      'skip_existing': skipExisting ? 1 : 0,
+      'update_existing': updateExisting ? 1 : 0,
     };
   }
 

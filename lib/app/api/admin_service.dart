@@ -599,12 +599,26 @@ class AdminService {
     int? catId,
     int? isVip,
     String? vipPrice,
+    bool skipExisting = true,
+    bool updateExisting = false,
   }) async {
     final d = (await _post('collect_import', {
       'items': jsonEncode(items),
       if (catId != null) 'cat_id': catId,
       if (isVip != null) 'is_vip': isVip,
       if (vipPrice != null) 'vip_price': vipPrice,
+      'skip_existing': skipExisting ? 1 : 0,
+      'update_existing': updateExisting ? 1 : 0,
+    }))['data'];
+    return d is Map ? Map<String, dynamic>.from(d) : {};
+  }
+
+  /// ★ 需求2：批量预检（传入名称/版本列表，返回哪些已在库及库内版本）
+  Future<Map<String, dynamic>> collectCheck(
+    List<Map<String, dynamic>> items,
+  ) async {
+    final d = (await _post('collect_check', {
+      'names': jsonEncode(items),
     }))['data'];
     return d is Map ? Map<String, dynamic>.from(d) : {};
   }
