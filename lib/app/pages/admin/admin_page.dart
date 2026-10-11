@@ -28,7 +28,7 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage>
     with SingleTickerProviderStateMixin {
-  late final TabController _tab = TabController(length: 10, vsync: this);
+  late final TabController _tab = TabController(length: 11, vsync: this);
 
   bool _checking = true;
   bool _isAdmin = false;

@@ -499,8 +499,12 @@ class MineComponent extends StatelessWidget {
       (
         _uiCfg.featureCheckin
             ? (!logic.isLoggedIn ? '-' : (logic.signedToday ? '已签' : '签到'))
-            : '-',
-        _uiCfg.featureCheckin ? '' : '未开放',
+            : '未开放',
+        _uiCfg.featureCheckin
+            ? (!logic.isLoggedIn
+                  ? '-'
+                  : (logic.signedToday ? logic.signedDate : '未签'))
+            : '',
         Icons.verified_rounded,
         C.amber,
       ),
@@ -528,7 +532,7 @@ class MineComponent extends StatelessWidget {
                     logic.openLogin();
                     return;
                   }
-                  if (items[i].$1 == '签到') {
+                  if (items[i].$1 == '签到' || items[i].$1 == '已签') {
                     if (_uiCfg.featureCheckin) logic.signIn();
                   } else if (items[i].$1 == '消息') {
                     logic.openMessages();
