@@ -204,6 +204,10 @@ class SoftService {
   /// 自建蓝奏云解析服务
   static const String kLzyProxy = ApiHost.lzyProxy;
 
+  /// 最近一次解析失败的具体原因（来自解析服务 msg / 异常摘要），
+  /// 供调用方 toast/弹窗展示，避免用户只看到笼统的「解析失败」
+  static String lastParseError = '';
+
   /// 方案一：自建 API 解析直链（速度快、成功率高）
   Future<String?> resolveLzyByApi(String lzyUrl) async {
     try {
@@ -216,6 +220,9 @@ class SoftService {
       if (d is Map) {
         // 兼容多种返回结构 + 字段大小写（自建服务返回 downUrl）
         final okCode = d['code'] == 200 || d['code'] == 1 || d['code'] == '200';
+        if (!okCode && d['msg'] is String && (d['msg'] as String).isNotEmpty) {
+          lastParseError = d['msg'] as String; // 如「文件取消分享了」
+        }
         if (okCode) {
           for (final k in [
             'downUrl',
@@ -263,6 +270,8 @@ class SoftService {
       if (data is Map && data['code'] == 1) {
         final u = (data['data'] is Map) ? (data['data']['url'] ?? '') : '';
         if (u.toString().isNotEmpty) return u.toString();
+      } else if (data is Map && data['msg'] is String) {
+        lastParseError = data['msg'] as String;
       }
     } catch (e) {
       debugPrint('[Softlib] $e');
@@ -272,6 +281,7 @@ class SoftService {
 
   /// 蓝奏云解析：先自建 API，失败再用后端解析，都失败返回 null（调用方用原链接）
   Future<String?> resolveLzy(String lzyUrl) async {
+    lastParseError = '';
     final a = await resolveLzyByApi(lzyUrl);
     if (a != null && a.isNotEmpty) return a;
     return resolveLzyByServer(lzyUrl);

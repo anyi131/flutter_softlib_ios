@@ -8,6 +8,7 @@ import '../../api/soft_service.dart';
 import '../../design/app_anim.dart';
 import '../../design/ui.dart';
 import '../../utils/apk_installer.dart';
+import '../../utils/download_dir.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
 
@@ -140,7 +141,7 @@ class _UpdateCardState extends State<_UpdateCard> {
     final taskId = await FlutterDownloader.enqueue(
       url: direct,
       fileName: 'softlib_update_${DateTime.now().millisecondsSinceEpoch}.apk',
-      savedDir: '/storage/emulated/0/Download',
+      savedDir: await DownloadDir.path(),
       showNotification: true,
       saveInPublicStorage: true,
       openFileFromNotification: true,

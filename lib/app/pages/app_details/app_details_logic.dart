@@ -25,6 +25,7 @@ import '../../api/api_host.dart';
 import '../../api/soft_service.dart';
 import '../../api/user_service.dart';
 import '../../utils/apk_installer.dart';
+import '../../utils/download_dir.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
 import '../../widgets/posters/posters_widget.dart';
@@ -243,6 +244,17 @@ class AppDetailsLogic extends GetxController {
               '你可以用浏览器打开原链接，在网页里手动下载。',
               style: TextStyle(fontSize: 13, height: 1.6),
             ),
+            if (SoftService.lastParseError.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                '失败原因：${SoftService.lastParseError}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  height: 1.5,
+                  color: C.danger,
+                ),
+              ),
+            ],
             if (originUrl.isNotEmpty) ...[
               const SizedBox(height: 10),
               Container(
@@ -438,7 +450,7 @@ class AppDetailsLogic extends GetxController {
     final newTaskId = await FlutterDownloader.enqueue(
       url: parseUrl,
       fileName: fileName,
-      savedDir: '/storage/emulated/0/Download',
+      savedDir: await DownloadDir.path(),
       showNotification: true,
       saveInPublicStorage: true,
       openFileFromNotification: true,
@@ -641,10 +653,7 @@ class AppDetailsLogic extends GetxController {
       logger.e('find apk path failed: $e');
     }
     // 兜底：扫描公共下载目录
-    for (final dir in [
-      '/storage/emulated/0/Download',
-      '/storage/emulated/0/Android/data/com.soft.anyi/files',
-    ]) {
+    for (final dir in await DownloadDir.fallbackDirs()) {
       try {
         final d = Directory(dir);
         if (!d.existsSync()) continue;
