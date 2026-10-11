@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
+import 'nav_templates.dart';
 import 'navigate_logic.dart';
 
 /// 主框架 —— iOS 26/27 风格玻璃底部 Tab
@@ -100,9 +101,10 @@ class _NavigatePageState extends State<NavigatePage> {
             ],
           ),
         ),
+        // v331m：底部导航模板（classic/glass/float/dock/curve/liquid）由后台 nav_template 下发
         bottomNavigationBar: GetBuilder<NavigateLogic>(
           id: 'navigate',
-          builder: (logic) => _glassBar(context, logic, inset),
+          builder: (logic) => NavTemplates.bar(context, logic, inset),
         ),
       ),
     );
