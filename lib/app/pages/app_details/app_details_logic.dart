@@ -141,17 +141,22 @@ class AppDetailsLogic extends GetxController {
       if (data is List && data.length >= 3) {
         final id = data[0]?.toString() ?? '';
         final status = data[1] is int ? data[1] as int : 0;
+        final prog = data[2] is int ? data[2] as int : 0;
         // ★ v331n：只处理当前页面任务的事件——其他软件/旧任务的事件
         //   会让本页误弹「下载完成」并打乱进度状态机。
-        //   taskId 尚未确定时（页面刚进）也只刷新状态不弹窗。
-        if (taskId == null ||
-            taskId!.isEmpty ||
-            (id.isNotEmpty && id != taskId)) {
-          if (taskId != null && taskId!.isNotEmpty) getTaskInfo();
+        if (taskId == null || taskId!.isEmpty) {
+          getTaskInfo();
           return;
         }
+        if (id.isNotEmpty && id != taskId) return;
+        // ★ v331r：回调自带 progress——先实时刷新显示（不等 DB 查询），
+        //   彻底解决进度条滞后/不实时
+        if (status == 2 /* running */ && prog > _shownProgress) {
+          _shownProgress = prog;
+          _uiPhase = phaseDownloading;
+          update(['download']);
+        }
         getTaskInfo();
-        // 下载完成 → 弹窗确认安装
         if (status == 3 /* complete */ ) {
           _onDownloadComplete();
         }
@@ -350,17 +355,38 @@ class AppDetailsLogic extends GetxController {
   bool _askedInstall = false;
   Future<void> _onDownloadComplete() async {
     if (_askedInstall) return;
-    // ★ v331q：完成校验——蓝奏云跳转链偶发「提前断流被判 complete」，
-    //   进度远未到 100% 就弹安装。进度 <95% 时视为异常：不弹安装，
-    //   提示重新下载并回到可重试状态。
-    if (_shownProgress < 95) {
-      logger.e('[download] complete 但进度仅 $_shownProgress%（疑似断流），要求重试');
+    // ★ v331s：完成校验以「文件实际大小」为准——下载器偶发把断流判为
+    //   complete（上一版用 _shownProgress 判断会误伤正常完成：显示层
+    //   滞后于真实进度）。文件大小 ≥ 期望大小的 90% 视为真完成；
+    //   大小不可得时信任下载器（progress 由回调实时驱动，已修）。
+    var fileOk = true;
+    try {
+      final dir = downloadTask?.savedDir ?? await DownloadDir.path();
+      final fn = downloadTask?.filename ?? fileName;
+      if (dir.isNotEmpty && fn.isNotEmpty) {
+        final f = io.File('$dir/$fn');
+        if (f.existsSync()) {
+          final actual = f.lengthSync();
+          final expect = double.tryParse(
+                (appInfo?.fileSize ?? '').replaceAll(RegExp(r'[^0-9.]'), ''),
+              ) ??
+              0;
+          if (expect > 0) {
+            final expectBytes = expect * 1024 * 1024; // fileSize 形如 "37.1 M"
+            fileOk = actual >= expectBytes * 0.9;
+          }
+        }
+      }
+    } catch (e) {
+      logger.e('[download] 校验异常(放行): $e');
+    }
+    if (!fileOk) {
       _askedInstall = false;
       _uiPhase = phaseIdle;
       _shownProgress = 0;
       _explicitReset = true;
       update(['download']);
-      ToastUtil.error('下载中断（网络波动），请点重新下载');
+      ToastUtil.error('下载不完整（网络波动），请重新下载');
       return;
     }
     _askedInstall = true;
