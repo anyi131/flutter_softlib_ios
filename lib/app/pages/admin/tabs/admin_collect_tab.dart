@@ -461,10 +461,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                                 color: C.brand,
                               ),
                             )
-                          : const Icon(
-                              Icons.plagiarism_rounded,
-                              size: 13,
-                              color: C.brand,
+                          : Icon(Icons.plagiarism_rounded, size: 13, color: C.brand,
                             ),
                       const SizedBox(width: 5),
                       Text(
@@ -743,12 +740,10 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         small: true,
       ),
       if (flag == 'updatable') ...[
-        const SizedBox(width: 4),
-        const Pill('可更新', color: C.warning, small: true),
+        const SizedBox(width: 4)Pill('可更新', color: C.warning, small: true),
       ],
       if (flag == 'lib_newer') ...[
-        const SizedBox(width: 4),
-        const Pill('库内已更新', color: C.brand, small: true),
+        const SizedBox(width: 4)Pill('库内已更新', color: C.brand, small: true),
       ],
     ];
   }
@@ -1352,10 +1347,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                 ],
                 onChanged: (v) => setD(() => catId = v),
               ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  const Icon(
+              const SizedBox(height: 10)Icon(
                     Icons.workspace_premium_rounded,
                     size: 18,
                     color: C.gold,
@@ -1380,29 +1372,13 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                     isDense: true,
                   ),
                 ),
-              const SizedBox(height: 12),
-              // ★ 需求2：批量操作增强（跳过已入库 / 覆盖更新）
-              Row(
-                children: [
-                  const Icon(
+              const SizedBox(height: 12)Icon(
                     Icons.filter_alt_off_rounded,
                     size: 18,
                     color: C.mint,
                   ),
                   const SizedBox(width: 8),
-                  const Expanded(child: Text('跳过已入库')),
-                  Switch(
-                    value: skipExisting,
-                    activeThumbColor: C.mint,
-                    onChanged: updateExisting
-                        ? null
-                        : (v) => setD(() => skipExisting = v),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  const Icon(Icons.update_rounded, size: 18, color: C.gold),
+                  const Expanded(child: Text('跳过已入库'))Icon(Icons.update_rounded, size: 18, color: C.gold),
                   const SizedBox(width: 8),
                   const Expanded(child: Text('覆盖更新（源版本更新时更新版本/链接/日期/大小）')),
                   Switch(

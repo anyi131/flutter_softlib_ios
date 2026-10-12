@@ -700,7 +700,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
       children: [
         Row(
           children: [
-            const Icon(Icons.verified_user_rounded, size: 18, color: C.brand),
+            Icon(Icons.verified_user_rounded, size: 18, color: C.brand),
             const SizedBox(width: 8),
             const Expanded(child: Text('启用支付确认弹窗')),
             Switch(
