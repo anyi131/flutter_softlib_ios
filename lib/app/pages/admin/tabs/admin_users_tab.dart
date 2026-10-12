@@ -1355,17 +1355,16 @@ class _AdminUsersTabState extends State<AdminUsersTab>
   }
 
   /// 用户详情（只读，展示全部字段）
-  // IP 显示（优先自定义）：与列表卡片的 display_ip 逻辑保持一致
-  final displayIp =
-      '${u['custom_ip_on'] ?? 0}' == '1' &&
-          '${u['custom_ip'] ?? ''}'.isNotEmpty
-      ? '${u['custom_ip']}'
-      : '${u['login_ip'] ?? '-'}';
-  final showAddr =
-      '${u['custom_ip_on'] ?? 0}' == '1' &&
-      '${u['custom_addr'] ?? ''}'.isNotEmpty;
-
   Future<void> _showDetail(Map u) async {
+    // IP 显示（优先自定义）：与列表卡片的 display_ip 逻辑保持一致
+    final displayIp =
+        '${u['custom_ip_on'] ?? 0}' == '1' &&
+            '${u['custom_ip'] ?? ''}'.isNotEmpty
+        ? '${u['custom_ip']}'
+        : '${u['login_ip'] ?? '-'}';
+    final showAddr =
+        '${u['custom_ip_on'] ?? 0}' == '1' &&
+        '${u['custom_addr'] ?? ''}'.isNotEmpty;
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
