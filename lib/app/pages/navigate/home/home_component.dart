@@ -125,15 +125,16 @@ class _HomeComponentState extends State<HomeComponent> {
       );
     }
     if (tpl == 'feed') {
-      // v52w：信息流模板（公告置顶+搜索+推荐，去横幅）
+      // v52x：信息流模板（公告置顶+搜索+时间轴推荐，去横幅）
+      // 时间轴重做：固定导轨（圆点 8px + 固定长度竖线），无 IntrinsicHeight
       return CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(child: _header()),
           SliverToBoxAdapter(child: _search()),
           if (uiCfg.featureNotice) notice,
-          if (uiCfg.featureReferral) referralTitle,
-          if (uiCfg.featureReferral) referralGrid,
+          if (uiCfg.featureReferral)
+            SliverToBoxAdapter(child: _referralTimeline()),
           SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
         ],
       );
@@ -598,6 +599,153 @@ class _HomeComponentState extends State<HomeComponent> {
           ),
         );
       },
+    );
+  }
+
+  // ───────── feed：时间轴信息流（安全布局版） ─────────
+  ///
+  /// 教训（fcfa408 旧版）：IntrinsicHeight(Row(stretch)+Expanded) 会随
+  /// CachedNetworkImage 加载反复重跑整棵 intrinsic 布局，数据量大时 O(N²)
+  /// 布局风暴导致真机冻死。新版：
+  ///  · 左导轨固定宽 18px：圆点固定 8px + 竖线固定 60px，不撑满行高；
+  ///  · 行高仅由右侧内容（文本自适应）决定，无 IntrinsicHeight/IntrinsicWidth；
+  ///  · 缩略图固定尺寸 + memCacheWidth 限解码。
+  Widget _referralTimeline() {
+    return GetBuilder<HomeLogic>(
+      id: 'referral',
+      builder: (logic) {
+        final list = logic.referrals;
+        if (list == null || list.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            context.pagePadding,
+            18,
+            context.pagePadding,
+            0,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '推荐时间线',
+                style: Ty.h3.copyWith(color: context.t1, fontSize: 15),
+              ),
+              const SizedBox(height: 14),
+              for (int i = 0; i < list.length; i++)
+                _timelineTile(list[i], i == list.length - 1),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _timelineTile(ReferralData d, bool last) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 左导轨：固定宽 18 = 圆点 8px + 固定长度竖线（不撑满）
+          SizedBox(
+            width: 18,
+            child: Column(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.only(top: 18),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: C.brandBright,
+                    border: Border.all(color: C.brand.withAlpha(90), width: 2),
+                  ),
+                ),
+                if (!last)
+                  Container(
+                    width: 2,
+                    height: 60,
+                    margin: const EdgeInsets.only(top: 4),
+                    color: C.brand.withAlpha(50),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => logic.onReferralTap(d),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: context.isDark
+                      ? Colors.white.withAlpha(8)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(R.md),
+                  border: Border.all(
+                    color: context.isDark
+                        ? Colors.white.withAlpha(16)
+                        : Colors.black.withAlpha(10),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    // 文本区（自适应行高来源）
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            d.title ?? '',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Ty.body.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: context.t1,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            (d.content ?? '').isEmpty ? '官方精选推荐' : d.content!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Ty.tiny.copyWith(color: context.t3),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    // 缩略图：固定尺寸 + 解码限宽
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(R.sm),
+                      child: CachedNetworkImage(
+                        imageUrl: d.image ?? '',
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 160,
+                        placeholder: (_, __) => Container(
+                          width: 48,
+                          height: 48,
+                          color: context.isDark ? C.bg2 : C.lbg2,
+                        ),
+                        errorWidget: (_, __, ___) => Image.asset(
+                          Assets.imagesSucceed,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
