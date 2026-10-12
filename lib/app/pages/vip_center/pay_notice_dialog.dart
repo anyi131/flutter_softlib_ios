@@ -151,7 +151,7 @@ class PayNoticeDialog extends StatelessWidget {
                             const SizedBox(width: 2),
                             Text(
                               amount.isEmpty ? '--' : amount,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 36,
                                 fontWeight: FontWeight.w900,
                                 color: C.gold,

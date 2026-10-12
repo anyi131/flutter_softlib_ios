@@ -460,8 +460,10 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                                 strokeWidth: 1.6,
                                 color: C.brand,
                               ),
-                            )
-                          : Icon(Icons.plagiarism_rounded, size: 13, color: C.brand,
+                            )Icon(
+                              Icons.plagiarism_rounded,
+                              size: 13,
+                              color: C.brand,
                             ),
                       const SizedBox(width: 5),
                       Text(

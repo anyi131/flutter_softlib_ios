@@ -516,8 +516,13 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   const SizedBox(width: 6),
                   if (isVipItem && !hasP)
                     _chip('会员专享', C.amber, Icons.workspace_premium_rounded),
-                  const Spacer()Icon(Icons.star_rounded, size: 16, color: C.amber),
-                    const SizedBox(width: 3)TextStyle(
+                  const Spacer(),
+                  if ((it?.scoreCount ?? 0) > 0) ...[
+                    Icon(Icons.star_rounded, size: 16, color: C.amber),
+                    const SizedBox(width: 3),
+                    Text(
+                      it!.scoreAvg.toStringAsFixed(1),
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                         color: C.amber,
@@ -538,7 +543,30 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             ],
           ),
         ),
-        const SizedBox(height: 14)Icon(
+        const SizedBox(height: 14),
+        // 安全检测条
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 13),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                C.mint.withAlpha(context.isDark ? 40 : 26),
+                C.cyan.withAlpha(context.isDark ? 26 : 16),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(R.md),
+            border: Border.all(color: C.mint.withAlpha(75), width: 0.8),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: C.mint.withAlpha(40),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
                   Icons.shield_rounded,
                   size: 13,
                   color: C.mint,
@@ -1333,7 +1361,10 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 color: C.brand.withAlpha(38),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.downloading_rounded, size: 14, color: C.brand,
+              child: Icon(
+                Icons.downloading_rounded,
+                size: 14,
+                color: C.brand,
               ),
             ),
             const SizedBox(width: 8),
@@ -1470,7 +1501,16 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               '该软件需支付 ¥$price 后下载。',
               style: const TextStyle(fontSize: 13, height: 1.5),
             ),
-            const SizedBox(height: 10)TextStyle(
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              decoration: BoxDecoration(
+                color: C.mint.withAlpha(22),
+                borderRadius: BorderRadius.circular(R.sm),
+              ),
+              child: Text(
+                '当前余额 ¥$balance',
+                style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w800,
                   color: C.mint,
@@ -1478,7 +1518,8 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               ),
             ),
             if (!enough) ...[
-              const SizedBox(height: 8)Text(
+              const SizedBox(height: 8),
+              Text(
                 '余额不足，请先充值后再购买。',
                 style: TextStyle(fontSize: 12, color: C.warning),
               ),
