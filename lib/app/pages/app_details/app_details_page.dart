@@ -518,7 +518,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                     _chip('会员专享', C.amber, Icons.workspace_premium_rounded),
                   const Spacer(),
                   if ((it?.scoreCount ?? 0) > 0) ...[
-                    const Icon(Icons.star_rounded, size: 16, color: C.amber),
+                    Icon(Icons.star_rounded, size: 16, color: C.amber),
                     const SizedBox(width: 3),
                     Text(
                       it!.scoreAvg.toStringAsFixed(1),
@@ -1379,7 +1379,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           ],
         ),
         const SizedBox(height: 9),
-        const KitProgress(value: 0, color: C.brand),
+        KitProgress(value: 0, color: C.brand),
         const SizedBox(height: 9),
         Text(
           '正在解析下载直链，请稍候',
