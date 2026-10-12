@@ -1371,9 +1371,9 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             Text(
               '正在创建下载任务…',
               style: TextStyle(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w800,
-              C.brand,
+                fontSize: 13.5,
+                fontWeight: FontWeight.w800,
+                color: C.brand,
               ),
             ),
           ],
