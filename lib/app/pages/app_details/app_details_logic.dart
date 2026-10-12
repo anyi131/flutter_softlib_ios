@@ -362,9 +362,9 @@ class AppDetailsLogic extends GetxController {
     var fileOk = true;
     try {
       final dir = downloadTask?.savedDir ?? await DownloadDir.path();
-      final fn = downloadTask?.filename ?? fileName;
+      final fn = downloadTask?.filename ?? (appInfo?.fileName ?? '');
       if (dir.isNotEmpty && fn.isNotEmpty) {
-        final f = io.File('$dir/$fn');
+        final f = File('$dir/$fn');
         if (f.existsSync()) {
           final actual = f.lengthSync();
           final expect = double.tryParse(
