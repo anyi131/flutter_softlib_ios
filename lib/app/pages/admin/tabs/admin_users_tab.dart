@@ -1355,6 +1355,16 @@ class _AdminUsersTabState extends State<AdminUsersTab>
   }
 
   /// 用户详情（只读，展示全部字段）
+  // IP 显示（优先自定义）：与列表卡片的 display_ip 逻辑保持一致
+  final displayIp =
+      '${u['custom_ip_on'] ?? 0}' == '1' &&
+          '${u['custom_ip'] ?? ''}'.isNotEmpty
+      ? '${u['custom_ip']}'
+      : '${u['login_ip'] ?? '-'}';
+  final showAddr =
+      '${u['custom_ip_on'] ?? 0}' == '1' &&
+      '${u['custom_addr'] ?? ''}'.isNotEmpty;
+
   Future<void> _showDetail(Map u) async {
     await showDialog(
       context: context,
@@ -1386,7 +1396,8 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                         : '非会员'),
                 _detailRow('注册时间', '${u['createtime_text'] ?? '-'}'),
                 _detailRow('最后登录', '${u['login_time_text'] ?? '-'}'),
-                _detailRow('登录 IP', '${u['login_ip'] ?? '-'}'),
+                _detailRow('显示 IP', displayIp),
+                if (showAddr) _detailRow('归属地', '${u['custom_addr']}'),
               ],
             ),
           ),
