@@ -139,7 +139,17 @@ class AppDetailsLogic extends GetxController {
     );
     port.listen((dynamic data) {
       if (data is List && data.length >= 3) {
+        final id = data[0]?.toString() ?? '';
         final status = data[1] is int ? data[1] as int : 0;
+        // ★ v331n：只处理当前页面任务的事件——其他软件/旧任务的事件
+        //   会让本页误弹「下载完成」并打乱进度状态机。
+        //   taskId 尚未确定时（页面刚进）也只刷新状态不弹窗。
+        if (taskId == null ||
+            taskId!.isEmpty ||
+            (id.isNotEmpty && id != taskId)) {
+          if (taskId != null && taskId!.isNotEmpty) getTaskInfo();
+          return;
+        }
         getTaskInfo();
         // 下载完成 → 弹窗确认安装
         if (status == 3 /* complete */ ) {
