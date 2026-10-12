@@ -41,8 +41,8 @@ android {
         release {
             signingConfig = signingConfigs.getByName("debug")
             // 加固:R8 代码混淆 + 资源裁剪
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
