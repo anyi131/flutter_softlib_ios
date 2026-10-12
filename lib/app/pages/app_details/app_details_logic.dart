@@ -66,14 +66,37 @@ class AppDetailsLogic extends GetxController {
   String? _renderedTaskId;
   int _renderedStatus = -1;
   int _renderedProgress = -1;
-  int _nullStreak = 0;
 
   /// ★ 需求1：刚点过下载的宽限窗口（3 秒内 UI 保持进度条初始态，
   ///   防止任务记录尚未落库时按钮闪回「下载」态）
   DateTime? _lastDownloadTap;
+
+  /// ★ 1012b 状态机加固：
+  ///   _uiPhase 是 UI 唯一真相源（idle=按钮 / downloading=进度条 / done=安装）。
+  ///   一旦进入 downloading/done，除非任务取消/失败或用户显式取消/重开下载，
+  ///   绝不回退成按钮；进度显示层单调不减（max(prev, cur)），杜绝回退抖动。
+  static const String phaseIdle = 'idle';
+  static const String phaseDownloading = 'downloading';
+  static const String phaseDone = 'done';
+  String _uiPhase = phaseIdle;
+  int _shownProgress = 0;
+  bool _explicitReset = false;
+
+  String get downloadUiPhase => _uiPhase;
+
+  /// 显示层进度：与真实任务进度取 max，保证单调不减
+  int get uiProgress {
+    final t = downloadTask;
+    if (t != null && t.status != DownloadTaskStatus.failed) {
+      return _shownProgress > t.progress ? _shownProgress : t.progress;
+    }
+    return _shownProgress;
+  }
+
   bool get pendingDownloadUi {
     final t = _lastDownloadTap;
     if (t == null) return false;
+    if (_uiPhase != phaseIdle) return false;
     if (downloadTask != null) return false;
     return DateTime.now().difference(t).inMilliseconds < 3000;
   }
@@ -106,15 +129,9 @@ class AppDetailsLogic extends GetxController {
     if (appIdInt > 0) service.addAppView(appIdInt);
     getAppInfo();
     getTaskInfo();
-    // ★ 重新进入页面时，若已有进行中的任务，恢复进度轮询
-    Future.delayed(const Duration(milliseconds: 500), () {
-      final st = downloadTask?.status;
-      if (st == DownloadTaskStatus.running ||
-          st == DownloadTaskStatus.enqueued ||
-          st == DownloadTaskStatus.paused) {
-        _startProgressPolling();
-      }
-    });
+    // ★ 1012b：进入页面时若已有进行中任务，由 getTaskInfo 内部自动恢复轮询
+    //   （原 500ms 定时读 downloadTask 存在竞态：getTaskInfo 尚未完成时为 null，
+    //    导致重进页面不恢复进度轮询）
     IsolateNameServer.removePortNameMapping('app_details_downloader_send_port');
     IsolateNameServer.registerPortWithName(
       port.sendPort,
@@ -413,30 +430,60 @@ class AppDetailsLogic extends GetxController {
         }
       }
     }
-    // ★ 需求1（防乱闪）：快照去抖 —— 快照没变不重复 update；
-    //   「有任务 → 突然查不到」必须连续两次为 null 才回落到按钮态，
-    //   避免 DB 写入延迟导致 按钮↔进度条 交替闪烁。
-    if (downloadTask == null) {
-      _nullStreak++;
-      if (_renderedTaskId != null && _nullStreak < 2) {
-        // 保持上次渲染状态（进度条），本轮不刷新
-        return;
+    // ★ 1012b 状态机：以 phase 为 UI 唯一真相源
+    //   · complete → done（稳定显示安装态，不再闪回）
+    //   · canceled/failed → idle（允许回按钮/重试）
+    //   · 其余 → downloading；任务对象瞬时查不到时粘滞在当前 phase，
+    //     绝不因 DB 写入延迟/查询抖动回退成按钮
+    final t = downloadTask;
+    var phase = _uiPhase;
+    if (t != null) {
+      switch (t.status) {
+        case DownloadTaskStatus.complete:
+          phase = phaseDone;
+          break;
+        case DownloadTaskStatus.failed:
+        case DownloadTaskStatus.canceled:
+          phase = phaseIdle;
+          break;
+        default:
+          phase = phaseDownloading;
       }
-    } else {
-      _nullStreak = 0;
+    } else if (!_explicitReset &&
+        (_uiPhase == phaseDownloading || _uiPhase == phaseDone)) {
+      // 无任务但未显式取消/重开：粘滞保持当前态（进度条/安装态）
+      phase = _uiPhase;
     }
-    final newId = downloadTask?.taskId;
-    final newStatus = downloadTask?.status.index ?? -1;
-    final newProgress = downloadTask?.progress ?? -1;
+    if (t != null && t.status != DownloadTaskStatus.failed) {
+      // 进度单调不减（显示层）
+      if (t.progress > _shownProgress) _shownProgress = t.progress;
+    }
+    if (phase == phaseDone) _shownProgress = 100;
+
+    final newId = t?.taskId;
     final changed =
         newId != _renderedTaskId ||
-        newStatus != _renderedStatus ||
-        newProgress != _renderedProgress;
-    if (!changed && _renderedTaskId != null) return;
+        phase != _uiPhase ||
+        _shownProgress != _renderedProgress;
+    if (!changed && _renderedTaskId != null) {
+      // 快照未变也要确保轮询活着（onInit 恢复路径）
+      _ensurePolling(phase);
+      return;
+    }
     _renderedTaskId = newId;
-    _renderedStatus = newStatus;
-    _renderedProgress = newProgress;
+    _renderedStatus = t?.status.index ?? -1;
+    _renderedProgress = _shownProgress;
+    _uiPhase = phase;
+    _ensurePolling(phase);
     update(['download']);
+  }
+
+  /// ★ 1012b：download/downloading 态必须持续轮询（含 onInit 重进页面恢复），
+  ///   替代原先依赖 500ms 定时器读 downloadTask 的竞态写法
+  void _ensurePolling(String phase) {
+    if (phase != phaseDownloading) return;
+    final active = _progressTimer != null && _progressTimer!.isActive;
+    if (!active) _startProgressPolling();
   }
 
   /// 添加下载（双来源统一入口）
@@ -499,7 +546,10 @@ class AppDetailsLogic extends GetxController {
     _renderedTaskId = null;
     _renderedStatus = -1;
     _renderedProgress = -1;
-    _nullStreak = 0;
+    // ★ 1012b：新开下载 → 进入 downloading 态，进度从 0 计
+    _uiPhase = phaseDownloading;
+    _shownProgress = 0;
+    _explicitReset = false;
     update(['download']);
 
     fileName = fileName.trim().replaceAll(' ', '_');
@@ -553,12 +603,12 @@ class AppDetailsLogic extends GetxController {
     _progressTimer = Timer.periodic(const Duration(milliseconds: 700), (
       t,
     ) async {
-      // 交给 getTaskInfo 处理（内含 DB + 文件名兜底），它同时负责 update
+      // 交给 getTaskInfo 处理（内含 DB + 文件名兜底 + update）
       await getTaskInfo();
       final t0 = downloadTask;
       if (t0 == null) {
-        // 一条任务都没找到，停止轮询
-        t.cancel();
+        // ★ 1012b：任务瞬时查不到不停止轮询（状态机粘滞由 getTaskInfo 负责），
+        //   避免查空一次后轮询停摆、进度条永远卡住
         return;
       }
       if (t0.status == DownloadTaskStatus.complete) {
@@ -592,6 +642,9 @@ class AppDetailsLogic extends GetxController {
       return;
     }
     taskId = taskIdTemp;
+    // ★ 1012b：恢复下载 → 回到 downloading 态
+    _uiPhase = phaseDownloading;
+    _explicitReset = false;
     update(['download']);
   }
 
@@ -606,6 +659,10 @@ class AppDetailsLogic extends GetxController {
       return;
     }
     taskId = taskIdTemp;
+    // ★ 1012b：重试 → 重新进入 downloading 态，进度从 0 计
+    _uiPhase = phaseDownloading;
+    _shownProgress = 0;
+    _explicitReset = false;
     update(['download']);
   }
 
@@ -621,7 +678,11 @@ class AppDetailsLogic extends GetxController {
     _renderedTaskId = null;
     _renderedStatus = -1;
     _renderedProgress = -1;
-    _nullStreak = 0;
+    // ★ 1012b：唯一允许「进度条 → 按钮」的显式入口之一
+    _explicitReset = true;
+    _uiPhase = phaseIdle;
+    _shownProgress = 0;
+    _progressTimer?.cancel();
     _lastDownloadTap = null;
     update(['download']);
   }

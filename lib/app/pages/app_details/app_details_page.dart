@@ -1146,8 +1146,9 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           id: 'download',
           builder: (download) {
             final task = download.downloadTask;
-            // 下载完成 → 安装（带与未下载态一致的说明行，避免高度跳变）
-            if (task != null && task.status == DownloadTaskStatus.complete) {
+            // ★ 1012b：完成态以状态机 phase 为准（任务记录被清理时也稳定显示
+            //   「安装」，绝不闪回「下载」按钮）
+            if (download.downloadUiPhase == 'done') {
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1166,8 +1167,8 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 ],
               );
             }
-            // 下载中 → 进度卡片
-            if (task != null) {
+            // 下载中 → 进度卡片（含任务对象瞬时查不到的粘滞态）
+            if (task != null || download.downloadUiPhase == 'downloading') {
               return _progressPanel(download, task);
             }
             // ★ 需求1（防首帧抖动）：无任务但 3 秒内刚点过下载 →
@@ -1256,11 +1257,15 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   }
 
   /// 下载中：进度面板（统一设计语言）
-  Widget _progressPanel(AppDetailsLogic download, DownloadTask task) {
+  /// ★ 1012b：task 可为 null（粘滞态），进度一律取逻辑层单调不减的
+  ///   uiProgress，杜绝 显示层进度回退 抖动
+  Widget _progressPanel(AppDetailsLogic download, DownloadTask? task) {
     final total = download.appInfo?.fileSize ?? '';
-    final done = calculateDownloadedSize(total, task.progress);
-    final isPaused = task.status == DownloadTaskStatus.paused;
-    final isFailed = task.status == DownloadTaskStatus.failed;
+    final progress = download.uiProgress;
+    final done = calculateDownloadedSize(total, progress);
+    final st = task?.status;
+    final isPaused = st == DownloadTaskStatus.paused;
+    final isFailed = st == DownloadTaskStatus.failed;
 
     final Color accent = isFailed ? C.danger : (isPaused ? C.warning : C.brand);
     final String title = isFailed ? '下载失败' : (isPaused ? '已暂停' : '正在下载中');
@@ -1298,13 +1303,13 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             ),
             const Spacer(),
             Text(
-              '${task.progress}%',
+              '$progress%',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
             ),
           ],
         ),
         const SizedBox(height: 9),
-        KitProgress(value: task.progress / 100, color: accent),
+        KitProgress(value: progress / 100, color: accent),
         const SizedBox(height: 9),
         Row(
           children: [
