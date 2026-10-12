@@ -350,6 +350,19 @@ class AppDetailsLogic extends GetxController {
   bool _askedInstall = false;
   Future<void> _onDownloadComplete() async {
     if (_askedInstall) return;
+    // ★ v331q：完成校验——蓝奏云跳转链偶发「提前断流被判 complete」，
+    //   进度远未到 100% 就弹安装。进度 <95% 时视为异常：不弹安装，
+    //   提示重新下载并回到可重试状态。
+    if (_shownProgress < 95) {
+      logger.e('[download] complete 但进度仅 $_shownProgress%（疑似断流），要求重试');
+      _askedInstall = false;
+      _uiPhase = phaseIdle;
+      _shownProgress = 0;
+      _explicitReset = true;
+      update(['download']);
+      ToastUtil.error('下载中断（网络波动），请点重新下载');
+      return;
+    }
     _askedInstall = true;
     await Future.delayed(const Duration(milliseconds: 400));
     final ctx = Get.context;
