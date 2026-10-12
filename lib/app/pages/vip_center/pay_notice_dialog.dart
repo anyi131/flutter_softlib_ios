@@ -75,7 +75,7 @@ class PayNoticeDialog extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
-              decoration: const BoxDecoration(gradient: Deco.brandGradient),
+              decoration: BoxDecoration(gradient: Deco.brandGradient),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
