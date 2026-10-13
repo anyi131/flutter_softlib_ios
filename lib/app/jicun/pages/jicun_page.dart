@@ -22,6 +22,7 @@ import '../jicun_history_store.dart';
 import '../jicun_parse_service.dart';
 import '../jicun_platform.dart';
 import 'jicun_history_page.dart';
+import 'jicun_video_player_page.dart';
 
 class JicunPage extends StatefulWidget {
   const JicunPage({super.key});
@@ -515,13 +516,27 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
   }
 
   /// 单封面（视频封面或兜底封面）：全幅高度块 + 中央播放图标（仅视频）。
+  /// 视频封面点击 → 全屏视频播放页；图集/兜底图点击 → 全屏图片查看器。
   Widget _singleCoverPreview(String url, {required double height}) {
     final isVideo = _result?.videos.isNotEmpty ?? false;
     final videos = _result?.videos ?? const [];
     final cover = videos.isNotEmpty ? videos.first.coverUrl : null;
     final showPlay = isVideo && (cover == null || cover == url);
     return GestureDetector(
-      onTap: () => _showImageViewer([url]),
+      onTap: () {
+        if (showPlay) {
+          final v = videos.first;
+          final vurl = _pickedQuality?.url ?? v.url;
+          if (vurl.isEmpty) return;
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => JicunVideoPlayerPage(url: vurl),
+            ),
+          );
+        } else {
+          _showImageViewer([url]);
+        }
+      },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: SizedBox(
