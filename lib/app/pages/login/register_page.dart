@@ -48,6 +48,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   /// 后台允许的邮箱域名（空=不限）
   List<String> _allowDomains = const [];
+
   /// 是否允许非 QQ 邮箱注册
   bool _allowNonQq = false;
 
@@ -153,8 +154,7 @@ class _RegisterPageState extends State<RegisterPage> {
       });
     } catch (e) {
       if (!mounted) return;
-      setState(
-          () => _errServer = e.toString().replaceFirst('Exception: ', ''));
+      setState(() => _errServer = e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -172,14 +172,27 @@ class _RegisterPageState extends State<RegisterPage> {
       _errCode = '';
       _errPwd = '';
       _errServer = '';
-      if (email.isEmpty || !email.contains('@')) _errEmail = '请输入正确的邮箱';
+      if (email.isEmpty || !email.contains('@')) {
+        _errEmail = '请输入正确的邮箱';
+      } else if (_allowDomains.isNotEmpty) {
+        // ★ 客户端预校验：白名单不匹配直接提示允许的后缀（1013d）
+        final dom = email.split('@').last.toLowerCase();
+        final hit = _allowDomains.any(
+          (d) => dom == d.toLowerCase() || dom.endsWith('.${d.toLowerCase()}'),
+        );
+        if (!hit) {
+          _errEmail =
+              '该邮箱域名暂不支持注册，允许的后缀：'
+              '${_allowDomains.map((d) => '@$d').join(' / ')}';
+        }
+      }
       if (code.isEmpty) _errCode = '请输入验证码';
-      if (pwd.length < 6) _errPwd = '密码至少 6 位';
-      else if (pwd != _pwd2.text) _errPwd = '两次输入的密码不一致';
+      if (pwd.length < 6)
+        _errPwd = '密码至少 6 位';
+      else if (pwd != _pwd2.text)
+        _errPwd = '两次输入的密码不一致';
     });
-    if (_errEmail.isNotEmpty ||
-        _errCode.isNotEmpty ||
-        _errPwd.isNotEmpty) {
+    if (_errEmail.isNotEmpty || _errCode.isNotEmpty || _errPwd.isNotEmpty) {
       return;
     }
 
@@ -199,8 +212,7 @@ class _RegisterPageState extends State<RegisterPage> {
       Navigator.of(context).pop(email);
     } catch (e) {
       if (!mounted) return;
-      setState(
-          () => _errServer = e.toString().replaceFirst('Exception: ', ''));
+      setState(() => _errServer = e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -248,27 +260,37 @@ class _RegisterPageState extends State<RegisterPage> {
                               color: context.isDark
                                   ? Colors.white.withAlpha(12)
                                   : Colors.black.withAlpha(6),
-                              child: Icon(Icons.person_outline_rounded,
-                                  color: context.t3, size: 24),
+                              child: Icon(
+                                Icons.person_outline_rounded,
+                                color: context.t3,
+                                size: 24,
+                              ),
                             )
                           : CachedNetworkImage(
                               imageUrl: avatar,
                               fit: BoxFit.cover,
                               memCacheWidth: 160,
                               placeholder: (_, __) => Container(
-                                  color: Colors.black12,
-                                  child: const Center(
-                                      child: SizedBox(
-                                          width: 16,
-                                          height: 16,
-                                          child: CircularProgressIndicator(
-                                              strokeWidth: 2)))),
+                                color: Colors.black12,
+                                child: const Center(
+                                  child: SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
                               errorWidget: (_, __, ___) => Container(
                                 color: context.isDark
                                     ? Colors.white.withAlpha(12)
                                     : Colors.black.withAlpha(6),
-                                child: Icon(Icons.person_outline_rounded,
-                                    color: context.t3, size: 24),
+                                child: Icon(
+                                  Icons.person_outline_rounded,
+                                  color: context.t3,
+                                  size: 24,
+                                ),
                               ),
                             ),
                     ),
@@ -279,8 +301,10 @@ class _RegisterPageState extends State<RegisterPage> {
             if (avatar.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: Text('已自动获取 QQ 头像，注册后即为账号头像',
-                    style: Ty.tiny.copyWith(color: C.mint)),
+                child: Text(
+                  '已自动获取 QQ 头像，注册后即为账号头像',
+                  style: Ty.tiny.copyWith(color: C.mint),
+                ),
               ),
 
             // ── 邮箱 ──
@@ -301,29 +325,35 @@ class _RegisterPageState extends State<RegisterPage> {
               spacing: 7,
               runSpacing: 7,
               children: _emailSuffixes
-                  .map((s) => GestureDetector(
-                        onTap: () {
-                          final cur = _email.text;
-                          final at = cur.indexOf('@');
-                          _email.text =
-                              (at > 0 ? cur.substring(0, at) : cur) + s;
-                          setState(() {});
-                          _autoNick();
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: C.brand.withAlpha(context.isDark ? 30 : 20),
-                            borderRadius: BorderRadius.circular(R.full),
-                          ),
-                          child: Text(s,
-                              style: TextStyle(
-                                  fontSize: 11.5,
-                                  color: C.brand,
-                                  fontWeight: FontWeight.w700)),
+                  .map(
+                    (s) => GestureDetector(
+                      onTap: () {
+                        final cur = _email.text;
+                        final at = cur.indexOf('@');
+                        _email.text = (at > 0 ? cur.substring(0, at) : cur) + s;
+                        setState(() {});
+                        _autoNick();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
                         ),
-                      ))
+                        decoration: BoxDecoration(
+                          color: C.brand.withAlpha(context.isDark ? 30 : 20),
+                          borderRadius: BorderRadius.circular(R.full),
+                        ),
+                        child: Text(
+                          s,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: C.brand,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
             // ★ 需求 #3：未开其他邮箱时明确提醒「目前仅支持 QQ 邮箱」
@@ -332,27 +362,35 @@ class _RegisterPageState extends State<RegisterPage> {
                 padding: const EdgeInsets.only(top: 9),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 11, vertical: 9),
+                    horizontal: 11,
+                    vertical: 9,
+                  ),
                   decoration: BoxDecoration(
                     color: C.warning.withAlpha(context.isDark ? 34 : 20),
                     borderRadius: BorderRadius.circular(R.md),
                     border: Border.all(
-                        color: C.warning.withAlpha(90), width: 0.8),
+                      color: C.warning.withAlpha(90),
+                      width: 0.8,
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline_rounded,
-                          size: 15, color: C.warning),
+                      const Icon(
+                        Icons.info_outline_rounded,
+                        size: 15,
+                        color: C.warning,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           '目前仅支持 QQ 邮箱注册（@qq.com）\n'
                           '其他邮箱可在后台「注册与界面风格」中开启',
                           style: TextStyle(
-                              fontSize: 11.5,
-                              height: 1.5,
-                              color: C.warning,
-                              fontWeight: FontWeight.w600),
+                            fontSize: 11.5,
+                            height: 1.5,
+                            color: C.warning,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
@@ -363,8 +401,9 @@ class _RegisterPageState extends State<RegisterPage> {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
-                    '本站仅支持这些邮箱：${_allowDomains.map((e) => '@$e').join('、')}',
-                    style: Ty.tiny.copyWith(color: C.warning)),
+                  '本站仅支持这些邮箱：${_allowDomains.map((e) => '@$e').join('、')}',
+                  style: Ty.tiny.copyWith(color: C.warning),
+                ),
               ),
             const SizedBox(height: 14),
 
@@ -382,7 +421,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2))
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : TextButton(
                         onPressed: _countdown > 0 ? null : _sendCode,
                         style: TextButton.styleFrom(
@@ -392,7 +432,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: Text(
                           _countdown > 0 ? '${_countdown}s' : '获取验证码',
                           style: const TextStyle(
-                              fontSize: 12.5, fontWeight: FontWeight.w700),
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
               ),
@@ -426,8 +468,7 @@ class _RegisterPageState extends State<RegisterPage> {
               label: '确认密码',
               icon: Icons.lock_person_outlined,
               obscure: _obscure2,
-              onToggleObscure: () =>
-                  setState(() => _obscure2 = !_obscure2),
+              onToggleObscure: () => setState(() => _obscure2 = !_obscure2),
               action: TextInputAction.next,
             ),
             // v52q：邀请码（选填，双方得积分）
@@ -441,11 +482,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
 
             AuthError(message: _errServer),
-            AuthButton(
-              label: '注 册',
-              loading: _loading,
-              onPressed: _register,
-            ),
+            AuthButton(label: '注 册', loading: _loading, onPressed: _register),
             const SizedBox(height: 10),
           ],
         ),
