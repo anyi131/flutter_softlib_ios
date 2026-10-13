@@ -721,7 +721,7 @@ class ParseResult {
         VideoItem(
           url: videoUrl,
           coverUrl: coverUrl,
-          qualities: const [VideoQuality(label: '原画', url: videoUrl)],
+          qualities: [VideoQuality(label: '原画', url: videoUrl)],
         ),
       ];
     }
