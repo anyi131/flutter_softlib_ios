@@ -42,6 +42,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   bool payWxpay = true;
   bool payQqpay = true;
   bool payKeySet = false; // 密钥是否已设置（不回显）
+  bool payNotifyOn = false; // ★ 支付成功通知管理员
   final payApiCtrl = TextEditingController();
   final payPidCtrl = TextEditingController();
   final payKeyCtrl = TextEditingController();
@@ -60,6 +61,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   final payPlan3NameCtrl = TextEditingController(text: '永久会员');
   final payPlan3MoneyCtrl = TextEditingController(text: '45.99');
   final payPlan3DaysCtrl = TextEditingController(text: '0');
+  final payNotifyEmailCtrl = TextEditingController(); // ★ 收件邮箱（逗号分隔多个）
 
   // ── 主页右上角两个圆形按钮（加群 / 客服）──
   bool feedGroupOn = true;
@@ -116,6 +118,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
     payPlan3NameCtrl.dispose();
     payPlan3MoneyCtrl.dispose();
     payPlan3DaysCtrl.dispose();
+    payNotifyEmailCtrl.dispose();
     feedGroupCtrl.dispose();
     feedUserCtrl.dispose();
     aboutNameCtrl.dispose();
@@ -183,6 +186,9 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         payPlan3NameCtrl.text = '${cfg['pay_plan3_name'] ?? '永久会员'}';
         payPlan3MoneyCtrl.text = '${cfg['pay_plan3_money'] ?? '45.99'}';
         payPlan3DaysCtrl.text = '${cfg['pay_plan3_days'] ?? 0}';
+        // ★ 支付成功通知
+        payNotifyOn = '${cfg['pay_notify_on']}' == '1';
+        payNotifyEmailCtrl.text = '${cfg['pay_notify_email'] ?? ''}';
         // 主页右上角两个按钮（对应需求 #14）
         feedGroupOn = '${cfg['feedback_group_on']}' != '0';
         feedUserOn = '${cfg['feedback_user_on']}' != '0';
@@ -254,6 +260,9 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         'pay_plan3_name': payPlan3NameCtrl.text.trim(),
         'pay_plan3_money': payPlan3MoneyCtrl.text.trim(),
         'pay_plan3_days': int.tryParse(payPlan3DaysCtrl.text) ?? 0,
+        // ★ 支付成功通知管理员
+        'pay_notify_on': payNotifyOn ? 1 : 0,
+        'pay_notify_email': payNotifyEmailCtrl.text.trim(),
         // QQ 快捷登录（AppKey 留空表示不修改）
         'qq_login_on': qqOn ? 1 : 0,
         'qq_app_id': qqAppIdCtrl.text.trim(),
@@ -504,6 +513,23 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
                   style: Ty.tiny.copyWith(color: context.t3),
                 ),
               ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _card(
+          title: '支付成功通知',
+          children: [
+            _switch(
+              '订单支付成功后邮件通知管理员',
+              payNotifyOn,
+              (v) => setState(() => payNotifyOn = v),
+            ),
+            _field('收件邮箱（多个用英文逗号分隔）', payNotifyEmailCtrl),
+            Text(
+              '发件 SMTP 沿用「邮件配置」；发送失败不影响支付到账，'
+              '会记入后台操作日志（pay_notify）',
+              style: Ty.tiny.copyWith(color: context.t3),
+            ),
           ],
         ),
         const SizedBox(height: 12),
