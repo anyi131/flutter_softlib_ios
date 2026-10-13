@@ -117,7 +117,9 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
     } on ParseException catch (e) {
       ToastUtil.error('${e.message}');
     } catch (e) {
-      ToastUtil.error('解析失败:网络异常,请稍后再试');
+      // v331w：显示真实原因（超时/断网/接口异常各不同），不再笼统
+      final m = e.toString().replaceFirst('Exception: ', '');
+      ToastUtil.error(m.length > 40 ? '解析失败:$m'.substring(0, 40) : '解析失败:$m');
     } finally {
       if (mounted) setState(() => _parsing = false);
     }

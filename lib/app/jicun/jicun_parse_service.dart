@@ -126,7 +126,10 @@ class JicunParseService {
     }
 
     // 3. 主接口 → 备用接口。
-    ParseException? mainError;
+    // ★ v331w：主接口失败回落备用——网络异常(SocketException/Timeout/
+    //   Handshake)也要回落(此前只 catch ParseException,SNI 阻断时备用接口
+    //   根本没试,直接冒泡成「网络异常」)。
+    Object? mainError;
     try {
       final r = await _request(
         _mainEndpoint,
@@ -137,9 +140,10 @@ class JicunParseService {
       );
       lastRoute = 'main';
       return r;
-    } on ParseException catch (e) {
+    } catch (e) {
       mainError = e;
       lastRoute = 'main-failed';
+      if (kDebugMode) debugPrint('[jicun] 主接口失败: $e');
     }
     final backup = _backupEndpoint;
     if (backup != null && backup != _mainEndpoint) {
@@ -153,13 +157,20 @@ class JicunParseService {
         );
         lastRoute = '$lastRoute→backup';
         return r;
-      } on ParseException catch (e) {
+      } catch (e) {
         lastRoute = '$lastRoute→backup-failed';
         if (kDebugMode) debugPrint('[jicun] 备用接口也失败: $e');
-        throw mainError;
       }
     }
-    throw mainError ?? ParseException('解析失败,换个链接或稍后再试');
+    final msg = mainError?.toString() ?? '';
+    final friendly = msg.contains('TimeoutException')
+        ? '解析超时,请检查网络后重试'
+        : msg.contains('SocketException') || msg.contains('Handshake')
+            ? '网络连接失败(接口域名可能被阻断),请稍后重试'
+            : msg.replaceFirst('Exception: ', '');
+    throw mainError is ParseException
+        ? mainError
+        : ParseException(friendly.isEmpty ? '解析失败,请稍后再试' : friendly);
   }
 
   Future<ParseResult> _request(
