@@ -712,7 +712,19 @@ class ParseResult {
     final media = _mediaList(json['image_list']);
     final videoUrl = _strOrNull(json['video_url']);
     final coverUrl = _strOrNull(json['cover_url']);
-    final videos = _videoList(json['video_list']);
+    var videos = _videoList(json['video_list']);
+    // ★ v331y：videofix 等接口只给顶层 video_url（无 video_list 清晰度组）
+    //   —— 之前 videos 恒为空，详情预览点击只会看封面图，永远进不了播放页。
+    //   把顶层 video_url 补成一个「原画」档。
+    if (videos.isEmpty && videoUrl != null && videoUrl.isNotEmpty) {
+      videos = [
+        VideoItem(
+          url: videoUrl,
+          coverUrl: coverUrl,
+          qualities: const [VideoQuality(label: '原画', url: videoUrl)],
+        ),
+      ];
+    }
     final livePhotos = <LivePhoto>[
       ...media.livePhotos,
       ..._liveList(json['live_photo_list']),
