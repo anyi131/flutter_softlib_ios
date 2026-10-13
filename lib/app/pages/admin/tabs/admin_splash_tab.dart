@@ -310,7 +310,20 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
           }
         });
       }
-      ToastUtil.success('保存成功，App 下次启动生效');
+      // v331z：保存成功后回读线上配置，输入框与线上一致（杜绝「保存又返回旧值」错觉）
+      try {
+        final fresh = await _svc.config();
+        final cfg = Map<String, dynamic>.from((fresh['data'] ?? {}) as Map);
+        // 直接复用 _load 的赋值段太重，这里只回填关键开关/输入框
+        payNotifyOn = '${cfg['pay_notify_on'] ?? 0}' == '1';
+        payNotifyEmailCtrl.text = '${cfg['pay_notify_email'] ?? ''}';
+        feedGroupCtrl.text = '${cfg['feedback_group'] ?? ''}';
+        feedGroupOn = '${cfg['feedback_group_on'] ?? 0}' != '0';
+        setState(() {});
+      } catch (_) {}
+      if (mounted) {
+        ToastUtil.success('保存成功，App 下次启动生效');
+      }
     } catch (e) {
       ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
     }
@@ -351,7 +364,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
               feedGroupOn,
               (v) => setState(() => feedGroupOn = v),
             ),
-            _field('加群图片 URL / 链接', feedGroupCtrl),
+            _field('QQ群链接（加群/通知群，主页右上角按钮）', feedGroupCtrl),
             const SizedBox(height: 6),
             _switch(
               '显示「客服」按钮',
