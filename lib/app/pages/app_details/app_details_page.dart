@@ -566,11 +566,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   color: C.mint.withAlpha(40),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.shield_rounded,
-                  size: 13,
-                  color: C.mint,
-                ),
+                child: Icon(Icons.shield_rounded, size: 13, color: C.mint),
               ),
               const SizedBox(width: 9),
               Expanded(
@@ -615,6 +611,23 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   );
 
   // ═════════ 数据卡 ═════════
+  /// 数量格式化：1.2k / 3.4w（万）——展示下载量用
+  String _fmtCount(int n) {
+    if (n >= 1000000) {
+      final v = n / 1000000;
+      return '${v >= 10 ? v.round() : double.parse(v.toStringAsFixed(1))}w';
+    }
+    if (n >= 10000) {
+      final v = n / 10000;
+      return '${v >= 10 ? v.round() : double.parse(v.toStringAsFixed(1))}w';
+    }
+    if (n >= 1000) {
+      final v = n / 1000;
+      return '${v >= 10 ? v.round() : double.parse(v.toStringAsFixed(1))}k';
+    }
+    return '$n';
+  }
+
   Widget _info() {
     final it = item;
     final info = logic.appInfo;
@@ -626,6 +639,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         C.brandBright,
       ),
       (Icons.visibility_rounded, '${it?.views ?? 0}', '浏览', C.cyan),
+      (Icons.download_rounded, _fmtCount(it?.downCount ?? 0), '下载', C.mint),
       (
         Icons.schedule_rounded,
         it?.uploadDate.isNotEmpty == true ? it!.uploadDate : '-',
@@ -679,6 +693,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     final cells = [
       (Icons.sd_storage_rounded, info?.fileSize ?? it?.size ?? '-', '大小'),
       (Icons.visibility_rounded, '${it?.views ?? 0}', '浏览'),
+      (Icons.download_rounded, _fmtCount(it?.downCount ?? 0), '下载'),
       (
         Icons.schedule_rounded,
         it?.uploadDate.isNotEmpty == true ? it!.uploadDate : '-',
@@ -1366,11 +1381,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 color: C.brand.withAlpha(38),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.downloading_rounded,
-                size: 14,
-                color: C.brand,
-              ),
+              child: Icon(Icons.downloading_rounded, size: 14, color: C.brand),
             ),
             const SizedBox(width: 8),
             Text(

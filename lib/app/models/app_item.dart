@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
 /// 软件数据模型（对接 /api/softlib/app/index）
@@ -26,16 +27,22 @@ class AppItem {
   final int catId;
   final int weigh;
   final int views;
+
+  /// 真实下载量（服务端 down_count，1013d）
+  final int downCount;
   final String uploadDate;
   final String ageRating;
   final List<String> screenshots;
   final double scoreAvg;
   final int scoreCount;
+
   /// 后台「会员专享」开关
   final bool isVipOnly;
   final String vipPrice;
+
   /// 是否新上传（7天内）
   final bool isNew;
+
   /// 是否来自蓝奏云文件夹（无数据库记录）
   final bool fromFolder;
 
@@ -52,6 +59,7 @@ class AppItem {
     required this.catId,
     required this.weigh,
     this.views = 0,
+    this.downCount = 0,
     this.uploadDate = '',
     this.ageRating = '16+',
     this.screenshots = const [],
@@ -96,6 +104,7 @@ class AppItem {
       catId: i('cat_id'),
       weigh: i('weigh'),
       views: i('views'),
+      downCount: i('down_count'),
       uploadDate: s('upload_date'),
       ageRating: s('age_rating').isEmpty ? '16+' : s('age_rating'),
       screenshots: s('screenshots')
