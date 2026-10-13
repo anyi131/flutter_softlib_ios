@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_softlib/app/http/http_api.dart';
@@ -83,14 +84,48 @@ class HomeLogic extends GetxController {
     }
   }
 
-  ///跳转加群
+  ///跳转加群（★ v331z2：解析分享链接群号 → mqqapi 直达加群界面）
   void joinGroup() {
     String? groupUrl = configData?.feedbackGroup;
-    if (groupUrl != null && groupUrl.isNotEmpty) {
-      showImage(groupUrl);
-    } else {
+    if (groupUrl == null || groupUrl.isEmpty) {
       ToastUtil.error('暂未配置');
+      return;
     }
+    if (groupUrl.startsWith('mqqapi://') ||
+        groupUrl.startsWith('tencent://')) {
+      JumpUtil.openUrl(groupUrl);
+      return;
+    }
+    final code = _extractGroupCode(groupUrl);
+    if (code != null && code.isNotEmpty) {
+      JumpUtil.openUrl(
+        'mqqapi://card/show_pslcard?src_type=internal&version=1'
+        '&uin=$code&card_type=group&source=qrcode',
+      );
+      Future.delayed(const Duration(seconds: 2), () {
+        JumpUtil.openUrl(groupUrl);
+      });
+      return;
+    }
+    JumpUtil.openUrl(groupUrl);
+  }
+
+  /// 从 QQ 群分享链接（含 busi_data base64 JSON）提取群号
+  String? _extractGroupCode(String url) {
+    final m = RegExp(r'[?&](?:gc|groupCode)=([0-9]{5,15})').firstMatch(url);
+    if (m != null) return m.group(1);
+    final b = RegExp(r'busi_data=([A-Za-z0-9%+/=]+)').firstMatch(url);
+    if (b != null) {
+      try {
+        final decoded = utf8.decode(base64Decode(
+          Uri.decodeComponent(b.group(1)!).replaceAll(' ', '+'),
+        ));
+        final j = jsonDecode(decoded);
+        final g = '${j['groupCode'] ?? ''}';
+        if (g.isNotEmpty) return g;
+      } catch (_) {}
+    }
+    return null;
   }
 
   ///跳转加客服
