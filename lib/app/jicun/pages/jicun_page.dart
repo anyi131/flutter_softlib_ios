@@ -420,6 +420,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
                 ),
               ),
             ],
+            _mediaPreview(r),
             const SizedBox(height: 10),
             _mediaSummary(r),
             if (r.videos.isNotEmpty && r.videos.first.qualities.length > 1)
@@ -468,6 +469,192 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
           ],
         ),
       ),
+    );
+  }
+
+  // ── 媒体预览区：图集 > 视频封面 > 兜底单图 ────────────────────────────
+
+  Widget _mediaPreview(ParseResult r) {
+    if (r.imageUrls.isNotEmpty) {
+      return _galleryPreview(r.imageUrls);
+    }
+    final videoCover = r.videos.isNotEmpty
+        ? (r.videos.first.coverUrl ?? r.coverUrl)
+        : null;
+    final cover = videoCover ?? (r.videos.isEmpty ? r.coverUrl : null);
+    if (cover != null && cover.isNotEmpty) {
+      return _singleCoverPreview(cover, height: 160);
+    }
+    return const SizedBox.shrink();
+  }
+
+  /// 图集：横向滚动缩略图行，点击进入全屏查看器。
+  Widget _galleryPreview(List<String> urls) {
+    return SizedBox(
+      height: 96,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        shrinkWrap: true,
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.zero,
+        itemCount: urls.length,
+        itemBuilder: (context, i) {
+          return Padding(
+            padding: EdgeInsets.only(right: i == urls.length - 1 ? 0 : 8),
+            child: GestureDetector(
+              onTap: () => _showImageViewer(urls, initialIndex: i),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(width: 96, child: _netImage(urls[i])),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// 单封面（视频封面或兜底封面）：全幅高度块 + 中央播放图标（仅视频）。
+  Widget _singleCoverPreview(String url, {required double height}) {
+    final isVideo = _result?.videos.isNotEmpty ?? false;
+    final videos = _result?.videos ?? const [];
+    final cover = videos.isNotEmpty ? videos.first.coverUrl : null;
+    final showPlay = isVideo && (cover == null || cover == url);
+    return GestureDetector(
+      onTap: () => _showImageViewer([url]),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SizedBox(
+          width: double.infinity,
+          height: height,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              _netImage(url),
+              if (showPlay)
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(110),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 34,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 全屏图片查看器：黑底 dialog + PageView 左右滑 + InteractiveViewer 双指缩放。
+  void _showImageViewer(List<String> urls, {int initialIndex = 0}) {
+    final controller = PageController(initialPage: initialIndex);
+    final pageNotifier = ValueNotifier<int>(initialIndex);
+    controller.addListener(() {
+      final page = controller.page?.round() ?? initialIndex;
+      if (page != pageNotifier.value) pageNotifier.value = page;
+    });
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (context) {
+        return Dialog.fullscreen(
+          backgroundColor: Colors.black,
+          child: Stack(
+            children: [
+              PageView.builder(
+                controller: controller,
+                itemCount: urls.length,
+                itemBuilder: (context, i) {
+                  return InteractiveViewer(
+                    maxScale: 4,
+                    child: Center(
+                      child: _netImage(urls[i], fit: BoxFit.contain),
+                    ),
+                  );
+                },
+              ),
+              SafeArea(
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                ),
+              ),
+              if (urls.length > 1)
+                SafeArea(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: pageNotifier,
+                        builder: (context, page, _) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withAlpha(120),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '${page + 1} / ${urls.length}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.white,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    ).whenComplete(controller.dispose);
+  }
+
+  /// 网络图：加载中灰底占位，失败图标占位。
+  Widget _netImage(String url, {BoxFit fit = BoxFit.cover}) {
+    return Image.network(
+      url,
+      fit: fit,
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return Container(
+          color: context.isDark ? C.bg0 : C.lbg2,
+          alignment: Alignment.center,
+          child: Icon(Icons.image_outlined, size: 24, color: context.t3),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: context.isDark ? C.bg0 : C.lbg2,
+          alignment: Alignment.center,
+          child: Icon(Icons.broken_image_outlined, size: 28, color: context.t3),
+        );
+      },
     );
   }
 
