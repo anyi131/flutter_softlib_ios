@@ -59,6 +59,12 @@ class _AdminCollectTabState extends State<AdminCollectTab>
   List<String> _pendingNames = [];
   List<Map<String, dynamic>> _results = [];
   List<String> _logs = [];
+
+  /// 重试时保留的上一轮结果（成功的 + 未重试的失败项），避免被新一轮覆盖
+  List<Map<String, dynamic>> _retryKept = [];
+
+  /// 最近一次提交的采集参数（重试时按 appname 反查 config_id/dir_id）
+  List<Map<String, dynamic>> _lastApps = [];
   Timer? _poll;
 
   @override
@@ -89,6 +95,55 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     if (s.contains('登录') || s.contains('Cookie')) return s;
     if (s.contains('timeout') || s.contains('超时')) return '网络超时，请重试';
     return s;
+  }
+
+  /// 判断一条采集结果是否成功（兼容 bool / 1 / "1" / "true"）
+  bool _isOk(Map<String, dynamic> r) {
+    final o = r['ok'];
+    return o == true || o == 1 || o == '1' || '${o}'.toLowerCase() == 'true';
+  }
+
+  /// 失败原因：上游 msg/reason/error 都没给就给个可操作的话术
+  String _failMsg(Map<String, dynamic> r) {
+    for (final k in ['msg', 'reason', 'error', 'err']) {
+      final v = '${r[k] ?? ''}'.trim();
+      if (v.isNotEmpty && v != 'null') return v;
+    }
+    return '上传失败，可重试';
+  }
+
+  /// 当前所有失败的结果项
+  List<Map<String, dynamic>> get _failedResults =>
+      _results.where((r) => !_isOk(r)).toList();
+
+  /// 清洗站点实时日志：
+  /// ① base64 / 不可读乱码行整行丢弃（[A-Za-z0-9+/=]{80,} 长串，或可读占比 <60%）
+  /// ② 超长行截断到 300 字符加省略号
+  /// ③ 最多保留最近 50 行
+  static final RegExp _b64Re = RegExp(r'[A-Za-z0-9+/=]{80,}');
+  List<String> _cleanLogs(List<String> raw) {
+    final out = <String>[];
+    for (final line in raw) {
+      final s = line.trim();
+      if (s.isEmpty) continue;
+      // base64 长串直接丢（不占可读占比判定，先卡掉）
+      if (_b64Re.hasMatch(s)) continue;
+      // 不可读乱码行（中文 + ASCII 可打印占比过低）丢弃
+      if (_readableRatio(s) < 0.6) continue;
+      out.add(s.length > 300 ? '${s.substring(0, 300)}…' : s);
+    }
+    // 只保留最近 50 行
+    return out.length > 50 ? out.sublist(out.length - 50) : out;
+  }
+
+  /// 可读字符（中英文/数字/常见标点）占比
+  double _readableRatio(String s) {
+    if (s.isEmpty) return 0;
+    var n = 0;
+    for (final c in s.codeUnits) {
+      if ((c >= 0x20 && c < 0x7f) || c > 0x2e7f) n++; // ASCII 可打印 + CJK
+    }
+    return n / s.length;
   }
 
   Future<void> _init() async {
@@ -592,8 +647,8 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     final label = _selected.isEmpty
         ? '请选择要采集的软件'
         : (pageCount == _selected.length
-            ? '开始采集（$pageCount）'
-            : '开始采集本页（$pageCount） · 跨页共选 ${_selected.length}');
+              ? '开始采集（$pageCount）'
+              : '开始采集本页（$pageCount） · 跨页共选 ${_selected.length}');
     return SafeArea(
       top: false,
       child: Padding(
@@ -615,6 +670,89 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     );
   }
 
+  /// 按软件名反查上一轮提交时的采集参数（重试用）
+  Map<String, dynamic>? _appForName(String name) {
+    for (final a in _lastApps) {
+      if ('${a['appname'] ?? ''}' == name) return a;
+    }
+    return null;
+  }
+
+  /// 重试单条失败项：复用采集提交链路，只提交这一条
+  Future<void> _retryOne(Map<String, dynamic> r) async {
+    if (_running) return;
+    final name = '${r['name']}';
+    final app = _appForName(name);
+    if (app == null) {
+      ToastUtil.error('找不到该软件的采集参数，请回列表重新勾选采集');
+      return;
+    }
+    // 保留上一轮所有结果，除了正在重试的这一条（避免被新一轮覆盖）
+    final keep = _results.where((x) => '${x['name']}' != name).toList();
+    await _submitCollect([app], keep: keep);
+  }
+
+  /// 批量重试全部失败项
+  Future<void> _retryFailed() async {
+    if (_running) return;
+    final failed = _failedResults;
+    if (failed.isEmpty) return;
+    final apps = <Map<String, dynamic>>[];
+    final failedNames = <String>{};
+    for (final r in failed) {
+      final app = _appForName('${r['name']}');
+      if (app != null) {
+        apps.add(app);
+        failedNames.add('${r['name']}');
+      }
+    }
+    if (apps.isEmpty) {
+      ToastUtil.error('找不到失败软件的采集参数，请回列表重新勾选采集');
+      return;
+    }
+    // 保留上一轮成功的结果；没找到参数的失败项也保留（提示过用户了）
+    final keep = _results
+        .where((x) => _isOk(x) || !failedNames.contains('${x['name']}'))
+        .toList();
+    await _submitCollect(apps, keep: keep);
+  }
+
+  /// 采集提交（开始采集与失败重试共用）：提交任务 → 清空状态 → 开始轮询
+  /// [keep] 为重试场景要保留的上一轮结果（成功的 + 不重跑的失败项）
+  Future<void> _submitCollect(
+    List<Map<String, dynamic>> apps, {
+    List<Map<String, dynamic>> keep = const [],
+  }) async {
+    try {
+      final taskId = await _svc.collectStart(apps);
+      if (taskId.isEmpty) {
+        ToastUtil.error('任务提交失败');
+        return;
+      }
+      setState(() {
+        _taskId = taskId;
+        _running = true;
+        _cur = 0;
+        _total = apps.length;
+        _ok = 0;
+        _fail = 0;
+        _status = '';
+        _results = List.of(keep);
+        _retryKept = List.of(keep);
+        _logs = [];
+        _lastLogCount = 0;
+        // 记录本次要采集的软件名（完成后到日志页反查链接用）
+        _pendingNames = apps
+            .map((a) => '${a['appname'] ?? ''}')
+            .where((s) => s.isNotEmpty)
+            .toList();
+      });
+      _startPoll();
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
   Future<void> _start() async {
     // ★ 需求 #5：跨页勾选只用于「计数展示」，
     //   真正提交采集的始终只有【当前页面】勾选的软件
@@ -632,6 +770,13 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         )
         .toList();
     if (apps.isEmpty) return;
+    _lastApps = apps;
+    // ★ 重试场景：新一轮只提交了部分软件（失败项）时，
+    //   保留上一轮「不在本次提交名单里」的结果，避免被清空覆盖
+    final retryNames = apps.map((a) => '${a['appname'] ?? ''}').toSet();
+    _retryKept = _results
+        .where((r) => !retryNames.contains('${r['name']}'))
+        .toList();
     final extra = _selected.length - apps.length;
     final go = await Get.dialog<bool>(
       AlertDialog(
@@ -655,32 +800,8 @@ class _AdminCollectTabState extends State<AdminCollectTab>
       ),
     );
     if (go != true) return;
-    try {
-      final taskId = await _svc.collectStart(apps);
-      if (taskId.isEmpty) {
-        ToastUtil.error('任务提交失败');
-        return;
-      }
-      setState(() {
-        _taskId = taskId;
-        _running = true;
-        _cur = 0;
-        _total = apps.length;
-        _ok = 0;
-        _fail = 0;
-        _status = '';
-        _results = [];
-        _logs = [];
-        // 记录本次要采集的软件名（完成后到日志页反查链接用）
-        _pendingNames = apps
-            .map((a) => '${a['appname'] ?? ''}')
-            .where((s) => s.isNotEmpty)
-            .toList();
-      });
-      _startPoll();
-    } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
-    }
+    _lastApps = apps;
+    await _submitCollect(apps);
   }
 
   void _startPoll() {
@@ -714,13 +835,16 @@ class _AdminCollectTabState extends State<AdminCollectTab>
           _cur = (r['current'] as num?)?.toInt() ?? _cur;
           _ok = (r['success'] as num?)?.toInt() ?? _ok;
           _fail = (r['fail'] as num?)?.toInt() ?? _fail;
-          _results = ((r['results'] as List?) ?? [])
+          // ★ 重试时保留上一轮结果（成功的 + 未重试的失败项）
+          final fresh = ((r['results'] as List?) ?? [])
               .map((e) => Map<String, dynamic>.from(e))
               .toList();
+          _results = [..._retryKept, ...fresh];
           // ★ 站点每 2 秒返回真实进度日志，直接展示，用户能实时看到在干什么
-          _logs = ((r['logs'] as List?) ?? [])
-              .map((e) => e.toString())
-              .toList();
+          //   （先清洗：超长截断 / 丢不可读与 base64 乱码行 / 最多保留 50 行）
+          _logs = _cleanLogs(
+            ((r['logs'] as List?) ?? []).map((e) => e.toString()).toList(),
+          );
         });
         // 有新日志就自动滚到底部，保证最新一条始终可见
         if (_logs.length != _lastLogCount) {
@@ -728,10 +852,9 @@ class _AdminCollectTabState extends State<AdminCollectTab>
           _scrollLogToEnd();
         }
         // 一旦站点给了结果，立刻刷新成功数（不要等任务结束）
-        if (_results.isNotEmpty &&
-            _ok != _results.where((x) => x['ok'] == true).length) {
+        if (_results.isNotEmpty && _ok != _results.where(_isOk).length) {
           setState(() {
-            _ok = _results.where((x) => x['ok'] == true).length;
+            _ok = _results.where(_isOk).length;
           });
         }
 
@@ -755,7 +878,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         : _results.map((r) => '${r['name']}').toList();
     // ★ 先保住已经拿到的真实结果：站点 done 时会直接带 results，
     //   这些数据比「事后去日志反查」可靠得多，绝不能被覆盖成失败
-    final known = _results.where((r) => r['ok'] == true).toList();
+    final known = _results.where(_isOk).toList();
     try {
       final r = await _svc.collectResults(names, at: _taskAt);
       if (!mounted) return;
@@ -813,8 +936,8 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         _status = 'done';
         if (list.isNotEmpty) {
           _results = list;
-          _ok = list.where((x) => x['ok'] == true).length;
-          _fail = list.where((x) => x['ok'] != true).length;
+          _ok = list.where(_isOk).length;
+          _fail = list.where((x) => !_isOk(x)).length;
           // 进度只增不减，避免把已经跑满的进度条退回去
           _cur = list.length > _cur ? list.length : _cur;
           _total = _cur > _total ? _cur : _total;
@@ -978,6 +1101,102 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                 onPressed: () => _import(doneLinks),
               ),
             ],
+            // ★ 失败分组：结束后展示失败软件 + 原因，可单条或批量重试
+            if (!_running && _failedResults.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Icon(Icons.error_outline_rounded, size: 14, color: C.danger),
+                  const SizedBox(width: 5),
+                  Text(
+                    '失败（${_failedResults.length}）',
+                    style: Ty.tiny.copyWith(
+                      color: C.danger,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: _retryFailed,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: C.danger.withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(R.sm),
+                      ),
+                      child: Text(
+                        '重试失败项（${_failedResults.length}）',
+                        style: Ty.tiny.copyWith(
+                          color: C.danger,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              ..._failedResults.map(
+                (r) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Icon(
+                          Icons.cancel_outline_rounded,
+                          size: 13,
+                          color: C.danger,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${r['name']}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Ty.tiny.copyWith(color: context.t1),
+                            ),
+                            Text(
+                              _failMsg(r),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: Ty.tiny.copyWith(
+                                fontSize: 10.5,
+                                color: context.isDark
+                                    ? C.danger.withValues(alpha: 0.85)
+                                    : C.danger,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () => _retryOne(r),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            '重试',
+                            style: Ty.tiny.copyWith(
+                              color: C.brand,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             if (!_running && _logs.isEmpty && doneLinks.isEmpty) ...[
               const SizedBox(height: 8),
               Text(
@@ -1096,11 +1315,15 @@ class _AdminCollectTabState extends State<AdminCollectTab>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('批量设置（导入前）',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+              const Text(
+                '批量设置（导入前）',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+              ),
               const SizedBox(height: 4),
-              Text('为本次导入的软件统一设置分类与下载权限',
-                  style: Ty.tiny.copyWith(color: ctx.t3)),
+              Text(
+                '为本次导入的软件统一设置分类与下载权限',
+                style: Ty.tiny.copyWith(color: ctx.t3),
+              ),
               const SizedBox(height: 12),
               DropdownButtonFormField<int>(
                 initialValue: catId,
@@ -1112,18 +1335,23 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                 items: [
                   const DropdownMenuItem(value: null, child: Text('不设置')),
                   const DropdownMenuItem(value: 0, child: Text('未分类')),
-                  ...cats.map((c) => DropdownMenuItem(
-                        value: int.tryParse('${c['id']}') ?? 0,
-                        child: Text('${c['title']}'),
-                      )),
+                  ...cats.map(
+                    (c) => DropdownMenuItem(
+                      value: int.tryParse('${c['id']}') ?? 0,
+                      child: Text('${c['title']}'),
+                    ),
+                  ),
                 ],
                 onChanged: (v) => setD(() => catId = v),
               ),
               const SizedBox(height: 10),
               Row(
                 children: [
-                  Icon(Icons.workspace_premium_rounded,
-                      size: 18, color: C.gold),
+                  Icon(
+                    Icons.workspace_premium_rounded,
+                    size: 18,
+                    color: C.gold,
+                  ),
                   const SizedBox(width: 8),
                   const Expanded(child: Text('会员专享')),
                   Switch(
@@ -1136,8 +1364,9 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               if (isVip)
                 TextField(
                   controller: price,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(
                     labelText: '会员价 / 购买价（¥，可留空）',
                     isDense: true,
