@@ -73,7 +73,8 @@ class PostService {
   }
 
   /// 发布
-  Future<void> create({
+  /// 返回 reviewing（1013d：服务端审核开关开时=1，发布后进入待审）
+  Future<bool> create({
     required String nickname,
     required String content,
     List<String> images = const [],
@@ -98,6 +99,7 @@ class PostService {
     if (r.data is Map && r.data['code'] != 1) {
       throw Exception(r.data['msg'] ?? '发布失败');
     }
+    return (r.data is Map && '${r.data['data']?['review'] ?? '0'}' == '1');
   }
 
   /// 点赞

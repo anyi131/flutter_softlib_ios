@@ -279,6 +279,28 @@ class _PostDetailPageState extends State<PostDetailPage> {
                           ),
                           const SizedBox(width: 6),
                         ],
+                        // 1013d：本人待审动态标记
+                        if (p.mine && p.status == 0) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: C.warning.withAlpha(28),
+                              borderRadius: BorderRadius.circular(R.xs),
+                            ),
+                            child: Text(
+                              '审核中',
+                              style: Ty.tiny.copyWith(
+                                fontSize: 10,
+                                color: C.warning,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
                         Text(
                           p.relTime,
                           style: Ty.tiny.copyWith(color: context.t3),

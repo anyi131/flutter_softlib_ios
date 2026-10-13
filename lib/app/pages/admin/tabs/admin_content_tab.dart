@@ -25,6 +25,8 @@ class _AdminContentTabState extends State<AdminContentTab>
   late final TabController _tab = TabController(length: 11, vsync: this);
 
   List<Map<String, dynamic>> _posts = [];
+  int _pendingCount = 0;
+  bool _reviewOn = false;
   List<Map<String, dynamic>> _reviews = [];
   List<Map<String, dynamic>> _cats = [];
   List<Map<String, dynamic>> _carousels = [];
@@ -51,6 +53,25 @@ class _AdminContentTabState extends State<AdminContentTab>
     setState(() => _loading = true);
     try {
       final p = await _svc.posts();
+      // ★ 动态审核（1013d）：走审核列表接口，带 status / counts；
+      //   失败则回落旧的 posts()（旧服务端没有 status 字段）
+      List<Map<String, dynamic>> posts;
+      int pending = 0;
+      try {
+        final rd = await _svc.postReviewList();
+        posts = (rd['list'] as List? ?? [])
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+        final counts = Map<String, dynamic>.from(rd['counts'] ?? {});
+        pending = (counts['pending'] as num?)?.toInt() ?? 0;
+      } catch (_) {
+        posts = p;
+      }
+      bool reviewOn = false;
+      try {
+        final cfg = await _svc.config();
+        reviewOn = '${cfg['post_review_on'] ?? '0'}' == '1';
+      } catch (_) {}
       final r = await _svc.reviews();
       final ct = await _svc.appCats();
       final ca = await _svc.carousels();
@@ -63,7 +84,9 @@ class _AdminContentTabState extends State<AdminContentTab>
       try {} catch (_) {}
       if (mounted)
         setState(() {
-          _posts = p;
+          _posts = posts;
+          _pendingCount = pending;
+          _reviewOn = reviewOn;
           _reviews = r;
           _cats = ct;
           _carousels = ca;
@@ -133,92 +156,281 @@ class _AdminContentTabState extends State<AdminContentTab>
   }
 
   Widget _postList() {
-    if (_posts.isEmpty) {
-      return const EmptyState(text: '暂无动态', hint: '用户发布的动态会显示在这里');
-    }
-    return ListView.builder(
+    return ListView(
       padding: const EdgeInsets.all(14),
-      itemCount: _posts.length,
-      itemBuilder: (context, i) {
-        final p = _posts[i];
-        final imgs = (p['images'] is List) ? (p['images'] as List) : [];
-        return KitCard(
-          margin: const EdgeInsets.only(bottom: 8),
+      children: [
+        // ★ 动态审核卡（1013d）：开关 + 待审数
+        KitCard(
+          margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Row(
-                children: [
-                  Text(
-                    '${p['nickname']}',
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${p['createtime_text']}',
-                    style: Ty.tiny.copyWith(color: context.t3),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    tooltip: '编辑内容',
-                    icon: Icon(Icons.edit_outlined, size: 18, color: C.brand),
-                    onPressed: () => _editPost(p),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.delete_outline,
-                      size: 18,
-                      color: C.danger,
-                    ),
-                    onPressed: () async {
-                      await _svc.deletePost(int.tryParse('${p['id']}') ?? 0);
-                      ToastUtil.success('已删除');
-                      _load();
-                    },
-                  ),
-                ],
-              ),
-              if ('${p['content']}'.isNotEmpty)
-                Text(
-                  '${p['content']}',
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 13.5, height: 1.5),
-                ),
-              if (imgs.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 60,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: imgs.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 6),
-                    itemBuilder: (_, j) => ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: CachedNetworkImage(
-                        imageUrl: '${imgs[j]}',
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 6),
+              Icon(Icons.fact_check_rounded, size: 18, color: C.brand),
+              const SizedBox(width: 8),
               Text(
-                '赞 ${p['like_count']} · 评论 ${p['comment_count']} · 浏览 ${p['views']}',
-                style: Ty.tiny.copyWith(color: context.t3),
+                '动态发布审核',
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              if (_pendingCount > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: C.warning.withAlpha(30),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: Text(
+                    '待审 $_pendingCount',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: C.warning,
+                    ),
+                  ),
+                ),
+              const SizedBox(width: 8),
+              Switch(
+                value: _reviewOn,
+                activeColor: C.brand,
+                onChanged: (v) async {
+                  setState(() => _reviewOn = v);
+                  try {
+                    await _svc.postReviewSave(on: v);
+                    ToastUtil.success(v ? '已开启审核' : '已关闭审核');
+                  } catch (e) {
+                    setState(() => _reviewOn = !v);
+                    ToastUtil.error(
+                      e.toString().replaceFirst('Exception: ', ''),
+                    );
+                  }
+                },
               ),
             ],
           ),
-        );
-      },
+        ),
+        ..._postCards(),
+      ],
     );
+  }
+
+  List<Widget> _postCards() {
+    if (_posts.isEmpty) {
+      return [const EmptyState(text: '暂无动态', hint: '用户发布的动态会显示在这里')];
+    }
+    return _posts.map((p) {
+      final imgs = (p['images'] is List) ? (p['images'] as List) : [];
+      final status = int.tryParse('${p['status'] ?? 1}') ?? 1;
+      final pending = status == 0;
+      final rejected = status == 2;
+      return KitCard(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  '${p['nickname']}',
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                if (pending)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: C.warning.withAlpha(30),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '待审核',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: C.warning,
+                      ),
+                    ),
+                  )
+                else if (rejected)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: C.danger.withAlpha(30),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '已驳回',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: C.danger,
+                      ),
+                    ),
+                  ),
+                const SizedBox(width: 8),
+                Text(
+                  '${p['createtime_text']}',
+                  style: Ty.tiny.copyWith(color: context.t3),
+                ),
+                const Spacer(),
+                IconButton(
+                  tooltip: '编辑内容',
+                  icon: Icon(Icons.edit_outlined, size: 18, color: C.brand),
+                  onPressed: () => _editPost(p),
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: C.danger,
+                  ),
+                  onPressed: () async {
+                    await _svc.deletePost(int.tryParse('${p['id']}') ?? 0);
+                    ToastUtil.success('已删除');
+                    _load();
+                  },
+                ),
+              ],
+            ),
+            if ('${p['content']}'.isNotEmpty)
+              Text(
+                '${p['content']}',
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 13.5, height: 1.5),
+              ),
+            if (imgs.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 60,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: imgs.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 6),
+                  itemBuilder: (_, j) => ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: CachedNetworkImage(
+                      imageUrl: '${imgs[j]}',
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '赞 ${p['like_count']} · 评论 ${p['comment_count']} · 浏览 ${p['views']}',
+                    style: Ty.tiny.copyWith(color: context.t3),
+                  ),
+                ),
+                if (pending) ...[
+                  _reviewBtn(
+                    '通过',
+                    Icons.check_rounded,
+                    C.success,
+                    () => _doReview(p, 'pass'),
+                  ),
+                  const SizedBox(width: 8),
+                  _reviewBtn(
+                    '驳回',
+                    Icons.close_rounded,
+                    C.danger,
+                    () => _doReview(p, 'reject'),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      );
+    }).toList();
+  }
+
+  Widget _reviewBtn(
+    String label,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: color.withAlpha(24),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 3),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 审核操作（驳回需二次确认）
+  Future<void> _doReview(Map p, String action) async {
+    final id = int.tryParse('${p['id']}') ?? 0;
+    if (id <= 0) return;
+    if (action == 'reject') {
+      final go = await Get.dialog<bool>(
+        AlertDialog(
+          title: const Text('驳回动态'),
+          content: Text('驳回后该动态将不在广场展示（作者自己仍可见）。确定驳回「${p['nickname']}」的这条动态吗？'),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(result: false),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: C.danger),
+              onPressed: () => Get.back(result: true),
+              child: const Text('驳回'),
+            ),
+          ],
+        ),
+      );
+      if (go != true) return;
+    }
+    try {
+      await _svc.postReview([id], action: action);
+      ToastUtil.success(action == 'pass' ? '已通过' : '已驳回');
+      _load();
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
   }
 
   /// 编辑帖子（正文 / 图片 / 视频）—— 对应需求 #11

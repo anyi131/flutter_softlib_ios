@@ -434,6 +434,21 @@ class AdminService {
 
   Future<void> deleteReview(int id) async => _post('review_del', {'id': id});
 
+  // ───── 广场动态审核（1013d）─────
+  /// 审核列表：filter = all | pending | passed | rejected
+  Future<Map<String, dynamic>> postReviewList({String filter = 'all'}) async =>
+      Map<String, dynamic>.from(
+        (await _post('post_review_list', {'filter': filter}))['data'] ?? {},
+      );
+
+  /// 审核：ids 单条或批量；action = pass | reject
+  Future<void> postReview(List<int> ids, {required String action}) async =>
+      _post('post_review', {'ids': ids.join(','), 'action': action});
+
+  /// 审核开关（post_review_on）
+  Future<void> postReviewSave({required bool on}) async =>
+      _post('post_review_save', {'post_review_on': on ? 1 : 0});
+
   Future<Map<String, dynamic>> splash() async =>
       Map<String, dynamic>.from((await _post('splash'))['data'] ?? {});
 

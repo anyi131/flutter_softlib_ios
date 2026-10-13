@@ -364,6 +364,52 @@ class _SquareComponentState extends State<SquareComponent> {
                                   ),
                                   const SizedBox(width: 6),
                                 ],
+                                // 1013d：本人待审/被驳回动态标记
+                                if (p.mine && p.status == 0) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: C.warning.withAlpha(28),
+                                      borderRadius: BorderRadius.circular(
+                                        R.xs / 2,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      '审核中',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: C.warning,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                ] else if (p.mine && p.status == 2) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: C.danger.withAlpha(28),
+                                      borderRadius: BorderRadius.circular(
+                                        R.xs / 2,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      '已驳回',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: C.danger,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                ],
                                 Text(
                                   p.relTime,
                                   style: Ty.tiny.copyWith(color: context.t3),
@@ -1019,7 +1065,7 @@ class _SquareComponentState extends State<SquareComponent> {
                                 videoUrl = videoLinkCtrl.text.trim();
                                 videoKind = 'link';
                               }
-                              await _svc.create(
+                              final reviewing = await _svc.create(
                                 nickname: user?.nickname ?? '匿名用户',
                                 content: text,
                                 images: urls,
@@ -1030,7 +1076,8 @@ class _SquareComponentState extends State<SquareComponent> {
                               );
                               if (ctx.mounted) Navigator.pop(ctx);
                               if (mounted) {
-                                _toast('发布成功 🎉');
+                                // 1013d：开启审核时提示待审
+                                _toast(reviewing ? '已提交，审核通过后展示' : '发布成功 🎉');
                                 _load(reset: true);
                               }
                             } catch (e) {

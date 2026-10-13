@@ -17,6 +17,12 @@ class PostItem {
   final int commentCount;
   final int views;
   final int createtime;
+
+  /// 1013d：status 0=待审 1=通过 2=驳回
+  final int status;
+
+  /// 1013d：是否本人发布的动态（服务端 mine 标记）
+  final bool mine;
   final bool isAdmin;
   final bool isVip;
   final String title;
@@ -39,6 +45,8 @@ class PostItem {
     required this.commentCount,
     required this.views,
     required this.createtime,
+    this.status = 1,
+    this.mine = false,
     this.isAdmin = false,
     this.isVip = false,
     this.title = '',
@@ -70,6 +78,8 @@ class PostItem {
     int? commentCount,
     int? views,
     int? createtime,
+    int? status,
+    bool? mine,
     bool? isAdmin,
     bool? isVip,
     String? title,
@@ -91,6 +101,8 @@ class PostItem {
     commentCount: commentCount ?? this.commentCount,
     views: views ?? this.views,
     createtime: createtime ?? this.createtime,
+    status: status ?? this.status,
+    mine: mine ?? this.mine,
     isAdmin: isAdmin ?? this.isAdmin,
     isVip: isVip ?? this.isVip,
     title: title ?? this.title,
@@ -120,6 +132,8 @@ class PostItem {
     commentCount: _i(j['comment_count']),
     views: _i(j['views']),
     createtime: _i(j['createtime']),
+    status: _i(j['status'] ?? 1),
+    mine: j['mine'] == 1 || j['mine'] == true,
     isAdmin: j['is_admin'] == 1 || j['is_admin'] == true,
     isVip: j['is_vip'] == 1 || j['is_vip'] == true,
     title: _s(j['title']),
