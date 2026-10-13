@@ -1148,7 +1148,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                       Padding(
                         padding: const EdgeInsets.only(top: 2),
                         child: Icon(
-                          Icons.cancel_outline_rounded,
+                          Icons.cancel_outlined,
                           size: 13,
                           color: C.danger,
                         ),
