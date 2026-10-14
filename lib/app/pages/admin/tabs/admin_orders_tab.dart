@@ -524,7 +524,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
             children: [
               Row(
                 children: [
-                  const Icon(Icons.receipt_long_rounded,
+                  Icon(Icons.receipt_long_rounded,
                       size: 20, color: C.brand),
                   const SizedBox(width: 8),
                   Text('订单详情',

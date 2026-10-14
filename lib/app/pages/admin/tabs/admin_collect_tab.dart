@@ -483,7 +483,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                 onTap: () => _annotateLib(_items),
                 child: Row(
                   children: [
-                    const Icon(Icons.refresh_rounded,
+                    Icon(Icons.refresh_rounded,
                         size: 13, color: C.brand),
                     const SizedBox(width: 3),
                     Text('重新检测',

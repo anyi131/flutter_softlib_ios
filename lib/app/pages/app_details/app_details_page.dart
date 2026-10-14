@@ -715,7 +715,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         ? [
             (
               Icons.language_rounded,
-              it?.linkUrl.replaceFirst(RegExp(r'^https?://'), ''),
+              (it?.linkUrl ?? '').replaceFirst(RegExp(r'^https?://'), ''),
               '链接',
               C.cyan,
             ),
@@ -821,7 +821,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         ? [
             (
               Icons.language_rounded,
-              it?.linkUrl.replaceFirst(RegExp(r'^https?://'), ''),
+              (it?.linkUrl ?? '').replaceFirst(RegExp(r'^https?://'), ''),
               '链接',
             ),
             (
@@ -884,7 +884,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                                 : Colors.black.withAlpha(10),
                           ),
                         SizedBox(
-                          width: itemW - (c > 0 ? 0 : 0),
+                          width: itemW,
                           child: (r * perRow + c) < cells.length
                               ? _infoCell(
                                   cells[r * perRow + c].$1,
