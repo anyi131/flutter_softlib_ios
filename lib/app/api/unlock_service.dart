@@ -48,10 +48,12 @@ class UnlockService {
   ));
 
   Future<UnlockStatus> status(int appId) async {
-    final r = await _dio.get('/api/softlib/unlock/status', queryParameters: {
+    // ★ 1014 关键修复：服务端已强制「token 只能放请求体」（不再读 URL，
+    //   避免 token 落到访问日志）。原来这里用 GET + URL 传 token，
+    //   导致服务端取不到身份 → 误判成未登录 → 会员/管理员下载被要求付费！
+    final r = await _dio.post('/api/softlib/unlock/status', data: {
       'app_id': appId,
-      if (UserService.instance.token.isNotEmpty)
-        'token': UserService.instance.token,
+      'token': UserService.instance.token,
     });
     if (r.data is Map && r.data['code'] == 1 && r.data['data'] is Map) {
       return UnlockStatus.fromJson(Map<String, dynamic>.from(r.data['data']));

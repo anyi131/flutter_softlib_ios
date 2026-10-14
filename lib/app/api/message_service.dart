@@ -15,7 +15,8 @@ class MessageService {
   ));
 
   Future<Map<String, dynamic>> list({int page = 1}) async {
-    final r = await _dio.get('/api/softlib/message/index', queryParameters: {
+    // ★ 1014：token 必须放请求体（服务端不再从 URL 读 token）
+    final r = await _dio.post('/api/softlib/message/index', data: {
       'token': UserService.instance.token,
       'pages': page,
     });
@@ -28,8 +29,8 @@ class MessageService {
   Future<int> unread() async {
     if (!UserService.instance.isLoggedIn) return 0;
     try {
-      final r = await _dio.get('/api/softlib/message/unread',
-          queryParameters: {'token': UserService.instance.token});
+      final r = await _dio.post('/api/softlib/message/unread',
+          data: {'token': UserService.instance.token});
       if (r.data is Map && r.data['code'] == 1) {
         return int.tryParse('${r.data['data']?['unread']}') ?? 0;
       }

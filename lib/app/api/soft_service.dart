@@ -286,15 +286,20 @@ class SoftService {
   /// 自建 API 解析直链（运维入口，服务端已发票据后才调用）
   Future<String?> resolveLzyByApi(String lzyUrl, {String? ticket}) async {
     try {
-      final resp = await _dio.get(
+      // ★ 1014：自建解析接口只需 url + 服务端签发的票据，
+      //   不再传递站点登录 token（第三方域名不该拿到用户凭证）。
+      //   鉴权已由主站 /lzy/auth 完成，票据一次性有效。
+      final resp = await _dio.post(
         kLzyProxy,
-        queryParameters: {
+        data: {
           'url': lzyUrl,
           if (ticket != null) 'ticket': ticket,
-          if (UserService.instance.token.isNotEmpty)
-            'token': UserService.instance.token,
         },
-        options: Options(receiveTimeout: const Duration(seconds: 30)),
+        options: Options(
+          receiveTimeout: const Duration(seconds: 30),
+          // 兼容只读 $_POST/$_REQUEST 的简单脚本
+          contentType: Headers.formUrlEncodedContentType,
+        ),
       );
       final d = resp.data;
       if (d is Map) {
