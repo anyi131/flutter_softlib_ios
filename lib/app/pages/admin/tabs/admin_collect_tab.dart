@@ -188,8 +188,11 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         _totalPages = (r['total_pages'] as num?)?.toInt() ?? 1;
         _loading = false;
       });
-      // ★ 1014 需求4：异步预检「是否已在本地软件库」，不阻塞列表显示
-      unawaited(_annotateLib(items));
+      // ★ 1014 需求4：列表接口已带回 in_lib/lib_version/lib_updatetime/update_flag，
+      //   只有服务端没带时才需要额外调一次 collect_check 兜底。
+      final needCheck = items.isNotEmpty &&
+          !items.any((e) => e.containsKey('in_lib'));
+      if (needCheck) unawaited(_annotateLib(items));
     } catch (e) {
       if (!mounted) return;
       setState(() {
