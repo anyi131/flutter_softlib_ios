@@ -189,6 +189,19 @@ class _UpdateCardState extends State<_UpdateCard> {
     JumpUtil.openUrl(widget.url, allowDownload: true);
   }
 
+  /// ★ 1014 新增：用浏览器打开原链接下载
+  /// 直接把后台配置的更新地址（原链接，如蓝奏云分享页）交给系统浏览器，
+  /// 由浏览器完成下载，绕开 App 内的解析环节。
+  void _openInBrowser() {
+    final u = widget.url.trim();
+    if (u.isEmpty) {
+      ToastUtil.error('更新地址为空，请联系管理员');
+      return;
+    }
+    ToastUtil.info('已用浏览器打开下载页');
+    JumpUtil.openUrl(u, allowDownload: true);
+  }
+
   String _sizeText(int bytes) {
     if (bytes <= 0) return '';
     final mb = bytes / 1048576;
@@ -950,6 +963,42 @@ class _UpdateCardState extends State<_UpdateCard> {
           ),
           const SizedBox(width: 12),
         ],
+        // ★ 1014 新增：浏览器下载（用原链接）
+        //   App 内解析失败或想用外部浏览器时，直接打开原始下载链接。
+        Expanded(
+          flex: 2,
+          child: AppPressable(
+            onTap: _openInBrowser,
+            child: Container(
+              height: 46,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: isDark ? C.bg2 : const Color(0xFFF1F3F9),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: isDark ? C.t3.withAlpha(80) : C.lt3.withAlpha(70),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.open_in_browser_rounded,
+                      size: 17, color: isDark ? C.t2 : C.lt2),
+                  const SizedBox(width: 6),
+                  Text(
+                    '浏览器下载',
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? C.t2 : C.lt2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
         Expanded(
           flex: 2,
           child: AppPressable(

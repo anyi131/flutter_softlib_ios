@@ -48,29 +48,32 @@ jobs:
 
       # ★ 1014：固定签名密钥（首次生成后缓存，之后所有构建复用同一签名，
       #   否则每次构建签名不同 → 新包无法覆盖安装旧包）
-      - name: Restore or create release keystore
-        run: |
-          KS_DIR="$HOME/keystore-cache"
-          KS_FILE="$KS_DIR/anyi-release.jks"
-          mkdir -p "$KS_DIR"
-          if [ ! -f "$KS_FILE" ]; then
-            keytool -genkeypair -v \
-              -keystore "$KS_FILE" \
-              -storetype JKS \
-              -keyalg RSA -keysize 2048 -validity 10950 \
-              -alias anyi \
-              -storepass anyi2026softlib \
-              -keypass anyi2026softlib \
-              -dname "CN=Anyi Softlib, OU=Dev, O=Anyi, L=Beijing, ST=Beijing, C=CN"
-          fi
-          mkdir -p android/app/keystore
-          cp "$KS_FILE" android/app/keystore/anyi-release.jks
-
-      - name: Cache release keystore
+      # ★ 1014：固定签名密钥 —— cache 必须放在「生成」之前，
+      #   否则缓存尚未恢复就重新生成，签名每次都变（踩过的坑）。
+      - name: Restore release keystore from cache
+        id: keystore-cache
         uses: actions/cache@v4
         with:
           path: ~/keystore-cache
-          key: anyi-release-keystore-v1
+          key: anyi-release-keystore-v2
+
+      - name: Create release keystore if missing
+        if: steps.keystore-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "$HOME/keystore-cache"
+          keytool -genkeypair -v \
+            -keystore "$HOME/keystore-cache/anyi-release.jks" \
+            -storetype JKS \
+            -keyalg RSA -keysize 2048 -validity 10950 \
+            -alias anyi \
+            -storepass anyi2026softlib \
+            -keypass anyi2026softlib \
+            -dname "CN=Anyi Softlib, OU=Dev, O=Anyi, L=Beijing, ST=Beijing, C=CN"
+
+      - name: Copy keystore into project
+        run: |
+          mkdir -p android/app/keystore
+          cp "$HOME/keystore-cache/anyi-release.jks" android/app/keystore/anyi-release.jks
 
       - name: Build APK (release)
         run: |
