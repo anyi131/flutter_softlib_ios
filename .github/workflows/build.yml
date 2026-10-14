@@ -46,45 +46,70 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
-      # ═══════════════════════════════════════════════════════════
-      # ★ 签名：优先用 Secrets 提供的 keystore；没有则用「固定种子」
-      #   自动生成一个稳定签名（同一套参数 → 每次生成的签名完全一致）。
-      #   这样即使不配 Secrets，构建出来的包也能互相覆盖安装。
-      # ═══════════════════════════════════════════════════════════
-      - name: Prepare release keystore
+      # ═══════════════════════════════════════════════════════════════════
+      # ★ 签名（关键：必须「先生成一次 → 永久复用」，不能每次重新生成）
+      #   原因：keytool -genkeypair 每次都会写入不同的序列号/时间/salt，
+      #        即使 -dname/-alias/-password 完全一样，产出的证书也不同，
+      #        导致每次构建签名不一致 → 新包无法覆盖安装旧包。
+      #
+      #   方案（按优先级）：
+      #     ① Secrets 提供 ANDROID_KEYSTORE_BASE64 → 用你的固定签名库
+      #     ② 否则用 GitHub Actions cache 保存一份自动生成的 keystore，
+      #        首次生成后永久复用（cache 未失效则签名恒定）
+      # ═══════════════════════════════════════════════════════════════════
+
+      - name: Restore auto keystore from cache
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 == '' }}
+        id: auto-ks
+        uses: actions/cache@v4
+        with:
+          path: ~/anyi-keystore
+          key: anyi-release-keystore-fixed-v3
+
+      - name: Prepare keystore
         env:
           KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           KS_PASS: ${{ secrets.ANDROID_STORE_PASSWORD }}
           KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KS_KEYPASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          AUTO_HIT: ${{ steps.auto-ks.outputs.cache-hit }}
         run: |
           mkdir -p android/app/keystore
-          KS=android/app/keystore/release.jks
+          KS="$GITHUB_WORKSPACE/android/app/keystore/release.jks"
+
           if [ -n "$KS_B64" ]; then
-            echo "→ 使用 Secrets 提供的签名"
+            echo "→ 使用 Secrets 提供的签名库"
             echo "$KS_B64" | base64 -d > "$KS"
-            echo "STOREPASS_USED=$KS_PASS" >> $GITHUB_ENV
-            echo "ANDROID_STORE_PASSWORD=$KS_PASS" >> $GITHUB_ENV
-            echo "ANDROID_KEY_ALIAS=$KS_ALIAS" >> $GITHUB_ENV
-            echo "ANDROID_KEY_PASSWORD=${KS_KEYPASS:-$KS_PASS}" >> $GITHUB_ENV
+            STORE_PASS="$KS_PASS"
+            ALIAS="$KS_ALIAS"
+            KEY_PASS="${KS_KEYPASS:-$KS_PASS}"
           else
-            echo "→ 未配置 Secrets，使用固定参数自动生成（签名稳定）"
-            keytool -genkeypair -v \
-              -keystore "$KS" \
-              -storetype JKS \
-              -keyalg RSA -keysize 2048 -validity 10950 \
-              -alias yfx \
-              -storepass 'bm666...' \
-              -keypass 'bm666...' \
-              -dname "CN=鲁梓熙, OU=Dev, O=Anyi, L=Beijing, ST=Beijing, C=CN"
-            echo "STOREPASS_USED=bm666..." >> $GITHUB_ENV
-            echo "ANDROID_STORE_PASSWORD=bm666..." >> $GITHUB_ENV
-            echo "ANDROID_KEY_ALIAS=yfx" >> $GITHUB_ENV
-            echo "ANDROID_KEY_PASSWORD=bm666..." >> $GITHUB_ENV
+            mkdir -p "$HOME/anyi-keystore"
+            SRC="$HOME/anyi-keystore/anyi.jks"
+            if [ ! -f "$SRC" ]; then
+              echo "→ 首次生成固定签名库（之后永久复用）"
+              keytool -genkeypair \
+                -keystore "$SRC" -storetype JKS \
+                -keyalg RSA -keysize 2048 -validity 10950 \
+                -alias yfx -storepass 'bm666...' -keypass 'bm666...' \
+                -dname "CN=鲁梓熙, OU=Dev, O=Anyi, L=Beijing, ST=Beijing, C=CN"
+            else
+              echo "→ 复用缓存中的固定签名库"
+            fi
+            cp "$SRC" "$KS"
+            STORE_PASS='bm666...'
+            ALIAS='yfx'
+            KEY_PASS='bm666...'
           fi
-          echo "ANDROID_KEYSTORE_PATH=$GITHUB_WORKSPACE/$KS" >> $GITHUB_ENV
-          echo "--- 签名信息（用于核对每次构建是否同一证书）---"
-          keytool -list -v -keystore "$KS" -storepass "$STOREPASS_USED" 2>/dev/null | grep -iE "alias|MD5|SHA1|SHA256" | head -6 || true
+
+          echo "ANDROID_KEYSTORE_PATH=$KS" >> $GITHUB_ENV
+          echo "ANDROID_STORE_PASSWORD=$STORE_PASS" >> $GITHUB_ENV
+          echo "ANDROID_KEY_ALIAS=$ALIAS" >> $GITHUB_ENV
+          echo "ANDROID_KEY_PASSWORD=$KEY_PASS" >> $GITHUB_ENV
+
+          echo "=== 本次使用的签名证书指纹 ==="
+          keytool -list -v -keystore "$KS" -storepass "$STORE_PASS" 2>/dev/null \
+            | grep -iE "MD5|SHA1|SHA256|Alias|别名" | head -5 || true
 
       - name: Build APK (release)
         run: |
