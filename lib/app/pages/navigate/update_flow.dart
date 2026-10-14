@@ -134,6 +134,11 @@ class _UpdateCardState extends State<_UpdateCard> {
       }
     }
     if (direct == null || direct.isEmpty) {
+      // ★ 1014：解析失败（未登录/无票据/接口异常）时，提示可改用浏览器下载，
+      //   而不是静默失败。App 自身更新包属可信来源，允许直接打开。
+      if (mounted) {
+        ToastUtil.info('将用浏览器打开下载页（也可在软件详情页下载）');
+      }
       _fallbackBrowser();
       return;
     }
@@ -178,7 +183,10 @@ class _UpdateCardState extends State<_UpdateCard> {
   }
 
   void _fallbackBrowser() {
-    JumpUtil.openUrl(widget.url);
+    // ★ 1014 修复：App 自身更新包属于可信来源，不属于需要鉴权的付费资源，
+    //   这里必须显式放行直链，否则会被 openUrl 的下载直链白名单误拦
+    //   （用户反馈：点「立即更新」弹「该链接为下载地址，请从软件详情页下载」）。
+    JumpUtil.openUrl(widget.url, allowDownload: true);
   }
 
   String _sizeText(int bytes) {

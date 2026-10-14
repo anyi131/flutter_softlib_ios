@@ -8,20 +8,21 @@ class JumpUtil {
   static bool isDownloadLink(String url) {
     final u = url.trim().toLowerCase();
     if (u.isEmpty) return false;
-    // 1) 以安装包/压缩包结尾（含 query 的情况）
+    // ★ 1014：只拦「真正的安装包直链」，避免误伤正常页面。
+    //   教训：最初白名单含 'lanzou'/'down.' 等宽泛词，
+    //   把「App 更新包地址」「蓝奏云分享页」也拦了 →
+    //   用户点「立即更新」被弹「该链接为下载地址」。
+
+    // 1) 以安装包/压缩包结尾（含 query/fragment 的情况）
     if (RegExp(r'\.(apk|ipa|xapk|apks|zip|rar|7z)(\?|#|$)').hasMatch(u)) {
       return true;
     }
-    // 2) 常见直链下载域名（蓝奏云解析后的 CDN 域名等）
-    const hosts = [
-      'lanosso.com', // 蓝奏云直链 CDN
-      'lanzou', // lanzou*.com / lanzoui / lanzouw 等
-      'lanzn.com',
-      'lzy.',
-      'down.', // 通用下载子域
-    ];
-    for (final h in hosts) {
-      if (u.contains(h)) return true;
+    // 2) 蓝奏云解析后的直链 CDN（形如 h1060.lanosso.com/<hash>/...）
+    //    注意：分享页是 lanzou*.com（不带 so），不应拦截。
+    if (u.contains('lanosso.com') ||
+        u.contains('lanzn.com') ||
+        u.contains('lanzn.net')) {
+      return true;
     }
     return false;
   }
