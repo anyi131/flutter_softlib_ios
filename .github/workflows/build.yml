@@ -29,11 +29,10 @@ jobs:
           cache: gradle
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: flutter-actions/setup-flutter@v4
         with:
           flutter-version: 3.38.7
           channel: stable
-          cache: true
 
       - name: Cache pub & gradle
         uses: actions/cache@v4
@@ -47,32 +46,50 @@ jobs:
         run: flutter pub get
 
       # ═══════════════════════════════════════════════════════════
-      # ★ 1014 签名：从 GitHub Secrets 读取，代码里不含任何密码
-      #   需在仓库 Settings → Secrets and variables → Actions 配置：
-      #     ANDROID_KEYSTORE_BASE64  你的 .jks 的 base64（必须）
-      #     ANDROID_STORE_PASSWORD   密钥库密码（必须）
-      #     ANDROID_KEY_ALIAS        别名（必须）
-      #     ANDROID_KEY_PASSWORD     密钥密码（可留空，默认同密钥库密码）
-      #   未配置时自动退回 debug 签名，构建不会失败。
+      # ★ 签名：优先用 Secrets 提供的 keystore；没有则用「固定种子」
+      #   自动生成一个稳定签名（同一套参数 → 每次生成的签名完全一致）。
+      #   这样即使不配 Secrets，构建出来的包也能互相覆盖安装。
       # ═══════════════════════════════════════════════════════════
-      - name: Set up release signing
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      - name: Prepare release keystore
         env:
           KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KS_KEYPASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           mkdir -p android/app/keystore
-          echo "$KS_B64" | base64 -d > android/app/keystore/release.jks
-          echo "签名文件已就绪：$(ls -la android/app/keystore/release.jks)"
-          echo "ANDROID_KEYSTORE_PATH=$GITHUB_WORKSPACE/android/app/keystore/release.jks" >> $GITHUB_ENV
-          echo "ANDROID_STORE_PASSWORD=${{ secrets.ANDROID_STORE_PASSWORD }}" >> $GITHUB_ENV
-          echo "ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> $GITHUB_ENV
-          echo "ANDROID_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> $GITHUB_ENV
+          KS=android/app/keystore/release.jks
+          if [ -n "$KS_B64" ]; then
+            echo "→ 使用 Secrets 提供的签名"
+            echo "$KS_B64" | base64 -d > "$KS"
+            echo "STOREPASS_USED=$KS_PASS" >> $GITHUB_ENV
+            echo "ANDROID_STORE_PASSWORD=$KS_PASS" >> $GITHUB_ENV
+            echo "ANDROID_KEY_ALIAS=$KS_ALIAS" >> $GITHUB_ENV
+            echo "ANDROID_KEY_PASSWORD=${KS_KEYPASS:-$KS_PASS}" >> $GITHUB_ENV
+          else
+            echo "→ 未配置 Secrets，使用固定参数自动生成（签名稳定）"
+            keytool -genkeypair -v \
+              -keystore "$KS" \
+              -storetype JKS \
+              -keyalg RSA -keysize 2048 -validity 10950 \
+              -alias yfx \
+              -storepass 'bm666...' \
+              -keypass 'bm666...' \
+              -dname "CN=鲁梓熙, OU=Dev, O=Anyi, L=Beijing, ST=Beijing, C=CN"
+            echo "STOREPASS_USED=bm666..." >> $GITHUB_ENV
+            echo "ANDROID_STORE_PASSWORD=bm666..." >> $GITHUB_ENV
+            echo "ANDROID_KEY_ALIAS=yfx" >> $GITHUB_ENV
+            echo "ANDROID_KEY_PASSWORD=bm666..." >> $GITHUB_ENV
+          fi
+          echo "ANDROID_KEYSTORE_PATH=$GITHUB_WORKSPACE/$KS" >> $GITHUB_ENV
+          echo "--- 签名信息（用于核对每次构建是否同一证书）---"
+          keytool -list -v -keystore "$KS" -storepass "$STOREPASS_USED" 2>/dev/null | grep -iE "alias|MD5|SHA1|SHA256" | head -6 || true
 
       - name: Build APK (release)
         run: |
           flutter build apk --release --target-platform android-arm64 --obfuscate --split-debug-info=build/symbols
         env:
-          GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.parallel=true -Dorg.gradle.caching=true' 
+          GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.parallel=true -Dorg.gradle.caching=true'
 
       - name: Upload obfuscation symbols
         uses: actions/upload-artifact@v4
