@@ -1677,16 +1677,29 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     }
 
     // 已登录：一律向服务端确认（服务端是唯一权威，避免本地数据过期被绕过）
-    // ★ 没有有效 id 时（如蓝奏云文件夹里的软件）退回本地判断
+    // ★ 1014 安全修复：原代码 appId<=0 时「两个分支都下载」——
+    //   付费资源只要 id 缺失（如从蓝奏云文件夹分类进入）就能免费下载。
+    //   现在改为：本地判定免费才放行，判定需付费则用名称走服务端兜底校验。
     if (appId <= 0) {
       if (!localNeedPay) {
         runDownloadWithOverlay(() => logic.addDownload(fileName));
-      } else {
-        runDownloadWithOverlay(
-          () => logic.addDownload(fileName),
-        ); // 无 id 无法校验，放行
+        return;
       }
-      return;
+      // 本地判定为付费资源 → 绝不放行，走「按标题查库」的兜底校验
+      final resolvedId = await _resolveAppIdByTitle();
+      if (!mounted) return;
+      if (resolvedId <= 0) {
+        // 服务端也查不到该资源 → 拒绝下载（宁可误拦，不能放行付费资源）
+        _dialog(
+          '无法校验',
+          '该资源需要付费/会员才能下载，但暂时无法确认它的归属。\n请从软件列表或搜索页重新进入后下载。',
+          '知道了',
+          null,
+        );
+        return;
+      }
+      // 用查到的 id 继续走下面正常的服务端校验流程
+      return _onDownloadWithId(resolvedId, fileName, isVipUser);
     }
 
     UnlockStatus st;
@@ -1702,7 +1715,57 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       return;
     }
     if (!mounted) return;
+    await _applyUnlockResult(st, fileName, isVipUser);
+  }
 
+  /// ★ 1014：按标题向服务端查软件 id（无 id 时的付费兜底校验）
+  /// 从搜索页/列表页拿不到 id 的场景（如蓝奏云文件夹），用标题反查库里记录。
+  Future<int> _resolveAppIdByTitle() async {
+    final title = (logic.item?.title ?? '').trim();
+    if (title.isEmpty) return 0;
+    try {
+      final list = await SoftService.instance.fetchApps(
+        keyword: title,
+        force: true,
+      );
+      // 优先完全同名，其次包含关系
+      for (final a in list) {
+        if (a.title.trim() == title && a.id > 0) return a.id;
+      }
+      for (final a in list) {
+        if (a.id > 0 && (a.title.contains(title) || title.contains(a.title))) {
+          return a.id;
+        }
+      }
+    } catch (_) {}
+    return 0;
+  }
+
+  /// ★ 1014：拿到 id 后的统一校验流程（供无 id 兜底分支复用）
+  Future<void> _onDownloadWithId(
+    int appId,
+    String fileName,
+    bool isVipUser,
+  ) async {
+    UnlockStatus st;
+    try {
+      st = await UnlockService.instance.status(appId);
+    } catch (e) {
+      // 兜底分支：服务端不可达时保守拒绝（已判定为付费资源，不能放行）
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      return;
+    }
+    if (!mounted) return;
+    await _applyUnlockResult(st, fileName, isVipUser);
+  }
+
+  /// ★ 1014：把服务端判定结果落到 UI（抽出来便于兜底分支复用）
+  Future<void> _applyUnlockResult(
+    UnlockStatus st,
+    String fileName,
+    bool isVipUser,
+  ) async {
+    if (!mounted) return;
     if (st.canDownload) {
       runDownloadWithOverlay(() => logic.addDownload(fileName));
       return;
