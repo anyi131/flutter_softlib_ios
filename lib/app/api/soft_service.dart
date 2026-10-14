@@ -134,6 +134,9 @@ class SoftService {
   /// 清空缓存（下拉刷新时用）
   static void clearCache() => _cache.clear();
 
+  /// 工具箱配置缓存（由文件末尾的 ToolboxService 扩展维护，这里给类一个同步入口）
+  static Map<String, dynamic>? get toolboxCache => ToolboxService._jzsCache;
+
   /// 检查更新（兼容后端返回 List 或 Map）
   /// 返回：null=已是最新；Map=有新版本
   Future<Map<String, dynamic>?> checkVersion(String currentVersion) async {
