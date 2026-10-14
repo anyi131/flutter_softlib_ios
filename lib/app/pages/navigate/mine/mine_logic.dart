@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -322,12 +323,61 @@ class MineLogic extends GetxController {
   }
 
   /// 加入 QQ 通知群
+  /// 加入 QQ 通知群
+  /// ★ 1014 修复：原实现只复制链接、不跳转（用户反馈「点击是链接已复制」）。
+  ///   现在与首页一致：解析群号 → mqqapi 直达加群界面 → 失败兜底开网页。
   void joinGroup() {
-    final url = _userService.user?.qq.isNotEmpty == true
-        ? 'https://qun.qq.com/'
-        : ApiHost.base;
-    Clipboard.setData(ClipboardData(text: url));
-    toast('链接已复制，可在浏览器打开');
+    final cached = SoftService.instance.cachedConfig;
+    final groupUrl = cached?.feedbackGroup ?? '';
+    if (groupUrl.isEmpty) {
+      ToastUtil.error('暂未配置群链接');
+      return;
+    }
+    // 1) 已是 QQ 协议 → 直接跳
+    if (groupUrl.startsWith('mqqapi://') ||
+        groupUrl.startsWith('tencent://')) {
+      JumpUtil.openUrl(groupUrl);
+      return;
+    }
+    // 2) 从分享链接里解析群号 → 直达加群界面
+    final code = _extractGroupCode(groupUrl);
+    if (code != null && code.isNotEmpty) {
+      JumpUtil.joinQQGroup(code);
+      // 唤起失败（未装 QQ 等）2 秒后兜底用网页打开
+      Future.delayed(const Duration(seconds: 2), () {
+        JumpUtil.openUrl(groupUrl);
+      });
+      return;
+    }
+    // 3) 其他链接 → 网页打开
+    JumpUtil.openUrl(groupUrl);
+  }
+
+  /// 从 QQ 群分享链接里解析群号
+  /// 支持 qun.qq.com/universal-share?...busi_data=base64(...) 与 ?gc=群号
+  String? _extractGroupCode(String url) {
+    try {
+      final uri = Uri.tryParse(url);
+      if (uri == null) return null;
+      // ?gc= 直接给群号
+      final gc = uri.queryParameters['gc'];
+      if (gc != null && gc.isNotEmpty) return gc;
+      // ?groupCode=
+      final gcode = uri.queryParameters['groupCode'];
+      if (gcode != null && gcode.isNotEmpty) return gcode;
+      // busi_data（base64 JSON 里含 groupCode）
+      final busi = uri.queryParameters['busi_data'];
+      if (busi != null && busi.isNotEmpty) {
+        var s = busi.replaceAll('-', '+').replaceAll('_', '/');
+        while (s.length % 4 != 0) {
+          s += '=';
+        }
+        final decoded = utf8.decode(base64.decode(s));
+        final m = RegExp(r'"groupCode"\s*:\s*"?(\d+)"?').firstMatch(decoded);
+        if (m != null) return m.group(1);
+      }
+    } catch (_) {}
+    return null;
   }
 
   void about(BuildContext context) {

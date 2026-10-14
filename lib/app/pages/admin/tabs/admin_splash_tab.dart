@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../../../api/admin_service.dart';
@@ -76,6 +78,9 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   final shareDescCtrl = TextEditingController();
   final shareUrlCtrl = TextEditingController();
   bool cardShopOn = true;
+  /// ★ 1014：卡密商城商品列表（可增删改）
+  /// 每项：{key,name,type(vip|score),value,price,stock,desc}
+  List<Map<String, dynamic>> _cardGoods = [];
   final aboutNameCtrl = TextEditingController();
   // ── 注册邮箱限制 + UI 风格（需求 #1 / #9）──
   final emailDomainsCtrl = TextEditingController();
@@ -208,6 +213,29 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         shareDescCtrl.text = '${cfg['share_desc'] ?? ''}';
         shareUrlCtrl.text = '${cfg['share_url'] ?? ''}';
         cardShopOn = '${cfg['card_shop_on'] ?? 1}' != '0';
+        // ★ 1014：卡密商品配置（JSON 数组）
+        final rawGoods = '${cfg['card_shop'] ?? ''}';
+        _cardGoods = [];
+        if (rawGoods.trim().isNotEmpty) {
+          try {
+            final j = jsonDecode(rawGoods);
+            if (j is List) {
+              _cardGoods = j
+                  .whereType<Map>()
+                  .map((e) => Map<String, dynamic>.from(e))
+                  .toList();
+            }
+          } catch (_) {}
+        }
+        // 没配过 → 给一份默认商品，方便直接改价
+        if (_cardGoods.isEmpty) {
+          _cardGoods = [
+            {'key': 'vip7', 'name': '7天会员卡', 'type': 'vip', 'value': 7, 'price': '5.00', 'stock': -1, 'desc': '兑换后会员 +7 天'},
+            {'key': 'vip30', 'name': '30天会员卡', 'type': 'vip', 'value': 30, 'price': '15.00', 'stock': -1, 'desc': '兑换后会员 +30 天'},
+            {'key': 'vip90', 'name': '90天会员卡', 'type': 'vip', 'value': 90, 'price': '38.00', 'stock': -1, 'desc': '兑换后会员 +90 天'},
+            {'key': 'score100', 'name': '100积分卡', 'type': 'score', 'value': 100, 'price': '5.00', 'stock': -1, 'desc': '兑换后积分 +100'},
+          ];
+        }
         aboutNameCtrl.text = '${cfg['about_name'] ?? '安逸软件汇'}';
         // 注册邮箱限制 + UI 风格（需求 #1 / #9）
         emailDomainsCtrl.text = '${cfg['email_allow_domains'] ?? ''}';
@@ -299,6 +327,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         'share_desc': shareDescCtrl.text.trim(),
         'share_url': shareUrlCtrl.text.trim(),
         'card_shop_on': cardShopOn ? 1 : 0,
+        'card_shop': jsonEncode(_cardGoods),
         'about_name': aboutNameCtrl.text.trim(),
         'about_version': aboutVersionCtrl.text.trim(),
         'about_logo': aboutLogCtrl.text.trim(),
@@ -430,7 +459,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
           ],
         ),
         const SizedBox(height: 12),
-        // ★ 1014 需求5：卡密商城开关
+        // ★ 1014 需求5：卡密商城（开关 + 商品与售价配置）
         _card(
           title: '卡密商城',
           children: [
@@ -444,6 +473,28 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
               '「使用卡密」不受影响，用户仍可兑换别人给的卡密。',
               style: Ty.tiny.copyWith(color: context.t3),
             ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Text('卡密商品与售价',
+                    style: Ty.small.copyWith(
+                        color: context.t1, fontWeight: FontWeight.w800)),
+                const Spacer(),
+                SoftButton(
+                  label: '添加商品',
+                  icon: Icons.add_rounded,
+                  height: 32,
+                  onPressed: _addCardGoods,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (_cardGoods.isEmpty)
+              Text('暂无商品，点「添加商品」配置（用户可用余额购买）',
+                  style: Ty.tiny.copyWith(color: context.t3))
+            else
+              for (int i = 0; i < _cardGoods.length; i++)
+                _cardGoodsRow(i),
           ],
         ),
         const SizedBox(height: 12),
@@ -687,6 +738,134 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         const SizedBox(height: 30),
       ],
     );
+  }
+
+
+  /// ★ 1014：单条卡密商品编辑行（名称 / 面值 / 售价 / 类型）
+  Widget _cardGoodsRow(int i) {
+    final g = _cardGoods[i];
+    final isVip = '${g['type'] ?? 'vip'}' == 'vip';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(11),
+      decoration: BoxDecoration(
+        color: context.isDark ? Colors.white.withAlpha(8) : const Color(0xFFF7F8FA),
+        borderRadius: BorderRadius.circular(R.md),
+        border: Border.all(
+          color: context.isDark
+              ? Colors.white.withAlpha(18)
+              : Colors.black.withAlpha(8),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text('${g['name'] ?? ''}',
+                    style: Ty.small.copyWith(
+                        color: context.t1, fontWeight: FontWeight.w800)),
+              ),
+              Pill(isVip ? '会员卡' : '积分卡',
+                  color: isVip ? C.gold : C.mint, small: true),
+              const SizedBox(width: 6),
+              GestureDetector(
+                onTap: () => setState(() => _cardGoods.removeAt(i)),
+                child: const Icon(Icons.close_rounded,
+                    size: 17, color: C.danger),
+              ),
+            ],
+          ),
+          const SizedBox(height: 9),
+          Row(
+            children: [
+              Expanded(
+                child: _miniField('名称', '${g['name'] ?? ''}', (v) {
+                  setState(() => _cardGoods[i]['name'] = v);
+                }),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _miniField('面值(天/分)', '${g['value'] ?? 0}', (v) {
+                  setState(() =>
+                      _cardGoods[i]['value'] = int.tryParse(v) ?? 0);
+                }, number: true),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _miniField('售价(元)', '${g['price'] ?? ''}', (v) {
+                  setState(() => _cardGoods[i]['price'] = v);
+                }, number: true, decimal: true),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() {
+                    _cardGoods[i]['type'] = isVip ? 'score' : 'vip';
+                  }),
+                  child: Container(
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(R.sm),
+                      border: Border.all(color: C.brand.withAlpha(120)),
+                    ),
+                    child: Text(isVip ? '类型：会员卡' : '类型：积分卡',
+                        style: Ty.tiny.copyWith(
+                            color: C.brand, fontWeight: FontWeight.w800)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 小输入框（失焦时回写）
+  Widget _miniField(
+    String label,
+    String value,
+    ValueChanged<String> onChanged, {
+    bool number = false,
+    bool decimal = false,
+  }) {
+    return TextFormField(
+      initialValue: value,
+      keyboardType: number
+          ? TextInputType.numberWithOptions(decimal: decimal)
+          : TextInputType.text,
+      style: const TextStyle(fontSize: 13),
+      decoration: InputDecoration(
+        labelText: label,
+        isDense: true,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(R.sm)),
+      ),
+      onChanged: onChanged,
+    );
+  }
+
+  /// 添加一条卡密商品
+  void _addCardGoods() {
+    setState(() {
+      _cardGoods.add({
+        'key': 'card_${DateTime.now().millisecondsSinceEpoch}',
+        'name': '新会员卡',
+        'type': 'vip',
+        'value': 30,
+        'price': '10.00',
+        'stock': -1,
+        'desc': '',
+      });
+    });
+    ToastUtil.info('已添加，请填写名称/面值/售价后点底部「保存全部配置」');
   }
 
   Widget _card({required String title, required List<Widget> children}) {

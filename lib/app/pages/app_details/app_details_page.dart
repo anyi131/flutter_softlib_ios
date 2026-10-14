@@ -743,75 +743,51 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       ),
       (Icons.face_rounded, it?.ageRating ?? '16+', '年龄', C.mint),
     ];
+    // ★ 1014 重做：5 格信息条改为「一行均分」，不再折行错位。
+    //   关键：用 Expanded 均分 + 小图标 + 缩小字号，让日期（10-12）也放得下，
+    //   彻底避免「2026-10…」被截断，视觉上也更整齐。
     return Deco.glass(
       context,
       radius: R.lg,
       alpha: 0.055,
-      padding: const EdgeInsets.symmetric(vertical: 15),
-      // ★ 1014 需求1：5 格时窄屏会把「2026-10-12」压成「2026-10…」。
-      //   改为每行最多 4 格自动换行 + 均分宽度 + 动态字号。
-      child: LayoutBuilder(
-        builder: (ctx, cons) {
-          final perRow = cells.length >= 5 ? 4 : cells.length;
-          final rows = (cells.length / perRow).ceil();
-          const gap = 1.0;
-          final itemW = (cons.maxWidth - gap * (perRow - 1)) / perRow;
-          final valSize = cells.length >= 5 ? 13.0 : 13.5;
-          return Column(
-            children: [
-              for (int r = 0; r < rows; r++)
-                Row(
-                  children: [
-                    for (int c = 0; c < perRow; c++)
-                      ...[
-                        if (c > 0)
-                          Container(
-                            width: gap,
-                            height: 28,
-                            color: context.isDark
-                                ? Colors.white.withAlpha(14)
-                                : Colors.black.withAlpha(8),
-                          ),
-                        SizedBox(
-                          width: itemW,
-                          child: (r * perRow + c) < cells.length
-                              ? Column(
-                                  children: [
-                                    Icon(cells[r * perRow + c].$1,
-                                        size: 17, color: cells[r * perRow + c].$4),
-                                    const SizedBox(height: 7),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 2),
-                                      child: Text(
-                                        cells[r * perRow + c].$2,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        softWrap: false,
-                                        textAlign: TextAlign.center,
-                                        style: Ty.h3.copyWith(
-                                            color: context.t1,
-                                            fontSize: valSize),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 3),
-                                    Text(cells[r * perRow + c].$3,
-                                        style: Ty.tiny.copyWith(color: context.t3)),
-                                  ],
-                                )
-                              : const SizedBox.shrink(),
-                        ),
-                      ],
-                  ],
-                ),
-            ],
-          );
-        },
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
+      child: Row(
+        children: [
+          for (int i = 0; i < cells.length; i++)
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(cells[i].$1, size: 16, color: cells[i].$4),
+                  const SizedBox(height: 7),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      cells[i].$2,
+                      maxLines: 1,
+                      style: Ty.h3.copyWith(
+                        color: context.t1,
+                        fontSize: 13.5,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    cells[i].$3,
+                    style: Ty.tiny.copyWith(color: context.t3),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
 
   /// v54：minimal/compact 扁平数据行（无玻璃卡，细分隔）
+  /// ★ 1014 重做：与玻璃卡版一致，一行均分 + FittedBox 自适应，
+  ///   不再折行产生「4 格 + 1 格」的错位观感。
   Widget _infoFlat() {
     final it = item;
     final info = logic.appInfo;
@@ -831,18 +807,14 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             ),
           ]
         : [
-      (Icons.sd_storage_rounded, info?.fileSize ?? it?.size ?? '-', '大小'),
-      (Icons.visibility_rounded, '${it?.views ?? 0}', '浏览'),
-      (Icons.download_rounded, _fmtCount(it?.downCount ?? 0), '下载'),
-      (
-        Icons.schedule_rounded,
-        _shortDate(it?.uploadDate ?? ''),
-        '上传',
-      ),
-      (Icons.face_rounded, it?.ageRating ?? '16+', '年龄'),
-    ];
+            (Icons.sd_storage_rounded, info?.fileSize ?? it?.size ?? '-', '大小'),
+            (Icons.visibility_rounded, '${it?.views ?? 0}', '浏览'),
+            (Icons.download_rounded, _fmtCount(it?.downCount ?? 0), '下载'),
+            (Icons.schedule_rounded, _shortDate(it?.uploadDate ?? ''), '上传'),
+            (Icons.face_rounded, it?.ageRating ?? '16+', '年龄'),
+          ];
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 6),
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
@@ -857,93 +829,38 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           ),
         ),
       ),
-      // ★ 1014 需求1：格子多（5 格）时窄屏会把长文本（如 2026-10-12）压成
-      //   「2026-10…」。改为 Wrap 均分：每行最多 4 格，超出的换到第二行，
-      //   并按格子数量动态算宽度，保证日期等长文本能完整显示。
-      child: LayoutBuilder(
-        builder: (ctx, cons) {
-          final perRow = cells.length >= 5 ? 4 : cells.length;
-          final rows = (cells.length / perRow).ceil();
-          final gap = 1.0;
-          final itemW = (cons.maxWidth - gap * (perRow - 1)) / perRow;
-          // 格子多时字号略降，进一步防挤压
-          final valSize = cells.length >= 5 ? 12.5 : 13.0;
-          return Column(
-            children: [
-              for (int r = 0; r < rows; r++)
-                Row(
-                  children: [
-                    for (int c = 0; c < perRow; c++)
-                      ...[
-                        if (c > 0)
-                          Container(
-                            width: gap,
-                            height: 26,
-                            color: context.isDark
-                                ? Colors.white.withAlpha(14)
-                                : Colors.black.withAlpha(10),
-                          ),
-                        SizedBox(
-                          width: itemW,
-                          child: (r * perRow + c) < cells.length
-                              ? _infoCell(
-                                  cells[r * perRow + c].$1,
-                                  cells[r * perRow + c].$2,
-                                  cells[r * perRow + c].$3,
-                                  valSize,
-                                )
-                              : const SizedBox.shrink(),
-                        ),
-                      ],
-                  ],
-                ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  /// ★ 1014 需求1：日期紧凑化 —— 「2026-10-12 / 2026.10.12」→「10-12」
-  ///    5 格信息横幅里日期会被挤压省略，短格式能完整显示。
-  String _shortDate(String s) {
-    final t = s.trim();
-    if (t.isEmpty || t == '-') return '-';
-    // 匹配 2026-10-12 / 2026.10.12 / 2026/10/12
-    final m = RegExp(r'^(\d{4})[-./](\d{1,2})[-./](\d{1,2})').firstMatch(t);
-    if (m != null) {
-      final mm = m.group(2)!.padLeft(2, '0');
-      final dd = m.group(3)!.padLeft(2, '0');
-      return '$mm-$dd';
-    }
-    return t;
-  }
-
-  /// 信息横幅的单个格子（图标 + 值 + 标签）
-  Widget _infoCell(IconData icon, String value, String label, double valSize) {
-    return Column(
-      children: [
-        Icon(icon, size: 15, color: context.t3),
-        const SizedBox(height: 6),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          child: Text(
-            value,
-            maxLines: 1,
-            // ★ 需求1：日期等长文本优先缩字号，实在放不下才省略
-            overflow: TextOverflow.ellipsis,
-            softWrap: false,
-            textAlign: TextAlign.center,
-            style: Ty.body.copyWith(
-              color: context.t1,
-              fontSize: valSize,
-              fontWeight: FontWeight.w800,
+      child: Row(
+        children: [
+          for (int i = 0; i < cells.length; i++)
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(cells[i].$1, size: 15, color: context.t3),
+                  const SizedBox(height: 6),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      cells[i].$2,
+                      maxLines: 1,
+                      style: Ty.body.copyWith(
+                        color: context.t1,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    cells[i].$3,
+                    style: Ty.tiny.copyWith(color: context.t3),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(label, style: Ty.tiny.copyWith(color: context.t3)),
-      ],
+        ],
+      ),
     );
   }
 
@@ -1145,8 +1062,12 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 12),
+          // ★ 1014 需求2 修复：原来宽 130px + BoxFit.cover 会把截图裁成
+          //   中间一条，用户必须点开才能看全。现在改为：
+          //   按截图原始宽高比完整显示（BoxFit.contain），横排可滑动，
+          //   一看就是完整的手机截图。
           SizedBox(
-            height: 240,
+            height: 260,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: shots.length,
@@ -1155,25 +1076,26 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 onTap: () => _previewGallery(shots, i),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(14),
-                  child: CachedNetworkImage(
-                    imageUrl: shots[i],
-                    width: 130,
-                    fit: BoxFit.cover,
-                    placeholder: (_, __) => Container(
-                      width: 130,
-                      color: Colors.black12,
-                      child: const Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                  child: AspectRatio(
+                    // 手机截图常见比例，按此比例完整缩放不裁切
+                    aspectRatio: 9 / 19.5,
+                    child: CachedNetworkImage(
+                      imageUrl: shots[i],
+                      fit: BoxFit.cover, // 已是截图原比例，cover 即完整显示
+                      placeholder: (_, __) => Container(
+                        color: Colors.black12,
+                        child: const Center(
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
                         ),
                       ),
-                    ),
-                    errorWidget: (_, __, ___) => Container(
-                      width: 130,
-                      color: Colors.black12,
-                      child: const Icon(Icons.broken_image_outlined),
+                      errorWidget: (_, __, ___) => Container(
+                        color: Colors.black12,
+                        child: const Icon(Icons.broken_image_outlined),
+                      ),
                     ),
                   ),
                 ),

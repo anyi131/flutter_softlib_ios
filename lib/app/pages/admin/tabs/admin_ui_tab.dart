@@ -152,7 +152,11 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _inviteTemplate = '${ui['invite_template'] ?? 'classic'}';
         _navTemplate = '${ui['nav_template'] ?? 'classic'}';
         _adminTemplate = '${ui['admin_template'] ?? 'light_card'}';
-        _inviteScoreCtrl.text = '${ui['invite_score'] ?? 50}';
+        // ★ 1014 修复：值实际存在 home.invite_score（保存时写这里），
+        //   但原读取只看顶层 → 读不到就回退默认 50，
+        //   造成「改成 10 保存后又变回 50」的假象（数据其实已存对）。
+        _inviteScoreCtrl.text =
+            '${ui['invite_score'] ?? home['invite_score'] ?? 50}';
         _inviteShareCtrl.text = '${ui['invite_share_text'] ?? ''}';
         // ★ 需求3：支付弹窗文案
         final pn = (ui['pay_notice'] is Map)
@@ -345,7 +349,8 @@ class _AdminUiTabState extends State<AdminUiTab> {
       children: [
         ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(14, 10, 14, 96),
+          // ★ 1014：底部留白加大到 130，避免固定保存按钮遮挡最后一张卡片内容
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 130),
           children: [
             Container(
               margin: const EdgeInsets.only(bottom: 12),
