@@ -59,7 +59,6 @@ jobs:
       # ═══════════════════════════════════════════════════════════════════
 
       - name: Restore auto keystore from cache
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 == '' }}
         id: auto-ks
         uses: actions/cache@v4
         with:
