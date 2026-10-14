@@ -57,6 +57,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   bool payQqpay = true;
   bool payKeySet = false; // 密钥是否已设置（不回显）
   bool payNotifyOn = false; // ★ 支付成功通知管理员
+  bool payNotifyBuyerOn = true; // ★ 1015 购买成功通知买家本人（默认开）
   final payApiCtrl = TextEditingController();
   final payPidCtrl = TextEditingController();
   final payKeyCtrl = TextEditingController();
@@ -215,6 +216,8 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         // ★ 支付成功通知
         payNotifyOn = '${cfg['pay_notify_on']}' == '1';
         payNotifyEmailCtrl.text = '${cfg['pay_notify_email'] ?? ''}';
+        // ★ 1015 购买成功通知买家本人（默认开）
+        payNotifyBuyerOn = '${cfg['pay_notify_buyer_on'] ?? 1}' != '0';
         // 主页右上角两个按钮（对应需求 #14）
         feedGroupOn = '${cfg['feedback_group_on']}' != '0';
         feedUserOn = '${cfg['feedback_user_on']}' != '0';
@@ -317,6 +320,8 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         // ★ 支付成功通知管理员
         'pay_notify_on': payNotifyOn ? 1 : 0,
         'pay_notify_email': payNotifyEmailCtrl.text.trim(),
+        // ★ 1015 购买成功通知买家本人（默认开）
+        'pay_notify_buyer_on': payNotifyBuyerOn ? 1 : 0,
         // QQ 快捷登录（AppKey 留空表示不修改）
         'qq_login_on': qqOn ? 1 : 0,
         'qq_app_id': qqAppIdCtrl.text.trim(),
@@ -376,6 +381,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         // 直接复用 _load 的赋值段太重，这里只回填关键开关/输入框
         payNotifyOn = '${cfg['pay_notify_on'] ?? 0}' == '1';
         payNotifyEmailCtrl.text = '${cfg['pay_notify_email'] ?? ''}';
+        payNotifyBuyerOn = '${cfg['pay_notify_buyer_on'] ?? 1}' != '0';
         feedGroupCtrl.text = '${cfg['feedback_group'] ?? ''}';
         feedGroupOn = '${cfg['feedback_group_on'] ?? 0}' != '0';
         setState(() {});
@@ -727,9 +733,15 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
               (v) => setState(() => payNotifyOn = v),
             ),
             _field('收件邮箱（多个用英文逗号分隔）', payNotifyEmailCtrl),
+            const SizedBox(height: 6),
+            _switch(
+              '同时通知购买者本人（发送到下单会员的注册邮箱）',
+              payNotifyBuyerOn,
+              (v) => setState(() => payNotifyBuyerOn = v),
+            ),
             Text(
               '发件 SMTP 沿用「邮件配置」；发送失败不影响支付到账，'
-              '会记入后台操作日志（pay_notify）',
+              '会记入后台操作日志（pay_notify / pay_buyer）',
               style: Ty.tiny.copyWith(color: context.t3),
             ),
           ],
