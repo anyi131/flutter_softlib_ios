@@ -38,27 +38,57 @@ android {
     }
 
     // ★ 1014 关键修复：release 必须用「固定签名」。
-    //   原来用 signingConfigs.debug —— debug 密钥由 CI 每次随机生成，
-    //   导致每次构建签名都不同 → 新包无法覆盖安装旧包（用户反馈「更新后覆盖不了」）。
-    //   现在：CI 首次构建时生成 keystore 并缓存，之后所有构建复用同一签名。
+    // ═══════════════════════════════════════════════════════════════
+    // ★ 1014 签名配置（由你自己控制，代码里不含任何密码）
+    //
+    // CI 会从 GitHub Secrets 读取以下几项，并生成 keystore 文件：
+    //   ANDROID_KEYSTORE_BASE64  —— 你的 .jks base64 编码（必须）
+    //   ANDROID_STORE_PASSWORD   —— 密钥库密码（必须）
+    //   ANDROID_KEY_ALIAS        —— 别名（必须）
+    //   ANDROID_KEY_PASSWORD     —— 密钥密码（不填则同密钥库密码）
+    //
+    // 本地构建：把 keystore 放到 android/app/keystore/release.jks
+    //          并在 android/keystore.properties 里填密码即可。
+    //
+    // 任一缺失时自动退回 debug 签名，保证构建不中断。
+    // ═══════════════════════════════════════════════════════════════
     signingConfigs {
         create("release") {
-            val ksPath = System.getenv("ANDROID_KEYSTORE_PATH") ?: "${rootDir}/app/keystore/anyi-release.jks"
-            val ksFile = file(ksPath)
-            if (ksFile.exists()) {
-                storeFile = ksFile
-                storePassword = System.getenv("ANDROID_STORE_PASSWORD") ?: "anyi2026softlib"
-                keyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: "anyi"
-                keyPassword = System.getenv("ANDROID_KEY_PASSWORD") ?: "anyi2026softlib"
+            // ① 本地 keystore.properties（优先级最高，方便你自己在本机打包）
+            val propsFile = rootProject.file("keystore.properties")
+            if (propsFile.exists()) {
+                val props = java.util.Properties()
+                propsFile.inputStream().use { props.load(it) }
+                val path = props.getProperty("storeFile")
+                if (path != null) {
+                    val f = file(path)
+                    if (f.exists()) {
+                        storeFile = f
+                        storePassword = props.getProperty("storePassword")
+                        keyAlias = props.getProperty("keyAlias")
+                        keyPassword = props.getProperty("keyPassword")
+                    }
+                }
+            }
+            // ② 环境变量 / CI Secrets
+            val envKs = System.getenv("ANDROID_KEYSTORE_PATH")
+            if (storeFile == null && envKs != null) {
+                val f = file(envKs)
+                if (f.exists()) {
+                    storeFile = f
+                    storePassword = System.getenv("ANDROID_STORE_PASSWORD")
+                    keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                    keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+                        ?: System.getenv("ANDROID_STORE_PASSWORD")
+                }
             }
         }
     }
 
     buildTypes {
         release {
-            // 有固定签名就用它；没有才退回 debug（保证首次构建不失败）
-            signingConfig = if (file("${rootDir}/app/keystore/anyi-release.jks").exists()
-                || System.getenv("ANDROID_KEYSTORE_PATH") != null) {
+            // 有可用签名就用它；否则退回 debug（保证构建不中断）
+            signingConfig = if (signingConfigs.getByName("release").storeFile != null) {
                 signingConfigs.getByName("release")
             } else {
                 signingConfigs.getByName("debug")
