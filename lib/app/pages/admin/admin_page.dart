@@ -16,6 +16,7 @@ import 'tabs/admin_orders_tab.dart';
 import 'tabs/admin_splash_tab.dart';
 import 'tabs/admin_security_tab.dart';
 import 'tabs/admin_ui_tab.dart';
+import 'tabs/admin_tools_tab.dart';
 import 'tabs/admin_users_tab.dart';
 
 /// 软件内嵌管理系统（管理员专用）
@@ -28,7 +29,7 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage>
     with SingleTickerProviderStateMixin {
-  late final TabController _tab = TabController(length: 11, vsync: this);
+  late final TabController _tab = TabController(length: 12, vsync: this);
 
   bool _checking = true;
   bool _isAdmin = false;
@@ -118,6 +119,7 @@ class _AdminPageState extends State<AdminPage>
         AdminSplashTab(),
         AdminSecurityTab(),
         AdminJicunTab(),
+        AdminToolsTab(),
       ],
     );
   }

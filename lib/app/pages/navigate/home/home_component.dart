@@ -238,8 +238,8 @@ class _HomeComponentState extends State<HomeComponent> {
           img = list.first.image ?? '';
           if ((list.first.title ?? '').isNotEmpty) title = list.first.title!;
         } else if (refs != null && refs.isNotEmpty) {
-          img = refs.first.icon ?? '';
-          if ((refs.first.name ?? '').isNotEmpty) title = refs.first.name!;
+          img = refs.first.image ?? '';
+          if ((refs.first.title ?? '').isNotEmpty) title = refs.first.title!;
         }
         return Stack(
           children: [

@@ -458,6 +458,9 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     final id = int.tryParse('${u['id']}') ?? 0;
     final isAdmin = u['is_admin'] == true || u['is_admin'] == 1 || u['is_admin'] == '1';
     final isVip = u['is_vip'] == true || u['is_vip'] == 1 || u['is_vip'] == '1';
+    // ★ 1014_viptime：会员状态（会员 / 永久 / 已过期）一眼可见
+    final vipRaw = int.tryParse('${u['vip_expire'] ?? 0}') ?? 0;
+    final vipForever = u['vip_expire_forever'] == true || vipRaw > 4000000000;
     final banned = u['status'] == 'hidden';
     final sel = _selected.contains(id);
 
@@ -558,7 +561,11 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                   '注册 ${u['createtime_text'] ?? '-'}'),
               if (isVip)
                 _meta(Icons.workspace_premium_outlined,
-                    '会员至 ${u['vip_expire_text']}', color: C.gold),
+                    vipForever ? '永久会员' : '会员至 ${u['vip_expire_text']}',
+                    color: C.gold),
+              if (!isVip && vipRaw > 0)
+                _meta(Icons.history_rounded,
+                    '会员已过期 ${u['vip_expire_text']}', color: C.warning),
               _meta(Icons.login_rounded, '${u['login_time_text'] ?? '-'}'),
             ],
           ),
@@ -1392,75 +1399,293 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     final moneyCtrl = TextEditingController(text: '${u['money'] ?? '0'}');
     final titleCtrl = TextEditingController(text: '${u['title'] ?? ''}');
 
+    // ★ 1014_viptime：会员到期时间（fa_user.vip_expire 存的是时间戳）
+    final vipRaw = int.tryParse('${u['vip_expire'] ?? 0}') ?? 0;
+    bool vipForever = u['vip_expire_forever'] == true || vipRaw > 4000000000;
+    DateTime? vipDt = (vipRaw > 0 && !vipForever)
+        ? DateTime.fromMillisecondsSinceEpoch(vipRaw * 1000)
+        : null;
+    // 没改过就不提交该字段，避免本地时区换算误差被写回真实数据
+    bool vipTouched = false;
+
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.xl)),
-        title: Text('编辑用户：${u['nickname']}',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                    controller: nickCtrl,
-                    decoration: const InputDecoration(labelText: '昵称')),
-                const SizedBox(height: 10),
-                TextField(
-                    controller: emailCtrl,
-                    decoration: const InputDecoration(labelText: '邮箱')),
-                const SizedBox(height: 10),
-                TextField(
-                    controller: qqCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'QQ号')),
-                const SizedBox(height: 10),
-                Row(
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) {
+          final now = DateTime.now();
+          // 叠加基准：还没过期就在原到期日上顺延，已过期 / 非会员从当前时间算
+          DateTime vipBase() =>
+              (vipDt != null && vipDt!.isAfter(now)) ? vipDt! : now;
+
+          Future<void> pickVip() async {
+            final b = vipDt ?? now;
+            final d = await showDatePicker(
+              context: ctx,
+              initialDate: b,
+              firstDate: DateTime(2000, 1, 1),
+              lastDate: DateTime(2099, 12, 31),
+              helpText: '选择会员到期日期',
+              cancelText: '取消',
+              confirmText: '确定',
+              fieldLabelText: '到期日期',
+              fieldHintText: '年 / 月 / 日',
+            );
+            if (d == null || !ctx.mounted) return;
+            final t = await showTimePicker(
+              context: ctx,
+              initialTime: TimeOfDay.fromDateTime(b),
+              helpText: '选择会员到期时间',
+              cancelText: '取消',
+              confirmText: '确定',
+              hourLabelText: '时',
+              minuteLabelText: '分',
+            );
+            if (!ctx.mounted) return;
+            setD(() {
+              // 只选了日期（取消时间选择）时，默认当天 23:59 到期
+              vipDt = DateTime(
+                  d.year, d.month, d.day, t?.hour ?? 23, t?.minute ?? 59);
+              vipForever = false;
+              vipTouched = true;
+            });
+          }
+
+          void setDays(int n) => setD(() {
+                final b = vipBase();
+                vipDt = n >= 365
+                    ? DateTime(b.year + 1, b.month, b.day, b.hour, b.minute)
+                    : b.add(Duration(days: n));
+                vipForever = false;
+                vipTouched = true;
+              });
+
+          void setForever() => setD(() {
+                vipForever = true;
+                vipTouched = true;
+              });
+
+          void clearVip() => setD(() {
+                vipDt = null;
+                vipForever = false;
+                vipTouched = true;
+              });
+
+          final vipActive = vipForever || (vipDt != null && vipDt!.isAfter(now));
+          final stateText = vipForever
+              ? '已是永久会员'
+              : vipDt == null
+                  ? '当前不是会员'
+                  : (vipActive
+                      ? '会员至 ${_fmtVip(vipDt)}'
+                      : '已过期 ${_fmtVip(vipDt)}');
+          final stateColor = vipForever
+              ? C.gold
+              : vipDt == null
+                  ? context.t3
+                  : (vipActive ? C.gold : C.warning);
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(R.xl)),
+            title: Text('编辑用户：${u['nickname']}',
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: TextField(
-                          controller: scoreCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration:
-                              const InputDecoration(labelText: '积分')),
+                    TextField(
+                        controller: nickCtrl,
+                        decoration: const InputDecoration(labelText: '昵称')),
+                    const SizedBox(height: 10),
+                    TextField(
+                        controller: emailCtrl,
+                        decoration: const InputDecoration(labelText: '邮箱')),
+                    const SizedBox(height: 10),
+                    TextField(
+                        controller: qqCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'QQ号')),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                              controller: scoreCtrl,
+                              keyboardType: TextInputType.number,
+                              decoration:
+                                  const InputDecoration(labelText: '积分')),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                              controller: moneyCtrl,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal: true),
+                              decoration:
+                                  const InputDecoration(labelText: '余额')),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                          controller: moneyCtrl,
-                          keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
-                          decoration:
-                              const InputDecoration(labelText: '余额')),
+                    const SizedBox(height: 10),
+                    TextField(
+                        controller: titleCtrl,
+                        maxLength: 12,
+                        decoration: const InputDecoration(
+                            labelText: '自定义称号',
+                            helperText: '显示在广场动态旁，留空则清除')),
+                    // ───── 会员到期时间（可点选日历 + 时间，支持快捷设置） ─────
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(11),
+                      decoration: BoxDecoration(
+                        color: C.gold.withAlpha(context.isDark ? 22 : 16),
+                        borderRadius: BorderRadius.circular(R.md),
+                        border: Border.all(color: C.gold.withAlpha(70)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.workspace_premium_outlined,
+                                  size: 14, color: C.gold),
+                              const SizedBox(width: 5),
+                              const Text('会员到期时间',
+                                  style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: C.gold)),
+                              const Spacer(),
+                              Flexible(
+                                child: Text(stateText,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.right,
+                                    style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: stateColor)),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 9),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: AppPressable(
+                                  onTap: pickVip,
+                                  child: Container(
+                                    height: 40,
+                                    alignment: Alignment.center,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(ctx).cardColor,
+                                      borderRadius:
+                                          BorderRadius.circular(R.sm),
+                                      border: Border.all(
+                                          color: C.gold.withAlpha(110)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.event_rounded,
+                                            size: 15, color: C.gold),
+                                        const SizedBox(width: 6),
+                                        Flexible(
+                                          child: Text(
+                                            vipForever
+                                                ? '永久（2099-12-31）'
+                                                : (vipDt == null
+                                                    ? '点此选择到期日期与时间'
+                                                    : _fmtVip(vipDt)),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: 12.5,
+                                                fontWeight: FontWeight.w700,
+                                                color: vipDt == null &&
+                                                        !vipForever
+                                                    ? context.t3
+                                                    : context.t1),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              AppPressable(
+                                onTap: clearVip,
+                                child: Container(
+                                  height: 40,
+                                  alignment: Alignment.center,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    color: C.danger.withAlpha(
+                                        context.isDark ? 30 : 20),
+                                    borderRadius: BorderRadius.circular(R.sm),
+                                    border: Border.all(
+                                        color: C.danger.withAlpha(90)),
+                                  ),
+                                  child: const Text('清空',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w800,
+                                          color: C.danger)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 9),
+                          Wrap(
+                            spacing: 7,
+                            runSpacing: 7,
+                            children: [
+                              _vipChip('+7 天', () => setDays(7)),
+                              _vipChip('+30 天', () => setDays(30)),
+                              _vipChip('+90 天', () => setDays(90)),
+                              _vipChip('+1 年', () => setDays(365)),
+                              _vipChip('永久', setForever),
+                            ],
+                          ),
+                          const SizedBox(height: 7),
+                          Text(
+                            '「清空」= 取消会员；快捷按钮在未过期的原到期日上顺延，'
+                            '已过期则从当前时间算起；不修改则保持原值。',
+                            style: TextStyle(
+                                fontSize: 10.5,
+                                height: 1.4,
+                                color: context.t3),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                    controller: titleCtrl,
-                    maxLength: 12,
-                    decoration: const InputDecoration(
-                        labelText: '自定义称号',
-                        helperText: '显示在广场动态旁，留空则清除')),
-              ],
+              ),
             ),
-          ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Get.back(result: false),
-              child: const Text('取消')),
-          FilledButton(
-              onPressed: () => Get.back(result: true), child: const Text('保存')),
-        ],
+            actions: [
+              TextButton(
+                  onPressed: () => Get.back(result: false),
+                  child: const Text('取消')),
+              FilledButton(
+                  onPressed: () => Get.back(result: true),
+                  child: const Text('保存')),
+            ],
+          );
+        },
       ),
     );
     if (ok != true) return;
     try {
-      await _svc.saveUser({
+      final data = <String, dynamic>{
         'id': u['id'],
         'nickname': nickCtrl.text.trim(),
         'email': emailCtrl.text.trim(),
@@ -1468,11 +1693,44 @@ class _AdminUsersTabState extends State<AdminUsersTab>
         'score': int.tryParse(scoreCtrl.text) ?? 0,
         'money': moneyCtrl.text.trim(),
         'title': titleCtrl.text.trim(),
-      });
+      };
+      // ★ 1014_viptime：只有真正改过才发 vip_expire，未改保持数据库原值
+      if (vipTouched) {
+        data['vip_expire'] =
+            vipForever ? '2099-12-31 23:59:59' : _fmtVip(vipDt, withSec: true);
+      }
+      await _svc.saveUser(data);
       ToastUtil.success('保存成功');
       _load();
     } catch (e) {
       ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
     }
   }
+
+  /// 会员到期时间格式化（withSec=true 时带秒，用于提交给服务端）
+  String _fmtVip(DateTime? dt, {bool withSec = false}) {
+    if (dt == null) return '';
+    String p(int n) => n.toString().padLeft(2, '0');
+    final s =
+        '${dt.year}-${p(dt.month)}-${p(dt.day)} ${p(dt.hour)}:${p(dt.minute)}';
+    return withSec ? '$s:${p(dt.second)}' : s;
+  }
+
+  /// 会员到期时间快捷按钮（金色胶囊）
+  Widget _vipChip(String label, VoidCallback onTap) => AppPressable(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            color: C.gold.withAlpha(context.isDark ? 30 : 20),
+            borderRadius: BorderRadius.circular(R.full),
+            border: Border.all(color: C.gold.withAlpha(90)),
+          ),
+          child: Text(label,
+              style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w800,
+                  color: C.gold)),
+        ),
+      );
 }

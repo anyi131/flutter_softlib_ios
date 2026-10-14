@@ -727,6 +727,106 @@ class _UpdateCardState extends State<_UpdateCard> {
   /// 模板② minimal —— 极简竖条
   /// 骨架：零装饰（无头图/无渐变头/无阴影），左竖条 + 时间副标 + 纯文字 + 深色实心主按钮
   Widget _tplMinimal() {
+    final isDark = context.isDark;
+    return AppScaleIn(
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        width: 320,
+        padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
+        decoration: BoxDecoration(
+          color: isDark ? C.bg2 : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 左竖条 + 标题（无头图、无阴影）
+            Row(
+              children: [
+                Container(
+                  width: 3,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: C.brand,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '发现新版本 v${widget.version}',
+                    style: TextStyle(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w900,
+                      color: isDark ? C.t1 : C.lt1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.only(left: 13),
+              child: Text(
+                '${_today()} · 约 ${(widget.size / 1048576).toStringAsFixed(1)} MB',
+                style: Ty.tiny.copyWith(color: isDark ? C.t3 : C.lt3),
+              ),
+            ),
+            const SizedBox(height: 6),
+            _tplBody(isDark),
+            const SizedBox(height: 12),
+            // 纯文字按钮行：次要=文字链，主=深色实心（非渐变）
+            Row(
+              children: [
+                if (widget.forceUpdate != true)
+                  AppPressable(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 12,
+                      ),
+                      child: Text(
+                        '稍后',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? C.t3 : C.lt3,
+                        ),
+                      ),
+                    ),
+                  ),
+                const Spacer(),
+                AppPressable(
+                  onTap: _start,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white : C.lt1,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '立即更新',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? C.bg0 : Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 模板③ neon —— 暗夜霓虹
   /// 骨架：深底 + 霓虹描边 + 顶部状态行 + 发光进度条 + 等宽数字
   Widget _tplNeon() {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../design/adaptive.dart';
+import '../../design/app_anim.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 

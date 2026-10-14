@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../api/toolbox_service.dart';
-import '../../../design/adaptive.dart';
-import '../../../design/kit.dart';
-import '../../../design/ui.dart';
-import '../../../utils/jump_util.dart';
-import '../../../utils/toast_util.dart';
-import '../../../widgets/tab_bottom_pad.dart';
+import '../../api/toolbox_service.dart';
+import '../../design/adaptive.dart';
+import '../../design/kit.dart';
+import '../../design/ui.dart';
+import '../../utils/jump_util.dart';
+import '../../utils/toast_util.dart';
+import '../../widgets/tab_bottom_pad.dart';
 import 'tool_kit.dart';
 import 'tool_router.dart';
 

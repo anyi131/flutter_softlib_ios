@@ -339,7 +339,7 @@ class _MaintainPageState extends State<MaintainPage>
                         FractionallySizedBox(
                           widthFactor: 0.72,
                           child: Container(
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [C.brand, C.brandBright],
                               ),

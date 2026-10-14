@@ -30,6 +30,26 @@ class AuthScaffold extends StatelessWidget {
   });
 
   @override
+  /// ★ v3.3.4：auth_template 6 款**骨架级**模板
+  ///   classic  经典居中     —— 顶部返回 + 居中标题 + 玻璃卡表单
+  ///   split    上下分栏     —— 上半渐变固定 + 下半独立滚动
+  ///   sheet    底部抽屉     —— 渐变铺满 + 白色圆角 sheet + 拖拽手柄
+  ///   banner   通栏顶栏     —— 顶部通栏渐变色带 + 白底正文
+  ///   minimal  极简线性     —— 无卡片，下划线输入 + 纯文字
+  ///   floating 悬浮胶囊     —— 浮动圆形返回 + 胶囊输入
+  Widget build(BuildContext context) {
+    final tpl =
+        SoftService.instance.cachedConfig?.uiConfig.authTemplate ?? 'classic';
+    return switch (tpl) {
+      'split' => _buildSplit(context),
+      'sheet' => _buildSheet(context),
+      'banner' => _buildBanner(context),
+      'minimal' => _buildMinimal(context),
+      'floating' => _buildFloating(context),
+      _ => _buildClassic(context),
+    };
+  }
+
   Widget _backBtn(BuildContext context, {Color? fg}) {
     if (!showBack) return const SizedBox(width: 38, height: 38);
     return GestureDetector(

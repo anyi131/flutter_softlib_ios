@@ -79,6 +79,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
     (Icons.settings_rounded, '配置'),
     (Icons.security_rounded, '安全'),
     (Icons.download_rounded, '解析'),
+    (Icons.widgets_rounded, '工具'),
   ];
 
   @override
