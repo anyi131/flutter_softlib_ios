@@ -903,50 +903,6 @@ class _UpdateCardState extends State<_UpdateCard> {
     );
   }
 
-    final isDark = context.isDark;
-    return AppScaleIn(
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
-        decoration: BoxDecoration(
-          color: isDark ? C.bg2 : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    gradient: Deco.brandGradient,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  '发现新版本 v${widget.version}',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                    color: isDark ? C.t1 : C.lt1,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _tplBody(isDark),
-            const SizedBox(height: 14),
-            _actionRow(isDark),
-          ],
-        ),
-      ),
-    );
-  }
-
   /// 正文滚动区（各模板共用，替代旧的 _tplBody 命名）
   /// 模板④ ticket —— 更新券
   /// 骨架：票券打孔（两侧半圆缺口）+ 虚线撕口 + 三格信息栏 + 底部圆角主按钮
