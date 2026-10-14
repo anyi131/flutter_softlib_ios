@@ -37,9 +37,32 @@ android {
         }
     }
 
+    // ★ 1014 关键修复：release 必须用「固定签名」。
+    //   原来用 signingConfigs.debug —— debug 密钥由 CI 每次随机生成，
+    //   导致每次构建签名都不同 → 新包无法覆盖安装旧包（用户反馈「更新后覆盖不了」）。
+    //   现在：CI 首次构建时生成 keystore 并缓存，之后所有构建复用同一签名。
+    signingConfigs {
+        create("release") {
+            val ksPath = System.getenv("ANDROID_KEYSTORE_PATH") ?: "${rootDir}/app/keystore/anyi-release.jks"
+            val ksFile = file(ksPath)
+            if (ksFile.exists()) {
+                storeFile = ksFile
+                storePassword = System.getenv("ANDROID_STORE_PASSWORD") ?: "anyi2026softlib"
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: "anyi"
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD") ?: "anyi2026softlib"
+            }
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            // 有固定签名就用它；没有才退回 debug（保证首次构建不失败）
+            signingConfig = if (file("${rootDir}/app/keystore/anyi-release.jks").exists()
+                || System.getenv("ANDROID_KEYSTORE_PATH") != null) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             // 加固:R8 代码混淆 + 资源裁剪
             isMinifyEnabled = true
             isShrinkResources = true
