@@ -1255,7 +1255,10 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isVipItem = item?.isVipItem ?? false;
     final loggedIn = UserService.instance.isLoggedIn;
-    final isVipUser = UserService.instance.user?.isVip == true;
+    // ★ 1014 修复：管理员同样可免费下载。
+    //   且改用 canFreeDownload（会员 或 管理员，并按 vip_expire 时间戳兜底），
+    //   避免「字段格式差异」或「本地缓存过期」导致会员被误判。
+    final isVipUser = UserService.instance.user?.canFreeDownload == true;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),

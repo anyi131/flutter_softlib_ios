@@ -101,6 +101,20 @@ class UserInfo {
     return id > 0 ? id.toString() : '';
   }
 
+  /// ★ 1014：按到期时间判断是否有效会员（比 is_vip 字段更可靠，
+  ///   即使服务端某天不返回 is_vip，也能凭 vip_expire 正确识别）。
+  bool get isVipActive {
+    if (isVip) return true;
+    final t = int.tryParse(vipExpire.replaceAll(RegExp(r'[^0-9]'), ''));
+    if (t == null || t <= 0) return false;
+    // 兼容秒/毫秒两种时间戳
+    final sec = t > 100000000000 ? (t ~/ 1000) : t;
+    return sec > DateTime.now().millisecondsSinceEpoch ~/ 1000;
+  }
+
+  /// ★ 1014：是否有「免费下载付费资源」的权限（会员 或 管理员）
+  bool get canFreeDownload => isVipActive || isAdmin;
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'username': username,

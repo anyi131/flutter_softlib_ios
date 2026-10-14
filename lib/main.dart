@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:dio/dio.dart';
@@ -65,27 +64,10 @@ void _logError(String tag, Object error, StackTrace? stack) {
   if (stack != null) debugPrint(stack.toString());
 }
 
-/// flutter_downloader 后台状态回调
-///
-/// ★ iOS 专用：iOS 后台会话通过该回调把下载状态回传给 Dart 侧
-///   （App 被系统唤醒时也能收到）。Android 不使用，行为不变。
-///
-/// 注意签名必须与插件 `DownloadCallback = void Function(String id, int status, int progress)`
-/// 一致：**status 是 int（插件内部状态码），不是 DownloadTaskStatus 枚举**。
-@pragma('vm:entry-point')
-void flutterDownloaderCallback(String id, int status, int progress) {
-  debugPrint('[Softlib][downloader] $id -> $status $progress%');
-}
-
 /// 初始化应用服务
 Future<void> _initializeServices() async {
   // 初始化下载器
   await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
-  // ★ iOS：注册后台下载回调（iOS 需要用回调接收后台/被唤醒时的下载状态；
-  //   Android 侧保持原有行为不变，不做改动）
-  if (Platform.isIOS) {
-    await FlutterDownloader.registerCallback(flutterDownloaderCallback);
-  }
   // 设备信息（供后台操作日志记录型号/系统版本，需求 #10）
   await DeviceInfo.init();
   // 初始化数据库
@@ -94,6 +76,16 @@ Future<void> _initializeServices() async {
   Get.lazyPut(() => HttpApi(_createDioInstance()));
   // 恢复登录态（读取本地 token + 用户资料）
   await UserService.instance.restore();
+  // ★ 1014 修复：恢复后立刻向服务端拉一次最新资料。
+  //   本地缓存的会员/管理员状态可能已过期或格式不一致，
+  //   会造成「明明是会员/管理员，下载却要付费」的误判。
+  try {
+    if (UserService.instance.isLoggedIn) {
+      await UserService.instance.refreshProfile();
+    }
+  } catch (_) {
+    // 刷新失败不影响启动，后续页面仍会用缓存
+  }
   // 恢复主题设置
   await ThemeController.instance.restore();
   // 界面样式（软件列表风格，需求 #9）
