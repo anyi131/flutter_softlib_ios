@@ -69,12 +69,18 @@ class UserInfo {
       bio: s('bio'),
       score: int.tryParse(s('score')) ?? 0,
       money: s('money'),
-      isVip: json['is_vip'] == true || s('is_vip') == 'true',
+      // ★ 1014 修复：会员判断必须兼容数字 1 / 字符串 "1" / 布尔 true，
+      //   否则服务端返回 1 时会被误判成「非会员」，
+      //   导致「我的」页显示 VIP 但下载却要求付费（用户反馈的严重逻辑矛盾）。
+      isVip: json['is_vip'] == true ||
+          json['is_vip'] == 1 ||
+          s('is_vip') == 'true' ||
+          s('is_vip') == '1',
       vipExpire: s('vip_expire'),
       inviteCode: s('invite_code'),
       jointime: s('jointime'),
-      isAdmin:
-          json['is_admin'] == true ||
+      isAdmin: json['is_admin'] == true ||
+          json['is_admin'] == 1 ||
           s('is_admin') == 'true' ||
           s('is_admin') == '1',
       title: s('title'),

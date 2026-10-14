@@ -456,8 +456,8 @@ class _AdminUsersTabState extends State<AdminUsersTab>
   // ───────── 用户卡片 ─────────
   Widget _userCard(Map u) {
     final id = int.tryParse('${u['id']}') ?? 0;
-    final isAdmin = u['is_admin'] == true;
-    final isVip = u['is_vip'] == true;
+    final isAdmin = u['is_admin'] == true || u['is_admin'] == 1 || u['is_admin'] == '1';
+    final isVip = u['is_vip'] == true || u['is_vip'] == 1 || u['is_vip'] == '1';
     final banned = u['status'] == 'hidden';
     final sel = _selected.contains(id);
 
@@ -1301,11 +1301,13 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                 _detailRow('称号', '${u['title'] ?? '-'}'),
                 _detailRow('积分', '${u['score'] ?? 0}'),
                 _detailRow('余额', '¥${u['money'] ?? '0.00'}'),
-                _detailRow('身份', u['is_admin'] == true ? '管理员' : '普通用户'),
+                _detailRow('身份', (u['is_admin'] == true || u['is_admin'] == 1 || u['is_admin'] == '1') ? '管理员' : '普通用户'),
                 _detailRow('状态',
                     u['status'] == 'hidden' ? '已禁用' : '正常'),
                 _detailRow('会员',
-                    u['is_vip'] == true
+                    (u['is_vip'] == true ||
+                            u['is_vip'] == 1 ||
+                            u['is_vip'] == '1')
                         ? 'VIP 至 ${u['vip_expire_text']}'
                         : '非会员'),
                 _detailRow('注册时间', '${u['createtime_text'] ?? '-'}'),
