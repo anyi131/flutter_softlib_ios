@@ -54,26 +54,14 @@ android {
     // ═══════════════════════════════════════════════════════════════
     signingConfigs {
         create("release") {
-            // ① 本地 keystore.properties（优先级最高，方便你自己在本机打包）
-            val propsFile = rootProject.file("keystore.properties")
-            if (propsFile.exists()) {
-                val props = java.util.Properties()
-                propsFile.inputStream().use { props.load(it) }
-                val path = props.getProperty("storeFile")
-                if (path != null) {
-                    val f = file(path)
-                    if (f.exists()) {
-                        storeFile = f
-                        storePassword = props.getProperty("storePassword")
-                        keyAlias = props.getProperty("keyAlias")
-                        keyPassword = props.getProperty("keyPassword")
-                    }
-                }
-            }
-            // ② 环境变量 / CI Secrets
-            val envKs = System.getenv("ANDROID_KEYSTORE_PATH")
-            if (storeFile == null && envKs != null) {
-                val f = file(envKs)
+            // ★ 1014：签名全部通过环境变量传入（CI Secrets / 本地导出），
+            //   代码里不含任何密码。
+            //   CI 会先准备好 keystore 并设置：
+            //     ANDROID_KEYSTORE_PATH / ANDROID_STORE_PASSWORD
+            //     ANDROID_KEY_ALIAS     / ANDROID_KEY_PASSWORD
+            val ksPath = System.getenv("ANDROID_KEYSTORE_PATH")
+            if (ksPath != null) {
+                val f = file(ksPath)
                 if (f.exists()) {
                     storeFile = f
                     storePassword = System.getenv("ANDROID_STORE_PASSWORD")
