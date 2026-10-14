@@ -152,7 +152,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
   }
 
   /// 打开方式选项：(图标, 名称, 颜色, 说明, 值)
-  List<(IconData, String, Color, String, String)> _urlTypeOptions() => const [
+  List<(IconData, String, Color, String, String)> _urlTypeOptions() => [
         (Icons.android_rounded, '安装包下载', C.brand, '常规 apk 下载安装流程', 'apk'),
         (Icons.open_in_new_rounded, '跳转浏览器', C.cyan, '用系统浏览器打开链接', 'browser'),
         (Icons.language_rounded, '内置浏览器', C.violet, 'App 内嵌网页打开', 'webview'),
