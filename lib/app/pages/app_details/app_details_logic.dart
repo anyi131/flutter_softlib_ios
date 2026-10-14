@@ -539,7 +539,19 @@ class AppDetailsLogic extends GetxController {
   ///
   /// ★ 需求 #2：直链解析失败时，不只是 Toast 提示，
   ///   要弹窗让用户选择「用浏览器打开原链接下载」。
+  /// ★ 1014 安全：付费校验是否已通过。
+  /// 只有 app_details_page._onDownload 完成服务端校验后才会置 true；
+  /// 其他路径（重试等）必须依赖它，避免绕过付费墙。
+  bool unlockVerified = false;
+
   Future<void> addDownload(String fileName, [String? lzyUrl]) async {
+    // ★ 1014 安全兜底：付费资源未经服务端确认，一律拒绝下载。
+    //   原来 addDownload 是「裸下载器」，任何调用点都能免检下载。
+    if ((item?.needUnlock ?? false) && !unlockVerified) {
+      ResolveOverlay.dismiss();
+      ToastUtil.error('该资源需要付费/开通会员后下载');
+      return;
+    }
     // v52 #3：解析阶段显示加载浮层，任务创建成功/失败后关闭
     ResolveOverlay.show(stage: ResolveStages.resolving);
     if (await Permission.notification.isDenied) {
@@ -625,8 +637,10 @@ class AppDetailsLogic extends GetxController {
     ResolveOverlay.stage(ResolveStages.starting);
     ResolveOverlay.dismiss();
     // v52f #3：上报「下载软件」操作日志（服务端不感知客户端下载）
+    // ★ 1014：带上 appId，服务端按 id 精确校验付费权限
     UserService.instance.downloadLog(
       appInfo?.fileName ?? fileName.replaceAll(RegExp(r'_\d+\.apk$'), ''),
+      appId: appIdInt,
     );
     // 记录任务（失败也不能中断后续流程，否则进度条不会出现）
     try {

@@ -245,12 +245,18 @@ class UserService {
   }
 
   /// v52f #3：下载成功上报操作日志（fire-and-forget，失败静默）
-  Future<void> downloadLog(String appName) async {
+  /// ★ 1014 安全：优先带 appId —— 服务端按 id 精确校验付费权限；
+  ///   仅靠名称反查会被同名免费资源绕过。
+  Future<void> downloadLog(String appName, {int appId = 0}) async {
     if (_token.isEmpty) return;
     try {
       await _dio.post(
         '/api/softlib/user/download_log',
-        data: {'token': _token, 'name': appName},
+        data: {
+          'token': _token,
+          'name': appName,
+          if (appId > 0) 'app_id': appId,
+        },
       );
     } catch (_) {}
   }

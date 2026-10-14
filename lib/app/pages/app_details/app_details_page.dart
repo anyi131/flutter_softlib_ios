@@ -1669,6 +1669,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     // 未登录：只有「确认免费」才允许直接下载
     if (!loggedIn) {
       if (!localNeedPay) {
+        logic.unlockVerified = true; // 免费资源
         runDownloadWithOverlay(() => logic.addDownload(fileName));
       } else {
         _dialog('需要登录', '该资源为付费资源，请先登录账号', '去登录', Routes.login);
@@ -1682,6 +1683,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     //   现在改为：本地判定免费才放行，判定需付费则用名称走服务端兜底校验。
     if (appId <= 0) {
       if (!localNeedPay) {
+        logic.unlockVerified = true; // 免费资源
         runDownloadWithOverlay(() => logic.addDownload(fileName));
         return;
       }
@@ -1708,6 +1710,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     } catch (e) {
       // 服务端不可达时：本地判定免费就放行，否则提示（避免网络抖动卡死下载）
       if (!localNeedPay) {
+        logic.unlockVerified = true; // 免费资源
         runDownloadWithOverlay(() => logic.addDownload(fileName));
       } else {
         ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
@@ -1767,6 +1770,8 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   ) async {
     if (!mounted) return;
     if (st.canDownload) {
+      // ★ 1014：服务端已确认可下载 → 放行标志交给 addDownload
+      logic.unlockVerified = true;
       runDownloadWithOverlay(() => logic.addDownload(fileName));
       return;
     }
@@ -1902,6 +1907,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       await UserService.instance.refreshProfile();
       if (!mounted) return;
       ToastUtil.success('购买成功，开始下载');
+      logic.unlockVerified = true; // 已支付
       runDownloadWithOverlay(() => logic.addDownload(fileName));
     } catch (e) {
       ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
