@@ -1080,8 +1080,12 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           //   中间一条，用户必须点开才能看全。现在改为：
           //   按截图原始宽高比完整显示（BoxFit.contain），横排可滑动，
           //   一看就是完整的手机截图。
+          // ★ 1015 修复：不再写死 9/19.5 竖版比例 + BoxFit.cover。
+          //   采集来的「截图」很多是横版拼图（例：1920×1280，3 图横拼），
+          //   写死竖比例再 cover，只会裁出中间一条竖缝 → 用户看到「显示不全」。
+          //   现在：按图片原始比例完整显示（contain），宽度自适应，横向可滑。
           SizedBox(
-            height: 260,
+            height: 230,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: shots.length,
@@ -1090,25 +1094,34 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 onTap: () => _previewGallery(shots, i),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(14),
-                  child: AspectRatio(
-                    // 手机截图常见比例，按此比例完整缩放不裁切
-                    aspectRatio: 9 / 19.5,
-                    child: CachedNetworkImage(
-                      imageUrl: shots[i],
-                      fit: BoxFit.cover, // 已是截图原比例，cover 即完整显示
-                      placeholder: (_, __) => Container(
-                        color: Colors.black12,
-                        child: const Center(
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                  child: Container(
+                    color: isDark
+                        ? Colors.white.withAlpha(18)
+                        : const Color(0xFFF0F1F5),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.88,
+                      ),
+                      child: CachedNetworkImage(
+                        imageUrl: shots[i],
+                        height: 230,
+                        fit: BoxFit.contain, // 按原始比例完整显示，绝不裁切
+                        placeholder: (_, __) => const SizedBox(
+                          width: 150,
+                          height: 230,
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
                           ),
                         ),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        color: Colors.black12,
-                        child: const Icon(Icons.broken_image_outlined),
+                        errorWidget: (_, __, ___) => const SizedBox(
+                          width: 150,
+                          height: 230,
+                          child: Icon(Icons.broken_image_outlined),
+                        ),
                       ),
                     ),
                   ),
