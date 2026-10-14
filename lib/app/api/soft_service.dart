@@ -209,13 +209,35 @@ class SoftService {
   static String lastParseError = '';
 
   /// 后端解析兜底（★ 1014：带 token + 票据，服务端强制校验）
+  /// 支持两种地址：
+  ///   ① 单文件分享页（形如 /iXXXX）→ 走 lzy_file_parse
+  ///   ② 文件夹分享页（形如 /bXXXX）→ 走 lzydirparse 取首个 apk
+  /// ★ App 更新包常配成文件夹地址，原实现只调单文件解析 → 更新永远失败。
   Future<String?> resolveLzyByServer(String lzyUrl, {String? ticket}) async {
+    final token = UserService.instance.token;
+    if (token.isEmpty) {
+      lastParseError = '请先登录后再下载';
+      return null;
+    }
+
+    // ① 先按单文件解析
+    final single = await _parseSingle(lzyUrl, token, ticket);
+    if (single != null && single.isNotEmpty) return single;
+
+    // ② 单文件失败 → 按文件夹解析，取里面第一个安装包
+    final dirFile = await _parseFolder(lzyUrl, token, ticket);
+    if (dirFile != null && dirFile.isNotEmpty) return dirFile;
+
+    return null;
+  }
+
+  /// 单文件解析
+  Future<String?> _parseSingle(
+    String lzyUrl,
+    String token,
+    String? ticket,
+  ) async {
     try {
-      final token = UserService.instance.token;
-      if (token.isEmpty) {
-        lastParseError = '请先登录后再下载';
-        return null;
-      }
       final resp = await _dio.post(
         '/api/softlib/lzy_file_parse',
         data: {
@@ -233,7 +255,62 @@ class SoftService {
         lastParseError = data['msg'] as String;
       }
     } catch (e) {
-      debugPrint('[Softlib] $e');
+      debugPrint('[Softlib] single: $e');
+    }
+    return null;
+  }
+
+  /// 文件夹解析：取里面第一个 .apk 的直链
+  Future<String?> _parseFolder(
+    String lzyUrl,
+    String token,
+    String? ticket,
+  ) async {
+    try {
+      final resp = await _dio.post(
+        '/api/softlib/lzydirparse',
+        data: {
+          'token': token,
+          'url': lzyUrl,
+          'pwd': 'password',
+          if (ticket != null) 'ticket': ticket,
+        },
+        options: Options(receiveTimeout: const Duration(seconds: 50)),
+      );
+      final data = resp.data;
+      if (data is Map && data['code'] == 1 && data['data'] is List) {
+        final list = (data['data'] as List).whereType<Map>().toList();
+        if (list.isEmpty) return null;
+        // 优先取 apk/ipa，其次取第一个文件
+        Map? pick;
+        for (final f in list) {
+          final nm = '${f['name_all'] ?? f['name'] ?? ''}'.toLowerCase();
+          if (nm.endsWith('.apk') || nm.endsWith('.ipa')) {
+            pick = f;
+            break;
+          }
+        }
+        pick ??= list.firstWhere(
+          (f) => '${f['is_dir'] ?? 0}' != '1',
+          orElse: () => list.first,
+        );
+        final down = '${pick['down'] ?? ''}';
+        if (down.isEmpty) return null;
+        // ★ 票据与 url 绑定且一次性 → 必须为这个文件页「重新领票」再解析
+        final t2 = await _applyParseTicket(down);
+        if (t2 == null) return null;
+        // 先走自建接口（解析能力更强），再走主站
+        final viaApi = await resolveLzyByApi(down, ticket: t2);
+        if (viaApi != null && viaApi.isNotEmpty) return viaApi;
+        final t3 = await _applyParseTicket(down);
+        if (t3 == null) return null;
+        return await _parseSingle(down, token, t3);
+      }
+      if (data is Map && data['msg'] is String) {
+        lastParseError = data['msg'] as String;
+      }
+    } catch (e) {
+      debugPrint('[Softlib] folder: $e');
     }
     return null;
   }
