@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import '../../api/toolbox_service.dart';
 import '../../design/adaptive.dart';
+import '../../design/app_anim.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/jump_util.dart';

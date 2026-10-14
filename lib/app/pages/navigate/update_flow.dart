@@ -769,7 +769,7 @@ class _UpdateCardState extends State<_UpdateCard> {
             Padding(
               padding: const EdgeInsets.only(left: 13),
               child: Text(
-                '${_today()} · 约 ${(widget.size / 1048576).toStringAsFixed(1)} MB',
+                '${_today()}${_total > 0 ? ' · 约 ${_sizeText(_total)}' : ''}',
                 style: Ty.tiny.copyWith(color: isDark ? C.t3 : C.lt3),
               ),
             ),
@@ -779,7 +779,7 @@ class _UpdateCardState extends State<_UpdateCard> {
             // 纯文字按钮行：次要=文字链，主=深色实心（非渐变）
             Row(
               children: [
-                if (widget.forceUpdate != true)
+                if (!widget.forced)
                   AppPressable(
                     onTap: () => Navigator.of(context).pop(),
                     child: Padding(

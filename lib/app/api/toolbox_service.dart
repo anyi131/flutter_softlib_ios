@@ -35,7 +35,7 @@ class ToolboxService {
       _ss.toolboxConfig(force: force);
 
   /// 本地缓存的工具目录（未拉取过返回 null）
-  Map<String, dynamic>? get cachedConfig => _ss.cachedToolboxConfig;
+  Map<String, dynamic>? get cachedConfig => SoftService.cachedToolboxConfig;
 
   /// 工具搜索
   Future<List<Map<String, dynamic>>> search(String kw) =>
