@@ -13,8 +13,10 @@ import 'package:flutter_softlib/app/pages/splash/splash_page.dart';
 import 'package:flutter_softlib/app/pages/login/register_page.dart';
 import 'package:flutter_softlib/app/pages/login/reset_page.dart';
 import 'package:flutter_softlib/app/pages/vip_center/pay_web_page.dart';
+import 'package:flutter_softlib/app/pages/app_details/url_webview_page.dart';
 import 'package:flutter_softlib/app/pages/vip_center/vip_page.dart';
 import 'package:flutter_softlib/app/pages/wallet/recharge_page.dart';
+import 'package:flutter_softlib/app/pages/wallet/card_shop_page.dart';
 import 'package:flutter_softlib/app/pages/appinfo/about_page.dart';
 import 'package:flutter_softlib/app/pages/appinfo/agreement_page.dart';
 import 'package:flutter_softlib/app/pages/navigate/mine/invite_page.dart';
@@ -86,6 +88,8 @@ class AppPages {
       page: () => const VipPage(),
     ),
     GetPage(name: _Paths.payWeb, page: () => const PayWebPage()),
+    GetPage(name: Routes.urlWebview, page: () => const UrlWebviewPage()),
+    GetPage(name: Routes.cardShop, page: () => const CardShopPage()),
     GetPage(name: _Paths.postDetail, page: () => const PostDetailPage()),
     GetPage(name: _Paths.admin, page: () => const AdminPage()),
     GetPage(name: _Paths.login, page: () => const LoginPage()),

@@ -972,19 +972,37 @@ class MineComponent extends StatelessWidget {
           C.amber,
           () => logic.sponsorRank(),
         ),
-      _S(
-        '使用卡密',
-        Icons.confirmation_number_rounded,
-        C.rose,
-        () => logic.redeem(),
-      ),
+      if (_uiCfg.featureCardRedeem)
+        _S(
+          '使用卡密',
+          Icons.confirmation_number_rounded,
+          C.rose,
+          () => logic.redeem(),
+        ),
+      // ★ 1014 需求5：卡密商城（原来只能使用卡密，没地方买）
+      if (_uiCfg.featureCardShop)
+        _S(
+          '卡密商城',
+          Icons.storefront_rounded,
+          C.gold,
+          () => Get.toNamed(Routes.cardShop),
+        ),
       _S(
         '下载管理',
         Icons.download_rounded,
         C.mint,
         () => Get.toNamed(Routes.appDownload),
       ),
-      _S('QQ通知群', Icons.forum_rounded, C.cyan, () => logic.joinGroup()),
+      if (_uiCfg.featureQqGroup)
+        _S('QQ通知群', Icons.forum_rounded, C.cyan, () => logic.joinGroup()),
+      // ★ 1014 需求3：分享本软件（分享文案后台可配）
+      if (_uiCfg.featureShareApp)
+        _S(
+          '分享软件',
+          Icons.share_rounded,
+          C.brandBright,
+          () => logic.shareApp(),
+        ),
       if (_uiCfg.featureExchange)
         _S(
           '积分兑换',
@@ -1010,7 +1028,8 @@ class MineComponent extends StatelessWidget {
         C.pink,
         () => logic.showAgreementPage('privacy'),
       ),
-      _S('替换开屏', Icons.image_rounded, C.mint, () => logic.replaceSplash()),
+      if (_uiCfg.featureReplaceSplash)
+        _S('替换开屏', Icons.image_rounded, C.mint, () => logic.replaceSplash()),
       if (logic.isAdmin)
         _S(
           '后台管理',

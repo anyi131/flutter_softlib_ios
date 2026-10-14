@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../api/api_host.dart';
@@ -986,6 +987,33 @@ class MineLogic extends GetxController {
       ToastUtil.success('开屏图已更新，下次启动生效');
     } catch (e) {
       ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  /// ★ 1014 需求3：分享本软件（文案后台可配，没配则用关于信息兜底）
+  Future<void> shareApp() async {
+    try {
+      final cfg = SoftService.instance.cachedConfig ??
+          await SoftService.instance.fetchConfig();
+      final name = (cfg?.shareTitle.isNotEmpty == true)
+          ? cfg!.shareTitle
+          : (cfg?.aboutName.isNotEmpty == true ? cfg!.aboutName : '安逸软件汇');
+      final desc = (cfg?.shareDesc.isNotEmpty == true)
+          ? cfg!.shareDesc
+          : (cfg?.aboutSlogan ?? '优质软件 · 持续更新');
+      final url = (cfg?.shareUrl.isNotEmpty == true)
+          ? cfg!.shareUrl
+          : (cfg?.aboutWebsite ?? '');
+      final buf = StringBuffer()
+        ..writeln('推荐一个好用的软件库：$name')
+        ..writeln(desc);
+      if (url.isNotEmpty) buf.writeln(url);
+      // 带上我的邀请码（有登录时），好友注册双方都有积分
+      final myCode = _userService.user?.inviteCode ?? '';
+      if (myCode.isNotEmpty) buf.writeln('邀请码：$myCode');
+      await Share.share(buf.toString().trim(), subject: name);
+    } catch (e) {
+      ToastUtil.error('分享失败：${e.toString().replaceFirst('Exception: ', '')}');
     }
   }
 }

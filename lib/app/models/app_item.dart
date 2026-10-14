@@ -46,6 +46,15 @@ class AppItem {
   /// 是否来自蓝奏云文件夹（无数据库记录）
   final bool fromFolder;
 
+  /// 是否置顶（后台 is_top，1014）
+  final bool isTop;
+
+  /// 内容类型：apk=安装包 / browser=跳浏览器打开 url / webview=内置打开 url
+  final String urlType;
+
+  /// 后台备注（仅后台展示）
+  final String adminNote;
+
   AppItem({
     required this.id,
     required this.title,
@@ -69,6 +78,9 @@ class AppItem {
     this.vipPrice = '',
     this.isNew = false,
     this.fromFolder = false,
+    this.isTop = false,
+    this.urlType = 'apk',
+    this.adminNote = '',
   });
 
   bool get isLocal => provider == 'local';
@@ -84,6 +96,16 @@ class AppItem {
 
   /// 是否属于「需要校验才能下载」的资源（会员专享 或 有价格）
   bool get needUnlock => isVipItem || hasPrice;
+
+  /// 是否为网页/文章类内容（不下载 apk）
+  bool get isLinkType => urlType == 'browser' || urlType == 'webview';
+
+  /// 跳转目标 url（browser/webview 类型）
+  String get linkUrl {
+    final u = url.trim();
+    if (u.isNotEmpty) return u;
+    return file.trim();
+  }
 
   /// 下载是否可直接进行（无需解析）
   bool get canDirectDownload => isLocal && file.isNotEmpty;
@@ -118,17 +140,35 @@ class AppItem {
       vipPrice: s('vip_price'),
       isNew: json['is_new'] == 1 || json['is_new'] == true,
       fromFolder: json['from_folder'] == 1 || json['from_folder'] == true,
+      isTop: json['is_top'] == 1 || json['is_top'] == true,
+      urlType: s('url_type').isEmpty ? 'apk' : s('url_type'),
+      adminNote: s('admin_note'),
     );
   }
 
   static List<AppItem> listFrom(dynamic data) {
     if (data is List) {
-      return data
+      final list = data
           .whereType<Map>()
           .map((e) => AppItem.fromJson(Map<String, dynamic>.from(e)))
           .toList();
+      return sortByTop(list);
     }
     return [];
+  }
+
+  /// ★ 1014 需求2：置顶优先排序（稳定排序，保持原有相对顺序）
+  ///    服务端已按 is_top DESC, weigh DESC, id DESC 排好；
+  ///    这里再兜底一次，防止蓝奏云文件夹分类等客户端本地解析的来源漏排。
+  static List<AppItem> sortByTop(List<AppItem> list) {
+    if (list.length < 2) return list;
+    final tops = <AppItem>[];
+    final rest = <AppItem>[];
+    for (final a in list) {
+      (a.isTop ? tops : rest).add(a);
+    }
+    if (tops.isEmpty) return list;
+    return [...tops, ...rest];
   }
 
   static List<AppItem> listFromRaw(String raw) {

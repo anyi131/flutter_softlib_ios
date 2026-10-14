@@ -418,6 +418,56 @@ class UserService {
     return msg;
   }
 
+  // ============ ★ 1014：卡密商城 ============
+
+  /// 卡密商城：商品列表 + 我的余额
+  Future<Map<String, dynamic>> cardShop() async {
+    final r = _unwrap(
+      await _dio.post(
+        '/api/softlib/user/card_shop',
+        data: {'token': _token},
+      ),
+    );
+    if (r['code'] != 1) throw Exception(r['msg'] ?? '获取卡密商城失败');
+    final d = r['data'];
+    return d is Map ? Map<String, dynamic>.from(d) : {};
+  }
+
+  /// 卡密商城：用余额购买一张卡密
+  Future<Map<String, dynamic>> buyCard(String key) async {
+    if (_token.isEmpty) throw Exception('请先登录');
+    final r = _unwrap(
+      await _dio.post(
+        '/api/softlib/user/card_buy',
+        data: {'token': _token, 'key': key},
+      ),
+    );
+    if (r['code'] != 1) throw Exception(r['msg'] ?? '购买失败');
+    final d = r['data'];
+    await refreshProfile();
+    return d is Map ? Map<String, dynamic>.from(d) : {};
+  }
+
+  /// 卡密商城：我买过的卡密
+  Future<List<Map<String, dynamic>>> myCards() async {
+    if (_token.isEmpty) throw Exception('请先登录');
+    final r = _unwrap(
+      await _dio.post(
+        '/api/softlib/user/my_cards',
+        data: {'token': _token},
+      ),
+    );
+    if (r['code'] != 1) throw Exception(r['msg'] ?? '获取我的卡密失败');
+    final d = r['data'];
+    if (d is List) {
+      return d
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+    }
+    return [];
+  }
+
   /// 保存自定义开屏图
   Future<void> saveSplash(String url) async {
     if (_token.isEmpty) throw Exception('请先登录');

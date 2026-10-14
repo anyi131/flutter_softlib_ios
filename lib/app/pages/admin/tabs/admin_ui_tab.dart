@@ -43,6 +43,9 @@ class _AdminUiTabState extends State<AdminUiTab> {
   // 功能
   bool _checkin = true, _exchange = true, _donate = true, _invite = true;
   bool _notice = true, _referral = true;
+  // ★ 1014：原来这几个入口写死常显，现补上后台开关
+  bool _cardRedeem = true, _cardShop = true, _shareApp = true;
+  bool _qqGroup = true, _replaceSplash = true;
   // 列表样式
   String _listStyle = 'glass';
   // 更新弹窗模板（v52g #1）
@@ -130,6 +133,12 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _invite = '${feat['invite'] ?? 1}' == '1';
         _notice = '${feat['notice'] ?? 1}' == '1';
         _referral = '${feat['referral'] ?? 1}' == '1';
+        // ★ 1014：新增 5 个开关
+        _cardRedeem = '${feat['card_redeem'] ?? 1}' == '1';
+        _cardShop = '${feat['card_shop'] ?? 1}' == '1';
+        _shareApp = '${feat['share_app'] ?? 1}' == '1';
+        _qqGroup = '${feat['qq_group'] ?? 1}' == '1';
+        _replaceSplash = '${feat['replace_splash'] ?? 1}' == '1';
         _listStyle = '${home['list_style'] ?? cfg['app_ui_style'] ?? 'glass'}';
         _updateTemplate = '${ui['update_template'] ?? 'classic'}';
         _homeTemplate = '${home['template'] ?? 'classic'}';
@@ -212,6 +221,11 @@ class _AdminUiTabState extends State<AdminUiTab> {
           'invite': _invite ? 1 : 0,
           'notice': _notice ? 1 : 0,
           'referral': _referral ? 1 : 0,
+          'card_redeem': _cardRedeem ? 1 : 0,
+          'card_shop': _cardShop ? 1 : 0,
+          'share_app': _shareApp ? 1 : 0,
+          'qq_group': _qqGroup ? 1 : 0,
+          'replace_splash': _replaceSplash ? 1 : 0,
         },
         'update_template': _updateTemplate,
         'tips_template': _tipsTemplate,
@@ -578,6 +592,12 @@ class _AdminUiTabState extends State<AdminUiTab> {
       ('邀请码', _invite, (v) => _invite = v),
       ('公告弹窗', _notice, (v) => _notice = v),
       ('首页推荐', _referral, (v) => _referral = v),
+      // ★ 1014：原来这几个入口写死常显，现在后台可关
+      ('使用卡密', _cardRedeem, (v) => _cardRedeem = v),
+      ('卡密商城', _cardShop, (v) => _cardShop = v),
+      ('分享软件', _shareApp, (v) => _shareApp = v),
+      ('QQ通知群', _qqGroup, (v) => _qqGroup = v),
+      ('替换开屏', _replaceSplash, (v) => _replaceSplash = v),
     ];
     return Wrap(
       spacing: 9,

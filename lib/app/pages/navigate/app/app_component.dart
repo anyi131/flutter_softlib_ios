@@ -1086,9 +1086,13 @@ class _AppComponentState extends State<AppComponent> {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  // 一行装完：会员/免费 + 评分 + 大小
+                  // 一行装完：置顶/会员 + 评分 + 大小
                   Row(
                     children: [
+                      if (a.isTop) ...[
+                        Pill('置顶', color: C.gold, small: true),
+                        const SizedBox(width: 6),
+                      ],
                       Pill(
                         vip ? '会员' : '免费',
                         color: vip ? C.amber : C.mint,

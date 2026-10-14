@@ -66,6 +66,11 @@ class UiConfig {
   final bool featureInvite; // 邀请码
   final bool featureNotice; // 公告弹窗
   final bool featureReferral; // 首页推荐
+  final bool featureCardRedeem; // 使用卡密
+  final bool featureCardShop;   // 卡密商城（购买卡密）
+  final bool featureShareApp;   // 分享软件
+  final bool featureQqGroup;    // QQ通知群
+  final bool featureReplaceSplash; // 替换开屏
 
   // ── 首页布局 ──
   final String listStyle; // glass / compact / grid / large / minimal
@@ -117,6 +122,11 @@ class UiConfig {
     this.featureInvite = true,
     this.featureNotice = true,
     this.featureReferral = true,
+    this.featureCardRedeem = true,
+    this.featureCardShop = true,
+    this.featureShareApp = true,
+    this.featureQqGroup = true,
+    this.featureReplaceSplash = true,
     this.listStyle = 'glass',
     this.homeBanner = 'on',
     this.homeNotice = 'on',
@@ -169,6 +179,11 @@ class UiConfig {
       featureInvite: _b(feat['invite'], true),
       featureNotice: _b(feat['notice'], true),
       featureReferral: _b(feat['referral'], true),
+      featureCardRedeem: _b(feat['card_redeem'], true),
+      featureCardShop: _b(feat['card_shop'], true),
+      featureShareApp: _b(feat['share_app'], true),
+      featureQqGroup: _b(feat['qq_group'], true),
+      featureReplaceSplash: _b(feat['replace_splash'], true),
       listStyle: _s(home['list_style'], 'glass'),
       homeBanner: _s(home['banner'], 'on'),
       homeNotice: _s(home['notice'], 'on'),

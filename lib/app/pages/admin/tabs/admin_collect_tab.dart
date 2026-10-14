@@ -41,6 +41,8 @@ class _AdminCollectTabState extends State<AdminCollectTab>
   int _totalPages = 1;
   List<Map<String, dynamic>> _items = [];
   final Set<String> _selected = {};
+  /// ★ 1014 需求4：本地库状态筛选 all/in/out/upd
+  String _libFilter = 'all';
 
   /// 当前页已选数量（勾选计数显示）
   int get _pageSelCount => _items
@@ -178,13 +180,16 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         keyword: _kwCtrl.text.trim(),
       );
       if (!mounted) return;
+      final items = ((r['items'] as List?) ?? [])
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
       setState(() {
-        _items = ((r['items'] as List?) ?? [])
-            .map((e) => Map<String, dynamic>.from(e))
-            .toList();
+        _items = items;
         _totalPages = (r['total_pages'] as num?)?.toInt() ?? 1;
         _loading = false;
       });
+      // ★ 1014 需求4：异步预检「是否已在本地软件库」，不阻塞列表显示
+      unawaited(_annotateLib(items));
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -192,6 +197,39 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         // 列表拉取失败不再吞掉、也不再误报「Cookie 过期」
         _err = _friendly(e);
       });
+    }
+  }
+
+  /// ★ 1014 需求4：批量检测本页软件是否已在本地库，并回填
+  ///   in_lib / lib_version / lib_updatetime / update_flag
+  Future<void> _annotateLib(List<Map<String, dynamic>> items) async {
+    if (items.isEmpty) return;
+    try {
+      final r = await _svc.collectCheck(items
+          .map((e) => {
+                'name': '${e['name'] ?? ''}',
+                'version': '${e['version'] ?? ''}',
+              })
+          .toList());
+      final list = (r['items'] as List?) ?? const [];
+      if (!mounted) return;
+      setState(() {
+        for (final raw in list) {
+          if (raw is! Map) continue;
+          final nm = '${raw['name'] ?? ''}';
+          if (nm.isEmpty) continue;
+          for (final it in _items) {
+            if ('${it['name'] ?? ''}' == nm) {
+              it['in_lib'] = raw['in_lib'];
+              it['lib_version'] = raw['lib_version'];
+              it['lib_updatetime'] = raw['lib_updatetime'];
+              it['update_flag'] = raw['update_flag'];
+            }
+          }
+        }
+      });
+    } catch (_) {
+      // 检测失败不影响采集流程，静默
     }
   }
 
@@ -397,9 +435,79 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               ),
             ],
           ),
+          const SizedBox(height: 7),
+          // ★ 1014 需求4：本地库状态筛选 + 手动重新检测
+          Row(
+            children: [
+              for (final f in const [
+                ('all', '全部'),
+                ('in', '已在库'),
+                ('out', '未入库'),
+                ('upd', '可更新'),
+              ])
+                Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _libFilter = f.$1),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: _libFilter == f.$1
+                            ? C.brand
+                            : (context.isDark ? C.bg2 : Colors.white),
+                        borderRadius: BorderRadius.circular(R.full),
+                        border: Border.all(
+                          color: _libFilter == f.$1
+                              ? C.brand
+                              : (context.isDark
+                                  ? Colors.white.withAlpha(20)
+                                  : Colors.black.withAlpha(10)),
+                        ),
+                      ),
+                      child: Text(f.$2,
+                          style: Ty.tiny.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: _libFilter == f.$1
+                                ? Colors.white
+                                : context.t2,
+                          )),
+                    ),
+                  ),
+                ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => _annotateLib(_items),
+                child: Row(
+                  children: [
+                    const Icon(Icons.refresh_rounded,
+                        size: 13, color: C.brand),
+                    const SizedBox(width: 3),
+                    Text('重新检测',
+                        style: Ty.tiny.copyWith(
+                            color: C.brand, fontWeight: FontWeight.w800)),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
+  }
+
+  /// ★ 1014 需求4：按本地库状态过滤
+  List<Map<String, dynamic>> get _visibleItems {
+    switch (_libFilter) {
+      case 'in':
+        return _items.where((e) => '${e['in_lib'] ?? 0}' == '1').toList();
+      case 'out':
+        return _items.where((e) => '${e['in_lib'] ?? 0}' != '1').toList();
+      case 'upd':
+        return _items.where((e) => '${e['update_flag'] ?? ''}' == 'updatable').toList();
+      default:
+        return _items;
+    }
   }
 
   void _selectAllMatched() {
@@ -424,6 +532,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         action: SoftButton(label: '重新检测', onPressed: _init),
       );
     }
+    final visible = _visibleItems;
     return Column(
       children: [
         Expanded(
@@ -434,7 +543,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               context.pagePadding,
               12,
             ),
-            itemCount: _items.length + 1,
+            itemCount: visible.length + 1,
             separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (_, i) {
               // 列表头：采集账号入口（点开可改账号/重新登录）
@@ -444,7 +553,17 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                   child: _accountEntry(),
                 );
               }
-              return _itemCard(_items[i - 1]);
+              // ★ 1014 需求4：筛选后可见列表
+              if (visible.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 30),
+                  child: Center(
+                    child: Text('当前筛选下没有软件',
+                        style: Ty.small.copyWith(color: context.t3)),
+                  ),
+                );
+              }
+              return _itemCard(visible[i - 1]);
             },
           ),
         ),
@@ -537,6 +656,14 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     final appid = (it['appid'] ?? '').toString();
     final matched = it['matched'] == true;
     final sel = _selected.contains(appid);
+    // ★ 1014 需求4：本地软件库状态
+    final inLib = '${it['in_lib'] ?? 0}' == '1';
+    final libVer = '${it['lib_version'] ?? ''}';
+    final libDate = '${it['lib_updatetime'] ?? ''}';
+    final flag = '${it['update_flag'] ?? ''}';
+    // 本地库版本比采集源新 / 可更新
+    final libNewer = flag == 'lib_newer';
+    final updatable = flag == 'updatable';
     return KitCard(
       radius: R.md,
       padding: const EdgeInsets.all(11),
@@ -575,11 +702,32 @@ class _AdminCollectTabState extends State<AdminCollectTab>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  (it['name'] ?? '').toString(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Ty.h3.copyWith(fontSize: 14, color: context.t1),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        (it['name'] ?? '').toString(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Ty.h3.copyWith(fontSize: 14, color: context.t1),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // ★ 1014 需求4：是否已在本地软件库
+                    Pill(
+                      !inLib
+                          ? '未入库'
+                          : (updatable
+                              ? '可更新'
+                              : (libNewer ? '库内已更新' : '已在库')),
+                      color: !inLib
+                          ? C.t3
+                          : (updatable
+                              ? C.warning
+                              : (libNewer ? C.cyan : C.success)),
+                      small: true,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -588,6 +736,17 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                   overflow: TextOverflow.ellipsis,
                   style: Ty.tiny.copyWith(color: context.t3),
                 ),
+                // ★ 1014 需求4：显示本地库里的版本与上传时间
+                if (inLib && (libVer.isNotEmpty || libDate.isNotEmpty)) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    '库内 v$libVer'
+                    '${libDate.isEmpty ? '' : ' · 上传 $libDate'}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Ty.tiny.copyWith(color: C.success.withAlpha(200)),
+                  ),
+                ],
               ],
             ),
           ),

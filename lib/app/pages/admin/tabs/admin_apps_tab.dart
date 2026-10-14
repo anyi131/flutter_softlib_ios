@@ -49,6 +49,115 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
     }
   }
 
+  /// ★ 批量置顶 / 取消置顶（1014 需求2）
+  Future<void> _batchTop([List<int>? ids]) async {
+    final target = (ids ?? _sel.toList()).where((v) => v > 0).toList();
+    if (target.isEmpty) {
+      ToastUtil.info('请先勾选要操作的软件');
+      return;
+    }
+    final on = await showModalBottomSheet<bool>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+              child: Text('置顶操作（已选 ${target.length} 个）',
+                  style: Ty.h2.copyWith(fontSize: 16, color: ctx.t1)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.vertical_align_top_rounded,
+                  color: C.gold, size: 21),
+              title: const Text('设为置顶'),
+              subtitle: Text('排到软件列表最前面',
+                  style: Ty.tiny.copyWith(color: ctx.t3)),
+              onTap: () => Navigator.pop(ctx, true),
+            ),
+            ListTile(
+              leading: const Icon(Icons.vertical_align_bottom_rounded,
+                  color: C.t3, size: 21),
+              title: const Text('取消置顶'),
+              subtitle: Text('恢复按权重排序',
+                  style: Ty.tiny.copyWith(color: ctx.t3)),
+              onTap: () => Navigator.pop(ctx, false),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (on == null || !mounted) return;
+    try {
+      final r = await _svc.appTop(ids: target, on: on);
+      if (!mounted) return;
+      setState(() {
+        _selMode = false;
+        _sel.clear();
+      });
+      ToastUtil.success(
+          on ? '已置顶 ${r['updated'] ?? target.length} 个' : '已取消置顶 ${r['updated'] ?? target.length} 个');
+      await _load();
+    } catch (e) {
+      if (mounted) {
+        ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      }
+    }
+  }
+
+  /// ★ 批量设置网页跳转类型（1014 需求3）
+  Future<void> _batchSetUrlType([List<int>? ids]) async {
+    final target = (ids ?? _sel.toList()).where((v) => v > 0).toList();
+    if (target.isEmpty) {
+      ToastUtil.info('请先勾选要设置的软件');
+      return;
+    }
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+              child: Text('设置打开方式（已选 ${target.length} 个）',
+                  style: Ty.h2.copyWith(fontSize: 16, color: ctx.t1)),
+            ),
+            ..._urlTypeOptions().map((o) => ListTile(
+                  leading: Icon(o.$1, color: o.$3, size: 21),
+                  title: Text(o.$2),
+                  subtitle:
+                      Text(o.$4, style: Ty.tiny.copyWith(color: ctx.t3)),
+                  onTap: () => Navigator.pop(ctx, o.$5),
+                )),
+          ],
+        ),
+      ),
+    );
+    if (picked == null || !mounted) return;
+    try {
+      final r = await _svc.appBatch(ids: target, urlType: picked);
+      if (!mounted) return;
+      setState(() {
+        _selMode = false;
+        _sel.clear();
+      });
+      ToastUtil.success('已更新 ${r['updated'] ?? target.length} 个软件');
+      await _load();
+    } catch (e) {
+      if (mounted) {
+        ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      }
+    }
+  }
+
+  /// 打开方式选项：(图标, 名称, 颜色, 说明, 值)
+  List<(IconData, String, Color, String, String)> _urlTypeOptions() => const [
+        (Icons.android_rounded, '安装包下载', C.brand, '常规 apk 下载安装流程', 'apk'),
+        (Icons.open_in_new_rounded, '跳转浏览器', C.cyan, '用系统浏览器打开链接', 'browser'),
+        (Icons.language_rounded, '内置浏览器', C.violet, 'App 内嵌网页打开', 'webview'),
+      ];
+
   void _toggleSel(int id) {
     if (id <= 0) return;
     setState(() {
@@ -314,14 +423,24 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
     int? catId,
     int? isVip,
     String? vipPrice,
+    String? urlType,
+    int? isTop,
   }) async {
-    if (catId == null && isVip == null && vipPrice == null) return;
+    if (catId == null &&
+        isVip == null &&
+        vipPrice == null &&
+        urlType == null &&
+        isTop == null) {
+      return;
+    }
     try {
       final r = await _svc.appBatch(
         ids: target,
         catId: catId,
         isVip: isVip,
         vipPrice: vipPrice,
+        urlType: urlType,
+        isTop: isTop,
       );
       if (!mounted) return;
       setState(() {
@@ -337,7 +456,55 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
     }
   }
 
-  /// 单条快速设置（行内按钮）：弹菜单选 设分类 / 设会员
+  /// ★ 批量删除（逐条调用 app_del，避免后端不支持批量时的兼容问题）
+  Future<void> _batchDelete([List<int>? ids]) async {
+    final target = (ids ?? _sel.toList()).where((v) => v > 0).toList();
+    if (target.isEmpty) {
+      ToastUtil.info('请先勾选要删除的软件');
+      return;
+    }
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('批量删除 ${target.length} 个软件'),
+        content: const Text('删除后无法恢复，服务器上的安装包文件也会一并删除。\n\n确定继续吗？'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('取消')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: C.danger),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+    if (go != true || !mounted) return;
+    var ok = 0;
+    var fail = 0;
+    for (final id in target) {
+      try {
+        await _svc.deleteApp(id);
+        ok++;
+      } catch (_) {
+        fail++;
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      _selMode = false;
+      _sel.clear();
+    });
+    if (fail > 0) {
+      ToastUtil.error('删除完成：成功 $ok · 失败 $fail');
+    } else {
+      ToastUtil.success('已删除 $ok 个软件');
+    }
+    await _load();
+  }
+
+  /// 单条快速设置（行内按钮）：弹菜单选 设分类 / 设会员 / 置顶 / 打开方式
   Future<void> _quickSet(int id) async {
     final act = await showModalBottomSheet<String>(
       context: context,
@@ -357,12 +524,26 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
               title: const Text('设会员下载'),
               onTap: () => Navigator.pop(ctx, 'vip'),
             ),
+            ListTile(
+              leading: const Icon(Icons.vertical_align_top_rounded,
+                  color: C.gold, size: 20),
+              title: const Text('置顶 / 取消置顶'),
+              onTap: () => Navigator.pop(ctx, 'top'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.language_rounded,
+                  color: C.cyan, size: 20),
+              title: const Text('设置打开方式'),
+              onTap: () => Navigator.pop(ctx, 'url'),
+            ),
           ],
         ),
       ),
     );
     if (act == 'cat') await _batchSetCat([id]);
     if (act == 'vip') await _batchSetVip([id]);
+    if (act == 'top') await _batchTop([id]);
+    if (act == 'url') await _batchSetUrlType([id]);
   }
 
   /// 小胶囊按钮（工具栏用）
@@ -493,6 +674,33 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                     ),
                     const SizedBox(width: 8),
                     _miniBtn(
+                      icon: Icons.vertical_align_top_rounded,
+                      label: '置顶',
+                      color: C.gold,
+                      onTap: _sel.isEmpty
+                          ? null
+                          : () => _batchTop(_sel.toList()),
+                    ),
+                    const SizedBox(width: 8),
+                    _miniBtn(
+                      icon: Icons.language_rounded,
+                      label: '打开方式',
+                      color: C.cyan,
+                      onTap: _sel.isEmpty
+                          ? null
+                          : () => _batchSetUrlType(_sel.toList()),
+                    ),
+                    const SizedBox(width: 8),
+                    _miniBtn(
+                      icon: Icons.delete_sweep_rounded,
+                      label: '删除',
+                      color: C.danger,
+                      onTap: _sel.isEmpty
+                          ? null
+                          : () => _batchDelete(_sel.toList()),
+                    ),
+                    const SizedBox(width: 8),
+                    _miniBtn(
                       icon: Icons.select_all_rounded,
                       label: _sel.isNotEmpty && _sel.length == _list.length
                           ? '取消全选'
@@ -579,11 +787,26 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                   const SizedBox(height: 3),
                                   Row(
                                     children: [
+                                      if ('${a['is_top'] ?? 0}' == '1') ...[
+                                        Pill('置顶',
+                                            color: C.gold, small: true),
+                                        const SizedBox(width: 6),
+                                      ],
                                       Pill(
                                         isLocal ? '服务器' : '蓝奏云',
                                         color: isLocal ? C.cyan : C.gold,
                                         small: true,
                                       ),
+                                      if ('${a['url_type'] ?? 'apk'}' != 'apk') ...[
+                                        const SizedBox(width: 6),
+                                        Pill(
+                                          '${a['url_type']}' == 'browser'
+                                              ? '跳浏览器'
+                                              : '内置网页',
+                                          color: C.cyan,
+                                          small: true,
+                                        ),
+                                      ],
                                       const SizedBox(width: 6),
                                       Flexible(
                                         child: Text(
@@ -850,6 +1073,13 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
     int catId = int.tryParse('${a?['cat_id'] ?? 0}') ?? 0;
     bool isVip = '${a?['is_vip'] ?? 0}' == '1';
     final vipPrice = TextEditingController(text: '${a?['vip_price'] ?? ''}');
+    // ★ 1014：置顶 / 打开方式 / 后台备注
+    bool isTop = '${a?['is_top'] ?? 0}' == '1';
+    String urlType = ('${a?['url_type'] ?? 'apk'}').isEmpty
+        ? 'apk'
+        : '${a?['url_type']}';
+    final adminNote =
+        TextEditingController(text: '${a?['admin_note'] ?? ''}');
 
     await showModalBottomSheet(
       context: context,
@@ -1203,6 +1433,62 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                       ),
                     ),
                     _field('权重（越大越靠前）', weigh),
+                    // ★ 1014 需求2：置顶（置顶优先级高于权重）
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      value: isTop,
+                      activeThumbColor: C.gold,
+                      title: Text('置顶该软件',
+                          style: Ty.small.copyWith(color: ctx.t1)),
+                      subtitle: Text('置顶后固定排在软件列表最前面，优先于权重',
+                          style: Ty.tiny.copyWith(color: ctx.t3)),
+                      onChanged: (v) => setS(() => isTop = v),
+                    ),
+                    // ★ 1014 需求3：打开方式（安装包 / 跳浏览器 / 内置网页）
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12, top: 4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('打开方式',
+                              style: Ty.small.copyWith(color: ctx.t2)),
+                          const SizedBox(height: 7),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: _urlTypeOptions()
+                                .map((o) => ChoiceChip(
+                                      selected: urlType == o.$5,
+                                      onSelected: (_) =>
+                                          setS(() => urlType = o.$5),
+                                      avatar: Icon(o.$1, size: 15, color: o.$3),
+                                      label: Text(o.$2,
+                                          style: const TextStyle(fontSize: 12)),
+                                    ))
+                                .toList(),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            urlType == 'apk'
+                                ? '常规安装包：走下载安装流程'
+                                : (urlType == 'browser'
+                                    ? '跳转浏览器：点「打开链接」用系统浏览器打开 url'
+                                    : '内置浏览器：点「打开页面」在 App 内打开 url'),
+                            style: Ty.tiny.copyWith(color: ctx.t3),
+                          ),
+                          if (urlType != 'apk')
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text('提示：请把网页地址填在上方「蓝奏云分享链接」输入框里',
+                                  style:
+                                      Ty.tiny.copyWith(color: C.warning)),
+                            ),
+                        ],
+                      ),
+                    ),
+                    // ★ 1014：后台备注（仅后台可见，用户端不展示）
+                    _field('后台备注（仅后台可见）', adminNote),
                     if (err.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 10),
@@ -1252,6 +1538,9 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                             'file_path': filePath,
                             'is_vip': isVip ? 1 : 0,
                             'vip_price': vipPrice.text.trim(),
+                            'is_top': isTop ? 1 : 0,
+                            'url_type': urlType,
+                            'admin_note': adminNote.text.trim(),
                           });
                           if (ctx.mounted) Navigator.pop(ctx);
                           ToastUtil.success('保存成功');

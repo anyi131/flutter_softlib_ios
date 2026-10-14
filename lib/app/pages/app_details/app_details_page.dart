@@ -23,6 +23,7 @@ import '../../design/app_style.dart';
 import '../../design/app_style_controller.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
+import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
 import '../../models/app_item.dart';
 import '../../models/http/results/lzy_file_info_model.dart';
@@ -208,10 +209,21 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   /// v52m #2：头图高度（compact=46，minimal=0，其它 106）
   double _headerHeight() {
     final tpl = AppStyleController.instance.detailStyle.value;
+    // ★ 1014 需求5：minimal/compact 原本高度过小，图标（84/68px）压出容器外，
+    //   与下方标题/标签重叠；统一抬到能容纳图标的高度。
     if (tpl == AppDetailStyle.minimal) return 0;
-    if (tpl == AppDetailStyle.compact) return 46;
+    if (tpl == AppDetailStyle.compact) return 58;
     if (tpl == AppDetailStyle.poster) return 240;
     return 106;
+  }
+
+  /// ★ 1014 需求5：头图与下方内容的间距（必须 ≥ 悬浮图标溢出高度的一半）
+  double _headerBottomGap() {
+    final tpl = AppStyleController.instance.detailStyle.value;
+    if (tpl == AppDetailStyle.minimal) return 0;
+    if (tpl == AppDetailStyle.compact) return 46; // 图标 68 → 溢出 34
+    if (tpl == AppDetailStyle.poster) return 56; // 图标 96 → 溢出 48
+    return 50; // standard/dark：图标 84 → 溢出 42
   }
 
   /// v52m #2：头图装饰 —— standard渐变 / poster大图 / dark暗黑 / compact渐变 / minimal无
@@ -235,18 +247,17 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               (info.fileIcon ?? '').isNotEmpty ||
               (logic.item?.icon ?? '').isNotEmpty);
       // v54-fix：poster 头图不再通栏出血（去掉负外边距），统一内嵌圆角
+      // ★ 1014 需求5 修复：渐变常驻打底，图片失败/加载中不再出现整块空白
       return BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            C.brand.withAlpha(context.isDark ? 150 : 120),
+            C.violet.withAlpha(context.isDark ? 110 : 90),
+          ],
+        ),
         image: has
             ? DecorationImage(fit: BoxFit.cover, image: _posterProvider(info)!)
             : null,
-        gradient: has
-            ? null
-            : LinearGradient(
-                colors: [
-                  C.brand.withAlpha(context.isDark ? 150 : 120),
-                  C.violet.withAlpha(context.isDark ? 110 : 90),
-                ],
-              ),
         borderRadius: radius,
       );
     }
@@ -260,6 +271,35 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         ],
       ),
       borderRadius: radius,
+    );
+  }
+
+  /// ★ 1014 需求2：海报头图的内容层
+  ///   有截图 → 横向可滑动的截图轮播；没截图 → 退图标大图；都没 → 渐变打底。
+  Widget _posterGallery() {
+    final shots = logic.item?.screenshots ?? const <String>[];
+    final info = logic.appInfo;
+    if (shots.isEmpty) {
+      final icon = info?.fileIcon ?? logic.item?.icon ?? '';
+      if (icon.isEmpty) return const SizedBox.shrink();
+      return CachedNetworkImage(
+        imageUrl: icon,
+        fit: BoxFit.cover,
+        memCacheWidth: 720,
+        placeholder: (_, __) => const SizedBox.shrink(),
+        errorWidget: (_, __, ___) => const SizedBox.shrink(),
+      );
+    }
+    return PageView.builder(
+      itemCount: shots.length,
+      physics: const BouncingScrollPhysics(),
+      itemBuilder: (_, i) => CachedNetworkImage(
+        imageUrl: shots[i],
+        fit: BoxFit.cover,
+        memCacheWidth: 1000,
+        placeholder: (_, __) => const SizedBox.shrink(),
+        errorWidget: (_, __, ___) => const SizedBox.shrink(),
+      ),
     );
   }
 
@@ -363,7 +403,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             // v54：poster 通栏出血（负外边距顶出 ListView 内边距）
             Container(
               height: _headerHeight(),
-              margin: const EdgeInsets.only(bottom: 42),
+              margin: EdgeInsets.only(bottom: _headerBottomGap()),
               decoration: _headerDecoration(context, info),
               child: Stack(
                 children: [
@@ -394,25 +434,62 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                       ),
                     ),
                   ] else
-                    // poster：底部压暗渐层，保证状态标签可读
+                    // ★ 1014 需求2：海报模板完善 —— 原来是「一张图 + 底部压暗」，
+                    //   现在改为：多张截图可左右滑动 + 页码指示 + 完整压暗层，
+                    //   标题信息浮在图上，才是真正的海报观感。
                     Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withAlpha(130),
-                            ],
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // 可滑动的截图轮播（有截图时）
+                          _posterGallery(),
+                          // 压暗渐层（顶部轻、底部重，保证文字可读）
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withAlpha(70),
+                                  Colors.transparent,
+                                  Colors.black.withAlpha(170),
+                                ],
+                                stops: const [0.0, 0.45, 1.0],
+                              ),
+                            ),
                           ),
-                        ),
+                          // 页码指示（多张截图时）
+                          if ((logic.item?.screenshots.length ?? 0) > 1)
+                            Positioned(
+                              bottom: 12,
+                              right: 14,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 9, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withAlpha(110),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  '共 ${logic.item!.screenshots.length} 张',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                 ],
               ),
             ),
             // 悬浮图标（v53d：poster 96px 居左出血感，compact 68px）
+            // ★ 1014 需求5：minimal 模板没有头图，图标改为内嵌在标题行，
+            //   这里不再叠一个悬浮图标（否则会与标题重叠错位）。
+            if (tpl != AppDetailStyle.minimal)
             Positioned(
               left: tpl == AppDetailStyle.compact ? 14 : 18,
               bottom: 0,
@@ -457,11 +534,12 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               top: 12,
               child: _chip(topLabel, Colors.white, topIcon),
             ),
-            // NEW 角标
+            // NEW 角标（★ 1014 需求5：移到左上角，避免与 poster/standard 模板的
+            //   左下角悬浮图标重叠错位；右上角是状态标签）
             if (it?.isNew == true)
               Positioned(
                 left: 14,
-                bottom: 66,
+                top: 12,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
@@ -631,7 +709,24 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   Widget _info() {
     final it = item;
     final info = logic.appInfo;
-    final cells = [
+    // ★ 1014 需求3：网页跳转类内容隐藏 大小/浏览/下载 等不适用的格子
+    final linkType = it?.isLinkType ?? false;
+    final cells = linkType
+        ? [
+            (
+              Icons.language_rounded,
+              it?.linkUrl.replaceFirst(RegExp(r'^https?://'), ''),
+              '链接',
+              C.cyan,
+            ),
+            (
+              Icons.schedule_rounded,
+              _shortDate(it?.uploadDate ?? ''),
+              '上传',
+              C.violet,
+            ),
+          ]
+        : [
       (
         Icons.sd_storage_rounded,
         info?.fileSize ?? it?.size ?? '-',
@@ -642,7 +737,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       (Icons.download_rounded, _fmtCount(it?.downCount ?? 0), '下载', C.mint),
       (
         Icons.schedule_rounded,
-        it?.uploadDate.isNotEmpty == true ? it!.uploadDate : '-',
+        _shortDate(it?.uploadDate ?? ''),
         '上传',
         C.violet,
       ),
@@ -653,35 +748,65 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       radius: R.lg,
       alpha: 0.055,
       padding: const EdgeInsets.symmetric(vertical: 15),
-      child: Row(
-        children: [
-          for (int i = 0; i < cells.length; i++) ...[
-            if (i > 0)
-              Container(
-                width: 1,
-                height: 28,
-                color: context.isDark
-                    ? Colors.white.withAlpha(14)
-                    : Colors.black.withAlpha(8),
-              ),
-            Expanded(
-              child: Column(
-                children: [
-                  Icon(cells[i].$1, size: 17, color: cells[i].$4),
-                  const SizedBox(height: 7),
-                  Text(
-                    cells[i].$2,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Ty.h3.copyWith(color: context.t1, fontSize: 13.5),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(cells[i].$3, style: Ty.tiny.copyWith(color: context.t3)),
-                ],
-              ),
-            ),
-          ],
-        ],
+      // ★ 1014 需求1：5 格时窄屏会把「2026-10-12」压成「2026-10…」。
+      //   改为每行最多 4 格自动换行 + 均分宽度 + 动态字号。
+      child: LayoutBuilder(
+        builder: (ctx, cons) {
+          final perRow = cells.length >= 5 ? 4 : cells.length;
+          final rows = (cells.length / perRow).ceil();
+          const gap = 1.0;
+          final itemW = (cons.maxWidth - gap * (perRow - 1)) / perRow;
+          final valSize = cells.length >= 5 ? 13.0 : 13.5;
+          return Column(
+            children: [
+              for (int r = 0; r < rows; r++)
+                Row(
+                  children: [
+                    for (int c = 0; c < perRow; c++)
+                      ...[
+                        if (c > 0)
+                          Container(
+                            width: gap,
+                            height: 28,
+                            color: context.isDark
+                                ? Colors.white.withAlpha(14)
+                                : Colors.black.withAlpha(8),
+                          ),
+                        SizedBox(
+                          width: itemW,
+                          child: (r * perRow + c) < cells.length
+                              ? Column(
+                                  children: [
+                                    Icon(cells[r * perRow + c].$1,
+                                        size: 17, color: cells[r * perRow + c].$4),
+                                    const SizedBox(height: 7),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 2),
+                                      child: Text(
+                                        cells[r * perRow + c].$2,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        softWrap: false,
+                                        textAlign: TextAlign.center,
+                                        style: Ty.h3.copyWith(
+                                            color: context.t1,
+                                            fontSize: valSize),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(cells[r * perRow + c].$3,
+                                        style: Ty.tiny.copyWith(color: context.t3)),
+                                  ],
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ],
+                  ],
+                ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -690,13 +815,28 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   Widget _infoFlat() {
     final it = item;
     final info = logic.appInfo;
-    final cells = [
+    // ★ 1014 需求3：网页跳转类内容隐藏不适用的格子
+    final linkType = it?.isLinkType ?? false;
+    final cells = linkType
+        ? [
+            (
+              Icons.language_rounded,
+              it?.linkUrl.replaceFirst(RegExp(r'^https?://'), ''),
+              '链接',
+            ),
+            (
+              Icons.schedule_rounded,
+              _shortDate(it?.uploadDate ?? ''),
+              '上传',
+            ),
+          ]
+        : [
       (Icons.sd_storage_rounded, info?.fileSize ?? it?.size ?? '-', '大小'),
       (Icons.visibility_rounded, '${it?.views ?? 0}', '浏览'),
       (Icons.download_rounded, _fmtCount(it?.downCount ?? 0), '下载'),
       (
         Icons.schedule_rounded,
-        it?.uploadDate.isNotEmpty == true ? it!.uploadDate : '-',
+        _shortDate(it?.uploadDate ?? ''),
         '上传',
       ),
       (Icons.face_rounded, it?.ageRating ?? '16+', '年龄'),
@@ -717,40 +857,93 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           ),
         ),
       ),
-      child: Row(
-        children: [
-          for (int i = 0; i < cells.length; i++) ...[
-            if (i > 0)
-              Container(
-                width: 1,
-                height: 26,
-                color: context.isDark
-                    ? Colors.white.withAlpha(14)
-                    : Colors.black.withAlpha(10),
-              ),
-            Expanded(
-              child: Column(
-                children: [
-                  Icon(cells[i].$1, size: 15, color: context.t3),
-                  const SizedBox(height: 6),
-                  Text(
-                    cells[i].$2,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Ty.body.copyWith(
-                      color: context.t1,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(cells[i].$3, style: Ty.tiny.copyWith(color: context.t3)),
-                ],
-              ),
-            ),
-          ],
-        ],
+      // ★ 1014 需求1：格子多（5 格）时窄屏会把长文本（如 2026-10-12）压成
+      //   「2026-10…」。改为 Wrap 均分：每行最多 4 格，超出的换到第二行，
+      //   并按格子数量动态算宽度，保证日期等长文本能完整显示。
+      child: LayoutBuilder(
+        builder: (ctx, cons) {
+          final perRow = cells.length >= 5 ? 4 : cells.length;
+          final rows = (cells.length / perRow).ceil();
+          final gap = 1.0;
+          final itemW = (cons.maxWidth - gap * (perRow - 1)) / perRow;
+          // 格子多时字号略降，进一步防挤压
+          final valSize = cells.length >= 5 ? 12.5 : 13.0;
+          return Column(
+            children: [
+              for (int r = 0; r < rows; r++)
+                Row(
+                  children: [
+                    for (int c = 0; c < perRow; c++)
+                      ...[
+                        if (c > 0)
+                          Container(
+                            width: gap,
+                            height: 26,
+                            color: context.isDark
+                                ? Colors.white.withAlpha(14)
+                                : Colors.black.withAlpha(10),
+                          ),
+                        SizedBox(
+                          width: itemW - (c > 0 ? 0 : 0),
+                          child: (r * perRow + c) < cells.length
+                              ? _infoCell(
+                                  cells[r * perRow + c].$1,
+                                  cells[r * perRow + c].$2,
+                                  cells[r * perRow + c].$3,
+                                  valSize,
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ],
+                  ],
+                ),
+            ],
+          );
+        },
       ),
+    );
+  }
+
+  /// ★ 1014 需求1：日期紧凑化 —— 「2026-10-12 / 2026.10.12」→「10-12」
+  ///    5 格信息横幅里日期会被挤压省略，短格式能完整显示。
+  String _shortDate(String s) {
+    final t = s.trim();
+    if (t.isEmpty || t == '-') return '-';
+    // 匹配 2026-10-12 / 2026.10.12 / 2026/10/12
+    final m = RegExp(r'^(\d{4})[-./](\d{1,2})[-./](\d{1,2})').firstMatch(t);
+    if (m != null) {
+      final mm = m.group(2)!.padLeft(2, '0');
+      final dd = m.group(3)!.padLeft(2, '0');
+      return '$mm-$dd';
+    }
+    return t;
+  }
+
+  /// 信息横幅的单个格子（图标 + 值 + 标签）
+  Widget _infoCell(IconData icon, String value, String label, double valSize) {
+    return Column(
+      children: [
+        Icon(icon, size: 15, color: context.t3),
+        const SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: Text(
+            value,
+            maxLines: 1,
+            // ★ 需求1：日期等长文本优先缩字号，实在放不下才省略
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            textAlign: TextAlign.center,
+            style: Ty.body.copyWith(
+              color: context.t1,
+              fontSize: valSize,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(label, style: Ty.tiny.copyWith(color: context.t3)),
+      ],
     );
   }
 
@@ -1192,6 +1385,48 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               return _pendingDownloadPanel(download);
             }
             // 未下载
+            // ★ 1014 需求3：网页跳转类内容（browser / webview）→ 不走下载流程
+            final urlType = item?.urlType ?? 'apk';
+            if (urlType == 'browser' || urlType == 'webview') {
+              final isBrowser = urlType == 'browser';
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _bottomHint(
+                    isBrowser
+                        ? Icons.open_in_browser_rounded
+                        : Icons.language_rounded,
+                    isBrowser
+                        ? '跳转系统浏览器打开'
+                        : 'App 内置浏览器打开',
+                    C.cyan,
+                  ),
+                  const SizedBox(height: 9),
+                  PrimaryButton(
+                    label: isBrowser ? '打开链接' : '打开页面',
+                    color: C.cyan,
+                    icon: isBrowser
+                        ? Icons.open_in_new_rounded
+                        : Icons.language_rounded,
+                    onPressed: () {
+                      final u = item?.linkUrl ?? '';
+                      if (u.isEmpty) {
+                        ToastUtil.error('未配置链接');
+                        return;
+                      }
+                      if (isBrowser) {
+                        JumpUtil.openUrl(u);
+                      } else {
+                        Get.toNamed(Routes.urlWebview, arguments: {
+                          'url': u,
+                          'title': item?.title ?? '页面',
+                        });
+                      }
+                    },
+                  ),
+                ],
+              );
+            }
             final String label;
             final IconData icon;
             final Color color;

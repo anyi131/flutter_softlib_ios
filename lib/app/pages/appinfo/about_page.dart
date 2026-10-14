@@ -510,6 +510,9 @@ class _AboutPageState extends State<AboutPage> {
 
   // ── 详细介绍 ──
   Widget _descCard(String desc) {
+    // ★ 1014 需求7：后台简介可能带 HTML 标签，直排会显示成 <p>xxx</p>，
+    //   这里做一次轻量清洗（去标签 + 解实体 + 折行收敛），避免排版错乱。
+    final clean = _plainText(desc);
     return KitCard(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -528,7 +531,7 @@ class _AboutPageState extends State<AboutPage> {
             ],
           ),
           const SizedBox(height: 10),
-          Text(desc,
+          Text(clean,
               style: TextStyle(
                   fontSize: 13.5,
                   height: 1.8,
@@ -538,6 +541,22 @@ class _AboutPageState extends State<AboutPage> {
         ],
       ),
     );
+  }
+
+  /// ★ 1014：把后台简介里的 HTML 转成纯文本（去标签、收敛空行）
+  String _plainText(String s) {
+    var t = s
+        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+        .replaceAll(RegExp(r'</p>', caseSensitive: false), '\n')
+        .replaceAll(RegExp(r'<[^>]+>'), '')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'");
+    t = t.replaceAll(RegExp(r'\n{3,}'), '\n\n');
+    return t.trim();
   }
 
   // ── 信息列表 ──
@@ -592,19 +611,26 @@ class _AboutPageState extends State<AboutPage> {
                   children: [
                     Icon(rows[i].icon, size: 16, color: rows[i].color),
                     const SizedBox(width: 10),
-                    Text(
-                      rows[i].label,
-                      style: Ty.body.copyWith(
-                        fontSize: 13.5,
-                        color: context.t2,
+                    // ★ 1014 需求7：同 flat 模式，标签固定宽 + 值右对齐
+                    SizedBox(
+                      width: 76,
+                      child: Text(
+                        rows[i].label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Ty.body.copyWith(
+                          fontSize: 13.5,
+                          color: context.t2,
+                        ),
                       ),
                     ),
-                    const Spacer(),
-                    Flexible(
+                    const SizedBox(width: 8),
+                    Expanded(
                       child: Text(
                         rows[i].value,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
                         style: Ty.small.copyWith(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w600,
@@ -654,23 +680,33 @@ class _AboutPageState extends State<AboutPage> {
                           Icon(rows[i].icon, size: 15, color: rows[i].color),
                     ),
                     const SizedBox(width: 11),
-                    Text(rows[i].label,
-                        style: Ty.body
-                            .copyWith(fontSize: 13.5, color: context.t2)),
-                    const Spacer(),
-                    Flexible(
-                      child: Text(rows[i].value,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.right,
-                          style: Ty.small.copyWith(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: rows[i].onTap != null
-                                  ? C.brand
-                                  : context.t1)),
+                    // ★ 1014 需求7：标签不再抢占空间（去掉 Spacer 与 Flexible 竞争），
+                    //   标签固定宽度、值占剩余空间并右对齐，长文本不再挤压错位。
+                    SizedBox(
+                      width: 76,
+                      child: Text(
+                        rows[i].label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            Ty.body.copyWith(fontSize: 13.5, color: context.t2),
+                      ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        rows[i].value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: Ty.small.copyWith(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: rows[i].onTap != null ? C.brand : context.t1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 2),
                     Icon(Icons.chevron_right_rounded,
                         size: 16, color: context.t3),
                   ],
@@ -694,12 +730,27 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   /// 分享本软件（系统分享面板）
+  /// ★ 1014：分享文案改为后台可配（share_title/share_desc/share_url），
+  ///   没配就退回「关于软件」的名称与网址，保证任何情况下都有内容。
   Future<void> _shareApp() async {
     try {
       final box = context.findRenderObject() as RenderBox?;
+      final name = (_cfg?.shareTitle.isNotEmpty == true)
+          ? _cfg!.shareTitle
+          : (_cfg?.aboutName ?? '安逸软件汇');
+      final desc = (_cfg?.shareDesc.isNotEmpty == true)
+          ? _cfg!.shareDesc
+          : (_cfg?.aboutSlogan ?? '优质软件 · 持续更新');
+      final url = (_cfg?.shareUrl.isNotEmpty == true)
+          ? _cfg!.shareUrl
+          : (_cfg?.aboutWebsite ?? '');
+      final text = StringBuffer()
+        ..writeln('推荐一个好用的软件库：$name')
+        ..writeln(desc);
+      if (url.isNotEmpty) text.writeln(url);
       await Share.share(
-        '推荐一个好用的软件库：${_cfg?.aboutName ?? '安逸软件汇'}\n${_cfg?.aboutWebsite ?? ''}',
-        subject: _cfg?.aboutName ?? '安逸软件汇',
+        text.toString().trim(),
+        subject: name,
         sharePositionOrigin:
             box != null ? box.localToGlobal(Offset.zero) & box.size : null,
       );

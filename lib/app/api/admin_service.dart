@@ -99,18 +99,34 @@ class AdminService {
     return d is List ? d.map((e) => Map<String, dynamic>.from(e)).toList() : [];
   }
 
-  /// ★ 批量设置分类/会员下载（只更新传入的字段）
+  /// ★ 批量设置分类/会员下载/网页跳转类型/置顶（只更新传入的字段）
   Future<Map<String, dynamic>> appBatch({
     required List<int> ids,
     int? catId,
     int? isVip,
     String? vipPrice,
+    String? urlType,
+    int? isTop,
   }) async {
     final d = (await _post('app_batch', {
       'ids': ids.join(','),
       if (catId != null) 'cat_id': catId,
       if (isVip != null) 'is_vip': isVip,
       if (vipPrice != null) 'vip_price': vipPrice,
+      if (urlType != null) 'url_type': urlType,
+      if (isTop != null) 'is_top': isTop,
+    }))['data'];
+    return d is Map ? Map<String, dynamic>.from(d) : {};
+  }
+
+  /// ★ 批量置顶 / 取消置顶（1014 需求2）
+  Future<Map<String, dynamic>> appTop({
+    required List<int> ids,
+    bool on = true,
+  }) async {
+    final d = (await _post('app_top', {
+      'ids': ids.join(','),
+      'on': on ? 1 : 0,
     }))['data'];
     return d is Map ? Map<String, dynamic>.from(d) : {};
   }

@@ -71,6 +71,11 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
 
   // ── 关于软件（后台可配）──
   bool aboutEnable = true;
+  // ★ 1014：分享文案 + 卡密商城开关
+  final shareTitleCtrl = TextEditingController();
+  final shareDescCtrl = TextEditingController();
+  final shareUrlCtrl = TextEditingController();
+  bool cardShopOn = true;
   final aboutNameCtrl = TextEditingController();
   // ── 注册邮箱限制 + UI 风格（需求 #1 / #9）──
   final emailDomainsCtrl = TextEditingController();
@@ -131,6 +136,9 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
     aboutContactCtrl.dispose();
     aboutWebsiteCtrl.dispose();
     aboutUpdateCtrl.dispose();
+    shareTitleCtrl.dispose();
+    shareDescCtrl.dispose();
+    shareUrlCtrl.dispose();
     agreementCtrl.dispose();
     privacyCtrl.dispose();
     super.dispose();
@@ -196,6 +204,10 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         feedUserCtrl.text = '${cfg['feedback_user'] ?? ''}';
         // 关于软件
         aboutEnable = '${cfg['about_enable']}' != '0';
+        shareTitleCtrl.text = '${cfg['share_title'] ?? ''}';
+        shareDescCtrl.text = '${cfg['share_desc'] ?? ''}';
+        shareUrlCtrl.text = '${cfg['share_url'] ?? ''}';
+        cardShopOn = '${cfg['card_shop_on'] ?? 1}' != '0';
         aboutNameCtrl.text = '${cfg['about_name'] ?? '安逸软件汇'}';
         // 注册邮箱限制 + UI 风格（需求 #1 / #9）
         emailDomainsCtrl.text = '${cfg['email_allow_domains'] ?? ''}';
@@ -283,6 +295,10 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         'feedback_user': feedUserCtrl.text.trim(),
         // 关于软件
         'about_enable': aboutEnable ? 1 : 0,
+        'share_title': shareTitleCtrl.text.trim(),
+        'share_desc': shareDescCtrl.text.trim(),
+        'share_url': shareUrlCtrl.text.trim(),
+        'card_shop_on': cardShopOn ? 1 : 0,
         'about_name': aboutNameCtrl.text.trim(),
         'about_version': aboutVersionCtrl.text.trim(),
         'about_logo': aboutLogCtrl.text.trim(),
@@ -396,6 +412,38 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
             _field('联系方式（邮箱/QQ）', aboutContactCtrl),
             _field('官方网站', aboutWebsiteCtrl),
             _field('检查更新地址（App 内跳转）', aboutUpdateCtrl),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // ★ 1014 需求6：分享本软件文案（后台可配，关于页与我的页共用）
+        _card(
+          title: '分享设置',
+          children: [
+            _field('分享标题', shareTitleCtrl),
+            _field('分享描述', shareDescCtrl),
+            _field('分享链接（留空则用官方网站）', shareUrlCtrl),
+            Text(
+              '用户在「关于软件 → 分享本软件」和「我的 → 分享软件」时，'
+              '会用这三项内容唤出系统分享面板。',
+              style: Ty.tiny.copyWith(color: context.t3),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // ★ 1014 需求5：卡密商城开关
+        _card(
+          title: '卡密商城',
+          children: [
+            _switch(
+              '开启卡密商城（用户可用余额购买卡密）',
+              cardShopOn,
+              (v) => setState(() => cardShopOn = v),
+            ),
+            Text(
+              '关闭后用户端「卡密商城」入口仍显示，但无法购买；'
+              '「使用卡密」不受影响，用户仍可兑换别人给的卡密。',
+              style: Ty.tiny.copyWith(color: context.t3),
+            ),
           ],
         ),
         const SizedBox(height: 12),

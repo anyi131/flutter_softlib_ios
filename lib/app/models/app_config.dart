@@ -53,6 +53,12 @@ class AppConfig {
   /// 页脚文案（后台可配，避免写死）
   final String aboutFooter;
 
+  // ===== ★ 1014：分享文案（后台可配，关于页/我的页「分享本软件」）=====
+  final String shareTitle;
+  final String shareDesc;
+  final String shareUrl;
+  final String shareImage;
+
   /// 注册邮箱域名白名单（空=不限）
   final String emailAllowDomains;
 
@@ -109,6 +115,10 @@ class AppConfig {
     this.aboutUpdateUrl = '',
     this.aboutExtra = '',
     this.aboutFooter = '',
+    this.shareTitle = '',
+    this.shareDesc = '',
+    this.shareUrl = '',
+    this.shareImage = '',
     this.emailAllowDomains = '',
     this.emailNonQqOn = false,
     this.appUiStyle = 'glass',
@@ -190,6 +200,10 @@ class AppConfig {
     aboutUpdateUrl: _s(json['about_update_url']),
     aboutExtra: _s(json['about_extra']),
     aboutFooter: _s(json['about_footer']),
+    shareTitle: _s(json['share_title']),
+    shareDesc: _s(json['share_desc']),
+    shareUrl: _s(json['share_url']),
+    shareImage: _s(json['share_image']),
     emailAllowDomains: _s(json['email_allow_domains']),
     emailNonQqOn: _b(json['email_nonqq_on']),
     themePalette: _s(json['theme_palette']).isEmpty

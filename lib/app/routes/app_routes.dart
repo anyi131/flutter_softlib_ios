@@ -13,6 +13,8 @@ abstract class Routes {
   static const recharge = _Paths.recharge;
   static const message = _Paths.message;
   static const payWeb = _Paths.payWeb;
+  static const urlWebview = _Paths.urlWebview;
+  static const cardShop = _Paths.cardShop;
   static const login = _Paths.login;
   static const register = _Paths.register;
   static const reset = _Paths.reset;
@@ -36,6 +38,8 @@ abstract class _Paths {
   static const recharge = '/recharge';
   static const message = '/message';
   static const payWeb = '/payWeb';
+  static const urlWebview = '/urlWebview';
+  static const cardShop = '/cardShop';
   static const login = '/login';
   static const register = '/register';
   static const reset = '/reset';
