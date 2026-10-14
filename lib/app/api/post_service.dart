@@ -102,17 +102,21 @@ class PostService {
     return (r.data is Map && '${r.data['data']?['review'] ?? '0'}' == '1');
   }
 
-  /// 点赞
+  /// 点赞（服务端为「切换」语义，返回当前最新总数）
+  ///
+  /// ★ 1014 P0 修复：不再静默吞错。未登录/网络异常时抛出带可读文案的
+  ///   异常，由 UI 层统一 toast，避免用户「点了没反应」以为是卡死。
+  ///   同时必须带 token —— 服务端只从请求体读 token。
   Future<int?> like(int id) async {
-    try {
-      final r = await _dio.post('/api/softlib/post/like', data: {'id': id});
-      if (r.data is Map && r.data['code'] == 1) {
-        return int.tryParse('${r.data['data']?['like_count']}');
-      }
-    } catch (e) {
-      debugPrint('[Softlib] $e');
+    final r = await _dio.post(
+      '/api/softlib/post/like',
+      data: {'id': id, 'token': UserService.instance.token},
+    );
+    if (r.data is Map && r.data['code'] == 1) {
+      return int.tryParse('${r.data['data']?['like_count']}');
     }
-    return null;
+    final msg = (r.data is Map ? r.data['msg'] : null)?.toString() ?? '';
+    throw Exception(msg.isEmpty ? '点赞失败，请稍后重试' : msg);
   }
 
   /// 评论列表
@@ -194,6 +198,8 @@ class PostService {
   /// 上传图片
   Future<String> uploadImage(File file) async {
     final form = FormData.fromMap({
+      // ★ 1014 P2：服务端已加登录校验，上传必须带 token
+      'token': UserService.instance.token,
       'file': await MultipartFile.fromFile(
         file.path,
         filename: file.path.split('/').last,
@@ -213,6 +219,8 @@ class PostService {
   /// 上传视频（本地模式）
   Future<String> uploadVideo(File file) async {
     final form = FormData.fromMap({
+      // ★ 1014 P2：服务端已加登录校验，上传必须带 token
+      'token': UserService.instance.token,
       'file': await MultipartFile.fromFile(
         file.path,
         filename: file.path.split('/').last,

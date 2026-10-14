@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
+import 'package:marquee/marquee.dart';
 
 import '../../../generated/assets.dart';
 import '../../api/soft_service.dart';
@@ -14,6 +15,7 @@ import '../../models/app_config.dart';
 import '../../routes/app_pages.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/local_splash.dart';
+import 'maintain_page.dart';
 
 /// 启动页：远程开屏图 + 倒计时 + 公告弹窗（后台可下发，无需发版）
 class SplashPage extends StatefulWidget {
@@ -1396,6 +1398,119 @@ class _SplashPageState extends State<SplashPage> {
       return;
     }
 
+    // ticker：顶部跑马灯 —— 顶部细条滚动标题 + 无卡正文 + 底部链接式按钮
+    if (tpl == 'ticker') {
+      showDialog(
+        context: Get.context!,
+        barrierDismissible: !cfg.noticeForce,
+        barrierColor: dark ? Colors.black.withAlpha(160) : Colors.black38,
+        builder: (ctx) => PopScope(
+          canPop: !cfg.noticeForce,
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 顶部跑马灯细条
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(14),
+                  ),
+                  child: Container(
+                    height: 40,
+                    color: C.brand,
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 12),
+                        const Icon(
+                          Icons.info_outline_rounded,
+                          color: Colors.white,
+                          size: 17,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Marquee(
+                            text: cfg.noticeTitle,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            scrollAxis: Axis.horizontal,
+                            blankSpace: 60,
+                            velocity: 42,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: cardBg,
+                    borderRadius: const BorderRadius.vertical(
+                      bottom: Radius.circular(14),
+                    ),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 260),
+                        child: SingleChildScrollView(child: content(14, 1.7)),
+                      ),
+                      const SizedBox(height: 14),
+                      // 底部：链接式按钮（无实心按钮，与其它模板区分）
+                      Row(
+                        children: [
+                          if (cfg.noticeUrl.isNotEmpty)
+                            GestureDetector(
+                              onTap: () {
+                                JumpUtil.openUrl(cfg.noticeUrl);
+                                if (!cfg.noticeForce) {
+                                  Navigator.of(Get.context!).pop();
+                                }
+                              },
+                              child: Text(
+                                '查看详情 ›',
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: C.brand,
+                                ),
+                              ),
+                            ),
+                          const Spacer(),
+                          if (!cfg.noticeForce)
+                            GestureDetector(
+                              onTap: () => Navigator.of(Get.context!).pop(),
+                              child: Text(
+                                '知道了',
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: ctx.t3,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
     // card（原版兜底）：保留默认 AlertDialog
     showDialog(
       context: Get.context!,
@@ -1427,54 +1542,15 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 维护模式
+    // ★ v3.3.4：维护模式改为独立页面，共 5 款**骨架级**模板
+    //   （旧版只有一个灰底图标 + 一行字，用户反馈「太简约」）
+    //   模板名由后台 sys_config.maintain_template 下发。
     if (_config?.maintainEnable == true) {
-      return Scaffold(
-        backgroundColor: const Color(0xFF1F1F1F),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.construction_rounded,
-                  size: 72,
-                  color: Color(0xFF465CFF),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  '系统维护中',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  (_config?.maintainText ?? '').isEmpty
-                      ? '请稍后再试'
-                      : _config?.maintainText ?? '',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withAlpha(180),
-                    height: 1.6,
-                  ),
-                ),
-                const SizedBox(height: 26),
-                OutlinedButton(
-                  onPressed: _boot,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white24),
-                  ),
-                  child: const Text('重新加载'),
-                ),
-              ],
-            ),
-          ),
-        ),
+      return MaintainPage(
+        text: _config?.maintainText ?? '',
+        template: _config?.maintainTemplate ?? 'engineer',
+        appName: _config?.aboutName ?? '安逸软件汇',
+        onReload: _boot,
       );
     }
 

@@ -26,10 +26,13 @@ class SoftService {
     ),
   )..interceptors.add(_RetryInterceptor());
 
+  /// 供工具模块复用同一个 Dio（连接复用 + 重试策略一致）
+  Dio get dio => _dio;
+
   /// 工具 Tab 数据（分类 + 条目）—— 需求 v43 #5
   Future<List<Map<String, dynamic>>> fetchTools() async {
     try {
-      final r = await _dio.get('/api/softlib/tool/index');
+      final r = await dio.get('/api/softlib/tool/index');
       if (r.data is Map && r.data['code'] == 1) {
         final d = r.data['data'];
         if (d is List) {
@@ -75,7 +78,7 @@ class SoftService {
 
   Future<AppConfig?> _fetchConfigInner() async {
     try {
-      final resp = await _dio.get('/api/softlib/config/index');
+      final resp = await dio.get('/api/softlib/config/index');
       final data = resp.data;
       if (data is Map && data['code'] == 1 && data['data'] is Map) {
         final cfg = AppConfig.fromJson(Map<String, dynamic>.from(data['data']));
@@ -108,7 +111,7 @@ class SoftService {
       if (hit != null && !hit.expired) return hit.data as List<AppItem>;
     }
     final t0 = DateTime.now();
-    final resp = await _dio.get(
+    final resp = await dio.get(
       '/api/softlib/app/index',
       queryParameters: {
         if (catId > 0) 'cat_id': catId,
@@ -135,7 +138,7 @@ class SoftService {
   /// 返回：null=已是最新；Map=有新版本
   Future<Map<String, dynamic>?> checkVersion(String currentVersion) async {
     try {
-      final resp = await _dio.get(
+      final resp = await dio.get(
         '/api/softlib/version/index',
         queryParameters: {'oldversion': currentVersion},
       );
@@ -162,7 +165,7 @@ class SoftService {
   /// 软件分类（含数量）
   Future<List<AppCat>> fetchCats() async {
     try {
-      final resp = await _dio.get('/api/softlib/app/cats');
+      final resp = await dio.get('/api/softlib/app/cats');
       final data = resp.data;
       if (data is Map && data['code'] == 1)
         return AppCat.listFrom(data['data']);
@@ -178,7 +181,7 @@ class SoftService {
     String pwd = '',
     int pgs = 1,
   }) async {
-    final resp = await _dio.get(
+    final resp = await dio.get(
       '/api/softlib/app/folder',
       queryParameters: {'url': url, 'pgs': pgs, if (pwd.isNotEmpty) 'pwd': pwd},
       options: Options(receiveTimeout: const Duration(seconds: 50)),
@@ -190,7 +193,7 @@ class SoftService {
 
   /// 软件详情
   Future<AppItem?> fetchAppDetail({int id = 0, String url = ''}) async {
-    final resp = await _dio.get(
+    final resp = await dio.get(
       '/api/softlib/app/detail',
       queryParameters: {if (id > 0) 'id': id, if (url.isNotEmpty) 'url': url},
     );
@@ -238,7 +241,7 @@ class SoftService {
     String? ticket,
   ) async {
     try {
-      final resp = await _dio.post(
+      final resp = await dio.post(
         '/api/softlib/lzy_file_parse',
         data: {
           'token': token,
@@ -267,7 +270,7 @@ class SoftService {
     String? ticket,
   ) async {
     try {
-      final resp = await _dio.post(
+      final resp = await dio.post(
         '/api/softlib/lzydirparse',
         data: {
           'token': token,
@@ -342,7 +345,7 @@ class SoftService {
         lastParseError = '请先登录后再下载';
         return null;
       }
-      final resp = await _dio.post(
+      final resp = await dio.post(
         '/api/softlib/lzy/auth',
         data: {'token': token, 'url': lzyUrl},
         options: Options(receiveTimeout: const Duration(seconds: 20)),
@@ -366,7 +369,7 @@ class SoftService {
       // ★ 1014：自建解析接口只需 url + 服务端签发的票据，
       //   不再传递站点登录 token（第三方域名不该拿到用户凭证）。
       //   鉴权已由主站 /lzy/auth 完成，票据一次性有效。
-      final resp = await _dio.post(
+      final resp = await dio.post(
         kLzyProxy,
         data: {
           'url': lzyUrl,
@@ -423,7 +426,7 @@ class SoftService {
   Future<void> addAppView(int id) async {
     if (id <= 0) return;
     try {
-      await _dio.get('/api/softlib/app/view', queryParameters: {'id': id});
+      await dio.get('/api/softlib/app/view', queryParameters: {'id': id});
     } catch (e) {
       debugPrint('[Softlib] $e');
     }
@@ -435,7 +438,7 @@ class SoftService {
     final ck = 'lzyinfo_$lzyUrl';
     final hit = _cache[ck];
     if (hit != null && !hit.expired) return hit.data as Map<String, dynamic>?;
-    final resp = await _dio.get(
+    final resp = await dio.get(
       '/api/softlib/lzy_file_info',
       queryParameters: {'url': lzyUrl},
       options: Options(receiveTimeout: const Duration(seconds: 12)),
@@ -467,6 +470,195 @@ class _CacheEntry {
 }
 
 /// 自动重试拦截器
+// ═══════════════════════════════════════════════════════════════
+//  工具体系（v56 恢复 + 做扎实）—— 简助手 / 工具箱 系列接口
+//  后端：/api/softlib/jzs/*、/api/softlib/toolbox/*、/api/softlib/toolbox2/*
+// ═══════════════════════════════════════════════════════════════
+
+extension ToolboxService on SoftService {
+
+  // ─────────── 工具页配置（分类 + 工具 + 横幅） ───────────
+
+  /// ⚠ 历史方法名保留，内部同 fetchJzsConfig，避免旧调用点报错
+  Future<Map<String, dynamic>?> fetchJzsConfig({bool force = false}) =>
+      SoftService.instance.toolboxConfig(force: force);
+
+  /// 工具配置缓存
+  static Map<String, dynamic>? _jzsCache;
+  static DateTime? _jzsAt;
+  static Map<String, dynamic>? get cachedToolboxConfig => _jzsCache;
+
+  /// 拉取工具箱配置（分组 + 工具 + 横幅）；带 10 分钟内存缓存
+  Future<Map<String, dynamic>?> toolboxConfig({bool force = false}) async {
+    if (!force &&
+        _jzsCache != null &&
+        _jzsAt != null &&
+        DateTime.now().difference(_jzsAt!) < const Duration(minutes: 10)) {
+      return _jzsCache;
+    }
+    try {
+      final r = await dio.get(
+        '/api/softlib/jzs/config',
+        options: Options(receiveTimeout: const Duration(seconds: 18)),
+      );
+      if (r.data is Map && r.data['code'] == 1 && r.data['data'] is Map) {
+        _jzsCache = Map<String, dynamic>.from(r.data['data'] as Map);
+        _jzsAt = DateTime.now();
+        return _jzsCache;
+      }
+    } catch (e) {
+      debugPrint('[Softlib] toolbox config: $e');
+    }
+    return _jzsCache;
+  }
+
+  /// 工具搜索
+  Future<List<Map<String, dynamic>>> jzsSearch(String kw) async {
+    try {
+      final r = await dio.get(
+        '/api/softlib/jzs/search',
+        queryParameters: {'kw': kw},
+      );
+      if (r.data is Map && r.data['code'] == 1) {
+        final list = (r.data['data']?['list'] as List?) ?? [];
+        return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+    } catch (e) {
+      debugPrint('[Softlib] jzs search: $e');
+    }
+    return [];
+  }
+
+  /// 收藏 / 取消收藏（需登录）→ 返回收藏后的状态
+  Future<bool> jzsToggleFav(int toolId) async {
+    final r = await dio.post(
+      '/api/softlib/jzs/fav',
+      data: {'tool_id': toolId, 'token': UserService.instance.token},
+    );
+    if (r.data is Map && r.data['code'] == 1) {
+      return r.data['data']?['fav'] == true;
+    }
+    throw Exception(
+      r.data is Map ? (r.data['msg'] ?? '操作失败') : '操作失败',
+    );
+  }
+
+  /// 我的收藏
+  Future<List<Map<String, dynamic>>> jzsFavList() async {
+    try {
+      final r = await dio.get(
+        '/api/softlib/jzs/fav_list',
+        queryParameters: {'token': UserService.instance.token},
+      );
+      if (r.data is Map && r.data['code'] == 1) {
+        final list = (r.data['data']?['list'] as List?) ?? [];
+        return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+    } catch (e) {
+      debugPrint('[Softlib] jzs fav: $e');
+    }
+    return [];
+  }
+
+  /// 记录使用历史（失败静默）
+  Future<void> jzsAddHistory(int toolId) async {
+    if (toolId <= 0) return;
+    try {
+      await dio.post(
+        '/api/softlib/jzs/history',
+        data: {'tool_id': toolId, 'token': UserService.instance.token},
+      );
+    } catch (_) {}
+  }
+
+  /// 使用历史
+  Future<List<Map<String, dynamic>>> jzsHistory() async {
+    try {
+      final r = await dio.get(
+        '/api/softlib/jzs/history_list',
+        queryParameters: {'token': UserService.instance.token},
+      );
+      if (r.data is Map && r.data['code'] == 1) {
+        final list = (r.data['data']?['list'] as List?) ?? [];
+        return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+    } catch (e) {
+      debugPrint('[Softlib] jzs history: $e');
+    }
+    return [];
+  }
+
+  // ─────────── 工具箱 v2 数据代理（30 个工具的真实数据源） ───────────
+
+  /// 通用 GET：/api/softlib/toolbox2/{action}
+  Future<Map<String, dynamic>?> toolbox2(
+    String action, {
+    Map<String, dynamic>? query,
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    try {
+      final r = await dio.get(
+        '/api/softlib/toolbox2/$action',
+        queryParameters: query,
+        options: Options(receiveTimeout: timeout),
+      );
+      if (r.data is Map && r.data['code'] == 1 && r.data['data'] is Map) {
+        return Map<String, dynamic>.from(r.data['data'] as Map);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('[Softlib] toolbox2/$action: $e');
+      return null;
+    }
+  }
+
+  /// 通用 GET：/api/softlib/media/{action}
+  Future<Map<String, dynamic>?> media(
+    String action, {
+    Map<String, dynamic>? query,
+    Duration timeout = const Duration(seconds: 40),
+  }) async {
+    try {
+      final r = await dio.get(
+        '/api/softlib/media/$action',
+        queryParameters: query,
+        options: Options(receiveTimeout: timeout),
+      );
+      if (r.data is Map && r.data['code'] == 1 && r.data['data'] is Map) {
+        return Map<String, dynamic>.from(r.data['data'] as Map);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('[Softlib] media/$action: $e');
+      return null;
+    }
+  }
+
+  /// 通用 GET：/api/softlib/toolbox/{action}
+  Future<Map<String, dynamic>?> toolbox1(
+    String action, {
+    Map<String, dynamic>? query,
+    Duration timeout = const Duration(seconds: 40),
+  }) async {
+    try {
+      final r = await dio.get(
+        '/api/softlib/toolbox/$action',
+        queryParameters: query,
+        options: Options(receiveTimeout: timeout),
+      );
+      if (r.data is Map && r.data['code'] == 1) {
+        final d = r.data['data'];
+        if (d is Map) return Map<String, dynamic>.from(d);
+        if (d is List) return {'list': d};
+      }
+      return null;
+    } catch (e) {
+      debugPrint('[Softlib] toolbox/$action: $e');
+      return null;
+    }
+  }
+}
+
 /// 对「连接超时 / 连接错误 / 5xx」自动重试一次（第二次仍失败才抛错），
 /// 显著降低弱网下的加载失败率。
 class _RetryInterceptor extends Interceptor {

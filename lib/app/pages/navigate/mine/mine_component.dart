@@ -467,6 +467,75 @@ class MineComponent extends StatelessWidget {
         _actionButton(context, logic),
       ];
     }
+    if (tpl == 'wallet') {
+      // ★ v3.3.4：钱包仪表盘 —— 余额/积分/VIP 三块数据块横向并列置顶，
+      //   头像退居其后（信息架构与前几款完全不同：数据优先，身份其次）
+      return [
+        _title(context),
+        const SizedBox(height: 16),
+        _dashboardCard(context, logic),
+        const SizedBox(height: 14),
+        _profileCard(context, logic),
+        const SizedBox(height: 20),
+        _sectionTitle(context, '常用功能'),
+        const SizedBox(height: 10),
+        _denseList(context, logic),
+        const SizedBox(height: 18),
+        _actionButton(context, logic),
+      ];
+    }
+    if (tpl == 'sidebar') {
+      // ★ v3.3.4：左栏式 —— 左侧固定头像竖栏 + 右侧滚动内容，
+      //   移动端少见的左右分栏骨架，与所有纵向堆叠模板区分明显
+      return [
+        _title(context),
+        const SizedBox(height: 12),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 左栏：头像 + 竖排数据
+              SizedBox(
+                width: 108,
+                child: Column(
+                  children: [
+                    _sideAvatar(context, logic),
+                    const SizedBox(height: 14),
+                    _sideStat(context, logic, '余额', logic.money),
+                    const SizedBox(height: 10),
+                    _sideStat(context, logic, '积分', '${logic.points}'),
+                    const SizedBox(height: 10),
+                    _sideStat(
+                      context,
+                      logic,
+                      '状态',
+                      logic.isVip ? 'VIP' : '普通',
+                    ),
+                    const SizedBox(height: 16),
+                    _actionButton(context, logic),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              // 右栏：服务清单（单列大行）
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '我的服务',
+                      style: Ty.h3.copyWith(color: context.t1),
+                    ),
+                    const SizedBox(height: 10),
+                    _sideServiceList(context, logic),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ];
+    }
     return [
       _title(context),
       const SizedBox(height: 16),
@@ -482,6 +551,291 @@ class MineComponent extends StatelessWidget {
       const SizedBox(height: 18),
       _actionButton(context, logic),
     ];
+  }
+
+  // ═══════ v3.3.4 新增：wallet 模板的三块数据仪表盘 ═══════
+  Widget _dashboardCard(BuildContext context, MineLogic logic) {
+    final cells = <(String, String, IconData, Color)>[
+      ('余额', logic.money, Icons.account_balance_wallet_rounded, C.mint),
+      ('积分', '${logic.points}', Icons.stars_rounded, C.amber),
+      (
+        '会员',
+        logic.isVip ? '已开通' : '未开通',
+        Icons.workspace_premium_rounded,
+        C.gold,
+      ),
+    ];
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
+      decoration: BoxDecoration(
+        gradient: context.isDark ? null : Deco.brandGradient,
+        color: context.isDark ? C.bg2 : null,
+        borderRadius: BorderRadius.circular(R.lg),
+        boxShadow: [
+          BoxShadow(
+            color: C.brand.withAlpha(context.isDark ? 30 : 80),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          for (int i = 0; i < cells.length; i++) ...[
+            if (i > 0)
+              Container(
+                width: 1,
+                height: 40,
+                color: Colors.white.withAlpha(context.isDark ? 24 : 60),
+              ),
+            Expanded(
+              child: Column(
+                children: [
+                  Icon(
+                    cells[i].$3,
+                    size: 19,
+                    color: context.isDark
+                        ? cells[i].$4
+                        : Colors.white.withAlpha(230),
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    cells[i].$2,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                      color: context.isDark ? C.t1 : Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    cells[i].$1,
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      color: context.isDark
+                          ? C.t3
+                          : Colors.white.withAlpha(200),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// wallet 模板：单列密集列表（与宫格/分组都不同）
+  Widget _denseList(BuildContext context, MineLogic logic) {
+    final items = _serviceItems(logic);
+    return Container(
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(R.lg),
+      ),
+      child: Column(
+        children: [
+          for (int i = 0; i < items.length; i++) ...[
+            if (i > 0)
+              Divider(
+                height: 1,
+                indent: 52,
+                color: context.isDark
+                    ? Colors.white.withAlpha(12)
+                    : Colors.black.withAlpha(7),
+              ),
+            InkWell(
+              onTap: items[i].onTap,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: items[i].color.withAlpha(28),
+                        borderRadius: BorderRadius.circular(9),
+                      ),
+                      child: Icon(
+                        items[i].icon,
+                        size: 16,
+                        color: items[i].color,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        items[i].label,
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                          color: context.t1,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 18,
+                      color: context.t3,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ═══════ v3.3.4 新增：sidebar 模板的左栏元件 ═══════
+  Widget _sideAvatar(BuildContext context, MineLogic logic) {
+    final logged = logic.isLoggedIn;
+    return GestureDetector(
+      onTap: () => logged ? logic.openProfileEdit() : logic.openLogin(),
+      child: Container(
+        width: 88,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: context.cardBg,
+          borderRadius: BorderRadius.circular(R.lg),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(2.5),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: logged ? Deco.goldGradient : Deco.brandGradient,
+              ),
+              child: SizedBox(
+                width: 52,
+                height: 52,
+                child: ClipOval(
+                  child: logic.avatarUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: logic.avatarUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => _defaultAvatar(context),
+                          errorWidget: (_, __, ___) => _defaultAvatar(context),
+                        )
+                      : _defaultAvatar(context),
+                ),
+              ),
+            ),
+            const SizedBox(height: 9),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Text(
+                logged
+                    ? (logic.nickname.isEmpty ? '用户' : logic.nickname)
+                    : '点击登录',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                  color: context.t1,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sideStat(
+    BuildContext context,
+    MineLogic logic,
+    String label,
+    String value,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(R.md),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Ty.tiny.copyWith(fontSize: 10, color: context.t3),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+              color: C.brand,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sideServiceList(BuildContext context, MineLogic logic) {
+    final items = _serviceItems(logic);
+    return Column(
+      children: [
+        for (final s in items)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(R.md),
+              onTap: s.onTap,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 11,
+                ),
+                decoration: BoxDecoration(
+                  color: context.cardBg,
+                  borderRadius: BorderRadius.circular(R.md),
+                ),
+                child: Row(
+                  children: [
+                    Icon(s.icon, size: 17, color: s.color),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        s.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: context.t1,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 17,
+                      color: context.t3,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   Widget _profileCardInner(BuildContext context, MineLogic logic, bool logged) {

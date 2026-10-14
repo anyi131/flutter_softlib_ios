@@ -728,4 +728,82 @@ class AdminService {
 
   Future<void> deleteJzsBanner(int id) async =>
       _post('jzs_banner_del', {'id': id});
+
+  // ═══════════ 工具箱管理（1014 补全）═══════════
+
+  /// 后台工具的「总览统计」
+  Future<Map<String, dynamic>> toolboxStats() async {
+    final d = (await _post('jzs_tools', {'limit': 1000}))['data'];
+    final list = (d is Map && d['list'] is List)
+        ? (d['list'] as List).map((e) => Map<String, dynamic>.from(e as Map)).toList()
+        : <Map<String, dynamic>>[];
+    final cats = await jzsCats();
+    final enabled = list.where((t) => _on(t['enable_switch'])).length;
+    final online = list.where((t) => '${t['api_url'] ?? ''}'.isNotEmpty).length;
+    return {
+      'cats': cats.length,
+      'tools': list.length,
+      'enabled': enabled,
+      'disabled': list.length - enabled,
+      'online': online,
+      'local': list.length - online,
+    };
+  }
+
+  static bool _on(dynamic v) => v == 1 || v == '1' || v == true;
+
+  /// 安全取整（后端返回可能是 int / String / double）
+  static int _int(dynamic v) {
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    return int.tryParse('$v') ?? 0;
+  }
+
+  /// 分类树（含每个分类下的工具数量）
+  Future<List<Map<String, dynamic>>> toolboxCats() async {
+    final cats = await jzsCats();
+    final tools = await jzsTools();
+    for (final c in cats) {
+      c['tools'] = tools
+          .where((t) => (t['cat_id'] ?? 0) == (c['id'] ?? 0))
+          .toList();
+    }
+    return cats;
+  }
+
+  /// 调整排序（上移 / 下移：与相邻同类工具交换 weigh）
+  Future<void> moveJzsTool(Map<String, dynamic> tool, int delta) async {
+    final all = await jzsTools(catId: _int(tool['cat_id']));
+    if (all.isEmpty) return;
+    final i = all.indexWhere((t) => t['id'] == tool['id']);
+    if (i < 0) return;
+    final j = i + delta;
+    if (j < 0 || j >= all.length) return;
+    final a = all[i];
+    final b = all[j];
+    // weigh 相同会导致顺序不稳，这里用序号保证单调
+    final wa = _int(a['weigh']);
+    final wb = _int(b['weigh']);
+    final na = wb;
+    final nb = wa == wb ? (delta > 0 ? wa - 1 : wa + 1) : wa;
+    await saveJzsTool({...a, 'weigh': na});
+    await saveJzsTool({...b, 'weigh': nb});
+  }
+
+  /// 调整分类排序
+  Future<void> moveJzsCat(Map<String, dynamic> cat, int delta) async {
+    final all = await jzsCats();
+    final i = all.indexWhere((c) => c['id'] == cat['id']);
+    if (i < 0) return;
+    final j = i + delta;
+    if (j < 0 || j >= all.length) return;
+    final a = all[i];
+    final b = all[j];
+    final wa = _int(a['weigh']);
+    final wb = _int(b['weigh']);
+    final na = wb;
+    final nb = wa == wb ? (delta > 0 ? wa - 1 : wa + 1) : wa;
+    await saveJzsCat({...a, 'weigh': na});
+    await saveJzsCat({...b, 'weigh': nb});
+  }
 }

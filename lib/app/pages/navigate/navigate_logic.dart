@@ -12,6 +12,7 @@ import 'package:flutter_softlib/app/pages/navigate/app/app_component.dart';
 import 'package:flutter_softlib/app/pages/navigate/home/home_component.dart';
 import 'package:flutter_softlib/app/pages/navigate/tips/tips_component.dart';
 import 'package:flutter_softlib/app/pages/navigate/square/square_component.dart';
+import 'package:flutter_softlib/app/pages/toolkit/tools_component.dart';
 import 'package:flutter_softlib/app/pages/navigate/mine/mine_component.dart';
 import 'package:flutter_softlib/app/utils/jump_util.dart';
 import 'package:flutter_softlib/app/jicun/pages/jicun_page.dart';
@@ -41,6 +42,12 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
       label: '应用',
       selectedIcon: Icon(IconFont.appBFill),
     ),
+    // ★ v3.3.4：工具箱 Tab（分类大卡 + 胶囊工具，约 30 个真实工具）
+    NavigationDestination(
+      icon: Icon(Icons.widgets_outlined),
+      label: '工具',
+      selectedIcon: Icon(Icons.widgets_rounded),
+    ),
     NavigationDestination(
       icon: Icon(Icons.explore_outlined),
       label: '广场',
@@ -65,6 +72,7 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
   static List<Widget> _basePages() => [
     HomeComponent(),
     AppComponent(),
+    const ToolsComponent(),
     SquareComponent(),
     TipsComponent(),
     JicunPage(),
@@ -93,9 +101,11 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
 
       add(ui.tabHome, _baseLabels[0], _basePages()[0]);
       add(true, _baseLabels[1], _basePages()[1]); // 应用 Tab 常驻
-      add(ui.tabSquare, _baseLabels[2], _basePages()[2]);
-      add(ui.tabTips, _baseLabels[3], _basePages()[3]);
-      // 即存 Tab(第 5 个):ui_config.jicun.enable 控制,默认显示。
+      // ★ v3.3.4：工具箱 Tab（ui_config.tabs.tools 控制，默认开）
+      add(ui.tabTools, _baseLabels[2], _basePages()[2]);
+      add(ui.tabSquare, _baseLabels[3], _basePages()[3]);
+      add(ui.tabTips, _baseLabels[4], _basePages()[4]);
+      // 即存 Tab:ui_config.jicun.enable 控制,默认显示。
       // Tab 名由后台 tab_name 下发,拉不到配置时按默认常开处理。
       var jicunOn = true;
       var jicunName = '即存';
@@ -113,10 +123,10 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
           label: jicunName,
           selectedIcon: const Icon(Icons.download),
         ),
-        _basePages()[4],
+        _basePages()[5],
       );
       // 我的 Tab 固定在最后（即存之后）
-      add(ui.tabMine, _baseLabels[5], _basePages()[5]);
+      add(ui.tabMine, _baseLabels[6], _basePages()[6]);
       labels = ls;
       pages = ps;
       if (currentIndex >= ps.length) {
@@ -165,6 +175,27 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
     applyUiConfig();
     //检查更新（v52：独立 UpdateFlow，带进度条）
     UpdateFlow.check();
+  }
+
+  /// ★ v3.3.4：按语义跳转 —— Tab 数量随后台配置变化（可能有工具箱/即存），
+  ///   硬编码索引极易出错，这里统一按「相对位置」定位。
+  ///
+  /// 我的 Tab 恒为最后一个；签到等入口都属于「我的」页。
+  void goMine() {
+    if (pages.isEmpty) return;
+    changePage(pages.length - 1);
+  }
+
+  /// 即存 Tab（若开启）—— 恒为「我的」之前一个
+  void goJicun() {
+    if (pages.length < 2) return;
+    changePage(pages.length - 2);
+  }
+
+  /// 工具 Tab（若开启）—— 恒为第 3 个（首页/应用/工具/…）
+  void goTools() {
+    if (pages.length < 3) return;
+    changePage(2);
   }
 
   /// 切换页面

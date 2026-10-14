@@ -30,211 +30,37 @@ class AuthScaffold extends StatelessWidget {
   });
 
   @override
-  /// v52m #8：auth_template classic / gradient / minimal
-  List<Widget> _header(
-      BuildContext context, String title, String subtitle, IconData icon) {
-    final tpl =
-        SoftService.instance.cachedConfig?.uiConfig.authTemplate ?? 'classic';
-    if (tpl == 'gradient') {
-      return [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 20),
-          decoration: BoxDecoration(
-            gradient: C.brandGradient,
-            borderRadius: BorderRadius.circular(R.xl),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(46),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(icon, color: Colors.white, size: 28),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900)),
-                    const SizedBox(height: 4),
-                    Text(subtitle,
-                        style: TextStyle(
-                            color: Colors.white.withAlpha(210),
-                            fontSize: 12.5)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 26),
-      ];
-    }
-    if (tpl == 'minimal') {
-      // v54：极简排版 —— 纯文字标题 + 品牌短横下划（无任何装饰）
-      return [
-        Text(title, style: Ty.display.copyWith(color: context.t1)),
-        const SizedBox(height: 10),
-        Container(
-          width: 32,
-          height: 4,
-          decoration: BoxDecoration(
-            gradient: C.brandGradient,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(subtitle, style: Ty.small.copyWith(color: context.t3)),
-        const SizedBox(height: 26),
-      ];
-    }
-    if (tpl == 'banner_top') {
-      // v54：顶部全宽横幅 —— 通栏出血顶到屏幕边（无圆角无内边距）
-      return [
-        Container(
-          margin: EdgeInsets.fromLTRB(
-            -context.pagePadding,
-            -12,
-            -context.pagePadding,
-            22,
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 18),
-          decoration: BoxDecoration(gradient: C.brandGradient),
-          child: SafeArea(
-            bottom: false,
-            child: Row(
-              children: [
-                Icon(icon, color: Colors.white, size: 30),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 19,
-                              fontWeight: FontWeight.w900)),
-                      const SizedBox(height: 4),
-                      Text(subtitle,
-                          style: TextStyle(
-                              color: Colors.white.withAlpha(200),
-                              fontSize: 12)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ];
-    }
-    if (tpl == 'centered_gradient') {
-      // v52w：居中渐变大卡
-      return [
-        const SizedBox(height: 10),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 30),
-          decoration: BoxDecoration(
-            gradient: C.brandGradient,
-            borderRadius: BorderRadius.circular(R.xl),
-            boxShadow: [
-              BoxShadow(
-                  color: C.brand.withAlpha(60),
-                  blurRadius: 22,
-                  offset: const Offset(0, 10)),
-            ],
-          ),
-          child: Column(
-            children: [
-              Icon(icon, color: Colors.white, size: 34),
-              const SizedBox(height: 10),
-              Text(title,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900)),
-              const SizedBox(height: 5),
-              Text(subtitle,
-                  style: TextStyle(
-                      color: Colors.white.withAlpha(200), fontSize: 12)),
-            ],
-          ),
-        ),
-        const SizedBox(height: 26),
-      ];
-    }
-    if (tpl == 'centered') {
-      // v52t：居中窄卡模板（小图标居中 + 居中标题）
-      return [
-        const SizedBox(height: 14),
-        Center(
-          child: Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              gradient: Deco.brandGradient,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: Colors.white, size: 28),
-          ),
-        ),
-        const SizedBox(height: 14),
-        Center(
-          child: Text(title,
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: context.t1)),
-        ),
-        const SizedBox(height: 6),
-        Center(
-          child: Text(subtitle,
-              textAlign: TextAlign.center,
-              style: Ty.small.copyWith(color: context.t3)),
-        ),
-        const SizedBox(height: 26),
-      ];
-    }
-    return [
-      Container(
-        width: 64,
-        height: 64,
+  Widget _backBtn(BuildContext context, {Color? fg}) {
+    if (!showBack) return const SizedBox(width: 38, height: 38);
+    return GestureDetector(
+      onTap: () => Navigator.of(context).maybePop(),
+      child: Container(
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          gradient: Deco.brandGradient,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: C.brand.withAlpha(80),
-              blurRadius: 22,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          color: fg != null
+              ? Colors.white.withAlpha(40)
+              : (context.isDark ? Colors.white.withAlpha(14) : Colors.white),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: fg != null
+                ? Colors.white.withAlpha(70)
+                : (context.isDark
+                      ? Colors.white.withAlpha(20)
+                      : Colors.black.withAlpha(8)),
+          ),
         ),
-        child: Icon(icon, color: Colors.white, size: 32),
+        child: Icon(
+          Icons.arrow_back_ios_new_rounded,
+          size: 16,
+          color: fg ?? context.t1,
+        ),
       ),
-      const SizedBox(height: 18),
-      ShaderMask(
-        shaderCallback: (r) => Deco.aurora().createShader(r),
-        child: Text(title, style: Ty.display.copyWith(color: Colors.white)),
-      ),
-      const SizedBox(height: 7),
-      Text(subtitle, style: Ty.small.copyWith(color: context.t3)),
-      const SizedBox(height: 26),
-    ];
+    );
   }
 
-  Widget build(BuildContext context) {
+  /// ① 经典居中：图标 + 渐变标题 + 玻璃表单卡
+  Widget _buildClassic(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: true,
@@ -247,46 +73,457 @@ class AuthScaffold extends StatelessWidget {
               behavior: HitTestBehavior.translucent,
               child: Column(
                 children: [
-                  // 顶栏
                   Padding(
                     padding: EdgeInsets.fromLTRB(
-                        context.pagePadding, 8, context.pagePadding, 0),
-                    child: Row(
-                      children: [
-                        if (showBack)
-                          GestureDetector(
-                            onTap: () => Navigator.of(context).maybePop(),
-                            child: Container(
-                              width: 38,
-                              height: 38,
-                              decoration: BoxDecoration(
-                                color: context.isDark
-                                    ? Colors.white.withAlpha(14)
-                                    : Colors.white,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: context.isDark
-                                      ? Colors.white.withAlpha(20)
-                                      : Colors.black.withAlpha(8),
-                                ),
-                              ),
-                              child: Icon(Icons.arrow_back_ios_new_rounded,
-                                  size: 16, color: context.t1),
-                            ),
-                          ),
-                        const Spacer(),
-                      ],
+                      context.pagePadding,
+                      8,
+                      context.pagePadding,
+                      0,
                     ),
+                    child: Row(children: [_backBtn(context), const Spacer()]),
                   ),
                   Expanded(
                     child: ListView(
                       physics: const BouncingScrollPhysics(),
                       padding: EdgeInsets.fromLTRB(
-                          context.pagePadding, 12, context.pagePadding, 30),
+                        context.pagePadding,
+                        12,
+                        context.pagePadding,
+                        30,
+                      ),
                       children: [
-                        // v52m #8：认证页三模板
-                        ..._header(context, title, subtitle, icon),
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            gradient: Deco.brandGradient,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: C.brand.withAlpha(80),
+                                blurRadius: 22,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Icon(icon, color: Colors.white, size: 32),
+                        ),
+                        const SizedBox(height: 18),
+                        ShaderMask(
+                          shaderCallback: (r) =>
+                              Deco.aurora().createShader(r),
+                          child: Text(
+                            title,
+                            style: Ty.display.copyWith(color: Colors.white),
+                          ),
+                        ),
+                        const SizedBox(height: 7),
+                        Text(
+                          subtitle,
+                          style: Ty.small.copyWith(color: context.t3),
+                        ),
                         const SizedBox(height: 26),
+                        ...children,
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ② 上下分栏：上半固定渐变区（不滚动），表单在下方独立滚动
+  Widget _buildSplit(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: true,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: Column(
+          children: [
+            // 上半：渐变区（含状态栏padding，出血到顶）
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.fromLTRB(
+                context.pagePadding,
+                MediaQuery.of(context).padding.top + 8,
+                context.pagePadding,
+                30,
+              ),
+              decoration: BoxDecoration(
+                gradient: Deco.brandGradient,
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(30),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [_backBtn(context, fg: Colors.white)]),
+                  const SizedBox(height: 18),
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(46),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(icon, color: Colors.white, size: 26),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(210),
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 下半：表单独立滚动（无整体卡，直接排在白底上）
+            Expanded(
+              child: ListView(
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.fromLTRB(
+                  context.pagePadding,
+                  22,
+                  context.pagePadding,
+                  30,
+                ),
+                children: children,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// ③ 底部抽屉：渐变铺满全屏，表单作为底部白色大圆角 sheet
+  Widget _buildSheet(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: true,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: Stack(
+          children: [
+            // 渐变铺满
+            Container(
+              decoration: BoxDecoration(gradient: Deco.brandGradient),
+            ),
+            // 顶部标题与返回
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  context.pagePadding,
+                  8,
+                  context.pagePadding,
+                  0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(children: [_backBtn(context, fg: Colors.white)]),
+                    const SizedBox(height: 20),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 7),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(215),
+                        fontSize: 12.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // 底部 sheet：占屏幕下半，内部可滚动
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: FractionallySizedBox(
+                heightFactor: 0.62,
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: context.isDark ? C.bg1 : Colors.white,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(28),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // 拖拽手柄
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Container(
+                          width: 38,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: context.isDark
+                                ? Colors.white.withAlpha(30)
+                                : Colors.black.withAlpha(18),
+                            borderRadius: BorderRadius.circular(R.full),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView(
+                          physics: const BouncingScrollPhysics(),
+                          padding: EdgeInsets.fromLTRB(
+                            context.pagePadding,
+                            16,
+                            context.pagePadding,
+                            24,
+                          ),
+                          children: children,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// ④ 通栏顶栏：全宽渐变通栏顶到状态栏，表单无卡直接排下方
+  Widget _buildBanner(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: true,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: Column(
+          children: [
+            // 通栏：顶到状态栏，无圆角
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.fromLTRB(
+                context.pagePadding,
+                MediaQuery.of(context).padding.top + 8,
+                context.pagePadding,
+                22,
+              ),
+              decoration: BoxDecoration(gradient: Deco.brandGradient),
+              child: Row(
+                children: [
+                  _backBtn(context, fg: Colors.white),
+                  const SizedBox(width: 12),
+                  Icon(icon, color: Colors.white, size: 26),
+                  const SizedBox(width: 11),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white.withAlpha(200),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.fromLTRB(
+                  context.pagePadding,
+                  20,
+                  context.pagePadding,
+                  30,
+                ),
+                children: children,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// ⑤ 极简线性：无卡无图标，标题 + 分割线 + 表单
+  Widget _buildMinimal(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: true,
+      body: Stack(
+        children: [
+          Deco.pageBackground(context),
+          SafeArea(
+            child: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              behavior: HitTestBehavior.translucent,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      context.pagePadding,
+                      8,
+                      context.pagePadding,
+                      0,
+                    ),
+                    child: Row(children: [_backBtn(context), const Spacer()]),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(
+                        context.pagePadding,
+                        24,
+                        context.pagePadding,
+                        30,
+                      ),
+                      children: [
+                        Text(
+                          title,
+                          style: Ty.display.copyWith(color: context.t1),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          width: 34,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            gradient: Deco.brandGradient,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          subtitle,
+                          style: Ty.small.copyWith(color: context.t3),
+                        ),
+                        const SizedBox(height: 28),
+                        ...children,
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ⑥ 悬浮胶囊：每个输入项各自独立成胶囊（无整体卡）
+  Widget _buildFloating(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: true,
+      body: Stack(
+        children: [
+          Deco.pageBackground(context),
+          SafeArea(
+            child: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              behavior: HitTestBehavior.translucent,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      context.pagePadding,
+                      8,
+                      context.pagePadding,
+                      0,
+                    ),
+                    child: Row(children: [_backBtn(context), const Spacer()]),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(
+                        context.pagePadding,
+                        30,
+                        context.pagePadding,
+                        30,
+                      ),
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 58,
+                            height: 58,
+                            decoration: BoxDecoration(
+                              gradient: Deco.brandGradient,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: C.brand.withAlpha(70),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 9),
+                                ),
+                              ],
+                            ),
+                            child: Icon(icon, color: Colors.white, size: 27),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 21,
+                              fontWeight: FontWeight.w900,
+                              color: context.t1,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Center(
+                          child: Text(
+                            subtitle,
+                            textAlign: TextAlign.center,
+                            style: Ty.small.copyWith(color: context.t3),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
                         ...children,
                       ],
                     ),
@@ -302,6 +539,16 @@ class AuthScaffold extends StatelessWidget {
 }
 
 /// 统一风格的输入框（玻璃质感 + 圆角 + 内联错误）
+/// 当前认证页模板是否为「胶囊输入项」
+bool _authFieldPill(BuildContext context) =>
+    (SoftService.instance.cachedConfig?.uiConfig.authTemplate ?? '') ==
+    'floating';
+
+/// 当前认证页模板是否为「下划线输入项」
+bool _authFieldUnderline(BuildContext context) =>
+    (SoftService.instance.cachedConfig?.uiConfig.authTemplate ?? '') ==
+    'minimal';
+
 class AuthField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
@@ -344,17 +591,35 @@ class AuthField extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: context.isDark ? Colors.white.withAlpha(10) : Colors.white,
-            borderRadius: BorderRadius.circular(R.md),
+            // ★ v3.3.4：floating 模板输入项是「胶囊」（全圆角），
+            //   minimal 模板是「下划线式」（无边框，仅底部细线）
+            borderRadius: BorderRadius.circular(
+              _authFieldPill(context) ? R.full : R.md,
+            ),
             border: Border.all(
               color: (error != null && error!.isNotEmpty)
                   ? C.danger.withAlpha(140)
-                  : (context.isDark
-                      ? Colors.white.withAlpha(20)
-                      : Colors.black.withAlpha(10)),
+                  : (_authFieldUnderline(context)
+                        ? Colors.transparent
+                        : (context.isDark
+                              ? Colors.white.withAlpha(20)
+                              : Colors.black.withAlpha(10))),
               width: (error != null && error!.isNotEmpty) ? 1.2 : 0.9,
             ),
+            boxShadow: _authFieldPill(context)
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(
+                        context.isDark ? 60 : 14,
+                      ),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : null,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 14),
+          margin: EdgeInsets.only(bottom: _authFieldUnderline(context) ? 2 : 0),
           child: Row(
             children: [
               Icon(icon, size: 19, color: context.t3),
@@ -531,6 +796,31 @@ class AuthCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ★ v3.3.4：表单容器跟随认证页模板 ——
+    //   split/banner/minimal 模板下不再套玻璃卡（表单直接排在页面底上），
+    //   否则「换了骨架但表单还是那张卡」，看起来仍像同款。
+    final tpl =
+        SoftService.instance.cachedConfig?.uiConfig.authTemplate ?? 'classic';
+    final noCard = tpl == 'split' ||
+        tpl == 'banner' ||
+        tpl == 'banner_top' ||
+        tpl == 'minimal';
+    if (noCard) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: children,
+        ),
+      );
+    }
+    // floating 模板：输入项自带胶囊，容器也去卡
+    if (tpl == 'floating') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
+      );
+    }
     return Deco.glass(
       context,
       radius: R.xl,

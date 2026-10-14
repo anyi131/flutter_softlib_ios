@@ -124,6 +124,9 @@ class _InvitePageState extends State<InvitePage> {
                               'minimal' => _bodyMinimal(context),
                               'ticket' => _bodyTicket(context),
                               'gradient_dark' => _bodyDark(context),
+                              // ★ v3.3.4：新增骨架级模板
+                              'steps' => _bodySteps(context),
+                              'poster' => _bodyPoster(context),
                               _ => _bodyClassic(context),
                             },
                           ),
@@ -205,6 +208,229 @@ class _InvitePageState extends State<InvitePage> {
         ],
       ),
     );
+  }
+
+
+  // ── 模板六：steps（三步引导竖排，把规则变成主视觉）──
+  // 骨架差异：不先给邀请码，而是把「1分享→2注册→3得积分」做成竖向大号步骤条，
+  //          邀请码卡退到最后（引导优先，而非结果优先）
+  List<Widget> _bodySteps(BuildContext context) {
+    final steps = <(String, String, IconData, Color)>[
+      ('第一步', '把邀请码分享给好友', Icons.share_rounded, C.brand),
+      ('第二步', '好友注册时填写你的邀请码', Icons.person_add_rounded, C.mint),
+      ('第三步', '双方各得 $_each 积分，上不封顶', Icons.card_giftcard_rounded, C.gold),
+    ];
+    return [
+      Text('邀请好友赚积分', style: Ty.display.copyWith(color: context.t1)),
+      const SizedBox(height: 7),
+      Text(
+        '三步就能拿到 $_each 积分',
+        style: Ty.small.copyWith(color: context.t3),
+      ),
+      const SizedBox(height: 20),
+      // 竖向步骤条
+      for (int i = 0; i < steps.length; i++) ...[
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 左导轨：编号圆 + 连接竖线
+            Column(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: steps[i].$4.withAlpha(30),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: steps[i].$4.withAlpha(110),
+                      width: 1.4,
+                    ),
+                  ),
+                  child: Text(
+                    '${i + 1}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: steps[i].$4,
+                    ),
+                  ),
+                ),
+                if (i < steps.length - 1)
+                  Container(
+                    width: 2,
+                    height: 46,
+                    margin: const EdgeInsets.symmetric(vertical: 3),
+                    decoration: BoxDecoration(
+                      color: context.isDark
+                          ? Colors.white.withAlpha(20)
+                          : Colors.black.withAlpha(10),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(top: 4, bottom: i < steps.length - 1 ? 12 : 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          steps[i].$1,
+                          style: Ty.tiny.copyWith(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            color: steps[i].$4,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(steps[i].$3, size: 13, color: steps[i].$4),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      steps[i].$2,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        height: 1.5,
+                        color: context.t1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+      const SizedBox(height: 22),
+      _codeCard(context),
+      const SizedBox(height: 14),
+      _statsRow(context),
+      const SizedBox(height: 14),
+      _actions(context),
+    ];
+  }
+
+  // ── 模板七：poster（海报式，整页一张渐变海报）──
+  // 骨架差异：邀请码是海报主角（超大字码 + 二维码并排），无卡片容器，
+  //          规则与统计退成海报下方的两行小字
+  List<Widget> _bodyPoster(BuildContext context) {
+    return [
+      Container(
+        padding: const EdgeInsets.fromLTRB(22, 26, 22, 22),
+        decoration: BoxDecoration(
+          gradient: Deco.brandGradient,
+          borderRadius: BorderRadius.circular(R.xl + 4),
+          boxShadow: [
+            BoxShadow(
+              color: C.brand.withAlpha(80),
+              blurRadius: 30,
+              offset: const Offset(0, 14),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              '邀 请 好 友',
+              style: TextStyle(
+                color: Colors.white.withAlpha(220),
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 4,
+              ),
+            ),
+            const SizedBox(height: 16),
+            // 超大字邀请码
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                _code.isEmpty ? '——————' : _code,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 34,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 3,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // 邀请码白卡（与代码卡一致的码展示）
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(R.md),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    '我的邀请码',
+                    style: TextStyle(fontSize: 10.5, color: C.lt3),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _code.isEmpty ? '—' : _code,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 3,
+                      color: Color(0xFF3A4BD8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(46),
+                borderRadius: BorderRadius.circular(R.full),
+              ),
+              child: Text(
+                '好友注册填此码，双方各得 $_each 积分',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 18),
+      // 统计退成两行小字
+      Row(
+        children: [
+          Expanded(
+            child: Text(
+              '已邀请好友：$_count 位',
+              style: Ty.small.copyWith(color: context.t2),
+            ),
+          ),
+          Text(
+            '累计赚积分：$_score 分',
+            style: Ty.small.copyWith(color: context.t2),
+          ),
+        ],
+      ),
+      const SizedBox(height: 18),
+      _statsRow(context),
+      const SizedBox(height: 14),
+      _actions(context),
+    ];
   }
 
   // ── 模板一：classic（经典卡片）──

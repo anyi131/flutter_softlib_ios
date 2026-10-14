@@ -39,7 +39,11 @@ class _AdminUiTabState extends State<AdminUiTab> {
   String _mode = 'light'; // light / dark / system
   bool _userToggle = false;
   // Tab
-  bool _tabHome = true, _tabSquare = true, _tabTips = true, _tabMine = true;
+  bool _tabHome = true;
+  bool _tabTools = true;
+  bool _tabSquare = true;
+  bool _tabTips = true;
+  bool _tabMine = true;
   // 功能
   bool _checkin = true, _exchange = true, _donate = true, _invite = true;
   bool _notice = true, _referral = true;
@@ -124,6 +128,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _mode = '${theme['mode'] ?? 'light'}';
         _userToggle = '${theme['user_toggle'] ?? 0}' == '1';
         _tabHome = '${tabs['home'] ?? 1}' == '1';
+        _tabTools = '${tabs['tools'] ?? 1}' == '1';
         _tabSquare = '${tabs['square'] ?? 1}' == '1';
         _tabTips = '${tabs['tips'] ?? 1}' == '1';
         _tabMine = '${tabs['mine'] ?? 1}' == '1';
@@ -140,7 +145,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _qqGroup = '${feat['qq_group'] ?? 1}' == '1';
         _replaceSplash = '${feat['replace_splash'] ?? 1}' == '1';
         _listStyle = '${home['list_style'] ?? cfg['app_ui_style'] ?? 'glass'}';
-        _updateTemplate = '${ui['update_template'] ?? 'classic'}';
+        _updateTemplate = '${ui['update_template'] ?? 'aurora'}';
         _homeTemplate = '${home['template'] ?? 'classic'}';
         _detailStyle = '${home['detail_style'] ?? 'standard'}';
         _tipsTemplate = '${ui['tips_template'] ?? 'card'}';
@@ -214,6 +219,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         },
         'tabs': {
           'home': _tabHome ? 1 : 0,
+          'tools': _tabTools ? 1 : 0,
           'square': _tabSquare ? 1 : 0,
           'tips': _tabTips ? 1 : 0,
           'mine': _tabMine ? 1 : 0,
@@ -575,6 +581,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
   Widget _tabSwitches() {
     final items = [
       ('首页', _tabHome, (v) => _tabHome = v),
+      ('工具箱', _tabTools, (v) => _tabTools = v),
       ('广场', _tabSquare, (v) => _tabSquare = v),
       ('线报', _tabTips, (v) => _tabTips = v),
       ('我的', _tabMine, (v) => _tabMine = v),
@@ -651,14 +658,14 @@ class _AdminUiTabState extends State<AdminUiTab> {
 
   Widget _homeTemplatePicker() => _chipRow(
     const [
-      ('classic', '标准首页'),
-      ('clean', '极简首页'),
-      ('focus', '搜索突出'),
-      ('banner_top', 'Banner置顶'),
-      ('grid_quick', '宫格快捷'),
-      ('cards', '双列大卡'),
-      ('feed', '信息流'),
-      ('compact_top', '紧凑置顶'),
+      ('classic', '经典双列'),
+      ('magazine', '杂志流'),
+      ('gridwall', '宫格墙'),
+      ('immersive', '沉浸大图'),
+      ('drawer', '分组抽屉'),
+      ('timeline', '时间轴'),
+      ('minimal', '极简文档'),
+      ('store', '便利店'),
     ],
     _homeTemplate,
     (v) => setState(() => _homeTemplate = v),
@@ -868,9 +875,11 @@ class _AdminUiTabState extends State<AdminUiTab> {
 
   Widget _tipsTemplatePicker() => _chipRow(
     const [
-      ('card', '卡片'),
-      ('compact', '紧凑'),
+      ('card', '经典卡片'),
+      ('magazine', '杂志大图'),
+      ('headline', '头条速览'),
       ('timeline', '时间轴'),
+      ('compact', '紧凑单行'),
       ('minimal_row', '极简行'),
       ('rich', '大图卡'),
       ('chat', '聊天流'),
@@ -881,13 +890,15 @@ class _AdminUiTabState extends State<AdminUiTab> {
 
   Widget _mineTemplatePicker() => _chipRow(
     const [
-      ('classic', '经典'),
-      ('clean', '极简'),
-      ('gradient', '渐变描边'),
+      ('classic', '经典宫格'),
+      ('wallet', '钱包仪表盘'),
+      ('sidebar', '左栏式'),
+      ('stats_hero', '数据英雄'),
+      ('clean', '极简扁平'),
       ('dark_card', '深色卡'),
       ('split', '分样式'),
-      ('stats_hero', '数据英雄'),
-      ('simple', '纯列表'),
+      ('gradient', '渐变描边'),
+      ('simple', '分组列表'),
     ],
     _mineTemplate,
     (v) => setState(() => _mineTemplate = v),
@@ -922,12 +933,12 @@ class _AdminUiTabState extends State<AdminUiTab> {
 
   Widget _authTemplatePicker() => _chipRow(
     const [
-      ('classic', '经典'),
-      ('gradient', '渐变横幅'),
-      ('minimal', '极简'),
-      ('banner_top', '顶部横幅'),
-      ('centered', '居中卡'),
-      ('centered_gradient', '居中渐变'),
+      ('classic', '经典居中'),
+      ('split', '上下分栏'),
+      ('sheet', '底部抽屉'),
+      ('banner', '通栏顶栏'),
+      ('minimal', '极简线性'),
+      ('floating', '悬浮胶囊'),
     ],
     _authTemplate,
     (v) => setState(() => _authTemplate = v),
@@ -941,6 +952,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
       ('sheet', '底部弹出'),
       ('fullscreen', '全屏页'),
       ('banner_card', '横幅+正文卡'),
+      ('ticker', '跑马灯条'),
     ],
     _noticeTemplate,
     (v) => setState(() => _noticeTemplate = v),
@@ -949,10 +961,12 @@ class _AdminUiTabState extends State<AdminUiTab> {
   Widget _inviteTemplatePicker() => _chipRow(
     const [
       ('classic', '经典卡片'),
+      ('steps', '三步引导'),
+      ('poster', '海报式'),
       ('hero', '渐变横幅'),
-      ('minimal', '极简'),
       ('ticket', '票券'),
       ('gradient_dark', '深色霓虹'),
+      ('minimal', '极简'),
     ],
     _inviteTemplate,
     (v) => setState(() => _inviteTemplate = v),
@@ -986,48 +1000,93 @@ class _AdminUiTabState extends State<AdminUiTab> {
   );
 
   Widget _templatePicker() {
+    // ★ v3.3.4：更新弹窗模板重做为 8 款**骨架级**差异（不再同款换色）
     const opts = [
-      ('classic', '渐变卡'),
-      ('minimal', '极简'),
-      ('dark', '暗黑'),
-      ('poster', '海报'),
-      ('compact', '紧凑'),
-      ('ticket', '票券'),
-      ('side', '左竖条'),
+      ('aurora', '流光玻璃', '渐变 Hero + 上浮日志卡', Icons.auto_awesome_rounded),
+      ('minimal', '极简竖条', '零装饰 + 深色实心按钮', Icons.horizontal_rule_rounded),
+      ('neon', '暗夜霓虹', '深底霓虹描边 + 状态栏', Icons.bolt_rounded),
+      ('ticket', '更新券', '票券打孔 + 虚线撕口', Icons.confirmation_number_rounded),
+      ('poster', '海报大字', '版本号当主角 + 满血渐变', Icons.wallpaper_rounded),
+      ('meta', '信息双列', '版本/大小/时间 数据网格', Icons.grid_view_rounded),
+      ('banner', '通告条', '顶部通栏 + 大留白正文', Icons.campaign_rounded),
+      ('combo', '图标双钮', '拖拽手柄 + 大图标 + 三键', Icons.apps_rounded),
     ];
-    return Wrap(
-      spacing: 9,
-      runSpacing: 9,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final o in opts)
-          AppPressable(
-            onTap: () => setState(() => _updateTemplate = o.$1),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
-              decoration: BoxDecoration(
-                color: _updateTemplate == o.$1
-                    ? C.brand.withAlpha(26)
-                    : context.isDark
-                    ? Colors.white.withAlpha(8)
-                    : Colors.black.withAlpha(4),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: _updateTemplate == o.$1
-                      ? C.brand.withAlpha(150)
-                      : Colors.transparent,
-                  width: 1.3,
+        Text(
+          '共 8 款，每款骨架不同（不是换色）。当前：'
+          '${opts.firstWhere((e) => e.$1 == _updateTemplate, orElse: () => opts.first).$2}',
+          style: Ty.tiny.copyWith(color: context.t3),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 9,
+          runSpacing: 9,
+          children: [
+            for (final o in opts)
+              AppPressable(
+                onTap: () => setState(() => _updateTemplate = o.$1),
+                child: Container(
+                  width: 148,
+                  padding: const EdgeInsets.fromLTRB(11, 9, 11, 9),
+                  decoration: BoxDecoration(
+                    color: _updateTemplate == o.$1
+                        ? C.brand.withAlpha(22)
+                        : context.isDark
+                        ? Colors.white.withAlpha(8)
+                        : Colors.black.withAlpha(4),
+                    borderRadius: BorderRadius.circular(R.sm),
+                    border: Border.all(
+                      color: _updateTemplate == o.$1
+                          ? C.brand.withAlpha(150)
+                          : Colors.transparent,
+                      width: 1.3,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        o.$4,
+                        size: 18,
+                        color: _updateTemplate == o.$1 ? C.brand : context.t3,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              o.$2,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w800,
+                                color: _updateTemplate == o.$1
+                                    ? C.brand
+                                    : context.t2,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              o.$3,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Ty.tiny.copyWith(
+                                fontSize: 9.5,
+                                color: context.t3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              child: Text(
-                o.$2,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  color: _updateTemplate == o.$1 ? C.brand : context.t2,
-                ),
-              ),
-            ),
-          ),
+          ],
+        ),
       ],
     );
   }

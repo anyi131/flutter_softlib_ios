@@ -37,6 +37,9 @@ class _HomeComponentState extends State<HomeComponent> {
   final HomeLogic logic = Get.find<HomeLogic>();
   int _carouselIdx = 0;
 
+  /// ★ v3.3.4：drawer 模板的分组展开状态（key = 分组标题）
+  final Map<String, bool> _drawerOpen = {};
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,128 +64,1141 @@ class _HomeComponentState extends State<HomeComponent> {
     final uiCfg =
         SoftService.instance.cachedConfig?.uiConfig ?? const UiConfig();
     final tpl = uiCfg.homeTemplate;
-    final notice = SliverToBoxAdapter(child: _notice());
-    final referralTitle = _referralTitle();
-    final referralGrid = _referralGrid();
-    if (tpl == 'clean') {
-      // 极简模板：问候 + 公告 + 推荐直出
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _header()),
-          if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-          if (uiCfg.featureReferral) _referralTitle(),
-          if (uiCfg.featureReferral) _referralGrid(),
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
-        ],
-      );
+    final tail = SliverToBoxAdapter(
+      child: SizedBox(height: context.tabSpace + 40),
+    );
+
+    // ★ v3.3.4 首页模板体系重做：
+    //   旧 8 款只是把「问候/搜索/宫格/banner/公告/推荐」这 6 个积木换顺序，
+    //   用户反馈「都是同款换色」（其实是同款换顺序）。
+    //   新 8 款是**骨架级**差异：信息架构、首屏主视觉、滚动结构各不相同。
+    //
+    //   classic    经典双列   问候+搜索+快捷+banner+公告+双列推荐（原版）
+    //   magazine   杂志流     全宽大图首屏 → 单列图文流（推荐项全宽大卡）
+    //   gridwall   宫格墙     顶部搜索 + 三列紧凑宫格铺满，无 banner
+    //   immersive  沉浸大图   banner 全出血打底 + 悬浮玻璃层叠信息
+    //   drawer     分组抽屉   快捷入口折叠成分组抽屉（可展开/收起）
+    //   timeline   时间轴     左侧导轨 + 单列时间轴推荐（原 feed 增强）
+    //   minimal    极简文档   纯排版，无卡无图，只有文字列表
+    //   store      便利店     顶部横向滚动分类条 + 双列商品式卡片
+    switch (tpl) {
+      // ── ① 经典双列（原版全模块）──
+      case 'classic':
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _header()),
+            SliverToBoxAdapter(child: _search()),
+            SliverToBoxAdapter(child: _quickGrid()),
+            SliverToBoxAdapter(child: _banner()),
+            if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
+            if (uiCfg.featureReferral) _referralTitle(),
+            if (uiCfg.featureReferral) _referralGrid(),
+            tail,
+          ],
+        );
+
+      // ── ② 杂志流：首屏全宽大图 + 单列图文流 ──
+      case 'magazine':
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _magazineHero()),
+            SliverToBoxAdapter(child: _search()),
+            if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
+            if (uiCfg.featureReferral) _magazineTitle(),
+            if (uiCfg.featureReferral) _magazineList(),
+            tail,
+          ],
+        );
+
+      // ── ③ 宫格墙：三列紧凑宫格铺满 ──
+      case 'gridwall':
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _header()),
+            SliverToBoxAdapter(child: _search()),
+            if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
+            SliverToBoxAdapter(child: _gridWallTabs()),
+            if (uiCfg.featureReferral) _gridWall(),
+            tail,
+          ],
+        );
+
+      // ── ④ 沉浸大图：banner 出血打底 + 悬浮玻璃叠层 ──
+      case 'immersive':
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _immersiveTop()),
+            if (uiCfg.featureReferral) _referralTitle(),
+            if (uiCfg.featureReferral) _referralGrid(),
+            tail,
+          ],
+        );
+
+      // ── ⑤ 分组抽屉：快捷入口折叠成分组 ──
+      case 'drawer':
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _header()),
+            SliverToBoxAdapter(child: _search()),
+            SliverToBoxAdapter(child: _drawerGroups()),
+            if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
+            if (uiCfg.featureReferral) _referralTitle(),
+            if (uiCfg.featureReferral) _referralGrid(),
+            tail,
+          ],
+        );
+
+      // ── ⑥ 时间轴 ──
+      case 'timeline':
+      case 'feed':
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _header()),
+            SliverToBoxAdapter(child: _search()),
+            if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
+            if (uiCfg.featureReferral)
+              SliverToBoxAdapter(child: _referralTimeline()),
+            tail,
+          ],
+        );
+
+      // ── ⑦ 极简文档：纯排版无卡无图 ──
+      case 'minimal':
+      case 'clean':
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _minimalHeader()),
+            if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
+            if (uiCfg.featureReferral) _minimalList(),
+            tail,
+          ],
+        );
+
+      // ── ⑧ 便利店：横向分类条 + 双列商品卡 ──
+      case 'store':
+      case 'cards':
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _storeTopBar()),
+            SliverToBoxAdapter(child: _storeCats()),
+            if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
+            if (uiCfg.featureReferral) _storeGrid(),
+            tail,
+          ],
+        );
+
+      // 其余旧模板名 → 落到各自最接近的新骨架
+      case 'focus':
+      case 'compact_top':
+      case 'grid_quick':
+      case 'banner_top':
+      default:
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _header()),
+            SliverToBoxAdapter(child: _search()),
+            SliverToBoxAdapter(child: _quickGrid()),
+            SliverToBoxAdapter(child: _banner()),
+            if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
+            if (uiCfg.featureReferral) _referralTitle(),
+            if (uiCfg.featureReferral) _referralGrid(),
+            tail,
+          ],
+        );
     }
-    if (tpl == 'focus') {
-      // v52t：搜索突出模板
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _search()),
-          SliverToBoxAdapter(child: _header()),
-          SliverToBoxAdapter(child: _quickGrid()),
-          if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-          if (uiCfg.featureReferral) _referralTitle(),
-          if (uiCfg.featureReferral) _referralGrid(),
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  v3.3.4 新增骨架：magazine / gridwall / immersive / drawer /
+  //                    minimal / store
+  // ═══════════════════════════════════════════════════════════════
+
+  // ── 杂志流 ──
+
+  /// 首屏：全宽大图（取第一个轮播或推荐图），下压圆角覆盖问候语
+  Widget _magazineHero() {
+    return GetBuilder<HomeLogic>(
+      id: 'carousel',
+      builder: (logic) {
+        final list = logic.carouses;
+        final refs = logic.referrals;
+        String img = '';
+        String title = '发现好软件';
+        String sub = '每日精选 · 持续更新';
+        if (list != null && list.isNotEmpty) {
+          img = list.first.image ?? '';
+          if ((list.first.title ?? '').isNotEmpty) title = list.first.title!;
+        } else if (refs != null && refs.isNotEmpty) {
+          img = refs.first.icon ?? '';
+          if ((refs.first.name ?? '').isNotEmpty) title = refs.first.name!;
+        }
+        return Stack(
+          children: [
+            // 全宽大图
+            SizedBox(
+              height: 268,
+              width: double.infinity,
+              child: img.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: img,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 1000,
+                      placeholder: (_, __) =>
+                          Container(color: context.cardBg),
+                      errorWidget: (_, __, ___) => Container(
+                        decoration: BoxDecoration(
+                          gradient: Deco.brandGradient,
+                        ),
+                      ),
+                    )
+                  : Container(decoration: BoxDecoration(gradient: Deco.brandGradient)),
+            ),
+            // 底部渐隐
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 150,
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [Color(0xE6000000), Color(0x00000000)],
+                  ),
+                ),
+              ),
+            ),
+            // 标题压在图上
+            Positioned(
+              left: context.pagePadding,
+              right: context.pagePadding,
+              bottom: 26,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    sub,
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(200),
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 右上角两个圆按钮（悬浮在图上）
+            Positioned(
+              right: context.pagePadding - 6,
+              top: MediaQuery.of(context).padding.top + 8,
+              child: Row(
+                children: [
+                  if (logic.configData?.groupBtnOn != false)
+                    _circleBtnGlass(
+                      Icons.group_add_outlined,
+                      () => logic.joinGroup(),
+                    ),
+                  if (logic.configData?.userBtnOn != false) ...[
+                    const SizedBox(width: 8),
+                    _circleBtnGlass(
+                      Icons.support_agent_outlined,
+                      () => logic.joinUser(),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _circleBtnGlass(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: Colors.black.withAlpha(70),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withAlpha(70)),
+        ),
+        child: Icon(icon, size: 19, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _magazineTitle() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        context.pagePadding,
+        20,
+        context.pagePadding,
+        10,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 17,
+            decoration: BoxDecoration(
+              gradient: Deco.brandGradient,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+          const SizedBox(width: 9),
+          Text('最新推荐', style: Ty.h3.copyWith(color: context.t1)),
         ],
-      );
-    }
-    if (tpl == 'banner_top') {
-      // v52t：大banner置顶模板
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _banner()),
-          SliverToBoxAdapter(child: _header()),
-          SliverToBoxAdapter(child: _search()),
-          SliverToBoxAdapter(child: _quickGrid()),
-          if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-          if (uiCfg.featureReferral) _referralTitle(),
-          if (uiCfg.featureReferral) _referralGrid(),
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
+      ),
+    );
+  }
+
+  /// 单列全宽图文卡（区别于双列网格）
+  Widget _magazineList() {
+    return GetBuilder<HomeLogic>(
+      id: 'referral',
+      builder: (logic) {
+        final list = logic.referrals;
+        if (list == null || list.isEmpty) {
+          return const SliverToBoxAdapter(child: SizedBox.shrink());
+        }
+        return SliverPadding(
+          padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
+          sliver: SliverList.builder(
+            itemCount: list.length,
+            itemBuilder: (context, i) {
+              final d = list[i];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: GestureDetector(
+                  onTap: () => logic.onReferralTap(d),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: context.cardBg,
+                      borderRadius: BorderRadius.circular(R.lg),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: 150,
+                          width: double.infinity,
+                          child: (d.image ?? '').isNotEmpty
+                              ? CachedNetworkImage(
+                                  imageUrl: d.image!,
+                                  fit: BoxFit.cover,
+                                  memCacheWidth: 900,
+                                  placeholder: (_, __) =>
+                                      Container(color: C.brand.withAlpha(18)),
+                                  errorWidget: (_, __, ___) => Container(
+                                    color: C.brand.withAlpha(18),
+                                    child: Icon(
+                                      Icons.image_not_supported_outlined,
+                                      color: context.t3,
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  color: C.brand.withAlpha(18),
+                                  child: Icon(
+                                    Icons.apps_rounded,
+                                    color: C.brand.withAlpha(140),
+                                    size: 34,
+                                  ),
+                                ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(13, 11, 13, 13),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                d.title ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Ty.h3.copyWith(color: context.t1),
+                              ),
+                              if ((d.content ?? '').isNotEmpty) ...[
+                                const SizedBox(height: 5),
+                                Text(
+                                  d.content!,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Ty.small.copyWith(
+                                    color: context.t3,
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  // ── 宫格墙 ──
+
+  Widget _gridWallTabs() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        context.pagePadding,
+        16,
+        context.pagePadding,
+        10,
+      ),
+      child: Row(
+        children: [
+          Text('全部应用', style: Ty.h3.copyWith(color: context.t1)),
+          const Spacer(),
+          Text(
+            '共 ${logic.referrals?.length ?? 0} 个',
+            style: Ty.tiny.copyWith(color: context.t3),
+          ),
         ],
-      );
-    }
-    if (tpl == 'cards') {
-      // v52w：双列大卡模板（banner+宫格推荐）
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _header()),
-          SliverToBoxAdapter(child: _banner()),
-          SliverToBoxAdapter(child: _quickGrid()),
-          SliverToBoxAdapter(child: _search()),
-          if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-          if (uiCfg.featureReferral) _referralTitle(),
-          if (uiCfg.featureReferral) referralGrid,
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
+      ),
+    );
+  }
+
+  /// 三列紧凑宫格（比双列更密，一屏看到更多）
+  Widget _gridWall() {
+    return GetBuilder<HomeLogic>(
+      id: 'referral',
+      builder: (logic) {
+        final list = logic.referrals;
+        if (list == null || list.isEmpty) {
+          return const SliverToBoxAdapter(child: SizedBox.shrink());
+        }
+        return SliverPadding(
+          padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
+          sliver: SliverGrid(
+            gridDelegate:
+                const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.78,
+                ),
+            delegate: SliverChildBuilderDelegate((context, i) {
+              final d = list[i];
+              return GestureDetector(
+                onTap: () => logic.onReferralTap(d),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: context.cardBg,
+                          borderRadius: BorderRadius.circular(R.md),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: (d.image ?? '').isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: d.image!,
+                                fit: BoxFit.cover,
+                                memCacheWidth: 400,
+                                placeholder: (_, __) => Container(
+                                  color: C.brand.withAlpha(16),
+                                ),
+                                errorWidget: (_, __, ___) => Container(
+                                  color: C.brand.withAlpha(16),
+                                  child: Icon(
+                                    Icons.apps_rounded,
+                                    color: C.brand.withAlpha(140),
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                color: C.brand.withAlpha(16),
+                                child: Icon(
+                                  Icons.apps_rounded,
+                                  color: C.brand.withAlpha(140),
+                                  size: 26,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 7),
+                    Text(
+                      d.title ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: Ty.tiny.copyWith(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: context.t1,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }, childCount: list.length),
+          ),
+        );
+      },
+    );
+  }
+
+  // ── 沉浸大图 ──
+
+  Widget _immersiveTop() {
+    return GetBuilder<HomeLogic>(
+      id: 'carousel',
+      builder: (logic) {
+        final list = logic.carouses;
+        return Column(
+          children: [
+            // 出血大图 + 悬浮玻璃信息层
+            SizedBox(
+              height: 300,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (list != null && list.isNotEmpty)
+                    CachedNetworkImage(
+                      imageUrl: list.first.image ?? '',
+                      fit: BoxFit.cover,
+                      memCacheWidth: 1100,
+                      placeholder: (_, __) =>
+                          Container(color: context.cardBg),
+                      errorWidget: (_, __, ___) => Container(
+                        decoration:
+                            BoxDecoration(gradient: Deco.brandGradient),
+                      ),
+                    )
+                  else
+                    Container(
+                      decoration: BoxDecoration(gradient: Deco.brandGradient),
+                    ),
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0x99000000), Color(0x22000000)],
+                      ),
+                    ),
+                  ),
+                  // 悬浮玻璃问候层（叠在图上一半）
+                  Positioned(
+                    left: context.pagePadding,
+                    right: context.pagePadding,
+                    bottom: 0,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                      decoration: BoxDecoration(
+                        color: context.isDark
+                            ? Colors.white.withAlpha(26)
+                            : Colors.white.withAlpha(235),
+                        borderRadius: BorderRadius.circular(R.lg),
+                        border: Border.all(
+                          color: Colors.white.withAlpha(
+                            context.isDark ? 46 : 200,
+                          ),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(40),
+                            blurRadius: 24,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '发现好软件',
+                                  style: Ty.h2.copyWith(color: context.t1),
+                                ),
+                                const SizedBox(height: 3),
+                                _wordLine(),
+                              ],
+                            ),
+                          ),
+                          if (logic.configData?.groupBtnOn != false)
+                            _circleBtn(
+                              Icons.group_add_outlined,
+                              () => logic.joinGroup(),
+                            ),
+                          if (logic.configData?.userBtnOn != false) ...[
+                            const SizedBox(width: 6),
+                            _circleBtn(
+                              Icons.support_agent_outlined,
+                              () => logic.joinUser(),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 74),
+            _search(),
+          ],
+        );
+      },
+    );
+  }
+
+  // ── 分组抽屉 ──
+
+  Widget _drawerGroups() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(context.pagePadding, 18, context.pagePadding, 4),
+      child: Column(
+        children: [
+          _drawerGroup(
+            '快捷功能',
+            Icons.bolt_rounded,
+            C.amber,
+            [
+              if (logic.configData?.uiConfig.quickSign ?? true)
+                _drawerItem(
+                  '每日签到',
+                  Icons.emoji_events_rounded,
+                  C.amber,
+                  () => Get.find<NavigateLogic>().goMine(),
+                ),
+              if (logic.configData?.uiConfig.quickVip ?? true)
+                _drawerItem(
+                  'VIP会员',
+                  Icons.workspace_premium_rounded,
+                  C.gold,
+                  () => Get.toNamed(Routes.vip),
+                ),
+              if (logic.configData?.uiConfig.quickService ?? true)
+                _drawerItem(
+                  '联系客服',
+                  Icons.headset_mic_rounded,
+                  C.cyan,
+                  () => logic.joinUser(),
+                ),
+              if (logic.configData?.uiConfig.quickUpdate ?? true)
+                _drawerItem(
+                  '检查更新',
+                  Icons.auto_awesome_rounded,
+                  C.violet,
+                  () => UpdateFlow.check(showLatestTip: true),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _drawerGroup(
+            '我的资产',
+            Icons.account_balance_wallet_rounded,
+            C.mint,
+            [
+              _drawerItem(
+                '充值余额',
+                Icons.add_card_rounded,
+                C.mint,
+                () => Get.toNamed(Routes.recharge),
+              ),
+              _drawerItem(
+                '下载管理',
+                Icons.download_rounded,
+                C.cyan,
+                () => Get.toNamed(Routes.appDownload),
+              ),
+              _drawerItem(
+                '卡密商城',
+                Icons.storefront_rounded,
+                C.gold,
+                () => Get.toNamed(Routes.cardShop),
+              ),
+            ],
+          ),
         ],
-      );
-    }
-    if (tpl == 'feed') {
-      // v52x：信息流模板（公告置顶+搜索+时间轴推荐，去横幅）
-      // 时间轴重做：固定导轨（圆点 8px + 固定长度竖线），无 IntrinsicHeight
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _header()),
-          SliverToBoxAdapter(child: _search()),
-          if (uiCfg.featureNotice) notice,
-          if (uiCfg.featureReferral)
-            SliverToBoxAdapter(child: _referralTimeline()),
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
+      ),
+    );
+  }
+
+  /// 可展开/收起的抽屉分组
+  Widget _drawerGroup(
+    String title,
+    IconData icon,
+    Color color,
+    List<Widget> items,
+  ) {
+    final open = _drawerOpen[title] ?? true;
+    return Container(
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(R.lg),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () => setState(() => _drawerOpen[title] = !open),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 13, 12, 13),
+              child: Row(
+                children: [
+                  Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: color.withAlpha(28),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Icon(icon, size: 16, color: color),
+                  ),
+                  const SizedBox(width: 11),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: Ty.h3.copyWith(color: context.t1),
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: open ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: context.t3,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          AnimatedCrossFade(
+            duration: const Duration(milliseconds: 220),
+            crossFadeState: open
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
+            firstChild: Column(
+              children: [
+                for (final it in items) it,
+                const SizedBox(height: 6),
+              ],
+            ),
+            secondChild: const SizedBox(width: double.infinity),
+          ),
         ],
-      );
-    }
-    if (tpl == 'compact_top') {
-      // v52w：紧凑顶部模板（全部压缩置顶：问候+搜索+快捷单行）
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _header()),
-          SliverToBoxAdapter(child: _search()),
-          SliverToBoxAdapter(child: _quickGrid()),
-          SliverToBoxAdapter(child: _banner()),
-          if (uiCfg.featureNotice) notice,
-          if (uiCfg.featureReferral) referralTitle,
-          if (uiCfg.featureReferral) referralGrid,
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
+      ),
+    );
+  }
+
+  Widget _drawerItem(
+    String label,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(56, 10, 14, 10),
+        child: Row(
+          children: [
+            Icon(icon, size: 17, color: color),
+            const SizedBox(width: 11),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(fontSize: 13.5, color: context.t1),
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, size: 17, color: context.t3),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── 极简文档 ──
+
+  Widget _minimalHeader() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        context.pagePadding,
+        18,
+        context.pagePadding,
+        4,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('发现好软件', style: Ty.display.copyWith(color: context.t1)),
+          const SizedBox(height: 8),
+          _wordLine(),
+          const SizedBox(height: 16),
+          Container(
+            height: 1,
+            color: context.isDark
+                ? Colors.white.withAlpha(16)
+                : Colors.black.withAlpha(10),
+          ),
         ],
-      );
-    }
-    if (tpl == 'grid_quick') {
-      // v52t：宫格快捷模板（双行宫格置顶）
-      return CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _header()),
-          SliverToBoxAdapter(child: _quickGrid()),
-          SliverToBoxAdapter(child: _search()),
-          if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-          if (uiCfg.featureReferral) _referralTitle(),
-          if (uiCfg.featureReferral) _referralGrid(),
-          SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
+      ),
+    );
+  }
+
+  /// 纯文字列表：无卡片、无图、无圆角
+  Widget _minimalList() {
+    return GetBuilder<HomeLogic>(
+      id: 'referral',
+      builder: (logic) {
+        final list = logic.referrals;
+        if (list == null || list.isEmpty) {
+          return const SliverToBoxAdapter(child: SizedBox.shrink());
+        }
+        return SliverPadding(
+          padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
+          sliver: SliverList.builder(
+            itemCount: list.length,
+            itemBuilder: (context, i) {
+              final d = list[i];
+              return InkWell(
+                onTap: () => logic.onReferralTap(d),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: context.isDark
+                            ? Colors.white.withAlpha(12)
+                            : Colors.black.withAlpha(8),
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 22,
+                        child: Text(
+                          '${i + 1}'.padLeft(2, '0'),
+                          style: Ty.tiny.copyWith(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            color: i < 3 ? C.brand : context.t3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              d.title ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                                color: context.t1,
+                              ),
+                            ),
+                            if ((d.content ?? '').isNotEmpty) ...[
+                              const SizedBox(height: 3),
+                              Text(
+                                d.content!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Ty.tiny.copyWith(color: context.t3),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 12,
+                        color: context.t3,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  // ── 便利店 ──
+
+  Widget _storeTopBar() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        context.pagePadding,
+        14,
+        context.pagePadding,
+        0,
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _searchInline()),
+          if (logic.configData?.userBtnOn != false) ...[
+            const SizedBox(width: 10),
+            _circleBtn(Icons.support_agent_outlined, () => logic.joinUser()),
+          ],
         ],
-      );
-    }
-    // classic 标准模板（原版全模块）
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverToBoxAdapter(child: _header()),
-        SliverToBoxAdapter(child: _search()),
-        SliverToBoxAdapter(child: _quickGrid()),
-        SliverToBoxAdapter(child: _banner()),
-        if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-        if (uiCfg.featureReferral) _referralTitle(),
-        if (uiCfg.featureReferral) _referralGrid(),
-        SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 40)),
-      ],
+      ),
+    );
+  }
+
+  /// 内联搜索框（store 模板专用，与 _search() 的独立搜索区不同）
+  Widget _searchInline() {
+    return GestureDetector(
+      onTap: () => Get.toNamed(Routes.appSearch),
+      child: Container(
+        height: 42,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: context.cardBg,
+          borderRadius: BorderRadius.circular(R.full),
+          border: Border.all(
+            color: context.isDark
+                ? Colors.white.withAlpha(20)
+                : Colors.black.withAlpha(8),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.search_rounded, size: 18, color: context.t3),
+            const SizedBox(width: 8),
+            Text(
+              '搜软件、找工具',
+              style: Ty.small.copyWith(color: context.t3),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _storeCats() {
+    final ui = logic.configData?.uiConfig;
+    final cats = <(String, IconData)>[
+      if (ui?.quickSign ?? true) ('签到', Icons.emoji_events_rounded),
+      if (ui?.quickVip ?? true) ('会员', Icons.workspace_premium_rounded),
+      ('充值', Icons.add_card_rounded),
+      ('下载', Icons.download_rounded),
+      ('卡密', Icons.storefront_rounded),
+      if (ui?.quickService ?? true) ('客服', Icons.headset_mic_rounded),
+      if (ui?.quickUpdate ?? true) ('更新', Icons.auto_awesome_rounded),
+    ];
+    return SizedBox(
+      height: 78,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.fromLTRB(context.pagePadding, 16, context.pagePadding, 6),
+        itemCount: cats.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 16),
+        itemBuilder: (context, i) {
+          final c = cats[i];
+          return GestureDetector(
+            onTap: () {
+              switch (c.$1) {
+                case '签到':
+                  Get.find<NavigateLogic>().goMine();
+                case '会员':
+                  Get.toNamed(Routes.vip);
+                case '充值':
+                  Get.toNamed(Routes.recharge);
+                case '下载':
+                  Get.toNamed(Routes.appDownload);
+                case '卡密':
+                  Get.toNamed(Routes.cardShop);
+                case '客服':
+                  logic.joinUser();
+                case '更新':
+                  UpdateFlow.check(showLatestTip: true);
+              }
+            },
+            child: Column(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: C.brand.withAlpha(context.isDark ? 30 : 20),
+                    borderRadius: BorderRadius.circular(R.md),
+                  ),
+                  child: Icon(c.$2, size: 21, color: C.brand),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  c.$1,
+                  style: Ty.tiny.copyWith(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: context.t2,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// 双列商品式卡（图在左、信息在右的紧凑行卡）
+  Widget _storeGrid() {
+    return GetBuilder<HomeLogic>(
+      id: 'referral',
+      builder: (logic) {
+        final list = logic.referrals;
+        if (list == null || list.isEmpty) {
+          return const SliverToBoxAdapter(child: SizedBox.shrink());
+        }
+        return SliverPadding(
+          padding: EdgeInsets.fromLTRB(
+            context.pagePadding,
+            6,
+            context.pagePadding,
+            0,
+          ),
+          sliver: SliverList.builder(
+            itemCount: list.length,
+            itemBuilder: (context, i) {
+              final d = list[i];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 9),
+                child: GestureDetector(
+                  onTap: () => logic.onReferralTap(d),
+                  child: Container(
+                    padding: const EdgeInsets.all(11),
+                    decoration: BoxDecoration(
+                      color: context.cardBg,
+                      borderRadius: BorderRadius.circular(R.md),
+                    ),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(11),
+                          child: SizedBox(
+                            width: 54,
+                            height: 54,
+                            child: (d.image ?? '').isNotEmpty
+                                ? CachedNetworkImage(
+                                    imageUrl: d.image!,
+                                    fit: BoxFit.cover,
+                                    memCacheWidth: 220,
+                                    placeholder: (_, __) => Container(
+                                      color: C.brand.withAlpha(16),
+                                    ),
+                                    errorWidget: (_, __, ___) => Container(
+                                      color: C.brand.withAlpha(16),
+                                      child: Icon(
+                                        Icons.apps_rounded,
+                                        color: C.brand.withAlpha(140),
+                                      ),
+                                    ),
+                                  )
+                                : Container(
+                                    color: C.brand.withAlpha(16),
+                                    child: Icon(
+                                      Icons.apps_rounded,
+                                      color: C.brand.withAlpha(140),
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                d.title ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: context.t1,
+                                ),
+                              ),
+                              if ((d.content ?? '').isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  d.content!,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Ty.tiny.copyWith(
+                                    color: context.t3,
+                                    height: 1.45,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 11,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: C.brand.withAlpha(20),
+                            borderRadius: BorderRadius.circular(R.full),
+                          ),
+                          child: Text(
+                            '查看',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
+                              color: C.brand,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -331,7 +1347,7 @@ class _HomeComponentState extends State<HomeComponent> {
     final all = [
       (
         _QI(Icons.emoji_events_rounded, '每日签到', C.amber),
-        () => Get.find<NavigateLogic>().changePage(4),
+        () => Get.find<NavigateLogic>().goMine(),
         ui?.quickSign ?? true,
       ),
       (

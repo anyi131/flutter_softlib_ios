@@ -83,6 +83,9 @@ class _ReportListWidgetState extends State<ReportListWidget>
                 'minimal_row' => _buildMiniRow(context, report, logic),
                 'rich' => _buildRich(context, report, logic),
                 'chat' => _buildChat(context, report, logic),
+                // ★ v3.3.4：新增两款骨架级模板
+                'magazine' => _buildMagazine(context, report, logic),
+                'headline' => _buildHeadline(context, report, logic),
                 _ => _buildItem(context, report),
               };
             },
@@ -403,6 +406,210 @@ class _ReportListWidgetState extends State<ReportListWidget>
     );
   }
 
+
+  /// ★ v3.3.4 杂志卡：大图占满卡宽 + 图上叠标题 + 右下角时间胶囊
+  /// 与其它模板的骨架差异：图是主体（不是缩略图），信息压在图上
+  Widget _buildMagazine(
+      BuildContext context, ReportData report, ReportListLogic logic) {
+    final isDark = context.isDark;
+    final ts = report.createtime ?? 0;
+    final dt = ts > 0
+        ? '${DateTime.fromMillisecondsSinceEpoch(ts * 1000).month}/'
+            '${DateTime.fromMillisecondsSinceEpoch(ts * 1000).day}'
+        : '';
+    final img = report.image ?? '';
+    return GestureDetector(
+      onTap: () => logic.goToReadPage(report),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(R.lg),
+        child: SizedBox(
+          height: 190,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (img.isNotEmpty)
+                CachedNetworkImage(
+                  imageUrl: img,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 900,
+                  placeholder: (_, __) =>
+                      Container(color: C.brand.withAlpha(18)),
+                  errorWidget: (_, __, ___) => Container(
+                    decoration: BoxDecoration(gradient: Deco.brandGradient),
+                  ),
+                )
+              else
+                Container(decoration: BoxDecoration(gradient: Deco.brandGradient)),
+              // 底部渐隐让文字可读
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [Color(0xE6000000), Color(0x00000000)],
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 14,
+                right: 14,
+                bottom: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      report.title ?? '',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 7),
+                    Row(
+                      children: [
+                        if (dt.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withAlpha(46),
+                              borderRadius: BorderRadius.circular(R.full),
+                            ),
+                            child: Text(
+                              dt,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.visibility_outlined,
+                          size: 12,
+                          color: Colors.white.withAlpha(200),
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          '${report.views ?? 0}',
+                          style: TextStyle(
+                            color: Colors.white.withAlpha(200),
+                            fontSize: 10.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ★ v3.3.4 头条速览：超大标题 + 序号徽标 + 密度极高的单行摘要
+  /// 与其它模板的骨架差异：完全无图、无卡，靠字重与间距分层（近新闻客户端头条区）
+  Widget _buildHeadline(
+      BuildContext context, ReportData report, ReportListLogic logic) {
+    final isDark = context.isDark;
+    final ts = report.createtime ?? 0;
+    final dt = ts > 0
+        ? '${DateTime.fromMillisecondsSinceEpoch(ts * 1000).hour}:'
+            '${DateTime.fromMillisecondsSinceEpoch(ts * 1000).minute.toString().padLeft(2, '0')}'
+        : '';
+    return GestureDetector(
+      onTap: () => logic.goToReadPage(report),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 左侧时间竖栏（等宽，形成对齐列）
+            SizedBox(
+              width: 42,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    dt,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      color: C.brand,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Container(
+                    width: 20,
+                    height: 2,
+                    decoration: BoxDecoration(
+                      color: C.brand.withAlpha(70),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    report.title ?? '',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      height: 1.45,
+                      color: isDark ? C.t1 : C.lt1,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.visibility_outlined,
+                        size: 11,
+                        color: isDark ? C.t3 : C.lt3,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${report.views ?? 0} 阅读',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          color: isDark ? C.t3 : C.lt3,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '详情 ›',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          color: C.brand.withAlpha(200),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   /// v52w：聊天流模板（头像圆点 + 气泡）
   Widget _buildChat(

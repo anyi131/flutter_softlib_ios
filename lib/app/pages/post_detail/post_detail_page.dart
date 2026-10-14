@@ -33,6 +33,10 @@ class _PostDetailPageState extends State<PostDetailPage> {
   List<Map<String, dynamic>> _comments = [];
   bool _loading = true;
 
+  /// ★ 1014 P0：点赞本地状态 + 请求锁（防连点、失败必须有反馈）
+  bool _liked = false;
+  bool _likeBusy = false;
+
   /// 正在回复哪条评论（0 = 普通评论）
   int _replyTo = 0;
   String _replyNick = '';
@@ -382,15 +386,33 @@ class _PostDetailPageState extends State<PostDetailPage> {
           Row(
             children: [
               _action(
-                Icons.favorite_border_rounded,
+                _liked
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border_rounded,
                 '${p.likeCount}',
                 () async {
-                  final n = await _svc.like(p.id);
-                  if (n != null && mounted) {
+                  if (_likeBusy) return; // ★ P0：防连点
+                  _likeBusy = true;
+                  try {
+                    final n = await _svc.like(p.id);
+                    if (!mounted || n == null) return;
                     // ★ 用 copyWith：避免手动重建时漏字段导致视频/图片丢失
-                    setState(() => _post = p.copyWith(likeCount: n));
+                    setState(() {
+                      _post = p.copyWith(likeCount: n);
+                      _liked = !_liked;
+                    });
+                  } catch (e) {
+                    // ★ P0：失败必须有反馈（原来完全静默）
+                    if (mounted) {
+                      ToastUtil.error(
+                        e.toString().replaceFirst('Exception: ', ''),
+                      );
+                    }
+                  } finally {
+                    _likeBusy = false;
                   }
                 },
+                color: _liked ? C.danger : null,
               ),
               const SizedBox(width: 20),
               _action(
@@ -405,14 +427,20 @@ class _PostDetailPageState extends State<PostDetailPage> {
     );
   }
 
-  Widget _action(IconData icon, String label, VoidCallback onTap) => InkWell(
+  Widget _action(
+    IconData icon,
+    String label,
+    VoidCallback onTap, {
+    Color? color,
+  }) =>
+      InkWell(
     onTap: onTap,
     borderRadius: BorderRadius.circular(R.xs),
     child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
       child: Row(
         children: [
-          Icon(icon, size: 17, color: context.t3),
+          Icon(icon, size: 17, color: color ?? context.t3),
           const SizedBox(width: 4),
           Text(
             label,

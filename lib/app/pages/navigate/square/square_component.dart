@@ -40,6 +40,15 @@ class _SquareComponentState extends State<SquareComponent> {
   int _page = 1;
   bool _loading = true;
 
+  /// ★ 1014 P0：本地「已赞」集合 + 请求中锁
+  ///   · _likeBusy 防连点把 like_count 点爆（服务端已改为切换语义，双保险）
+  ///   · _liked 记录本地已赞态，用于切换图标（实心/空心爱心）
+  final Set<int> _liked = <int>{};
+  final Set<int> _likeBusy = <int>{};
+
+  /// ★ 1014 P1：请求代号 —— 快速连切分类时丢弃过期响应，防止旧数据覆盖新分类
+  int _reqSeq = 0;
+
   @override
   void initState() {
     super.initState();
@@ -53,11 +62,14 @@ class _SquareComponentState extends State<SquareComponent> {
     setState(() => _cats = cats);
   }
 
-  Future<void> _load({bool reset = false}) async {
+  Future<void> _load({bool reset = false, int? page}) async {
     if (reset) _page = 1;
+    final target = page ?? _page;
+    final seq = ++_reqSeq;
     try {
-      final list = await _svc.fetchPosts(page: _page, catId: _currentCat);
-      if (!mounted) return;
+      final list = await _svc.fetchPosts(page: target, catId: _currentCat);
+      // ★ 1014 P1：请求期间用户可能又切了分类/刷新，过期响应直接丢弃
+      if (!mounted || seq != _reqSeq) return;
       setState(() {
         if (reset) {
           _posts = list;
@@ -74,9 +86,11 @@ class _SquareComponentState extends State<SquareComponent> {
                   : IndicatorResult.success,
             );
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || seq != _reqSeq) return;
       setState(() => _loading = false);
+      // ★ 1014 P0：失败时结束 loading，但不推进页码（由 onLoad 决定是否提交）
       reset ? _refresh.finishRefresh() : _refresh.finishLoad();
+      if (!reset) _toast('加载失败，请检查网络后重试');
     }
   }
 
@@ -85,8 +99,13 @@ class _SquareComponentState extends State<SquareComponent> {
     setState(() {
       _currentCat = id;
       _posts = [];
+      _page = 1;
       _loading = true;
     });
+    // ★ 1014 P1 修复：切分类是「重新开始」，把分页指示器复位为
+    //   success（EasyRefresh 3.x 无 resetState），否则上一次失败/无更多
+    //   的状态会让新分类的上拉被残留 noMore 拒绝加载。
+    _refresh.finishLoad(IndicatorResult.success, true);
     _load(reset: true);
   }
 
@@ -225,8 +244,12 @@ class _SquareComponentState extends State<SquareComponent> {
       controller: _refresh,
       onRefresh: () => _load(reset: true),
       onLoad: () async {
-        _page++;
-        await _load();
+        // ★ 1014 P0 修复：请求成功后才提交页码自增，失败则原地不动，
+        //   否则 catch 不回滚会让这一页 20 条动态被永久跳过。
+        final next = _page + 1;
+        final before = _posts.length;
+        await _load(page: next);
+        if (_posts.length > before) _page = next;
       },
       child: ListView.builder(
         padding: EdgeInsets.only(
@@ -486,11 +509,18 @@ class _SquareComponentState extends State<SquareComponent> {
                   Row(
                     children: [
                       _action(
-                        icon: Icons.favorite_border_rounded,
+                        icon: _liked.contains(p.id)
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        color: _liked.contains(p.id) ? C.danger : null,
                         label: '${p.likeCount}',
                         onTap: () async {
-                          final n = await _svc.like(p.id);
-                          if (n != null && mounted) {
+                          // ★ 1014 P0：请求未回来前禁止连点
+                          if (_likeBusy.contains(p.id)) return;
+                          _likeBusy.add(p.id);
+                          try {
+                            final n = await _svc.like(p.id);
+                            if (!mounted) return;
                             // ★ 用 copyWith：避免手动重建时漏掉 videoUrl 等字段
                             //   （这正是「点赞后视频消失/数据丢失」的原因）
                             setState(() {
@@ -500,7 +530,21 @@ class _SquareComponentState extends State<SquareComponent> {
                               if (idx >= 0) {
                                 _posts[idx] = p.copyWith(likeCount: n);
                               }
+                              if (_liked.contains(p.id)) {
+                                _liked.remove(p.id);
+                              } else {
+                                _liked.add(p.id);
+                              }
                             });
+                          } catch (e) {
+                            // ★ 1014 P0：失败必须有反馈（原来完全静默）
+                            if (mounted) {
+                              _toast(
+                                e.toString().replaceFirst('Exception: ', ''),
+                              );
+                            }
+                          } finally {
+                            _likeBusy.remove(p.id);
                           }
                         },
                       ),
@@ -551,11 +595,14 @@ class _SquareComponentState extends State<SquareComponent> {
         ),
       );
     }
+    // ★ 1014 P1 修复：2 图 / 4 图时用 2 列，避免固定 3 列导致右侧空一格
+    //   （原先 2 张图排成「两张 + 空白」，4 张图排成「三张 + 一张」，观感错位）
+    final cols = (n == 2 || n == 4) ? 2 : 3;
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: cols,
         mainAxisSpacing: 5,
         crossAxisSpacing: 5,
       ),
@@ -580,6 +627,7 @@ class _SquareComponentState extends State<SquareComponent> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    Color? color,
   }) {
     return InkWell(
       onTap: onTap,
@@ -588,7 +636,7 @@ class _SquareComponentState extends State<SquareComponent> {
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
         child: Row(
           children: [
-            Icon(icon, size: 17, color: context.t3),
+            Icon(icon, size: 17, color: color ?? context.t3),
             const SizedBox(width: 4),
             Text(label, style: Ty.small.copyWith(color: context.t2)),
           ],
@@ -660,7 +708,13 @@ class _SquareComponentState extends State<SquareComponent> {
     final videoLinkCtrl = TextEditingController();
     final List<String> images = [];
     final List<File> localImages = [];
-    int catId = _currentCat == 0 ? 2 : _currentCat;
+    // ★ 1014 P1 修复：不再硬编码 cat_id=2。当前在「全部」时，
+    //   优先取服务端返回的第一个真实分类；找不到再退回 1，
+    //   服务端也会对非法 cat_id 做兜底（见 post_create）。
+    final realCats = _cats.where((c) => c.id != 0).toList();
+    int catId = _currentCat != 0
+        ? _currentCat
+        : (realCats.isNotEmpty ? realCats.first.id : 1);
     bool sending = false;
     String err = '';
     bool showEmoji = false;
@@ -687,8 +741,10 @@ class _SquareComponentState extends State<SquareComponent> {
                 localImages.add(File(f.path));
                 images.add(f.path);
               }
+              if (!ctx.mounted) return;
               setSheet(() {});
             } catch (e) {
+              if (!ctx.mounted) return;
               setSheet(() => err = '选择图片失败：请在设置中允许相册权限');
             }
           }
@@ -869,11 +925,13 @@ class _SquareComponentState extends State<SquareComponent> {
                             maxDuration: const Duration(minutes: 5),
                           );
                           if (f == null) return;
+                          if (!ctx.mounted) return;
                           setSheet(() {
                             videoFile = File(f.path);
                             videoPreviewUrl = '';
                           });
                         } catch (e) {
+                          if (!ctx.mounted) return;
                           setSheet(() => err = '选择视频失败，请允许相册权限');
                         }
                       },
@@ -916,6 +974,7 @@ class _SquareComponentState extends State<SquareComponent> {
                             });
                             try {
                               final r = await _svc.parseVideoLink(u);
+                              if (!ctx.mounted) return;
                               setSheet(() {
                                 videoPreviewUrl = (r['url'] ?? '').toString();
                                 videoPreviewType = (r['type'] ?? '').toString();
@@ -925,6 +984,7 @@ class _SquareComponentState extends State<SquareComponent> {
                                 'Exception: ',
                                 '',
                               );
+                              if (!ctx.mounted) return;
                               setSheet(() {
                                 videoPreviewUrl = '';
                                 err = msg.contains('没有识别到')
@@ -1041,17 +1101,25 @@ class _SquareComponentState extends State<SquareComponent> {
                             });
                             try {
                               // 先上传本地图片
+                              // ★ 1014 P1 修复：按索引「一对一」取 File，
+                              //   原先 removeAt(0) 在「删中间图 / 本地图与远程图
+                              //   混排」时会与 images 索引错位 → 上传错图或 RangeError。
                               final urls = <String>[];
                               for (int i = 0; i < images.length; i++) {
-                                if (images[i].startsWith('http')) {
-                                  urls.add(images[i]);
-                                } else {
-                                  urls.add(
-                                    await PostService.instance.uploadImage(
-                                      localImages.removeAt(0),
-                                    ),
-                                  );
+                                final src = images[i];
+                                if (src.startsWith('http')) {
+                                  urls.add(src);
+                                  continue;
                                 }
+                                if (i >= localImages.length) {
+                                  urls.add(src);
+                                  continue;
+                                }
+                                urls.add(
+                                  await PostService.instance.uploadImage(
+                                    localImages[i],
+                                  ),
+                                );
                               }
                               // 视频处理：本地先上传，链接直接交给后端解析
                               String videoUrl = '';
@@ -1081,6 +1149,8 @@ class _SquareComponentState extends State<SquareComponent> {
                                 _load(reset: true);
                               }
                             } catch (e) {
+                              // ★ 1014 P0：弹窗可能已被用户关闭，须守卫
+                              if (!ctx.mounted) return;
                               setSheet(() {
                                 sending = false;
                                 err = e.toString().replaceFirst(

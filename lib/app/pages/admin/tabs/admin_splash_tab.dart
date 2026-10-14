@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../../../api/admin_service.dart';
+import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';
@@ -24,6 +25,17 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   bool noticeEnable = false;
   bool noticeForce = false;
   bool maintainEnable = false;
+
+  /// ★ v3.3.4：维护页模板（5 款骨架级）
+  String _maintainTemplate = 'engineer';
+
+  static const _maintainTpls = [
+    ('engineer', '工程进度', '深色+呼吸发光图标', Icons.settings_rounded),
+    ('countdown', '维护倒计时', '金色徽标+进度条', Icons.timer_outlined),
+    ('glass', '毛玻璃', '双色光晕+模糊卡', Icons.blur_on_rounded),
+    ('brand', '品牌静默', 'LOGO+品牌字居中', Icons.branding_watermark_rounded),
+    ('checklist', '服务清单', '提示条+编号列表', Icons.checklist_rounded),
+  ];
 
   final imgCtrl = TextEditingController();
   final secondsCtrl = TextEditingController(text: '2');
@@ -163,6 +175,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         noticeEnable = '${d['notice_enable']}' == '1';
         noticeForce = '${d['notice_force']}' == '1';
         maintainEnable = '${d['maintain_enable']}' == '1';
+        _maintainTemplate = '${d['maintain_template'] ?? 'engineer'}';
         imgCtrl.text = '${d['splash_image'] ?? ''}';
         secondsCtrl.text = '${d['splash_seconds'] ?? 2}';
         urlCtrl.text = '${d['splash_url'] ?? ''}';
@@ -277,6 +290,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         'notice_force': noticeForce ? 1 : 0,
         'maintain_enable': maintainEnable ? 1 : 0,
         'maintain_text': maintainCtrl.text.trim(),
+        'maintain_template': _maintainTemplate,
         // 用户协议 / 隐私政策
         'agreement': agreementCtrl.text,
         'privacy': privacyCtrl.text,
@@ -560,7 +574,83 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
               maintainEnable,
               (v) => setState(() => maintainEnable = v),
             ),
-            _field('维护提示文案', maintainCtrl, lines: 2),
+            _field('维护提示文案（每行一条，会分别展示）', maintainCtrl, lines: 3),
+            const SizedBox(height: 12),
+            Text(
+              '维护页模板 · 共 5 款（骨架不同，不是换色）。当前：'
+              '${_maintainTpls.firstWhere((e) => e.$1 == _maintainTemplate, orElse: () => _maintainTpls.first).$2}',
+              style: Ty.tiny.copyWith(color: context.t3),
+            ),
+            const SizedBox(height: 9),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final o in _maintainTpls)
+                  AppPressable(
+                    onTap: () => setState(() => _maintainTemplate = o.$1),
+                    child: Container(
+                      width: 148,
+                      padding: const EdgeInsets.fromLTRB(11, 9, 11, 9),
+                      decoration: BoxDecoration(
+                        color: _maintainTemplate == o.$1
+                            ? C.brand.withAlpha(22)
+                            : context.isDark
+                            ? Colors.white.withAlpha(8)
+                            : Colors.black.withAlpha(4),
+                        borderRadius: BorderRadius.circular(R.sm),
+                        border: Border.all(
+                          color: _maintainTemplate == o.$1
+                              ? C.brand.withAlpha(150)
+                              : Colors.transparent,
+                          width: 1.3,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            o.$4,
+                            size: 18,
+                            color: _maintainTemplate == o.$1
+                                ? C.brand
+                                : context.t3,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  o.$2,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: _maintainTemplate == o.$1
+                                        ? C.brand
+                                        : context.t2,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  o.$3,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Ty.tiny.copyWith(
+                                    fontSize: 9.5,
+                                    color: context.t3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ],
         ),
         const SizedBox(height: 12),

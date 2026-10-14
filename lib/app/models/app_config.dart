@@ -28,6 +28,9 @@ class AppConfig {
   // ===== 远程控制 =====
   final bool maintainEnable;
   final String maintainText;
+
+  /// ★ v3.3.4：维护页模板（engineer/countdown/glass/brand/checklist）
+  final String maintainTemplate;
   final String serviceUrl;
   final String agreement;
   final String privacy;
@@ -97,6 +100,7 @@ class AppConfig {
     this.noticeForce = false,
     this.maintainEnable = false,
     this.maintainText = '',
+    this.maintainTemplate = 'engineer',
     this.serviceUrl = '',
     this.agreement = '',
     this.privacy = '',
@@ -172,6 +176,9 @@ class AppConfig {
     noticeForce: _b(json['notice_force']),
     maintainEnable: _b(json['maintain_enable']),
     maintainText: _s(json['maintain_text']),
+    maintainTemplate: _s(json['maintain_template']).isEmpty
+        ? 'engineer'
+        : _s(json['maintain_template']),
     serviceUrl: _s(json['service_url']),
     agreement: _s(json['agreement']),
     privacy: _s(json['privacy']),

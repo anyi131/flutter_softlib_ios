@@ -55,6 +55,9 @@ class UiConfig {
 
   // ── 底部 Tab 开关 ──
   final bool tabHome;
+
+  /// ★ v3.3.4：工具箱 Tab（分类大卡 + 胶囊工具）
+  final bool tabTools;
   final bool tabSquare;
   final bool tabTips;
   final bool tabMine;
@@ -113,6 +116,7 @@ class UiConfig {
     this.themeMode = 'light',
     this.allowUserThemeToggle = false,
     this.tabHome = true,
+    this.tabTools = true,
     this.tabSquare = true,
     this.tabTips = true,
     this.tabMine = true,
@@ -170,6 +174,7 @@ class UiConfig {
       themeMode: _s(theme['mode'], 'light'),
       allowUserThemeToggle: _b(theme['user_toggle'], false),
       tabHome: _b(tabs['home'], true),
+      tabTools: _b(tabs['tools'], true),
       tabSquare: _b(tabs['square'], true),
       tabTips: _b(tabs['tips'], true),
       tabMine: _b(tabs['mine'], true),
