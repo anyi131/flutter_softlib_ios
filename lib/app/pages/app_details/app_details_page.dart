@@ -1720,15 +1720,13 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         keyword: title,
         force: true,
       );
-      // 优先完全同名，其次包含关系
-      for (final a in list) {
-        if (a.title.trim() == title && a.id > 0) return a.id;
-      }
-      for (final a in list) {
-        if (a.id > 0 && (a.title.contains(title) || title.contains(a.title))) {
-          return a.id;
-        }
-      }
+      // ★ 1014 安全：只接受「完全同名」的唯一匹配。
+      //   原先的 contains 双向模糊匹配，会把付费资源误判到同名的免费条目上，
+      //   从而通过免费 id 的校验 —— 这在强制鉴权模型下是绕过口，已收紧。
+      final exact = list.where((a) => a.id > 0 && a.title.trim() == title).toList();
+      if (exact.length == 1) return exact.first.id;
+      // 多个完全同名 → 无法唯一确定，宁可不下载
+      if (exact.length > 1) return 0;
     } catch (_) {}
     return 0;
   }

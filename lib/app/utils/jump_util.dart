@@ -2,17 +2,49 @@ import 'package:flutter_softlib/app/utils/toast_util.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class JumpUtil {
+  /// ★ 1014 安全：判断 URL 是否为「软件安装包直链 / 网盘直链」。
+  /// 这类链接若交给外部浏览器打开，就等于绕过了 App 与服务端的所有鉴权
+  ///（后台把轮播/公告/更新地址误配成直链时，用户一点就下载）。
+  static bool isDownloadLink(String url) {
+    final u = url.trim().toLowerCase();
+    if (u.isEmpty) return false;
+    // 1) 以安装包/压缩包结尾（含 query 的情况）
+    if (RegExp(r'\.(apk|ipa|xapk|apks|zip|rar|7z)(\?|#|$)').hasMatch(u)) {
+      return true;
+    }
+    // 2) 常见直链下载域名（蓝奏云解析后的 CDN 域名等）
+    const hosts = [
+      'lanosso.com', // 蓝奏云直链 CDN
+      'lanzou', // lanzou*.com / lanzoui / lanzouw 等
+      'lanzn.com',
+      'lzy.',
+      'down.', // 通用下载子域
+    ];
+    for (final h in hosts) {
+      if (u.contains(h)) return true;
+    }
+    return false;
+  }
+
   /// 浏览器打开网址
-  static void openUrl(String url) {
+  ///
+  /// ★ 1014 安全：默认拒绝「安装包/网盘直链」，避免绕过 App 内鉴权。
+  /// 需要打开直链的场景（如解析失败兜底）必须显式传 allowDownload: true，
+  /// 且调用方须已完成服务端校验。
+  static void openUrl(String url, {bool allowDownload = false}) {
     if (url.isEmpty) {
       ToastUtil.error('网址不能为空');
       return;
     }
-    if (Uri.tryParse(url)?.hasScheme == true) {
-      launchUrlString(url, mode: LaunchMode.externalApplication);
-    } else {
+    if (Uri.tryParse(url)?.hasScheme != true) {
       ToastUtil.error('无效的网址: $url');
+      return;
     }
+    if (!allowDownload && isDownloadLink(url)) {
+      ToastUtil.error('该链接为下载地址，请从软件详情页下载（需登录校验）');
+      return;
+    }
+    launchUrlString(url, mode: LaunchMode.externalApplication);
   }
 
   /// 添加QQ群

@@ -208,17 +208,96 @@ class SoftService {
   /// 供调用方 toast/弹窗展示，避免用户只看到笼统的「解析失败」
   static String lastParseError = '';
 
-  /// 方案一：自建 API 解析直链（速度快、成功率高）
-  Future<String?> resolveLzyByApi(String lzyUrl) async {
+  /// 后端解析兜底（★ 1014：带 token + 票据，服务端强制校验）
+  Future<String?> resolveLzyByServer(String lzyUrl, {String? ticket}) async {
+    try {
+      final token = UserService.instance.token;
+      if (token.isEmpty) {
+        lastParseError = '请先登录后再下载';
+        return null;
+      }
+      final resp = await _dio.post(
+        '/api/softlib/lzy_file_parse',
+        data: {
+          'token': token,
+          'url': lzyUrl,
+          if (ticket != null) 'ticket': ticket,
+        },
+        options: Options(receiveTimeout: const Duration(seconds: 40)),
+      );
+      final data = resp.data;
+      if (data is Map && data['code'] == 1) {
+        final u = (data['data'] is Map) ? (data['data']['url'] ?? '') : '';
+        if (u.toString().isNotEmpty) return u.toString();
+      } else if (data is Map && data['msg'] is String) {
+        lastParseError = data['msg'] as String;
+      }
+    } catch (e) {
+      debugPrint('[Softlib] $e');
+    }
+    return null;
+  }
+
+  /// 蓝奏云解析
+  /// ★ 1014 安全：两级解析都保留（自建 API 优先，后端兜底），
+  ///   但两者都必须先通过服务端鉴权 —— 否则解析直链就成了付费绕过口。
+  ///   鉴权由服务端 /api/softlib/lzy/auth 统一裁决，客户端无法跳过。
+  Future<String?> resolveLzy(String lzyUrl) async {
+    lastParseError = '';
+    // ① 先向服务端申请「本次解析放行票据」
+    final ticket = await _applyParseTicket(lzyUrl);
+    if (ticket == null) return null; // 未登录 / 无权限 / 网络异常 → 一律不解析
+
+    // ② 自建 API 优先（运维可随时更新，无需发版）
+    final a = await resolveLzyByApi(lzyUrl, ticket: ticket);
+    if (a != null && a.isNotEmpty) return a;
+    // ③ 后端解析兜底
+    return resolveLzyByServer(lzyUrl, ticket: ticket);
+  }
+
+  /// ★ 1014：向服务端申请解析放行票据。
+  /// 服务端会校验登录态 + 该资源是否付费/会员专享 + 是否已购买，
+  /// 通过才返回票据；客户端拿不到票据就不解析，从根上堵死绕过。
+  Future<String?> _applyParseTicket(String lzyUrl) async {
+    try {
+      final token = UserService.instance.token;
+      if (token.isEmpty) {
+        lastParseError = '请先登录后再下载';
+        return null;
+      }
+      final resp = await _dio.post(
+        '/api/softlib/lzy/auth',
+        data: {'token': token, 'url': lzyUrl},
+        options: Options(receiveTimeout: const Duration(seconds: 20)),
+      );
+      final d = resp.data;
+      if (d is Map && d['code'] == 1) {
+        final t = (d['data'] is Map) ? (d['data']['ticket'] ?? '') : '';
+        if (t.toString().isNotEmpty) return t.toString();
+      }
+      if (d is Map && d['msg'] is String) lastParseError = d['msg'] as String;
+    } catch (e) {
+      debugPrint('[Softlib] auth: $e');
+      lastParseError = '无法连接服务器完成校验';
+    }
+    return null;
+  }
+
+  /// 自建 API 解析直链（运维入口，服务端已发票据后才调用）
+  Future<String?> resolveLzyByApi(String lzyUrl, {String? ticket}) async {
     try {
       final resp = await _dio.get(
         kLzyProxy,
-        queryParameters: {'url': lzyUrl},
+        queryParameters: {
+          'url': lzyUrl,
+          if (ticket != null) 'ticket': ticket,
+          if (UserService.instance.token.isNotEmpty)
+            'token': UserService.instance.token,
+        },
         options: Options(receiveTimeout: const Duration(seconds: 30)),
       );
       final d = resp.data;
       if (d is Map) {
-        // 兼容多种返回结构 + 字段大小写（自建服务返回 downUrl）
         final okCode = d['code'] == 200 || d['code'] == 1 || d['code'] == '200';
         if (!okCode && d['msg'] is String && (d['msg'] as String).isNotEmpty) {
           lastParseError = d['msg'] as String; // 如「文件取消分享了」
@@ -256,35 +335,6 @@ class SoftService {
       debugPrint('[Softlib] $e');
     }
     return null;
-  }
-
-  /// 方案二：后端解析（原逻辑兜底）
-  Future<String?> resolveLzyByServer(String lzyUrl) async {
-    try {
-      final resp = await _dio.get(
-        '/api/softlib/lzy_file_parse',
-        queryParameters: {'url': lzyUrl},
-        options: Options(receiveTimeout: const Duration(seconds: 40)),
-      );
-      final data = resp.data;
-      if (data is Map && data['code'] == 1) {
-        final u = (data['data'] is Map) ? (data['data']['url'] ?? '') : '';
-        if (u.toString().isNotEmpty) return u.toString();
-      } else if (data is Map && data['msg'] is String) {
-        lastParseError = data['msg'] as String;
-      }
-    } catch (e) {
-      debugPrint('[Softlib] $e');
-    }
-    return null;
-  }
-
-  /// 蓝奏云解析：先自建 API，失败再用后端解析，都失败返回 null（调用方用原链接）
-  Future<String?> resolveLzy(String lzyUrl) async {
-    lastParseError = '';
-    final a = await resolveLzyByApi(lzyUrl);
-    if (a != null && a.isNotEmpty) return a;
-    return resolveLzyByServer(lzyUrl);
   }
 
   /// 软件浏览量 +1

@@ -344,9 +344,12 @@ class AppDetailsLogic extends GetxController {
       ),
     );
     if (go == true && originUrl.isNotEmpty) {
-      JumpUtil.openUrl(originUrl);
+      // ★ 1014：此处是「解析失败后的浏览器兜底」，属于用户已通过校验
+      //   后的降级路径，显式允许直链。
+      JumpUtil.openUrl(originUrl, allowDownload: true);
     } else if (go == false) {
-      // 用户选「重试」
+      // 用户选「重试」——★ 1014：必须重新鉴权，不能复用上一次的放行标志
+      unlockVerified = false;
       addDownload(appInfo?.fileName ?? '未知文件名');
     }
   }
@@ -539,19 +542,25 @@ class AppDetailsLogic extends GetxController {
   ///
   /// ★ 需求 #2：直链解析失败时，不只是 Toast 提示，
   ///   要弹窗让用户选择「用浏览器打开原链接下载」。
-  /// ★ 1014 安全：付费校验是否已通过。
+  /// ★ 1014 安全：一次性放行令牌。
   /// 只有 app_details_page._onDownload 完成服务端校验后才会置 true；
-  /// 其他路径（重试等）必须依赖它，避免绕过付费墙。
-  bool unlockVerified = false;
+  /// 消费一次立即失效（用完即清），避免跨页面/跨软件残留导致跳过校验。
+  bool _unlockToken = false;
+
+  /// 设置放行令牌（仅鉴权通过后调用）
+  set unlockVerified(bool v) => _unlockToken = v;
+  bool get unlockVerified => _unlockToken;
 
   Future<void> addDownload(String fileName, [String? lzyUrl]) async {
-    // ★ 1014 安全兜底：付费资源未经服务端确认，一律拒绝下载。
-    //   原来 addDownload 是「裸下载器」，任何调用点都能免检下载。
-    if ((item?.needUnlock ?? false) && !unlockVerified) {
+    // ★ 1014 安全兜底（全量强制鉴权）：无论免费还是付费，
+    //   未经服务端校验一律不允许发起下载。
+    if (!_unlockToken) {
       ResolveOverlay.dismiss();
-      ToastUtil.error('该资源需要付费/开通会员后下载');
+      ToastUtil.error('该资源尚未通过服务端校验，已停止下载');
       return;
     }
+    // ★ 一次性令牌：消费即失效，杜绝复用
+    _unlockToken = false;
     // v52 #3：解析阶段显示加载浮层，任务创建成功/失败后关闭
     ResolveOverlay.show(stage: ResolveStages.resolving);
     if (await Permission.notification.isDenied) {
