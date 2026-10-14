@@ -785,6 +785,20 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     );
   }
 
+  /// ★ 1014：日期紧凑化 —— 「2026-10-12 / 2026.10.12」→「10-12」
+  ///    信息横幅里日期较长，短格式更整齐且不会被挤压省略。
+  String _shortDate(String s) {
+    final t = s.trim();
+    if (t.isEmpty || t == '-') return '-';
+    final m = RegExp(r'^(\d{4})[-./](\d{1,2})[-./](\d{1,2})').firstMatch(t);
+    if (m != null) {
+      final mm = m.group(2)!.padLeft(2, '0');
+      final dd = m.group(3)!.padLeft(2, '0');
+      return '$mm-$dd';
+    }
+    return t;
+  }
+
   /// v54：minimal/compact 扁平数据行（无玻璃卡，细分隔）
   /// ★ 1014 重做：与玻璃卡版一致，一行均分 + FittedBox 自适应，
   ///   不再折行产生「4 格 + 1 格」的错位观感。
