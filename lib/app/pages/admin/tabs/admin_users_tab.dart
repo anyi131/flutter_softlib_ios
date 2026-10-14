@@ -870,189 +870,104 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     }
   }
 
+  /// ★ 1014 安全：密码管理改为「只能重置，不能查看」
+  /// 原实现允许管理员读出用户明文密码（服务端 AES 副本），
+  /// 一旦数据库泄漏 = 全站明文口令泄漏。现已从服务端移除该能力。
   Future<void> _resetPassword(Map u) async {
     final id = int.tryParse('${u['id']}') ?? 0;
     final c1 = TextEditingController();
     String err = '';
     bool hide = true;
-    bool loadingOld = true;
-    String oldPwd = '';
-    bool oldAvailable = false;
-    bool showOld = false;
-    String tab = 'view'; // view | set
 
-    await Get.dialog<bool>(
+    final go = await Get.dialog<bool>(
       StatefulBuilder(builder: (ctx, setD) {
-        // 首次打开时拉取原密码
-        if (loadingOld) {
-          AdminService.instance.userPassword(id).then((r) {
-            if (!ctx.mounted) return;
-            setD(() {
-              loadingOld = false;
-              oldPwd = (r['password'] ?? '').toString();
-              oldAvailable = r['available'] == true;
-            });
-          }).catchError((e) {
-            if (ctx.mounted) {
-              setD(() {
-                loadingOld = false;
-                oldAvailable = false;
-              });
-            }
-          });
-        }
-
         return AlertDialog(
-          title: Text('密码管理：${u['nickname']}',
+          title: Text('重置密码：${u['nickname']}',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      _modeChip('查看原密码', 'view', tab, ctx,
-                          (m) => setD(() => tab = m)),
-                      const SizedBox(width: 8),
-                      _modeChip('重置密码', 'set', tab, ctx,
-                          (m) => setD(() => tab = m)),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  if (tab == 'view') ...[
-                    if (loadingOld)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        child: Row(children: [
-                          SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2)),
-                          SizedBox(width: 10),
-                          Text('读取中…', style: TextStyle(fontSize: 12.5)),
-                        ]),
-                      )
-                    else if (!oldAvailable)
-                      const Text(
-                        '该账号没有可查看的密码。\n'
-                        '原因：这是站点上注册或早期创建的账号，只存了单向加密的密码哈希，'
-                        '无法还原。可以切到「重置密码」设一个新密码。',
-                        style: TextStyle(fontSize: 12.5, height: 1.6),
-                      )
-                    else ...[
-                      const Text('该用户当前密码：',
-                          style: TextStyle(fontSize: 12.5)),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 11),
-                        decoration: BoxDecoration(
-                          color: C.brand.withAlpha(20),
-                          borderRadius: BorderRadius.circular(R.sm),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: SelectableText(
-                                showOld ? oldPwd : '●' * oldPwd.length.clamp(6, 16),
-                                style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    fontFamily: 'monospace'),
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                showOld
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined,
-                                size: 18,
-                              ),
-                              onPressed: () => setD(() => showOld = !showOld),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.copy_rounded, size: 18),
-                              onPressed: () {
-                                Clipboard.setData(ClipboardData(text: oldPwd));
-                                ToastUtil.success('已复制');
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        '仅用于协助用户找回密码，请勿泄露。',
-                        style: TextStyle(fontSize: 11, color: C.warning),
-                      ),
-                    ],
-                  ] else ...[
-                    const Text('设置一个新的登录密码（至少 6 位）。',
-                        style: TextStyle(fontSize: 12.5)),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: c1,
-                      obscureText: hide,
-                      decoration: InputDecoration(
-                        labelText: '新密码',
-                        isDense: true,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            hide
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                            size: 18,
-                          ),
-                          onPressed: () => setD(() => hide = !hide),
-                        ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: C.warning.withAlpha(22),
+                  borderRadius: BorderRadius.circular(R.sm),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.lock_outline_rounded,
+                        size: 15, color: C.warning),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Text(
+                        '出于安全考虑，密码不支持查看（服务端只保存不可逆哈希）。'
+                        '如需协助用户，请为其设置一个新密码。',
+                        style: TextStyle(
+                            fontSize: 11.5, height: 1.6, color: ctx.t2),
                       ),
                     ),
-                    if (err.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: Text(err,
-                            style: const TextStyle(
-                                fontSize: 12.5,
-                                color: C.danger,
-                                fontWeight: FontWeight.w700)),
-                      ),
                   ],
-                ],
+                ),
               ),
-            ),
+              const SizedBox(height: 14),
+              const Text('设置一个新的登录密码（至少 6 位）。',
+                  style: TextStyle(fontSize: 12.5)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: c1,
+                obscureText: hide,
+                decoration: InputDecoration(
+                  labelText: '新密码',
+                  isDense: true,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      hide
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      size: 18,
+                    ),
+                    onPressed: () => setD(() => hide = !hide),
+                  ),
+                ),
+              ),
+              if (err.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(err,
+                      style: const TextStyle(
+                          fontSize: 12.5,
+                          color: C.danger,
+                          fontWeight: FontWeight.w700)),
+                ),
+            ],
           ),
           actions: [
             TextButton(
                 onPressed: () => Get.back(result: false),
-                child: const Text('关闭')),
-            if (tab == 'set')
-              FilledButton(
-                onPressed: () {
-                  if (c1.text.trim().length < 6) {
-                    setD(() => err = '密码至少 6 位');
-                    return;
-                  }
-                  Get.back(result: true);
-                },
-                child: const Text('保存'),
-              ),
+                child: const Text('取消')),
+            FilledButton(
+              onPressed: () {
+                if (c1.text.trim().length < 6) {
+                  setD(() => err = '密码至少 6 位');
+                  return;
+                }
+                Get.back(result: true);
+              },
+              child: const Text('重置'),
+            ),
           ],
         );
       }),
     );
 
-    // 只有点了「保存」且密码非空才提交
-    if (c1.text.trim().length >= 6) {
-      try {
-        await _svc.resetUserPassword(id, c1.text.trim());
-        ToastUtil.success('密码已重置为新密码');
-      } catch (e) {
-        ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
-      }
+    if (go != true) return;
+    try {
+      await _svc.resetUserPassword(id, c1.text.trim());
+      ToastUtil.success('密码已重置为新密码');
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
     }
   }
 
