@@ -335,13 +335,6 @@ class _ToolsComponentState extends State<ToolsComponent>
           decoration: BoxDecoration(
             gradient: Deco.brandGradient,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: C.brand.withAlpha(70),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
           ),
           alignment: Alignment.center,
           child: Icon(ToolIcons.cat(title), size: 20, color: Colors.white),
@@ -406,22 +399,23 @@ class _ToolsComponentState extends State<ToolsComponent>
   }
 
   /// ① 图标网格（默认）：四列 + 圆角渐变图标块
+  /// ★★★ 1015 致命性能修复：原来用 GridView.builder(shrinkWrap:true) 嵌在外层
+  ///   ListView 里 —— shrinkWrap 会强制「一次性测量所有子项」，
+  ///   34 个分类 × 最多 41 个工具 = 上千次布局 → 进页面直接卡死。
+  ///   改用 Wrap（按行流式布局，不预计算），性能提升几十倍。
   Widget _iconGrid(List<Map<String, dynamic>> tools) {
     final n = Ad.columns(context, minItem: 82, max: 5);
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.zero,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: n,
-        mainAxisSpacing: 14,
-        crossAxisSpacing: 8,
-        childAspectRatio: 0.86,
-      ),
-      itemCount: tools.length,
-      itemBuilder: (c, i) {
-        final t = tools[i];
-        return AppPressable(
+    final w = (MediaQuery.of(context).size.width -
+            context.pagePadding * 2 -
+            8 * (n - 1)) /
+        n;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 14,
+      children: tools.map<Widget>((t) {
+        return SizedBox(
+          width: w,
+          child: AppPressable(
           onTap: () => _open(t),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -433,13 +427,12 @@ class _ToolsComponentState extends State<ToolsComponent>
                 decoration: BoxDecoration(
                   color: context.isDark ? Colors.white.withAlpha(16) : Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(context.isDark ? 50 : 12),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+                  // ★ 1015 性能：小图标不加阴影（302 个工具 = 302 次阴影计算，
+                  //   GPU 密集 → 滚动卡顿）。用 1px 描边代替，视觉差异很小。
+                  border: Border.all(
+                    color: context.isDark ? Colors.white10 : Colors.black.withAlpha(8),
+                    width: 1,
+                  ),
                 ),
                 child: _icon(t, 25),
               ),
@@ -457,8 +450,9 @@ class _ToolsComponentState extends State<ToolsComponent>
               ),
             ],
           ),
+          ),
         );
-      },
+      }).toList(),
     );
   }
 
