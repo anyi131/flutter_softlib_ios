@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../design/app_anim.dart';
+import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
@@ -133,7 +135,7 @@ class _TimerPageState extends State<TimerPage> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: [1, 3, 5, 10, 15, 30, 60]
+                  children: <Widget>[1, 3, 5, 10, 15, 30, 60]
                       .map((m) => AppPressable(
                             onTap: () => setState(() {
                               _h.text = '0';
@@ -206,9 +208,9 @@ class _DicePageState extends State<DicePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: out
-                    .map((n) => Padding(
+                    .map<Widget>((n) => Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: Text(dice[n - 1], style: const TextStyle(fontSize: 52, color: C.brand)),
+                          child: Text(dice[n - 1], style: TextStyle(fontSize: 52, color: C.brand)),
                         ))
                     .toList(),
               )
@@ -218,7 +220,7 @@ class _DicePageState extends State<DicePage> {
                 runSpacing: 10,
                 alignment: WrapAlignment.center,
                 children: out
-                    .map((n) => Container(
+                    .map<Widget>((n) => Container(
                           width: 54,
                           height: 54,
                           alignment: Alignment.center,

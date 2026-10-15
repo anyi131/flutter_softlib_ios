@@ -2,11 +2,14 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../design/app_anim.dart';
+import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
@@ -255,7 +258,7 @@ class _ImgColorPageState extends State<ImgColorPage> with ImgToolMixin {
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
-                    children: palette.map((hex) {
+                    children: palette.map<Widget>((hex) {
                       final v = int.parse(hex.substring(1), radix: 16);
                       return GestureDetector(
                         onTap: () {
@@ -336,7 +339,7 @@ class _ImgWaterPageState extends State<ImgWaterPage> with ImgToolMixin {
                   final py = y0 + gy * scale + sy;
                   if (px < 0 || py < 0 || px >= im.width || py >= im.height) continue;
                   // 半透明白字 + 描边效果（简单起见画两层）
-                  img.drawPixel(im, px, py, color: img.ColorRgba8(255, 255, 255, 210));
+                  im.setPixelRgba(px, py, 255, 255, 255, 210);
                 }
               }
             }

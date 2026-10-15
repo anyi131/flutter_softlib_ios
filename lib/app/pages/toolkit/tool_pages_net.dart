@@ -1484,7 +1484,7 @@ class _WeatherPageState extends State<WeatherPage> {
             spacing: 8,
             runSpacing: 8,
             children: _cities
-                .map(
+                .map<Widget>(
                   (c) => AppPressable(
                     onTap: () {
                       _ctrl.text = c;

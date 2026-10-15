@@ -351,7 +351,7 @@ class _ToolsComponentState extends State<ToolsComponent>
         return Wrap(
           spacing: 8,
           runSpacing: 9,
-          children: tools.map(_chip).toList(),
+          children: tools.map<Widget>(_chip).toList(),
         );
     }
   }
@@ -394,7 +394,7 @@ class _ToolsComponentState extends State<ToolsComponent>
       spacing: 6,
       runSpacing: 14,
       children: tools
-          .map(
+          .map<Widget>(
             (t) => SizedBox(
               width: w,
               child: AppPressable(

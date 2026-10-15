@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../design/app_anim.dart';
+import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
@@ -571,7 +573,7 @@ class _RandNumPageState extends State<RandNumPage> {
                   spacing: 8,
                   runSpacing: 8,
                   children: out
-                      .map((n) => Container(
+                      .map<Widget>((n) => Container(
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                             decoration: BoxDecoration(
                               gradient: Deco.brandGradient,
@@ -695,7 +697,7 @@ class _PalettePageState extends State<PalettePage> {
             const SizedBox(height: 16),
             ToolCard(
               child: Column(
-                children: colors.map((hex) {
+                children: colors.map<Widget>((hex) {
                   final v = int.parse(hex.substring(1), radix: 16);
                   return GestureDetector(
                     onTap: () {

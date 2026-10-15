@@ -1110,7 +1110,7 @@ class _RandomPageState extends State<RandomPage> {
                 spacing: 8,
                 runSpacing: 8,
                 children: _out
-                    .map(
+                    .map<Widget>(
                       (v) => Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,

@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../design/app_anim.dart';
+import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
@@ -479,7 +481,7 @@ class ExpressCoPage extends StatelessWidget {
       child: ToolCard(
         child: Column(
           children: data
-              .map((e) => Padding(
+              .map<Widget>((e) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 7),
                     child: Row(
                       children: [
@@ -529,7 +531,7 @@ class SlangUnitPage extends StatelessWidget {
       child: ToolCard(
         child: Column(
           children: data
-              .map((e) => Padding(
+              .map<Widget>((e) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 7),
                     child: Row(
                       children: [
@@ -572,7 +574,7 @@ class NumSlangPage extends StatelessWidget {
       child: ToolCard(
         child: Column(
           children: data
-              .map((e) => Padding(
+              .map<Widget>((e) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 7),
                     child: Row(
                       children: [
