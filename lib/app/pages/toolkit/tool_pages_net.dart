@@ -438,80 +438,127 @@ class _EpicPageState extends State<EpicPage> {
             )
           : ListView.separated(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 20),
+              padding: EdgeInsets.only(bottom: context.tabSpace + 20),
               itemCount: _list.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (c, i) {
                 final it = _list[i];
-                final img = '${it['image'] ?? ''}';
+                // ★ 1015 修复：服务端字段是 cover/link，原来读 image/url 导致封面和跳转全失效
+                final img = '${it['cover'] ?? it['image'] ?? ''}';
+                final link = '${it['link'] ?? it['url'] ?? ''}';
+                final desc = '${it['desc'] ?? ''}';
+                final orig = '${it['original'] ?? ''}';
+                final isNow = '${it['status'] ?? 'now'}' == 'now';
+                final end = _fmtDate('${it['end'] ?? ''}');
                 return ToolCard(
                   padding: EdgeInsets.zero,
-                  onTap: () {
-                    final u = '${it['url'] ?? ''}';
-                    if (u.isNotEmpty) _openInApp(u);
-                  },
+                  onTap: link.isEmpty
+                      ? null
+                      : () => Get.to(() => ToolBrowserPage(title: '${it['title'] ?? ''}', url: link)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // 封面（16:9 大图）
                       if (img.isNotEmpty)
                         ClipRRect(
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(R.lg),
-                          ),
-                          child: SizedBox(
-                            height: 140,
-                            width: double.infinity,
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(R.lg)),
+                          child: AspectRatio(
+                            aspectRatio: 16 / 9,
                             child: CachedNetworkImage(
                               imageUrl: img,
                               fit: BoxFit.cover,
                               memCacheWidth: 800,
+                              placeholder: (_, __) => Container(color: C.brand.withAlpha(16)),
+                              errorWidget: (_, __, ___) => Container(
+                                color: C.brand.withAlpha(16),
+                                child: const Center(child: Icon(Icons.videogame_asset_rounded, size: 34)),
+                              ),
                             ),
                           ),
                         ),
                       Padding(
-                        padding: const EdgeInsets.all(13),
+                        padding: const EdgeInsets.fromLTRB(13, 12, 13, 13),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              '${it['title'] ?? ''}',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                                height: 1.4,
-                                color: context.t1,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
+                            // 标题 + 状态标签
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 9,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: C.success.withAlpha(30),
-                                    borderRadius: BorderRadius.circular(R.full),
-                                  ),
+                                Expanded(
                                   child: Text(
-                                    '免费领取',
+                                    '${it['title'] ?? ''}',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 11,
+                                      fontSize: 15.5,
                                       fontWeight: FontWeight.w900,
-                                      color: C.success,
+                                      height: 1.35,
+                                      color: context.t1,
                                     ),
                                   ),
                                 ),
-                                if ('${it['free'] ?? ''}'.isNotEmpty) ...[
-                                  const SizedBox(width: 9),
-                                  Text(
-                                    '截止 ${it['free']}',
-                                    style: Ty.tiny.copyWith(color: context.t3),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: (isNow ? C.success : C.warning).withAlpha(30),
+                                    borderRadius: BorderRadius.circular(R.full),
                                   ),
+                                  child: Text(
+                                    isNow ? '本周免费' : '即将免费',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: isNow ? C.success : C.warning,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (desc.isNotEmpty) ...[
+                              const SizedBox(height: 7),
+                              Text(
+                                desc,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Ty.tiny.copyWith(color: context.t3, height: 1.55),
+                              ),
+                            ],
+                            const SizedBox(height: 11),
+                            Row(
+                              children: [
+                                if (orig.isNotEmpty && orig != '0.00') ...[
+                                  Text('¥$orig',
+                                      style: Ty.tiny.copyWith(
+                                        color: context.t3,
+                                        decoration: TextDecoration.lineThrough,
+                                      )),
+                                  const SizedBox(width: 7),
                                 ],
+                                Text('免费',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w900,
+                                      color: C.success,
+                                    )),
+                                const Spacer(),
+                                if (end.isNotEmpty) ...[
+                                  Icon(Icons.schedule_rounded, size: 13, color: context.t3),
+                                  const SizedBox(width: 3),
+                                  Text('至 $end', style: Ty.tiny.copyWith(color: context.t3)),
+                                  const SizedBox(width: 8),
+                                ],
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    gradient: Deco.brandGradient,
+                                    borderRadius: BorderRadius.circular(R.full),
+                                  ),
+                                  child: const Text('去领取',
+                                      style: TextStyle(
+                                          fontSize: 11.5, fontWeight: FontWeight.w800, color: Colors.white)),
+                                ),
                               ],
                             ),
                           ],
@@ -1948,7 +1995,13 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
       _err = '';
     });
     try {
-      final d = await _svc.movieDetail(widget.src, widget.id);
+      // ★ 1015：带上片名 + all=1 → 服务端跨源找同一部，返回多个源供换源
+      final d = await _svc.movieDetail(
+        widget.src,
+        widget.id,
+        name: widget.name,
+        all: true,
+      );
       if (!mounted) return;
       final raw = d?['play_groups'];
       final gs = <Map<String, dynamic>>[];
@@ -2082,13 +2135,25 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                 const SizedBox(height: 12),
 
                 // 播放源选择（多源时显示）
+                // ★ 1015：服务端字段是 src_name（原来读 from 显示不出来）
                 if (_groups.length > 1) ...[
-                  Text('播放源', style: Ty.small.copyWith(fontWeight: FontWeight.w800, color: context.t1)),
+                  Row(
+                    children: [
+                      Text('播放源', style: Ty.small.copyWith(fontWeight: FontWeight.w800, color: context.t1)),
+                      const SizedBox(width: 8),
+                      Text('${_groups.length} 个可选 · 换源可避开广告',
+                          style: Ty.tiny.copyWith(color: context.t3)),
+                    ],
+                  ),
                   const SizedBox(height: 8),
                   ToolChips<int>(
                     items: [
                       for (int i = 0; i < _groups.length; i++)
-                        (i, '${_groups[i]['from'] ?? '源${i + 1}'}'),
+                        (
+                          i,
+                          '${_groups[i]['src_name'] ?? _groups[i]['from'] ?? '源${i + 1}'}'
+                              '${(_groups[i]['episodes'] is List && (_groups[i]['episodes'] as List).isNotEmpty) ? ' · ${(_groups[i]['episodes'] as List).length}集' : ''}',
+                        ),
                     ],
                     current: _g,
                     onPick: (v) => setState(() => _g = v),

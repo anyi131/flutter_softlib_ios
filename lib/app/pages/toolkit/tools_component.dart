@@ -40,7 +40,7 @@ class _ToolsComponentState extends State<ToolsComponent>
   Map<String, dynamic> _meta = {};
   bool _loading = true;
   String _err = '';
-  String _layout = 'flow';
+  String _layout = 'grid';
 
   @override
   void initState() {
@@ -75,8 +75,8 @@ class _ToolsComponentState extends State<ToolsComponent>
               ?.map((e) => Map<String, dynamic>.from(e as Map))
               .toList() ??
           [];
-      var layout = '${cfg['default_style'] ?? 'flow'}';
-      if (!['flow', 'square', 'circle', 'card', 'two'].contains(layout)) layout = 'flow';
+      var layout = '${cfg['default_style'] ?? 'grid'}';
+      if (!['grid', 'card', 'compact', 'banner'].contains(layout)) layout = 'grid';
       if (groups.length == _groups.length &&
           groups.isNotEmpty &&
           _layout == layout &&
@@ -105,8 +105,8 @@ class _ToolsComponentState extends State<ToolsComponent>
               ?.map((e) => Map<String, dynamic>.from(e as Map))
               .toList() ??
           [];
-      var layout = '${cfg?['default_style'] ?? 'flow'}';
-      if (!['flow', 'square', 'circle', 'card', 'two'].contains(layout)) layout = 'flow';
+      var layout = '${cfg?['default_style'] ?? 'grid'}';
+      if (!['grid', 'card', 'compact', 'banner'].contains(layout)) layout = 'grid';
       setState(() {
         _groups = groups;
         _meta = cfg ?? {};
@@ -342,55 +342,98 @@ class _ToolsComponentState extends State<ToolsComponent>
   }
 
   Widget _toolArea(List<Map<String, dynamic>> tools) {
+    // ★ 1015 重做：4 款真正不同的骨架
+    //   grid    图标网格 —— 四列大图标（默认，像图片工具箱 App）
+    //   card    大卡列表 —— 单列、图标+标题+副标题+箭头
+    //   compact 紧凑宫格 —— 五列小图标，密度最高
+    //   banner  分类横幅 —— 每工具一条通栏，左图标右箭头
     switch (_layout) {
-      case 'square':
-        return _grid(tools, circle: false);
-      case 'circle':
-        return _grid(tools, circle: true);
-      // ★ 1015：新增两种真正的骨架差异布局
       case 'card':
-        return _bigCardList(tools);   // 大卡列表：单列、图标+标题+副标题+箭头
-      case 'two':
-        return _twoColumn(tools);     // 双列卡片：两列、图标上标题下
+        return _bigCardList(tools);
+      case 'compact':
+        return _compactGrid(tools);
+      case 'banner':
+        return _bannerList(tools);
       default:
-        return Wrap(
-          spacing: 8,
-          runSpacing: 9,
-          children: tools.map<Widget>(_chip).toList(),
-        );
+        return _iconGrid(tools);
     }
   }
 
-  /// ★ 1015 新布局①：大卡列表
-  ///   骨架特征：单列铺满、左侧大图标块 + 中间标题/副标题 + 右侧箭头
-  ///   和「胶囊流式」的区别：一行一个、有副标题、可按压整行
+  /// ① 图标网格（默认）—— 四列、大圆角图标底
+  Widget _iconGrid(List<Map<String, dynamic>> tools) {
+    return LayoutBuilder(
+      builder: (ctx, c) {
+        final w = (c.maxWidth - 12 * 3) / 4;
+        return Wrap(
+          spacing: 12,
+          runSpacing: 16,
+          children: tools.map<Widget>((t) {
+            return SizedBox(
+              width: w,
+              child: AppPressable(
+                onTap: () => _open(t),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 54,
+                      height: 54,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: C.brand.withAlpha(context.isDark ? 30 : 12),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: _icon(t, 26),
+                    ),
+                    const SizedBox(height: 7),
+                    Text(
+                      '${t['title'] ?? ''}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: context.t2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  /// ② 大卡列表 —— 单列铺满
   Widget _bigCardList(List<Map<String, dynamic>> tools) {
     return Column(
       children: tools.map<Widget>((t) {
         final sub = '${t['subtitle'] ?? ''}';
         return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.only(bottom: 9),
           child: AppPressable(
             onTap: () => _open(t),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
               decoration: BoxDecoration(
-                color: C.brand.withAlpha(context.isDark ? 18 : 8),
+                color: C.brand.withAlpha(context.isDark ? 18 : 7),
                 borderRadius: BorderRadius.circular(R.md),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: 42,
+                    height: 42,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: C.brand.withAlpha(context.isDark ? 32 : 16),
-                      borderRadius: BorderRadius.circular(R.sm),
+                      color: C.brand.withAlpha(context.isDark ? 34 : 16),
+                      borderRadius: BorderRadius.circular(13),
                     ),
-                    child: _icon(t, 21),
+                    child: _icon(t, 22),
                   ),
-                  const SizedBox(width: 11),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -427,55 +470,40 @@ class _ToolsComponentState extends State<ToolsComponent>
     );
   }
 
-  /// ★ 1015 新布局②：双列卡片
-  ///   骨架特征：两列网格、图标在上标题在下、每格是独立卡片
-  ///   和「方形宫格」的区别：只两列（不是四列）、有卡片背景、横向更宽
-  Widget _twoColumn(List<Map<String, dynamic>> tools) {
+  /// ③ 紧凑宫格 —— 五列小图标
+  Widget _compactGrid(List<Map<String, dynamic>> tools) {
     return LayoutBuilder(
       builder: (ctx, c) {
-        final w = (c.maxWidth - 10) / 2;
+        final w = (c.maxWidth - 10 * 4) / 5;
         return Wrap(
           spacing: 10,
-          runSpacing: 10,
+          runSpacing: 12,
           children: tools.map<Widget>((t) {
             return SizedBox(
               width: w,
               child: AppPressable(
                 onTap: () => _open(t),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
-                  decoration: BoxDecoration(
-                    color: C.brand.withAlpha(context.isDark ? 18 : 8),
-                    borderRadius: BorderRadius.circular(R.md),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: C.brand.withAlpha(context.isDark ? 32 : 16),
-                          borderRadius: BorderRadius.circular(R.sm),
-                        ),
-                        child: _icon(t, 19),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: C.brand.withAlpha(context.isDark ? 26 : 10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(width: 9),
-                      Expanded(
-                        child: Text(
-                          '${t['title'] ?? ''}',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: context.t1,
-                            height: 1.3,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                      child: _icon(t, 21),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      '${t['title'] ?? ''}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 10.5, color: context.t2),
+                    ),
+                  ],
                 ),
               ),
             );
@@ -485,82 +513,48 @@ class _ToolsComponentState extends State<ToolsComponent>
     );
   }
 
-  /// 胶囊（flow 布局，样本同款）
-  Widget _chip(Map<String, dynamic> t) => AppPressable(
-    onTap: () => _open(t),
-    child: Container(
-      padding: const EdgeInsets.fromLTRB(9, 8, 14, 8),
-      decoration: BoxDecoration(
-        color: C.brand.withAlpha(context.isDark ? 26 : 12),
-        borderRadius: BorderRadius.circular(R.full),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _icon(t, 20),
-          const SizedBox(width: 7),
-          Text(
-            '${t['title'] ?? ''}',
-            style: TextStyle(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w600,
-              color: context.t1,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-
-  /// 宫格（square / circle 布局）
-  Widget _grid(List<Map<String, dynamic>> tools, {required bool circle}) {
-    final w =
-        (MediaQuery.of(context).size.width -
-            context.pagePadding * 2 -
-            28) /
-        4;
-    return Wrap(
-      spacing: 6,
-      runSpacing: 14,
-      children: tools
-          .map<Widget>(
-            (t) => SizedBox(
-              width: w,
-              child: AppPressable(
-                onTap: () => _open(t),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: C.brand.withAlpha(context.isDark ? 30 : 14),
-                        shape: circle ? BoxShape.circle : BoxShape.rectangle,
-                        borderRadius: circle
-                            ? null
-                            : BorderRadius.circular(R.md),
-                      ),
-                      alignment: Alignment.center,
-                      child: _icon(t, 23),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
+  /// ④ 分类横幅 —— 每工具一条通栏
+  Widget _bannerList(List<Map<String, dynamic>> tools) {
+    return Column(
+      children: tools.map<Widget>((t) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 7),
+          child: AppPressable(
+            onTap: () => _open(t),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    C.brand.withAlpha(context.isDark ? 34 : 16),
+                    C.brand.withAlpha(context.isDark ? 12 : 4),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(R.sm),
+              ),
+              child: Row(
+                children: [
+                  _icon(t, 21),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
                       '${t['title'] ?? ''}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                        color: context.t2,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: context.t1,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  Icon(Icons.arrow_forward_ios_rounded, size: 13, color: C.brand),
+                ],
               ),
             ),
-          )
-          .toList(),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -632,11 +626,10 @@ class _ToolsComponentState extends State<ToolsComponent>
 
   Future<void> _pickLayout() async {
     const opts = <(String, String, IconData)>[
-      ('flow', '胶囊流式', Icons.view_stream_rounded),
+      ('grid', '图标网格', Icons.grid_view_rounded),
       ('card', '大卡列表', Icons.list_alt_rounded),
-      ('two', '双列卡片', Icons.grid_view_rounded),
-      ('square', '方形宫格', Icons.grid_view_rounded),
-      ('circle', '圆形宫格', Icons.apps_rounded),
+      ('compact', '紧凑宫格', Icons.apps_rounded),
+      ('banner', '分类横幅', Icons.view_carousel_rounded),
     ];
     final r = await showModalBottomSheet<String>(
       context: context,

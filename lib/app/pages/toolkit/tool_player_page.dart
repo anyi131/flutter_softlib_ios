@@ -52,6 +52,9 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   bool _showCtrl = true;
   Timer? _hideTimer;
   int _cur = 0;
+  /// ★ 1015：跳过片头（很多采集源在片头插广告，一键跳过去）
+  int _skipSec = 0;          // 当前跳过的秒数（0=未跳）
+  bool _showSkipBtn = false; // 是否显示「跳过片头」按钮
 
   List<(String, String)> get _list => widget.playlist ?? const [];
 
@@ -75,6 +78,7 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   @override
   void dispose() {
     _hideTimer?.cancel();
+    _c?.removeListener(_onTick);
     _c?.dispose();
     super.dispose();
   }
@@ -108,6 +112,8 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
       setState(() => _ready = true);
       await c.play();
       _autoHide();
+      // ★ 监听进度：播放到「片头区间」时显示跳过按钮
+      c.addListener(_onTick);
     } catch (e) {
       if (!mounted || _c != c) return;
       await c.dispose();
@@ -117,6 +123,36 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
         _err = _friendly(e);
       });
     }
+  }
+
+  /// 进度监听：片头 5-120 秒之间显示「跳过片头」
+  void _onTick() {
+    final v = _c?.value;
+    if (v == null || !v.isInitialized) return;
+    final pos = v.position.inSeconds;
+    final dur = v.duration.inSeconds;
+    // 片头广告通常在开头，超过 120 秒或快到片尾就不显示按钮了
+    final shouldShow = !widget.isAudio && pos >= 3 && pos <= 120 && dur > 180;
+    if (shouldShow != _showSkipBtn && mounted) {
+      setState(() => _showSkipBtn = shouldShow);
+    }
+  }
+
+  /// 跳过片头：默认跳 90 秒（常见的片头广告长度）
+  Future<void> _skipHead() async {
+    final c = _c;
+    if (c == null) return;
+    const jump = 90;
+    final dur = c.value.duration;
+    var t = c.value.position + const Duration(seconds: jump);
+    if (t > dur) t = dur - const Duration(seconds: 5);
+    if (t < Duration.zero) t = Duration.zero;
+    await c.seekTo(t);
+    setState(() {
+      _skipSec = jump;
+      _showSkipBtn = false;
+    });
+    ToastUtil.success('已跳过片头 $jump 秒');
   }
 
   String _friendly(Object e) {
@@ -226,6 +262,33 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
                 ),
               ),
             ),
+            // ★ 1015：跳过片头按钮（右上角浮动，不遮挡画面）
+            if (_showSkipBtn)
+              Positioned(
+                top: 14,
+                right: 14,
+                child: AppPressable(
+                  onTap: _skipHead,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(170),
+                      borderRadius: BorderRadius.circular(R.full),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.fast_forward_rounded, size: 15, color: Colors.white),
+                        SizedBox(width: 5),
+                        Text('跳过片头',
+                            style: TextStyle(
+                                fontSize: 12.5, fontWeight: FontWeight.w800, color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             // 底部进度条
             Positioned(
               left: 0,
@@ -307,6 +370,22 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
             Text(widget.subtitle!, style: const TextStyle(color: Colors.white54, fontSize: 12.5)),
           ],
           const SizedBox(height: 22),
+          if (_showSkipBtn)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: AppPressable(
+                onTap: _skipHead,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white12,
+                    borderRadius: BorderRadius.circular(R.full),
+                  ),
+                  child: const Text('跳过片头 90 秒',
+                      style: TextStyle(fontSize: 12.5, color: Colors.white70, fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ),
           if (v != null) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),

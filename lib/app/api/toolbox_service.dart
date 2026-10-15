@@ -161,8 +161,19 @@ class ToolboxService {
     return _asList(r?['list'] ?? r?['data']);
   }
 
-  Future<Map<String, dynamic>?> movieDetail(String src, String id) =>
-      _ss.media('movie_detail', query: {'src': src, 'id': id});
+  /// ★ 1015：传 name → 服务端跨源聚合，返回 play_groups（多源换源用）
+  Future<Map<String, dynamic>?> movieDetail(
+    String src,
+    String id, {
+    String name = '',
+    bool all = false,
+  }) =>
+      _ss.media('movie_detail', query: {
+        'src': src,
+        'id': id,
+        if (name.isNotEmpty) 'name': name,
+        if (all) 'all': 1,
+      });
 
   Future<Map<String, dynamic>?> musicHome() => _ss.media('music_home');
 
