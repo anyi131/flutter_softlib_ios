@@ -555,7 +555,7 @@ extension ToolboxService on SoftService {
     const need = ['music.126.net', 'baozimh.com', 'lzipic.com'];
     if (!need.any((d) => url.contains(d))) return url;
     try {
-      return '${dio.options.baseUrl}/api/softlib/proxy/img?url=${Uri.encodeComponent(url)}';
+      return '$baseUrl/api/softlib/proxy/img?url=${Uri.encodeComponent(url)}';
     } catch (_) {
       return url;
     }
