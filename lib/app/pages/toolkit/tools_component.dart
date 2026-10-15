@@ -10,6 +10,7 @@ import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
 import '../../widgets/tab_bottom_pad.dart';
 import 'tool_kit.dart';
+import 'tool_browser_page.dart';
 import 'tool_router.dart';
 
 /// ═══════════════════════════════════════════════════════════════
@@ -464,10 +465,16 @@ class _ToolsComponentState extends State<ToolsComponent>
     }
     // ★ 1015 修复：后台新增工具默认 kind=local（或留空），原来直接落到
     //   「暂未开放」提示，用户以为「后台加了没用」。
-    //   现在只要有外部链接就打开它（新窗口/浏览器），真正没配才提示。
+    //   现在只要有外部链接就打开它。
+    //   ★ 另外：外链改为**App 内 WebView 打开**（不再跳系统浏览器），
+    //     用户不用在浏览器和 App 之间来回切，退出 App 也不丢页面。
     final link = target.isNotEmpty ? target : apiUrl;
     if (link.startsWith('http')) {
-      JumpUtil.openUrl(link);
+      Get.to(() => ToolBrowserPage(
+        title: title,
+        url: link,
+        blockAds: '${t['block_ads'] ?? 1}' != '0',
+      ));
       return;
     }
     // 内置页未命中且没配链接 —— 给出可操作的提示，而不是只说「未开放」
@@ -692,9 +699,16 @@ class _ToolSearchPageState extends State<ToolSearchPage> {
       fn(title: '${t['title'] ?? ''}', apiUrl: '${t['api_url'] ?? ''}');
       return;
     }
+    // ★ 1015：与主页一致 —— 外链走 App 内 WebView，且 api_url 也作为兜底
     final target = '${t['target'] ?? ''}';
-    if (target.startsWith('http')) {
-      JumpUtil.openUrl(target);
+    final api = '${t['api_url'] ?? ''}';
+    final link = target.isNotEmpty ? target : api;
+    if (link.startsWith('http')) {
+      Get.to(() => ToolBrowserPage(
+        title: '${t['title'] ?? ''}',
+        url: link,
+        blockAds: '${t['block_ads'] ?? 1}' != '0',
+      ));
       return;
     }
     ToastUtil.info('「${t['title']}」暂未开放');
