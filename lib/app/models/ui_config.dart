@@ -74,6 +74,9 @@ class UiConfig {
   final bool featureShareApp;   // 分享软件
   final bool featureQqGroup;    // QQ通知群
   final bool featureReplaceSplash; // 替换开屏
+  // ★ 1015：播放器浮层（后台可配）
+  final bool playerFloatOn;   // 底部播放悬浮窗
+  final bool playerIslandOn;  // 顶部灵动岛
 
   // ── 首页布局 ──
   final String listStyle; // glass / compact / grid / large / minimal
@@ -131,6 +134,8 @@ class UiConfig {
     this.featureShareApp = true,
     this.featureQqGroup = true,
     this.featureReplaceSplash = true,
+    this.playerFloatOn = true,
+    this.playerIslandOn = true,
     this.listStyle = 'glass',
     this.homeBanner = 'on',
     this.homeNotice = 'on',
@@ -189,6 +194,8 @@ class UiConfig {
       featureShareApp: _b(feat['share_app'], true),
       featureQqGroup: _b(feat['qq_group'], true),
       featureReplaceSplash: _b(feat['replace_splash'], true),
+      playerFloatOn: _b(j['player_float_on'], true),
+      playerIslandOn: _b(j['player_island_on'], true),
       listStyle: _s(home['list_style'], 'glass'),
       homeBanner: _s(home['banner'], 'on'),
       homeNotice: _s(home['notice'], 'on'),

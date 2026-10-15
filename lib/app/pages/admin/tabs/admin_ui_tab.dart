@@ -53,7 +53,9 @@ class _AdminUiTabState extends State<AdminUiTab> {
   // 列表样式
   String _listStyle = 'glass';
   // 更新弹窗模板（v52g #1）
-  String _toolLayout = 'grid'; // ★ 1015：工具箱布局（grid/card/compact/banner）
+  String _toolLayout = 'grid';
+  bool _playerFloat = true;  // ★ 1015：播放悬浮窗
+  bool _playerIsland = true; // ★ 1015：灵动岛 // ★ 1015：工具箱布局（grid/card/compact/banner）
   String _updateTemplate = 'classic';
   // 页面模板（v52i #4）
   String _homeTemplate = 'classic';
@@ -150,6 +152,8 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _homeTemplate = '${home['template'] ?? 'classic'}';
         // ★ 1015：工具箱布局（后台可配）
         _toolLayout = '${ui['tool_home_style'] ?? 'grid'}';
+        _playerFloat = '${ui['player_float_on'] ?? 1}' != '0';
+        _playerIsland = '${ui['player_island_on'] ?? 1}' != '0';
         _detailStyle = '${home['detail_style'] ?? 'standard'}';
         _tipsTemplate = '${ui['tips_template'] ?? 'card'}';
         _mineTemplate = '${ui['mine_template'] ?? 'classic'}';
@@ -243,6 +247,10 @@ class _AdminUiTabState extends State<AdminUiTab> {
         'update_template': _updateTemplate,
         'tips_template': _tipsTemplate,
         'mine_template': _mineTemplate,
+        // ★ 1015 修复：工具箱布局模板（原来漏在这里，导致后台改了不生效）
+        'tool_home_style': _toolLayout,
+        'player_float_on': _playerFloat ? 1 : 0,
+        'player_island_on': _playerIsland ? 1 : 0,
         'splash_template': _splashTemplate,
         'about_template': _aboutTemplate,
         'auth_template': _authTemplate,
@@ -612,6 +620,9 @@ class _AdminUiTabState extends State<AdminUiTab> {
       ('分享软件', _shareApp, (v) => _shareApp = v),
       ('QQ通知群', _qqGroup, (v) => _qqGroup = v),
       ('替换开屏', _replaceSplash, (v) => _replaceSplash = v),
+      // ★ 1015：播放器浮层
+      ('播放悬浮窗', _playerFloat, (v) => _playerFloat = v),
+      ('灵动岛', _playerIsland, (v) => _playerIsland = v),
     ];
     return Wrap(
       spacing: 9,

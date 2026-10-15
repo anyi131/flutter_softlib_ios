@@ -8,6 +8,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../design/ad.dart';
 import '../../design/adaptive.dart';
+import '../../services/global_player.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
@@ -70,6 +71,7 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   Duration? _dragPos;
 
   List<(String, String)> get _list => widget.playlist ?? const [];
+  int _listIdx = 0;
 
   String get _url {
     if (_list.isNotEmpty && _cur < _list.length) return _list[_cur].$2;
@@ -99,12 +101,32 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   }
 
   Future<void> _open() async {
-    final old = _c;
+    // ★ 1015：改用全局播放器 —— 切页面/切 App 不断播，并驱动悬浮窗
+    final gp = GlobalPlayer.I;
+    gp.onComplete = () => _next();
     setState(() {
       _ready = false;
       _failed = false;
       _err = '';
     });
+    await gp.open(
+      u: _url,
+      t: widget.title,
+      sub: widget.subtitle,
+      pic: widget.cover,
+      audio: widget.isAudio,
+    );
+    if (!mounted) return;
+    if (gp.failed.value.isNotEmpty) {
+      setState(() {
+        _failed = true;
+        _err = gp.failed.value;
+      });
+      return;
+    }
+    _c = gp.ctrl;
+    setState(() => _ready = true);
+    return;
     // ★ 关键：带上 UA，很多 m3u8 源没 UA 会 403
     // ★★ 1015 修复：原来传了空 Referer ''，网易云 CDN 会直接 403 → 音乐播放失败！
     //   正确做法：按域名给对应 Referer（网易云用 music.163.com）
@@ -245,6 +267,17 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
       ),
     );
     if (r != null) _setSpeed(r);
+  }
+
+  /// 下一集/下一首
+  Future<void> _next() async {
+    final list = _list;
+    if (list.length < 2) return;
+    final cur = _listIdx;
+    final nx = (cur + 1) % list.length;
+    setState(() => _listIdx = nx);
+    _url = list[nx].$2;
+    _open();
   }
 
   /// 全屏切换（横屏 + 隐藏系统栏）

@@ -11,6 +11,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
+import '../../widgets/media_preview.dart';
 import 'tool_browser_page.dart';
 import 'tool_kit.dart';
 import 'tool_player_page.dart';
@@ -2604,7 +2605,7 @@ class _HeroGalleryPageState extends State<HeroGalleryPage> {
                   final s = skins[i];
                   return ToolCard(
                     padding: EdgeInsets.zero,
-                    onTap: () => _openInApp('${s['url'] ?? ''}'),
+                    onTap: () => MediaPreview.showImage(context, '${s['url'] ?? ''}'),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(R.lg),
                       child: Stack(
@@ -3117,7 +3118,7 @@ class _WallpaperPageState extends State<WallpaperPage> {
                         ),
                     itemCount: _urls.length,
                     itemBuilder: (c, i) => AppPressable(
-                      onTap: () => _openInApp(_urls[i]),
+                      onTap: () => MediaPreview.showImages(context, _urls, index: i),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(R.md),
                         child: CachedNetworkImage(

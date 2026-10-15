@@ -102,17 +102,32 @@ class _ApiToolPageState extends State<ApiToolPage> {
       }
       // 写缓存供下次秒开
       ToolCache.write(ck, {'json': raw});
-      var list = _extractList(raw, widget.cfg['api_path'] ?? '');
-      if (list.isEmpty) {
-        // 兜底：递归找第一个长度 >0 的数组
-        list = _findAnyList(raw) ?? [];
+      // ★★★ 1015 修复：先看 api_path 是否指向「单个字符串」
+      //   如 today-poem 的 data.content = "桂花香雾冷，梧叶西风影。"
+      //   这种情况必须走单条模式；否则后面的 _findAnyList 会误抓到
+      //   origin.content（诗句数组），把每句当成列表项 → 显示错乱/显示原始 JSON。
+      final pathCfg = widget.cfg['api_path'] ?? '';
+      bool isSingleByPath = false;
+      if (pathCfg.isNotEmpty) {
+        final v = _pickPath(raw, pathCfg);
+        if (v is String && v.trim().isNotEmpty) isSingleByPath = true;
       }
-      // ★ 1015：还是没有 → 可能是「单条数据」结构
-      //   如 {"weatherinfo":{...}} / {"data":{"content":"..."}} / {"content":"..."}
-      //   这时把它包装成只有一条的列表，用 f_title 指定的字段当正文
-      if (list.isEmpty && raw != null) {
+
+      List<dynamic> list = [];
+      if (isSingleByPath) {
         final single = _extractSingle(raw, widget.cfg['f_title'] ?? '');
         if (single != null) list = [single];
+      } else {
+        list = _extractList(raw, pathCfg);
+        if (list.isEmpty) {
+          // 兜底：递归找第一个长度 >0 的数组
+          list = _findAnyList(raw) ?? [];
+        }
+        // 还是没有 → 单条数据结构
+        if (list.isEmpty && raw != null) {
+          final single = _extractSingle(raw, widget.cfg['f_title'] ?? '');
+          if (single != null) list = [single];
+        }
       }
       setState(() {
         items = list

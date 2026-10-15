@@ -22,6 +22,7 @@ import 'app/api/user_service.dart';
 import 'app/utils/device_info_util.dart';
 import 'app/design/app_style_controller.dart';
 import 'app/api/soft_service.dart';
+import 'app/widgets/mini_player.dart';
 
 /// 应用程序主入口
 Future<void> main() async {
@@ -221,7 +222,13 @@ class SoftLibApp extends StatelessWidget {
       builder: (context, child) {
         // 全局高刷：常驻 Ticker 请求设备最高刷新率
         return HighRefreshScope(
-          child: EasyLoading.init()(context, child),
+          // ★ 1015：全局播放悬浮窗 + 灵动岛（常驻最上层，跨页面不断播）
+          child: Stack(
+            children: [
+              EasyLoading.init()(context, child),
+              const MiniPlayer(),
+            ],
+          ),
         );
       },
       // 统一使用 iOS 风格右滑过渡（GetX 路由）
