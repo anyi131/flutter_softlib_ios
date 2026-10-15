@@ -50,6 +50,8 @@ class ToolPlayerPage extends StatefulWidget {
 class _ToolPlayerPageState extends State<ToolPlayerPage> {
   VideoPlayerController? _c;
   bool _ready = false;
+  int _waitSec = 0; // ★ 1015：加载等待秒数（超时提示用）
+  Timer? _waitTimer;
   bool _failed = false;
   String _err = '';
   bool _showCtrl = true;
@@ -91,6 +93,7 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   @override
   void dispose() {
     _hideTimer?.cancel();
+    _waitTimer?.cancel();
     // ★★★ 1015 关键修复（No active player 崩溃）：
     //   必须先摘监听 → dispose → 再把 _c 置 null。
     //   否则 dispose 之后仍有异步回调（手势/定时器）访问 _c，
@@ -117,6 +120,15 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
       _ready = false;
       _failed = false;
       _err = '';
+      _waitSec = 0;
+    });
+    _waitTimer?.cancel();
+    _waitTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted || _ready) {
+        t.cancel();
+        return;
+      }
+      setState(() => _waitSec++);
     });
     final host = Uri.tryParse(_url)?.host ?? '';
     final ref = host.contains('126.net')
@@ -136,7 +148,13 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
     _c = c;
     old?.dispose();
     try {
-      await c.initialize();
+      // ★★★ 1015 关键修复：initialize 必须加超时！
+      //   原来视频源连不上时 await 会永远挂着 → _ready 永远 false
+      //   → 界面一直转圈（用户看到的就是「一条窄进度条 + 等待」）。
+      await c.initialize().timeout(
+        const Duration(seconds: 20),
+        onTimeout: () => throw Exception('timeout'),
+      );
       if (!mounted || _c != c) {
         await c.dispose();
         return;
@@ -381,20 +399,130 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
         ),
       ),
       extendBodyBehindAppBar: true,
-      body: Column(
+      body: _isFullscreen
+          // ★★★ 1015 关键修复：全屏时只显示视频，占满整屏。
+          //   原来全屏后仍是 Column(视频 Expanded + 选集 Expanded)，
+          //   视频只占一半、下面是选集列表 → 用户看到「上下大片黑 + 选集半屏」，
+          //   根本不是全屏。
+          ? SizedBox.expand(child: _videoViewFullscreen())
+          : Column(
+              children: [
+                // ── 播放区 ──
+                Expanded(
+                  flex: isAudio ? 0 : 1,
+                  child: isAudio
+                      ? SizedBox(
+                          height: Ad.h(context, 320),
+                          child: _audioView(),
+                        )
+                      : _videoView(),
+                ),
+                // ── 选集 / 选歌 ──
+                if (_list.isNotEmpty) Expanded(child: _listView()),
+              ],
+            ),
+    );
+  }
+
+  /// 全屏视频（占满整屏，比例适配）
+  Widget _videoViewFullscreen() {
+    if (_failed) return _errView();
+    final c = _c;
+    if (!_ready || c == null) {
+      return const Center(
+        child: SizedBox(
+          width: 34,
+          height: 34,
+          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+        ),
+      );
+    }
+    final v = c.value;
+    return GestureDetector(
+      onTap: _toggleCtrl,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          // ── 播放区 ──
-          Expanded(
-            flex: isAudio ? 0 : 1,
-            child: isAudio
-                ? SizedBox(
-                    height: Ad.h(context, 320),
-                    child: _audioView(),
-                  )
-                : _videoView(),
+          // 视频铺满（contain 保持比例，不留变形）
+          SizedBox.expand(
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: SizedBox(
+                width: v.size.width == 0 ? 1920 : v.size.width,
+                height: v.size.height == 0 ? 1080 : v.size.height,
+                child: VideoPlayer(c),
+              ),
+            ),
           ),
-          // ── 选集 / 选歌 ──
-          if (_list.isNotEmpty) Expanded(child: _listView()),
+          // 手势提示
+          if (_gesture != 0)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha(180),
+                borderRadius: BorderRadius.circular(R.md),
+              ),
+              child: Text(
+                _gesture == 1
+                    ? '亮度 ${(_gestureValue * 100).round()}%'
+                    : _gesture == 2
+                    ? '音量 ${(_gestureValue * 100).round()}%'
+                    : '进度 ${(_gestureValue * 100).round()}%',
+                style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700),
+              ),
+            ),
+          if (_showCtrl) ...[
+            // 中间播放/暂停
+            GestureDetector(
+              onTap: () {
+                setState(() => v.isPlaying ? c.pause() : c.play());
+                _autoHide();
+              },
+              child: Container(
+                width: 68,
+                height: 68,
+                decoration: BoxDecoration(color: Colors.black.withAlpha(110), shape: BoxShape.circle),
+                child: Icon(
+                  v.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  color: Colors.white,
+                  size: 40,
+                ),
+              ),
+            ),
+            // 右上角：退出全屏
+            Positioned(
+              top: 16,
+              right: 16,
+              child: _pillBtn('退出全屏', icon: Icons.fullscreen_exit_rounded, onTap: _toggleFullscreen),
+            ),
+            // 底部进度
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 30, 16, 16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black.withAlpha(210)],
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Text(_fmt(v.position), style: const TextStyle(color: Colors.white, fontSize: 12)),
+                    const SizedBox(width: 10),
+                    Expanded(child: _progressBar(v)),
+                    const SizedBox(width: 10),
+                    Text(_fmt(v.duration), style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                    const SizedBox(width: 12),
+                    _pillBtn('${_speed}x', onTap: _pickSpeed),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -404,7 +532,29 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   Widget _videoView() {
     if (_failed) return _errView();
     if (!_ready || _c == null) {
-      return const Center(child: CircularProgressIndicator(color: Colors.white));
+      // ★ 1015：加载态带上提示和已等待秒数，用户知道在干什么
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              width: 34,
+              height: 34,
+              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+            ),
+            const SizedBox(height: 14),
+            const Text(
+              '正在加载视频…',
+              style: TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              _waitSec >= 8 ? '加载较慢，可点右上角换一个源' : '已等待 ${_waitSec}s',
+              style: const TextStyle(color: Colors.white38, fontSize: 11.5),
+            ),
+          ],
+        ),
+      );
     }
     final v = _c!.value;
     return LayoutBuilder(
@@ -584,6 +734,90 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
           ],
         ],
       ),
+      ),
+    );
+  }
+
+
+  /// 圆角进度条（可拖动/可点击定位）
+  Widget _progressBar(VideoPlayerValue v) {
+    final total = v.duration.inMilliseconds;
+    final cur = v.position.inMilliseconds;
+    final prog = total <= 0 ? 0.0 : (cur / total).clamp(0.0, 1.0);
+    return LayoutBuilder(
+      builder: (ctx, box) {
+        void seek(double dx) {
+          if (total <= 0) return;
+          final p2 = (dx / box.maxWidth).clamp(0.0, 1.0);
+          _c?.seekTo(Duration(milliseconds: (total * p2).round()));
+        }
+
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (d) => seek(d.localPosition.dx),
+          onHorizontalDragUpdate: (d) => seek(d.localPosition.dx),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Stack(
+              children: [
+                Container(
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                FractionallySizedBox(
+                  widthFactor: prog,
+                  child: Container(
+                    height: 4,
+                    decoration: BoxDecoration(
+                      gradient: Deco.brandGradient,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: (box.maxWidth * prog - 6).clamp(0.0, (box.maxWidth - 12).clamp(0.0, 9999)),
+                  top: -4,
+                  child: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// 胶囊按钮（控制栏用）
+  Widget _pillBtn(String label, {IconData? icon, required VoidCallback onTap}) {
+    return AppPressable(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white.withAlpha(28),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white24, width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 13, color: Colors.white),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
       ),
     );
   }

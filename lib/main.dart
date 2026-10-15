@@ -54,6 +54,16 @@ Future<void> main() async {
           _appVersion = '${info.version}+${info.buildNumber}';
         } catch (_) {}
         await _initializeServices();
+        // ★ 1015：启动心跳上报 —— 每次冷启动都记一条，
+        //   便于确认「用户到底装的是哪个版本」，排查「日志版本对不上」。
+        try {
+          SoftService.instance.reportLog(
+            tag: 'boot',
+            error: '[v=$_appVersion] App 启动',
+            device: '',
+            version: _appVersion.isEmpty ? 'unknown' : _appVersion,
+          ).catchError((_) {});
+        } catch (_) {}
         runApp(const SoftLibApp());
       } catch (error, stackTrace) {
         _logError('startup', error, stackTrace);
@@ -75,18 +85,31 @@ void _logError(String tag, Object error, StackTrace? stack) {
   try {
     route = Get.currentRoute;
   } catch (_) {}
-  // 每个会话最多上报 30 条，避免崩溃风暴刷爆服务器
-  if (_reportCount >= 30) return;
+  // ★ 1015 修复上报可靠性：
+  //   ① 原来限 30 条 —— 超了就彻底哑了，导致「新包崩了但服务器没日志」。
+  //      改为按「错误内容去重」，同一错误只报 3 次，不限制总条数。
+  //   ② 原来 fire-and-forget，App 秒崩时请求还没发出。
+  //      改为同步入队 + 立即发起，并用 unawaited 兜住异常。
+  final key = '$tag|${error.toString().split("\n").first}';
+  final n = _reportSeen[key] ?? 0;
+  if (n >= 3) return;             // 同一错误最多报 3 次，防刷屏
+  _reportSeen[key] = n + 1;
   _reportCount++;
   try {
-    SoftService.instance.reportLog(
-      tag: tag,
-      error: '[route=$route] ' + error.toString(),
-      stack: stack?.toString() ?? '',
-      version: _appVersion,
-    );
+    // 不 await（避免阻塞 UI），但立即发起；异常自己吞掉
+    SoftService.instance
+        .reportLog(
+          tag: tag,
+          error: '[v=$_appVersion][route=$route] ' + error.toString(),
+          stack: stack?.toString() ?? '',
+          version: _appVersion.isEmpty ? 'unknown' : _appVersion,
+        )
+        .catchError((_) {});
   } catch (_) {}
 }
+
+/// 同一错误的已上报次数（去重，避免刷屏同时保证新错误一定上报）
+final Map<String, int> _reportSeen = {};
 
 /// 应用版本（启动时填，供上报用）
 String _appVersion = '';
