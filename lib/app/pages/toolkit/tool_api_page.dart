@@ -223,27 +223,28 @@ class _ApiToolPageState extends State<ApiToolPage> {
           ),
         ),
       ],
-      child: Expanded(
-        child: loading
-            ? const Center(child: CircularProgressIndicator())
-            : err.isNotEmpty
-                ? _errorView()
-                : items.isEmpty
-                    ? _emptyView()
-                    : RefreshIndicator(
-                        onRefresh: load,
-                        child: ListView.separated(
-                          padding: EdgeInsets.only(
-                            left: context.pagePadding,
-                            right: context.pagePadding,
-                            bottom: context.tabSpace + 30,
-                          ),
-                          itemCount: items.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 10),
-                          itemBuilder: (c, i) => _card(items[i], i),
-                        ),
-                      ),
-      ),
+      // ★★★ 1015 关键修复：原来这里多套了一层 Expanded。
+      //   ToolScaffold 内部已是 Expanded(child: child)，
+      //   双层 Expanded 会让布局约束自引用 → 死循环 → 点开就卡死+闪退！
+      child: loading
+          ? const Center(child: CircularProgressIndicator())
+          : err.isNotEmpty
+          ? _errorView()
+          : items.isEmpty
+          ? _emptyView()
+          : RefreshIndicator(
+              onRefresh: load,
+              child: ListView.separated(
+                padding: EdgeInsets.only(
+                  left: context.pagePadding,
+                  right: context.pagePadding,
+                  bottom: context.tabSpace + 30,
+                ),
+                itemCount: items.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (c, i) => _card(items[i], i),
+              ),
+            ),
     );
   }
 

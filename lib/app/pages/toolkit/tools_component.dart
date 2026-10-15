@@ -207,7 +207,7 @@ class _ToolsComponentState extends State<ToolsComponent>
             '搜索',
             () => Get.to(() => const ToolSearchPage()),
           ),
-          _topIcon(Icons.grid_view_rounded, '布局', _pickLayout),
+          // ★ 1015：移除 App 端布局切换 —— 布局模板完全由后台控制
           _topIcon(
             Icons.star_outline_rounded,
             '收藏',
@@ -624,63 +624,7 @@ class _ToolsComponentState extends State<ToolsComponent>
 
   // ═══════════ 布局切换 ═══════════
 
-  Future<void> _pickLayout() async {
-    const opts = <(String, String, IconData)>[
-      ('grid', '图标网格', Icons.grid_view_rounded),
-      ('card', '大卡列表', Icons.list_alt_rounded),
-      ('compact', '紧凑宫格', Icons.apps_rounded),
-      ('banner', '分类横幅', Icons.view_carousel_rounded),
-    ];
-    final r = await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: context.cardBg,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(R.lg)),
-      ),
-      builder: (c) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
-              child: Text('列表样式', style: Ty.h3.copyWith(color: context.t1)),
-            ),
-            for (final o in opts)
-              InkWell(
-                onTap: () => Navigator.pop(c, o.$1),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(o.$3, size: 19, color: context.t2),
-                      const SizedBox(width: 12),
-                      Text(
-                        o.$2,
-                        style: TextStyle(fontSize: 14.5, color: context.t1),
-                      ),
-                      const Spacer(),
-                      Icon(
-                        _layout == o.$1
-                            ? Icons.radio_button_checked_rounded
-                            : Icons.radio_button_off_rounded,
-                        size: 21,
-                        color: _layout == o.$1 ? C.brand : context.t3,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-    if (r != null && mounted) setState(() => _layout = r);
-  }
+
 }
 
 // ═══════════════════ 搜索页 ═══════════════════
