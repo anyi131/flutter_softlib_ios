@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../api/soft_service.dart' show SoftService;
 import '../../api/toolbox_service.dart';
 import '../../design/ad.dart';
-import '../../api/soft_service.dart';
 import '../../design/adaptive.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';

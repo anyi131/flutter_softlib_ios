@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
@@ -50,6 +52,12 @@ class ToolPlayerPage extends StatefulWidget {
 class _ToolPlayerPageState extends State<ToolPlayerPage> {
   VideoPlayerController? _c;
   bool _ready = false;
+  // ★ 1015 播放器增强状态
+  bool _locked = false;              // 锁定防误触
+  BoxFit _fit = BoxFit.contain;      // 画面比例
+  double? _prevSpeed;                // 长按倍速前速度
+  int _sleepMin = 0;                 // 定时关闭（分钟）
+  Timer? _sleepTimer;                // 定时器
   int _waitSec = 0; // ★ 1015：加载等待秒数（超时提示用）
   Timer? _waitTimer;
   bool _failed = false;
@@ -94,6 +102,7 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   void dispose() {
     _hideTimer?.cancel();
     _waitTimer?.cancel();
+    _sleepTimer?.cancel();
     _sleepTimer?.cancel();
     _savePos();
     // ★★★ 1015 关键修复（No active player 崩溃）：
