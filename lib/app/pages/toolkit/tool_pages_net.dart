@@ -394,6 +394,17 @@ class _EpicPageState extends State<EpicPage> {
   bool _loading = true;
   String _err = '';
 
+  /// 把 ISO 时间转成 MM-dd（界面显示「至 10-23」）
+  String _fmtDate(String iso) {
+    if (iso.isEmpty) return '';
+    try {
+      final d = DateTime.parse(iso).toLocal();
+      return '${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return '';
+    }
+  }
+
   @override
   void initState() {
     super.initState();
