@@ -42,6 +42,8 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
   String? _err;
   late bool _adBlock = widget.blockAds;
 
+  bool _disposed = false;
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +58,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (p) {
-            if (mounted) setState(() => _progress = p);
+            if (!_disposed) setState(() => _progress = p);
           },
           onPageStarted: (_) {
             if (mounted) {
@@ -67,7 +69,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
             }
           },
           onPageFinished: (_) {
-            if (mounted) setState(() => _loading = false);
+            if (!_disposed) setState(() => _loading = false);
             if (_adBlock) _cleanAds();
           },
           onWebResourceError: (e) {
@@ -191,6 +193,24 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
     try {
       await _c.runJavaScript(js);
     } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    // ★★★ 1015 致命修复：原来没有 dispose！
+    //   WebView 控制器不会被释放 → 每开一次外链工具就泄漏一个 WebView 实例
+    //   → 开几个后 Native 层 OOM → **直接闪退回桌面**（Dart 层捕获不到）。
+    _disposed = true;
+    try {
+      _c.loadRequest(Uri.parse('about:blank')); // 先卸载页面，释放网页资源
+    } catch (_) {}
+    super.dispose();
+  }
+
+  /// 安全 setState（dispose 后不再调用，防 Native 崩溃）
+  void _safeSet(VoidCallback fn) {
+    if (!mounted || _disposed) return;
+    setState(fn);
   }
 
   @override
