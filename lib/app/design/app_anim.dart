@@ -16,9 +16,12 @@ class AppAnim {
   AppAnim._();
 
   // ── 时长档位 ──
-  static const Duration fast = Duration(milliseconds: 140);
-  static const Duration base = Duration(milliseconds: 220);
-  static const Duration slow = Duration(milliseconds: 320);
+  // ★ 1015 优化：整体压快 20%。
+  //   原 140/220/320 与转场叠加后，「点一下」的等待感太强；
+  //   120/180/260 仍是自然的动效节奏，但明显更跟手。
+  static const Duration fast = Duration(milliseconds: 120);
+  static const Duration base = Duration(milliseconds: 180);
+  static const Duration slow = Duration(milliseconds: 260);
 
   // ── 曲线 ──
   static const Curve emphasized = Curves.easeOutCubic;

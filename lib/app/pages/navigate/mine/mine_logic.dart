@@ -80,8 +80,18 @@ class MineLogic extends GetxController {
   Future<void> load() async {
     await _userService.restore();
     if (_userService.isLoggedIn) {
-      final info = await _userService.refreshProfile();
-      final u = info ?? _userService.user;
+      // ★ 1015 优化：原来 refreshProfile → SharedPreferences → unread 三个
+      //   await 串行执行，每次进「我的」都要排队等 3 个往返（体感就是「卡一下」）。
+      //   现在并发发起，总耗时 = 最慢那个，而不是三个相加。
+      final results = await Future.wait<dynamic>([
+        _userService.refreshProfile(),
+        SharedPreferences.getInstance(),
+        MessageService.instance.unread(),
+      ]);
+      final info = results[0] as dynamic;
+      final sp = results[1] as SharedPreferences;
+      final unreadN = results[2] as int;
+      final u = (info ?? _userService.user) as dynamic;
       if (u != null) {
         nickname = u.nickname;
         uid = u.account.isEmpty ? u.id.toString() : u.account;
@@ -90,7 +100,6 @@ class MineLogic extends GetxController {
         vipExpire = u.isVip ? u.vipExpire : '';
         avatarUrl = u.avatar;
         isVipMember = u.isVip;
-        final sp = await SharedPreferences.getInstance();
         signedDate = sp.getString(_kSignDate) ?? '';
         // ★ 以服务端为准：换设备/重装后签到状态不漂移（服务端未返回时回退本地缓存）
         if (u.signedToday != null) {
@@ -98,7 +107,7 @@ class MineLogic extends GetxController {
           await sp.setString(_kSignDate, signedDate);
         }
         // 未读消息数（「消息」格子红点）
-        messageCount = await MessageService.instance.unread();
+        messageCount = unreadN;
         update();
         return;
       }

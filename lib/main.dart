@@ -209,7 +209,11 @@ class SoftLibApp extends StatelessWidget {
       //   若 opaque 为 true，Flutter 会认为新页已完全盖住旧页，从动画一开始
       //   就跳过绘制旧页 → 露出底层黑/白 → 表现为「闪屏」。
       defaultTransition: Transition.cupertino,
-      transitionDuration: const Duration(milliseconds: 260),
+      // ★ 1015 优化：260ms → 180ms。
+      //   点击一个功能实际要经历「按压动画 140ms + 转场 260ms + 内容入场 220ms」，
+      //   叠加后超过 600ms，用户明显感觉「点了半天才出来」。
+      //   转场压到 180ms 更跟手（iOS 原生返回手势也是这个量级）。
+      transitionDuration: const Duration(milliseconds: 180),
       theme: buildLightTheme(),
       darkTheme: buildDarkTheme(),
       themeMode: ThemeController.instance.mode.value,

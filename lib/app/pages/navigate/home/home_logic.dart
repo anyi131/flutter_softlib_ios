@@ -35,7 +35,9 @@ class HomeLogic extends GetxController {
   Future<void> getConfig() async {
     try {
       // v52g：改走 SoftService（AppConfig 带 uiConfig，快捷入口热配置要用）
-      var config = await SoftService.instance.fetchConfig(force: true);
+      // ★ 1015 优化：不再 force —— 启动时 main.dart 已强制拉过一次，
+      //   这里强制再拉就是重复请求，白白让首屏多等一个往返。
+      var config = await SoftService.instance.fetchConfig();
       if (config != null) {
         configData = config;
       }
