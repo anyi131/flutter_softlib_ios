@@ -48,6 +48,32 @@ Future<void> main() async {
         return _UiFallback(detail: details.exception.toString());
       };
 
+      // ★★★ 1015：图片加载全局兜底
+      //   很多页面用 CachedNetworkImage 但没写 errorWidget，
+      //   网络图 403/404 时会抛异常 → 触发 ErrorWidget → 整块渲染失败。
+      //   这里给所有图片流加全局兜底（拿不到图就静默忽略，不报错）。
+      try {
+        final prevHandler = FlutterError.onError;
+        FlutterError.onError = (FlutterErrorDetails details) {
+          final ex = details.exception.toString();
+          // 图片加载类异常：只记录，不上报、不渲染错误页
+          if (ex.contains('statusCode') ||
+              ex.contains('HttpException') ||
+              ex.contains('NetworkImage') ||
+              ex.contains('CachedNetworkImage') ||
+              ex.contains('Image provider')) {
+            debugPrint('[Softlib][img] 图片加载失败: $ex');
+            return;
+          }
+          if (prevHandler != null) {
+            prevHandler(details);
+          } else {
+            FlutterError.presentError(details);
+            _logError('FlutterError', details.exception, details.stack);
+          }
+        };
+      } catch (_) {}
+
       try {
         try {
           final info = await PackageInfo.fromPlatform();

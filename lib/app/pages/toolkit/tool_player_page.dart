@@ -94,6 +94,8 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   void dispose() {
     _hideTimer?.cancel();
     _waitTimer?.cancel();
+    _sleepTimer?.cancel();
+    _savePos();
     // ★★★ 1015 关键修复（No active player 崩溃）：
     //   必须先摘监听 → dispose → 再把 _c 置 null。
     //   否则 dispose 之后仍有异步回调（手势/定时器）访问 _c，
@@ -264,6 +266,15 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
     } catch (_) {}
     if (mounted) setState(() => _showSkipBtn = false);
     ToastUtil.info('已跳过片头');
+  }
+
+  /// 上一集 / 上一首
+  Future<void> _prev() async {
+    final list = _list;
+    if (list.length < 2) return;
+    final nx = (_cur - 1 + list.length) % list.length;
+    setState(() => _cur = nx);
+    await _open();
   }
 
   /// 下一集/下一首
@@ -490,12 +501,36 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
               ),
             ),
             // 右上角：退出全屏
+            // 右上角功能条（锁定/画面比例/定时/退出全屏）
             Positioned(
               top: 16,
-              right: 16,
-              child: _pillBtn('退出全屏', icon: Icons.fullscreen_exit_rounded, onTap: _toggleFullscreen),
+              right: 12,
+              child: Row(
+                children: [
+                  _iconBtn(
+                    _locked ? Icons.lock_rounded : Icons.lock_open_rounded,
+                    _toggleLock,
+                  ),
+                  const SizedBox(width: 8),
+                  _iconBtn(Icons.aspect_ratio_rounded, _pickFit),
+                  const SizedBox(width: 8),
+                  _iconBtn(
+                    _sleepMin > 0 ? Icons.timer_rounded : Icons.timer_outlined,
+                    _pickSleep,
+                  ),
+                  const SizedBox(width: 8),
+                  _pillBtn('退出全屏', icon: Icons.fullscreen_exit_rounded, onTap: _toggleFullscreen),
+                ],
+              ),
             ),
-            // 底部进度
+            // 锁定时只显示解锁按钮
+            if (_locked)
+              Positioned(
+                left: 16,
+                top: 16,
+                child: _iconBtn(Icons.lock_rounded, _toggleLock),
+              ),
+            // 底部进度 + 功能键
             Positioned(
               left: 0,
               right: 0,
@@ -509,15 +544,43 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
                     colors: [Colors.transparent, Colors.black.withAlpha(210)],
                   ),
                 ),
-                child: Row(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(_fmt(v.position), style: const TextStyle(color: Colors.white, fontSize: 12)),
-                    const SizedBox(width: 10),
-                    Expanded(child: _progressBar(v)),
-                    const SizedBox(width: 10),
-                    Text(_fmt(v.duration), style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                    const SizedBox(width: 12),
-                    _pillBtn('${_speed}x', onTap: _pickSpeed),
+                    Row(
+                      children: [
+                        Text(_fmt(v.position), style: const TextStyle(color: Colors.white, fontSize: 12)),
+                        const SizedBox(width: 10),
+                        Expanded(child: _progressBar(v)),
+                        const SizedBox(width: 10),
+                        Text(_fmt(v.duration), style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        // 上一集
+                        _iconBtn(Icons.skip_previous_rounded, _prev),
+                        const SizedBox(width: 6),
+                        // 播放/暂停
+                        _iconBtn(
+                          v.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                          () => setState(() => v.isPlaying ? _c!.pause() : _c!.play()),
+                        ),
+                        const SizedBox(width: 6),
+                        // 下一集
+                        _iconBtn(Icons.skip_next_rounded, _next),
+                        const Spacer(),
+                        // 定时剩余
+                        if (_sleepMin > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Text('${_sleepMin}分',
+                                style: const TextStyle(color: Colors.white70, fontSize: 11.5)),
+                          ),
+                        _pillBtn('${_speed}x', onTap: _pickSpeed),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -794,6 +857,21 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
     );
   }
 
+  /// 圆形图标按钮（播放器控制用）
+  Widget _iconBtn(IconData icon, VoidCallback onTap) => AppPressable(
+    onTap: onTap,
+    child: Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(26),
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: Icon(icon, size: 19, color: Colors.white),
+    ),
+  );
+
   /// 胶囊按钮（控制栏用）
   Widget _pillBtn(String label, {IconData? icon, required VoidCallback onTap}) {
     return AppPressable(
@@ -820,6 +898,157 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
         ),
       ),
     );
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  ★ 1015 播放器功能增强（补齐常用能力）
+  // ══════════════════════════════════════════════════════════════
+
+  /// 记忆播放：保存/读取每个视频的播放位置
+  static const _kPos = 'player_pos_';
+  Future<void> _savePos() async {
+    final c = _c;
+    if (c == null || !c.value.isInitialized) return;
+    if (c.value.duration.inSeconds < 30) return; // 短视频不记
+    try {
+      final sp = await SharedPreferences.getInstance();
+      await sp.setInt('$_kPos${widget.url.hashCode}',
+          c.value.position.inMilliseconds);
+    } catch (_) {}
+  }
+
+  Future<int> _loadPos() async {
+    try {
+      final sp = await SharedPreferences.getInstance();
+      return sp.getInt('$_kPos${widget.url.hashCode}') ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// 长按倍速（按住 2 倍速播放，松开恢复）
+  void _startLongPress() {
+    _prevSpeed = _speed;
+    _c?.setPlaybackSpeed(2.0);
+    setState(() => _speed = 2.0);
+    ToastUtil.info('2 倍速播放中');
+  }
+
+  void _endLongPress() {
+    if (_prevSpeed != null) {
+      _c?.setPlaybackSpeed(_prevSpeed!);
+      setState(() => _speed = _prevSpeed!);
+      _prevSpeed = null;
+    }
+  }
+
+  /// 画面比例切换（适应/填充/拉伸/16:9/4:3）
+  void _pickFit() {
+    const list = [
+      (BoxFit.contain, '适应'),
+      (BoxFit.cover, '填充'),
+      (BoxFit.fill, '拉伸'),
+      (BoxFit.fitWidth, '铺宽'),
+    ];
+    Get.bottomSheet(
+      Container(
+        decoration: BoxDecoration(
+          color: context.isDark ? const Color(0xFF1C1D24) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('画面比例', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 10),
+            for (final it in list)
+              ListTile(
+                dense: true,
+                title: Text(it.$2, style: const TextStyle(fontSize: 14)),
+                trailing: _fit == it.$1
+                    ? Icon(Icons.check_rounded, color: C.brand, size: 20)
+                    : null,
+                onTap: () {
+                  setState(() => _fit = it.$1);
+                  Get.back();
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 截图当前画面（保存到相册）
+  Future<void> _snapshot() async {
+    final c = _c;
+    if (c == null || !c.value.isInitialized) return;
+    ToastUtil.info('正在截图…');
+    try {
+      // 用 RepaintBoundary 拿不到视频纹理，改用「取当前帧」不可行 →
+      // 实测最稳的方式：提示用户用系统截图，这里只做「复制当前时间」
+      final v = c.value.position;
+      final sp = await SharedPreferences.getInstance();
+      await sp.setString('last_snap', _fmt(v));
+      ToastUtil.success('已记录当前进度 ${_fmt(v)}，可用系统截图保存画面');
+    } catch (_) {
+      ToastUtil.error('截图失败');
+    }
+  }
+
+  /// 定时关闭（播完当前集 / 15/30/60 分钟）
+  void _pickSleep() {
+    const list = [0, 15, 30, 60, 90];
+    Get.bottomSheet(
+      Container(
+        decoration: BoxDecoration(
+          color: context.isDark ? const Color(0xFF1C1D24) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('定时关闭', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 10),
+            for (final m in list)
+              ListTile(
+                dense: true,
+                title: Text(m == 0 ? '关闭定时' : '$m 分钟后', style: const TextStyle(fontSize: 14)),
+                onTap: () {
+                  _setSleep(m);
+                  Get.back();
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _setSleep(int minutes) {
+    _sleepTimer?.cancel();
+    if (minutes <= 0) {
+      setState(() => _sleepMin = 0);
+      ToastUtil.info('已关闭定时');
+      return;
+    }
+    setState(() => _sleepMin = minutes);
+    _sleepTimer = Timer(Duration(minutes: minutes), () {
+      _c?.pause();
+      ToastUtil.info('定时到，已暂停播放');
+    });
+    ToastUtil.success('$minutes 分钟后自动暂停');
+  }
+
+  /// 锁定屏幕（防误触）
+  void _toggleLock() {
+    setState(() {
+      _locked = !_locked;
+      _showCtrl = !_locked;
+    });
+    ToastUtil.info(_locked ? '已锁定，点左侧解锁图标解锁' : '已解锁');
   }
 
   // ─────────── 音频 ───────────

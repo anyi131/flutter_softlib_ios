@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../api/toolbox_service.dart';
 import '../../design/ad.dart';
+import '../../api/soft_service.dart';
 import '../../design/adaptive.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';
@@ -187,7 +188,7 @@ class _MusicHomePageState extends State<MusicHomePage> {
                             borderRadius: BorderRadius.circular(R.md),
                             child: cover.startsWith('http')
                                 ? CachedNetworkImage(
-                                    imageUrl: cover,
+                                    imageUrl: SoftService.proxyImage(cover),
                                     httpHeaders: const {
                                       'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
                                       'Referer': 'https://music.163.com/',
@@ -249,7 +250,7 @@ class _MusicHomePageState extends State<MusicHomePage> {
                                     borderRadius: BorderRadius.circular(R.md),
                                     child: cover.startsWith('http')
                                         ? CachedNetworkImage(
-                                            imageUrl: cover,
+                                            imageUrl: SoftService.proxyImage(cover),
                                             httpHeaders: const {
                                               'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
                                               'Referer': 'https://music.163.com/',
@@ -378,7 +379,7 @@ class _MusicHomePageState extends State<MusicHomePage> {
                 borderRadius: BorderRadius.circular(R.sm),
                 child: cover.startsWith('http')
                     ? CachedNetworkImage(
-                        imageUrl: cover,
+                        imageUrl: SoftService.proxyImage(cover),
                         httpHeaders: const {
                           'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
                           'Referer': 'https://music.163.com/',
@@ -493,7 +494,14 @@ class _MusicHomePageState extends State<MusicHomePage> {
             ClipRRect(
               borderRadius: BorderRadius.circular(99),
               child: cover.startsWith('http')
-                  ? CachedNetworkImage(imageUrl: cover, width: 38, height: 38, fit: BoxFit.cover)
+                  ? CachedNetworkImage(
+                      imageUrl: SoftService.proxyImage(cover),
+                      width: 38,
+                      height: 38,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) =>
+                          Container(width: 38, height: 38, color: C.brand.withAlpha(30)),
+                    )
                   : Container(
                       width: 38, height: 38, color: C.brand.withAlpha(30),
                       child: const Icon(Icons.music_note_rounded, size: 18)),
@@ -702,7 +710,16 @@ class _MusicListPageState extends State<MusicListPage> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(R.md),
                           child: CachedNetworkImage(
-                              imageUrl: widget.cover, width: Ad.w(context, 92), height: Ad.h(context, 92), fit: BoxFit.cover),
+                            imageUrl: SoftService.proxyImage(widget.cover),
+                            width: Ad.w(context, 92),
+                            height: Ad.h(context, 92),
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) => Container(
+                              width: Ad.w(context, 92),
+                              height: Ad.h(context, 92),
+                              color: C.brand.withAlpha(30),
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -791,8 +808,14 @@ class _MusicListPageState extends State<MusicListPage> {
                 borderRadius: BorderRadius.circular(R.sm),
                 child: cover.startsWith('http')
                     ? CachedNetworkImage(
-                        imageUrl: cover, width: 44, height: 44, fit: BoxFit.cover,
-                        memCacheWidth: 140)
+                        imageUrl: SoftService.proxyImage(cover),
+                        width: 44,
+                        height: 44,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 140,
+                        errorWidget: (_, __, ___) =>
+                            Container(width: 44, height: 44, color: C.brand.withAlpha(20)),
+                      )
                     : Container(width: 44, height: 44, color: C.brand.withAlpha(20)),
               ),
               const SizedBox(width: 10),
