@@ -166,7 +166,7 @@ class MiniPlayer extends StatelessWidget {
         SizedBox(
           width: 22,
           height: 16,
-          child: CustomPaint(painter: _WavePainter(playing: p.playing.value)),
+          child: _WavePainter(playing: p.playing.value),
         ),
         const SizedBox(width: 8),
         Expanded(

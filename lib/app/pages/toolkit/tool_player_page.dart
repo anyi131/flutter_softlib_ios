@@ -8,7 +8,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../design/ad.dart';
 import '../../design/adaptive.dart';
-import '../../services/global_player.dart';
+import '../../player/global_player.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
@@ -86,6 +86,7 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   void initState() {
     super.initState();
     _cur = widget.initialIndex;
+    GlobalPlayer.I.ctrl?.addListener(_onTick);
     _open();
   }
 
@@ -195,6 +196,25 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
       ),
     );
     if (r != null) _setSpeed(r);
+  }
+
+  /// 监听全局播放器状态（跳过片头按钮、自动隐藏控制栏）
+  void _onTick() {
+    final gp = GlobalPlayer.I;
+    if (!mounted) return;
+    final v = gp.ctrl?.value;
+    if (v != null && v.isInitialized) {
+      // 片头区间内显示「跳过片头」
+      final inHead = v.position.inSeconds < 90 && v.position.inSeconds > 2;
+      if (inHead != _showSkip) setState(() => _showSkip = inHead);
+    }
+  }
+
+  /// 跳过片头（跳到 90 秒）
+  Future<void> _skipHead() async {
+    await GlobalPlayer.I.seekTo(90 * 1000);
+    if (mounted) setState(() => _showSkip = false);
+    ToastUtil.info('已跳过片头');
   }
 
   /// 下一集/下一首
