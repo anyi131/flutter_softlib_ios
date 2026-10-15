@@ -71,7 +71,6 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   Duration? _dragPos;
 
   List<(String, String)> get _list => widget.playlist ?? const [];
-  int _listIdx = 0;
 
   String get _url {
     if (_list.isNotEmpty && _cur < _list.length) return _list[_cur].$2;
@@ -127,77 +126,6 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
     _c = gp.ctrl;
     setState(() => _ready = true);
     return;
-    // ★ 关键：带上 UA，很多 m3u8 源没 UA 会 403
-    // ★★ 1015 修复：原来传了空 Referer ''，网易云 CDN 会直接 403 → 音乐播放失败！
-    //   正确做法：按域名给对应 Referer（网易云用 music.163.com）
-    final host = Uri.tryParse(_url)?.host ?? '';
-    final ref = host.contains('126.net')
-        ? 'https://music.163.com/'
-        : (host.contains('lz') || host.contains('bfvvs') || host.contains('jisuzyv'))
-            ? 'https://$host/'
-            : '';
-    final c = VideoPlayerController.networkUrl(
-      Uri.parse(_url),
-      httpHeaders: {
-        'User-Agent':
-            'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 '
-            '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
-        if (ref.isNotEmpty) 'Referer': ref,
-      },
-    );
-    _c = c;
-    old?.dispose();
-    try {
-      await c.initialize();
-      if (!mounted || _c != c) {
-        await c.dispose();
-        return;
-      }
-      c.setLooping(widget.isAudio);
-      setState(() => _ready = true);
-      await c.play();
-      _autoHide();
-      // ★ 监听进度：播放到「片头区间」时显示跳过按钮
-      c.addListener(_onTick);
-    } catch (e) {
-      if (!mounted || _c != c) return;
-      await c.dispose();
-      if (_c == c) _c = null;
-      setState(() {
-        _failed = true;
-        _err = _friendly(e);
-      });
-    }
-  }
-
-  /// 进度监听：片头 5-120 秒之间显示「跳过片头」
-  void _onTick() {
-    final v = _c?.value;
-    if (v == null || !v.isInitialized) return;
-    final pos = v.position.inSeconds;
-    final dur = v.duration.inSeconds;
-    // 片头广告通常在开头，超过 120 秒或快到片尾就不显示按钮了
-    final shouldShow = !widget.isAudio && pos >= 3 && pos <= 120 && dur > 180;
-    if (shouldShow != _showSkipBtn && mounted) {
-      setState(() => _showSkipBtn = shouldShow);
-    }
-  }
-
-  /// 跳过片头：默认跳 90 秒（常见的片头广告长度）
-  Future<void> _skipHead() async {
-    final c = _c;
-    if (c == null) return;
-    const jump = 90;
-    final dur = c.value.duration;
-    var t = c.value.position + const Duration(seconds: jump);
-    if (t > dur) t = dur - const Duration(seconds: 5);
-    if (t < Duration.zero) t = Duration.zero;
-    await c.seekTo(t);
-    setState(() {
-      _skipSec = jump;
-      _showSkipBtn = false;
-    });
-    ToastUtil.success('已跳过片头 $jump 秒');
   }
 
   String _friendly(Object e) {
@@ -273,11 +201,9 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   Future<void> _next() async {
     final list = _list;
     if (list.length < 2) return;
-    final cur = _listIdx;
-    final nx = (cur + 1) % list.length;
-    setState(() => _listIdx = nx);
-    _url = list[nx].$2;
-    _open();
+    final nx = (_cur + 1) % list.length;
+    setState(() => _cur = nx);
+    await _open();
   }
 
   /// 全屏切换（横屏 + 隐藏系统栏）

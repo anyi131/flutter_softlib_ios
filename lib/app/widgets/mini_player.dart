@@ -6,7 +6,7 @@ import '../design/ad.dart';
 import '../design/app_anim.dart';
 import '../design/ui.dart';
 import '../api/soft_service.dart';
-import '../services/global_player.dart';
+import '../player/global_player.dart';
 import '../pages/toolkit/tool_player_page.dart';
 
 /// ═══════════════════════════════════════════════════════════════
