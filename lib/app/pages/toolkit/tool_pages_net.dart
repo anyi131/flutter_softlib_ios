@@ -90,9 +90,18 @@ class _HotPageState extends State<HotPage> {
       final d = await _svc.hot(type: _tabs[idx].$1, board: _tabs[idx].$2);
       // 过期响应（用户已经切到别的板块了）→ 直接丢弃，不 setState
       if (!mounted || seq != _reqSeq || idx != _i) return;
-      final l = ((d?['list'] as List?) ?? [])
-          .map((e) => Map<String, dynamic>.from(e as Map))
-          .toList();
+      // ★ 1015 加固：逐条容错 —— 任何一条数据格式异常都不允许拖垮整页
+      //   （原来 .map(...as Map) 一旦某条不是 Map 就抛异常 → 整屏渲染失败 → 卡死）
+      final l = <Map<String, dynamic>>[];
+      for (final e in ((d?['list'] as List?) ?? [])) {
+        try {
+          if (e is Map) {
+            l.add(Map<String, dynamic>.from(e));
+          } else if (e is String) {
+            l.add({'title': e});
+          }
+        } catch (_) {}
+      }
       setState(() {
         _list = l;
         _label = '${d?['label'] ?? ''}';

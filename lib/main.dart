@@ -45,7 +45,8 @@ Future<void> main() async {
       //   （release 下 Flutter 默认给空白占位，看起来就是白屏）
       ErrorWidget.builder = (FlutterErrorDetails details) {
         _logError('ErrorWidget', details.exception, details.stack);
-        return const _UiFallback();
+        // ★ 1015：兜底页带上错误摘要，方便用户反馈 / 自己排查
+        return _UiFallback(detail: details.exception.toString());
       };
 
       try {
@@ -70,13 +71,18 @@ int _reportCount = 0;
 void _logError(String tag, Object error, StackTrace? stack) {
   debugPrint('[Softlib][$tag] $error');
   if (stack != null) debugPrint(stack.toString());
+  // ★ 1015：带上当前页面路由，便于定位是哪个页面崩的
+  String route = '';
+  try {
+    route = Get.currentRoute;
+  } catch (_) {}
   // 每个会话最多上报 30 条，避免崩溃风暴刷爆服务器
   if (_reportCount >= 30) return;
   _reportCount++;
   try {
     SoftService.instance.reportLog(
       tag: tag,
-      error: error.toString(),
+      error: '[route=$route] ' + error.toString(),
       stack: stack?.toString() ?? '',
       version: _appVersion,
     );
@@ -306,20 +312,73 @@ Widget _buildErrorApp(String error) {
 }
 
 /// 构建异常时的可见占位（替代 release 下的空白块，避免「整屏白屏」）
-class _UiFallback extends StatelessWidget {
-  const _UiFallback();
+class _UiFallback extends StatefulWidget {
+  const _UiFallback({this.detail = ''});
+  final String detail;
+
+  @override
+  State<_UiFallback> createState() => _UiFallbackState();
+}
+
+class _UiFallbackState extends State<_UiFallback> {
+  bool _showDetail = false;
 
   @override
   Widget build(BuildContext context) {
-    return const Material(
+    return Material(
       color: Colors.transparent,
       child: Center(
         child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Text(
-            '这部分内容加载异常，请返回重试',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12.5, color: Color(0xFF8A8F98)),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline_rounded, size: 34, color: Color(0xFFB0B5BD)),
+              const SizedBox(height: 10),
+              const Text(
+                '内容加载异常',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF6B7280)),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                '可返回上一页重试，或点下方按钮刷新',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, color: Color(0xFF9AA0A6)),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ★ 1015：返回按钮（原先只提示「请返回」，但没有按钮）
+                  TextButton(
+                    onPressed: () {
+                      try {
+                        Get.back();
+                      } catch (_) {}
+                    },
+                    child: const Text('返回'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: () => setState(() {}),
+                    child: const Text('重试'),
+                  ),
+                ],
+              ),
+              if (widget.detail.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: () => setState(() => _showDetail = !_showDetail),
+                  child: Text(
+                    _showDetail ? widget.detail : '查看详情',
+                    maxLines: _showDetail ? 8 : 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 10, color: Color(0xFFB0B5BD)),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),
