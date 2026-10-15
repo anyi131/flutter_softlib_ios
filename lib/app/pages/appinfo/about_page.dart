@@ -204,7 +204,7 @@ class _AboutPageState extends State<AboutPage> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    'v${cfg?.aboutVersion ?? _localVersion}',
+                    'v${_localVersion.isNotEmpty ? _localVersion : (cfg?.aboutVersion ?? "")}',
                     style: const TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w800,
@@ -273,7 +273,7 @@ class _AboutPageState extends State<AboutPage> {
                 ToastUtil.success('版本号已复制');
               },
               child: Text(
-                'v${cfg?.aboutVersion ?? _localVersion}',
+                'v${_localVersion.isNotEmpty ? _localVersion : (cfg?.aboutVersion ?? "")}',
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w800,
@@ -499,7 +499,7 @@ class _AboutPageState extends State<AboutPage> {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: C.brand.withAlpha(80), width: 0.8),
             ),
-            child: Text('v${cfg?.aboutVersion ?? _localVersion}',
+            child: Text('v${_localVersion.isNotEmpty ? _localVersion : (cfg?.aboutVersion ?? "")}',
                 style: TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w800,

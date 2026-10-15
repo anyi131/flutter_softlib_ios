@@ -453,7 +453,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
               (v) => setState(() => aboutEnable = v),
             ),
             _field('应用名称', aboutNameCtrl),
-            _field('版本号（展示用）', aboutVersionCtrl),
+            _field('版本号（留空=自动跟随软件真实版本）', aboutVersionCtrl),
             _field('Logo 图片 URL', aboutLogCtrl),
             _field('一句话简介', aboutSloganCtrl),
             _field('详细介绍', aboutDescCtrl, lines: 4),
