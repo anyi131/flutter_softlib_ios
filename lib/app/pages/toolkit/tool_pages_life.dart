@@ -68,7 +68,7 @@ class _BodyFatPageState extends State<BodyFatPage> {
     return ToolScaffold(
       title: '体脂率',
       subtitle: '美国海军法估算（需量围度）',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolChips<bool>(
@@ -417,7 +417,7 @@ class _BookkeepPageState extends State<BookkeepPage> {
     return ToolScaffold(
       title: '简单记账',
       subtitle: '随手记录收支（本地，退出即清）',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolChips<int>(

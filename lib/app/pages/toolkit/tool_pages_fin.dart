@@ -51,7 +51,7 @@ class _CarLoanPageState extends State<CarLoanPage> {
     return ToolScaffold(
       title: '车贷计算',
       subtitle: '首付比例 / 月供 / 总利息',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolField(controller: _price, label: '车价（元）', keyboard: TextInputType.number, onChanged: (_) => setState(() {})),
@@ -285,7 +285,7 @@ class _SalaryPageState extends State<SalaryPage> {
     return ToolScaffold(
       title: '工资到手',
       subtitle: '税前 → 税后到手估算',
-      scrollable: true,
+      
       child: Column(
         children: [
           Row(
@@ -691,7 +691,7 @@ class _TipPageState extends State<TipPage> {
     return ToolScaffold(
       title: '小费计算',
       subtitle: '按比例算小费（国外旅行用）',
-      scrollable: true,
+      
       child: Column(
         children: [
           Row(

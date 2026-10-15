@@ -98,7 +98,7 @@ class ClothSizePage extends StatelessWidget {
     return ToolScaffold(
       title: '衣服尺码',
       subtitle: '男装上装参考表',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolCard(
@@ -183,7 +183,7 @@ class _BpPageState extends State<BpPage> {
     return ToolScaffold(
       title: '血压评估',
       subtitle: '按中国高血压指南分级',
-      scrollable: true,
+      
       child: Column(
         children: [
           Row(
@@ -271,7 +271,7 @@ class _VisionPageState extends State<VisionPage> {
     return ToolScaffold(
       title: '视力换算',
       subtitle: '对数视力 ↔ 小数 ↔ 约等度数',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolField(
@@ -434,7 +434,7 @@ class SpringFestivalPage extends StatelessWidget {
     return ToolScaffold(
       title: '春节日期表',
       subtitle: '未来各年春节与生肖',
-      scrollable: true,
+      
       child: ToolCard(
         child: Column(
           children: [
@@ -477,7 +477,7 @@ class ExpressCoPage extends StatelessWidget {
     return ToolScaffold(
       title: '快递公司',
       subtitle: '常用快递客服电话',
-      scrollable: true,
+      
       child: ToolCard(
         child: Column(
           children: data
@@ -527,7 +527,7 @@ class SlangUnitPage extends StatelessWidget {
     return ToolScaffold(
       title: '常用单位口语',
       subtitle: '一打/一罗/一桶到底是几个',
-      scrollable: true,
+      
       child: ToolCard(
         child: Column(
           children: data
@@ -570,7 +570,7 @@ class NumSlangPage extends StatelessWidget {
     return ToolScaffold(
       title: '数字谐音',
       subtitle: '常见数字暗语对照',
-      scrollable: true,
+      
       child: ToolCard(
         child: Column(
           children: data
@@ -662,7 +662,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
     return ToolScaffold(
       title: '番茄钟',
       subtitle: '专注 / 休息循环',
-      scrollable: true,
+      
       child: Column(
         children: [
           Container(

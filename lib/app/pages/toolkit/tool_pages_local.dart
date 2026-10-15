@@ -482,7 +482,7 @@ class _UnitPageState extends State<UnitPage> {
     return ToolScaffold(
       title: '单位换算',
       subtitle: '长度 / 重量 / 面积 / 存储 / 时间',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolChips<String>(
@@ -676,7 +676,7 @@ class _BmiPageState extends State<BmiPage> {
     return ToolScaffold(
       title: 'BMI 计算',
       subtitle: '中国成人标准',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolField(
@@ -935,7 +935,7 @@ class _Base64PageState extends State<Base64Page> {
     return ToolScaffold(
       title: 'Base64',
       subtitle: '编码 / 解码（UTF-8）',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolField(
@@ -1051,7 +1051,7 @@ class _RandomPageState extends State<RandomPage> {
     return ToolScaffold(
       title: '随机数生成',
       subtitle: '批量 / 不重复',
-      scrollable: true,
+      
       child: Column(
         children: [
           Row(
@@ -1200,7 +1200,7 @@ class _PasswordPageState extends State<PasswordPage> {
     return ToolScaffold(
       title: '密码生成',
       subtitle: '本地随机 · 不联网',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolCard(
@@ -1441,7 +1441,7 @@ class _RelativePageState extends State<RelativePage> {
     return ToolScaffold(
       title: '亲戚称呼计算',
       subtitle: '输入关系链，算出该怎么称呼',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolField(

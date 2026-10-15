@@ -9,6 +9,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_browser_page.dart';
+import 'tool_cache.dart';
 import 'tool_kit.dart';
 
 /// 工具箱 · 通用接口工具（1015 新增）
@@ -55,8 +56,27 @@ class _ApiToolPageState extends State<ApiToolPage> {
   }
 
   Future<void> load() async {
+    // ★ 1015 优化：先显示上次缓存（秒开），再后台刷新
+    final ck = 'api_${widget.apiUrl.hashCode}';
+    if (items.isEmpty) {
+      final cached = await ToolCache.read(ck);
+      final cj = cached?['json'];
+      if (cj != null && mounted) {
+        final l = _extractList(cj, widget.cfg['api_path'] ?? '');
+        final lst = l.isNotEmpty ? l : (_findAnyList(cj) ?? []);
+        if (lst.isNotEmpty) {
+          setState(() {
+            items = lst
+                .whereType<Map>()
+                .map((e) => Map<String, dynamic>.from(e))
+                .toList();
+            loading = false;
+          });
+        }
+      }
+    }
     setState(() {
-      loading = true;
+      loading = items.isEmpty; // 有缓存就不闪 loading
       err = '';
     });
     try {
@@ -79,6 +99,8 @@ class _ApiToolPageState extends State<ApiToolPage> {
         });
         return;
       }
+      // 写缓存供下次秒开
+      ToolCache.write(ck, {'json': raw});
       var list = _extractList(raw, widget.cfg['api_path'] ?? '');
       if (list.isEmpty) {
         // 兜底：递归找第一个长度 >0 的数组

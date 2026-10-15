@@ -387,7 +387,7 @@ class _TimestampPageState extends State<TimestampPage> {
     return ToolScaffold(
       title: '时间戳转换',
       subtitle: 'Unix 时间戳 ↔ 日期时间',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolCard(
@@ -740,7 +740,7 @@ class _PercentPageState extends State<PercentPage> {
     return ToolScaffold(
       title: '折扣计算',
       subtitle: '原价 / 现价 → 折扣与省额',
-      scrollable: true,
+      
       child: Column(
         children: [
           Row(

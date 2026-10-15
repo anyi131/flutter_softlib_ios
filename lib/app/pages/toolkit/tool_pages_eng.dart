@@ -49,7 +49,7 @@ class _DecorPageState extends State<DecorPage> {
     return ToolScaffold(
       title: '装修估算',
       subtitle: '面积 / 瓷砖 / 涂料用量',
-      scrollable: true,
+      
       child: Column(
         children: [
           Row(
@@ -124,7 +124,7 @@ class _ElecPageState extends State<ElecPage> {
     return ToolScaffold(
       title: '电费计算',
       subtitle: '按功率和时长估算电费',
-      scrollable: true,
+      
       child: Column(
         children: [
           Row(
@@ -324,7 +324,7 @@ class _UnitPageGenericState extends State<UnitPageGeneric> {
     return ToolScaffold(
       title: widget.title,
       subtitle: widget.subtitle,
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolCard(

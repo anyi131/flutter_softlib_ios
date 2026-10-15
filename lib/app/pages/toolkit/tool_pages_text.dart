@@ -124,7 +124,7 @@ class _JsonPageState extends State<JsonPage> {
     return ToolScaffold(
       title: 'JSON 工具',
       subtitle: '格式化 / 压缩 / 校验',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolField(controller: _in, label: 'JSON 原文', lines: 6, icon: Icons.data_object_rounded),
@@ -179,7 +179,7 @@ class _UrlPageState extends State<UrlPage> {
     return ToolScaffold(
       title: 'URL 编码',
       subtitle: 'URLEncode / URLDecode',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolField(controller: _in, label: '原文', lines: 4, icon: Icons.link_rounded),
@@ -289,7 +289,7 @@ class _HashPageState extends State<HashPage> {
     return ToolScaffold(
       title: '哈希校验',
       subtitle: '文本摘要 / 校验码',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolField(controller: _in, label: '输入文本', lines: 4, icon: Icons.tag_rounded),
@@ -545,7 +545,7 @@ class _RandNumPageState extends State<RandNumPage> {
     return ToolScaffold(
       title: '随机数 / 抽签',
       subtitle: '范围随机数、不重复抽签',
-      scrollable: true,
+      
       child: Column(
         children: [
           Row(
@@ -852,7 +852,7 @@ class _AsciiPageState extends State<AsciiPage> {
     return ToolScaffold(
       title: '字符编码',
       subtitle: '字符 ↔ ASCII / Unicode 码点',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolField(

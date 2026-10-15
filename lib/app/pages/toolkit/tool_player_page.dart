@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -56,6 +57,16 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   int _skipSec = 0;          // 当前跳过的秒数（0=未跳）
   bool _showSkipBtn = false; // 是否显示「跳过片头」按钮
 
+  // ★ 1015：播放器增强
+  double _speed = 1.0;        // 倍速
+  double _brightness = 0.5;   // 亮度（0-1，仅遮罩显示，靠系统亮度）
+  double _volume = 0.5;       // 音量
+  int _gesture = 0;           // 0 无 / 1 亮度 / 2 音量 / 3 进度
+  double _gestureValue = 0;   // 手势当前值（0-1）
+  bool _isFullscreen = false; // 是否全屏（横屏）
+  Offset? _dragStart;
+  Duration? _dragPos;
+
   List<(String, String)> get _list => widget.playlist ?? const [];
 
   String get _url {
@@ -80,6 +91,8 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
     _hideTimer?.cancel();
     _c?.removeListener(_onTick);
     _c?.dispose();
+    // ★ 1015：退出播放器恢复竖屏
+    if (_isFullscreen) _restoreOrientation();
     super.dispose();
   }
 
@@ -166,6 +179,142 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
     return '播放失败，可换一个源试试';
   }
 
+  /// 切换倍速
+  void _setSpeed(double v) {
+    setState(() => _speed = v);
+    _c?.setPlaybackSpeed(v);
+    ToastUtil.info('${v}x 播放');
+  }
+
+  /// 弹倍速选择
+  Future<void> _pickSpeed() async {
+    const opts = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0];
+    final r = await showModalBottomSheet<double>(
+      context: context,
+      backgroundColor: const Color(0xFF1E1E22),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(R.lg)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 14),
+              child: Text('播放速度',
+                  style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
+            ),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              alignment: WrapAlignment.center,
+              children: opts.map((v) {
+                final sel = (v - _speed).abs() < 0.01;
+                return GestureDetector(
+                  onTap: () => Navigator.of(ctx).pop(v),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    decoration: BoxDecoration(
+                      gradient: sel ? Deco.brandGradient : null,
+                      color: sel ? null : Colors.white12,
+                      borderRadius: BorderRadius.circular(R.full),
+                    ),
+                    child: Text('${v}x',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w800,
+                          color: sel ? Colors.white : Colors.white70,
+                        )),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+    if (r != null) _setSpeed(r);
+  }
+
+  /// 全屏切换（横屏 + 隐藏系统栏）
+  Future<void> _toggleFullscreen() async {
+    final on = !_isFullscreen;
+    setState(() => _isFullscreen = on);
+    await SystemChrome.setPreferredOrientations(
+      on ? [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]
+         : [DeviceOrientation.portraitUp],
+    );
+    await SystemChrome.setEnabledSystemUIMode(
+      on ? SystemUiMode.immersiveSticky : SystemUiMode.edgeToEdge,
+    );
+  }
+
+  /// 恢复竖屏（退出播放器时调用）
+  static Future<void> _restoreOrientation() async {
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  }
+
+  /// 手势开始
+  void _onDragStart(DragStartDetails d, Size size) {
+    _dragStart = d.localPosition;
+    _dragPos = _c?.value.position;
+    setState(() => _gesture = 0);
+  }
+
+  /// 手势更新：左半屏=亮度，右半屏=音量，水平拖=进度
+  void _onDragUpdate(DragUpdateDetails d, Size size) {
+    final st = _dragStart;
+    if (st == null) return;
+    final dx = d.localPosition.dx - st.dx;
+    final dy = d.localPosition.dy - st.dy;
+
+    // 水平位移明显 → 调进度
+    if (dx.abs() > 14 && dx.abs() > dy.abs()) {
+      final v = _c?.value;
+      if (v == null || !v.isInitialized) return;
+      final total = v.duration.inMilliseconds;
+      if (total <= 0) return;
+      final base = _dragPos ?? v.position;
+      final delta = (dx / size.width) * total * 0.5;
+      final t = Duration(milliseconds: (base.inMilliseconds + delta).round().clamp(0, total));
+      setState(() {
+        _gesture = 3;
+        _gestureValue = total == 0 ? 0 : t.inMilliseconds / total;
+      });
+      _c?.seekTo(t);
+      return;
+    }
+
+    // 垂直位移 → 亮度/音量
+    if (dy.abs() > 8) {
+      final left = st.dx < size.width / 2;
+      final delta = -dy / (size.height * 0.6);
+      setState(() {
+        if (left) {
+          _gesture = 1;
+          _brightness = (_brightness + delta).clamp(0.05, 1.0);
+          _gestureValue = _brightness;
+        } else {
+          _gesture = 2;
+          _volume = (_volume + delta).clamp(0.0, 1.0);
+          _gestureValue = _volume;
+          _c?.setVolume(_volume);
+        }
+      });
+    }
+  }
+
+  /// 手势结束
+  void _onDragEnd(DragEndDetails d) {
+    _dragStart = null;
+    _dragPos = null;
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (mounted) setState(() => _gesture = 0);
+    });
+  }
+
   void _autoHide() {
     _hideTimer?.cancel();
     _hideTimer = Timer(const Duration(seconds: 4), () {
@@ -228,9 +377,17 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
       return const Center(child: CircularProgressIndicator(color: Colors.white));
     }
     final v = _c!.value;
-    return GestureDetector(
-      onTap: _toggleCtrl,
-      child: Stack(
+    return LayoutBuilder(
+      builder: (ctx, box) => GestureDetector(
+        // ★ 1015：单击显隐控制栏，拖动调亮度/音量/进度
+        onTap: _toggleCtrl,
+        onHorizontalDragStart: (d) => _onDragStart(d, box.biggest),
+        onHorizontalDragUpdate: (d) => _onDragUpdate(d, box.biggest),
+        onHorizontalDragEnd: _onDragEnd,
+        onVerticalDragStart: (d) => _onDragStart(d, box.biggest),
+        onVerticalDragUpdate: (d) => _onDragUpdate(d, box.biggest),
+        onVerticalDragEnd: _onDragEnd,
+        child: Stack(
         alignment: Alignment.center,
         children: [
           Center(
@@ -239,6 +396,36 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
               child: VideoPlayer(_c!),
             ),
           ),
+          // ★ 1015：手势调节提示（亮度/音量/进度）
+          if (_gesture != 0)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha(180),
+                borderRadius: BorderRadius.circular(R.md),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _gesture == 1
+                        ? Icons.brightness_6_rounded
+                        : (_gesture == 2 ? Icons.volume_up_rounded : Icons.fast_forward_rounded),
+                    color: Colors.white,
+                    size: 26,
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    _gesture == 1
+                        ? '亮度 ${(_gestureValue * 100).round()}%'
+                        : _gesture == 2
+                        ? '音量 ${(_gestureValue * 100).round()}%'
+                        : '进度 ${(_gestureValue * 100).round()}%',
+                    style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+            ),
           if (_showCtrl) ...[
             // 中间播放/暂停
             GestureDetector(
@@ -319,12 +506,40 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
                       ),
                     ),
                     Text(_fmt(v.duration), style: const TextStyle(color: Colors.white, fontSize: 12)),
+                    const SizedBox(width: 10),
+                    // ★ 1015：倍速
+                    GestureDetector(
+                      onTap: _pickSpeed,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(38),
+                          borderRadius: BorderRadius.circular(R.sm),
+                        ),
+                        child: Text('${_speed}x',
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w800)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // ★ 1015：全屏
+                    GestureDetector(
+                      onTap: _toggleFullscreen,
+                      child: Icon(
+                        _isFullscreen
+                            ? Icons.fullscreen_exit_rounded
+                            : Icons.fullscreen_rounded,
+                        color: Colors.white,
+                        size: 21,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
           ],
         ],
+      ),
       ),
     );
   }

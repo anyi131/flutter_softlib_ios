@@ -50,7 +50,7 @@ class _BmrPageState extends State<BmrPage> {
     return ToolScaffold(
       title: '热量计算',
       subtitle: '基础代谢 BMR / 每日消耗 TDEE',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolChips<bool>(
@@ -118,7 +118,7 @@ class _SleepPageState extends State<SleepPage> {
     return ToolScaffold(
       title: '睡眠计算',
       subtitle: '按 90 分钟睡眠周期推算起床时间',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolCard(
@@ -284,7 +284,7 @@ class _SplitPageState extends State<SplitPage> {
     return ToolScaffold(
       title: 'AA 分摊',
       subtitle: '总价 / 人数 / 小费 → 每人多少',
-      scrollable: true,
+      
       child: Column(
         children: [
           Row(
@@ -578,7 +578,7 @@ class _RomanPageState extends State<RomanPage> {
     return ToolScaffold(
       title: '罗马数字',
       subtitle: '阿拉伯数字 ↔ 罗马数字（1-3999）',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolField(
@@ -734,7 +734,7 @@ class _FuelPageState extends State<FuelPage> {
     return ToolScaffold(
       title: '油耗计算',
       subtitle: '百公里油耗 / 每公里花费',
-      scrollable: true,
+      
       child: Column(
         children: [
           Row(
@@ -808,7 +808,7 @@ class _PassphrasePageState extends State<PassphrasePage> {
     return ToolScaffold(
       title: '口令短语',
       subtitle: '好记又安全的密码（比乱码更好记）',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolChips<int>(

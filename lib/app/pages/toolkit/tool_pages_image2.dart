@@ -48,7 +48,7 @@ class _ImgRotatePageState extends State<ImgRotatePage> with ImgToolMixin {
     return ToolScaffold(
       title: '旋转翻转',
       subtitle: '任意角度旋转 / 水平垂直翻转',
-      scrollable: true,
+      
       child: Column(
         children: [
           pickerCard(),
@@ -338,7 +338,7 @@ class _ImgResizePageState extends State<ImgResizePage> with ImgToolMixin {
     return ToolScaffold(
       title: '尺寸调整',
       subtitle: '缩放到指定宽高（可锁定比例）',
-      scrollable: true,
+      
       child: Column(
         children: [
           pickerCard(),
@@ -432,7 +432,7 @@ class _ImgInfoPageState extends State<ImgInfoPage> with ImgToolMixin {
     return ToolScaffold(
       title: '图片信息',
       subtitle: '查看尺寸 / 格式 / 体积',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolCard(

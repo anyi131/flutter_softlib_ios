@@ -71,7 +71,7 @@ class _TimerPageState extends State<TimerPage> {
     return ToolScaffold(
       title: '定时器',
       subtitle: '倒计时提醒（时/分/秒）',
-      scrollable: true,
+      
       child: Column(
         children: [
           Row(
@@ -429,7 +429,7 @@ class _GroupPageState extends State<GroupPage> {
     return ToolScaffold(
       title: '随机分组',
       subtitle: '抽签分组 / 团队分配',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolField(controller: _c, label: '名单（每行一个）', lines: 6, icon: Icons.groups_rounded),
@@ -518,7 +518,7 @@ class _LapTimerPageState extends State<LapTimerPage> {
     return ToolScaffold(
       title: '秒表计次',
       subtitle: '带计次（Lap）的秒表',
-      scrollable: true,
+      
       child: Column(
         children: [
           Container(

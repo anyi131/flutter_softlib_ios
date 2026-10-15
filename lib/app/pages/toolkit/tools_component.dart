@@ -11,6 +11,7 @@ import '../../utils/toast_util.dart';
 import '../../widgets/tab_bottom_pad.dart';
 import 'tool_kit.dart';
 import 'tool_api_page.dart';
+import 'tool_cache.dart';
 import 'tool_browser_page.dart';
 import 'tool_router.dart';
 
@@ -89,38 +90,51 @@ class _ToolsComponentState extends State<ToolsComponent>
         _layout = layout;
         _err = groups.isEmpty ? '工具目录为空，请稍后重试' : '';
       });
+      ToolCache.write('jzs_config', cfg);
     } catch (_) {}
   }
 
   Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _err = '';
-    });
+    // ★ 1015 优化：先读本地缓存，秒开界面（不用等网络）
+    final cached = await ToolCache.read('jzs_config');
+    if (cached != null && mounted && _groups.isEmpty) {
+      _applyConfig(cached, loading: false);
+    } else {
+      setState(() {
+        _loading = true;
+        _err = '';
+      });
+    }
+    // 再拉网络（回来后无感替换）
     try {
       final cfg = await _svc.fetchConfig(force: true);
-      if (!mounted) return;
-      final groups =
-          (cfg?['groups'] as List?)
-              ?.map((e) => Map<String, dynamic>.from(e as Map))
-              .toList() ??
-          [];
-      var layout = '${cfg?['default_style'] ?? 'grid'}';
-      if (!['grid', 'card', 'compact', 'banner'].contains(layout)) layout = 'grid';
-      setState(() {
-        _groups = groups;
-        _meta = cfg ?? {};
-        _layout = layout;
-        _loading = false;
-        _err = groups.isEmpty ? '工具目录为空，请稍后重试' : '';
-      });
+      if (!mounted || cfg == null) return;
+      _applyConfig(cfg, loading: false);
+      // 写缓存（下次秒开）
+      ToolCache.write('jzs_config', cfg);
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        // 有缓存就不报错（用户还能看缓存内容）
+        _err = _groups.isEmpty ? '加载失败，下拉重试' : '';
       });
     }
+  }
+
+  /// 统一应用配置（缓存/网络共用）
+  void _applyConfig(Map<String, dynamic> cfg, {required bool loading}) {
+    final groups =
+        (cfg['groups'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)).toList() ?? [];
+    var layout = '${cfg['default_style'] ?? 'grid'}';
+    if (!['grid', 'card', 'compact', 'banner'].contains(layout)) layout = 'grid';
+    setState(() {
+      _groups = groups;
+      _meta = cfg;
+      _layout = layout;
+      _loading = loading;
+      _err = groups.isEmpty ? '工具目录为空，请稍后重试' : '';
+    });
   }
 
   int get _count {
@@ -179,44 +193,119 @@ class _ToolsComponentState extends State<ToolsComponent>
   // ═══════════ 顶部 ═══════════
 
   Widget _header() {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        context.pagePadding,
-        14,
-        context.pagePadding - 10,
-        6,
+    // ★ 1015 美化：渐变头图 + 大标题 + 统计胶囊 + 圆形图标按钮
+    return Container(
+      margin: EdgeInsets.fromLTRB(context.pagePadding, 10, context.pagePadding, 8),
+      padding: const EdgeInsets.fromLTRB(18, 18, 12, 18),
+      decoration: BoxDecoration(
+        gradient: Deco.brandGradient,
+        borderRadius: BorderRadius.circular(R.xl),
+        boxShadow: [
+          BoxShadow(
+            color: C.brand.withAlpha(context.isDark ? 70 : 90),
+            blurRadius: 26,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      child: Row(
+      child: Stack(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('工具箱', style: Ty.display.copyWith(color: context.t1)),
-                const SizedBox(height: 4),
-                Text(
-                  '共 ${_meta['total'] ?? _count} 个实用小工具',
-                  style: Ty.small.copyWith(color: context.t3),
-                ),
-              ],
+          // 装饰性光斑
+          Positioned(
+            right: -26,
+            top: -34,
+            child: Container(
+              width: 118,
+              height: 118,
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(26),
+                shape: BoxShape.circle,
+              ),
             ),
           ),
-          _topIcon(
-            Icons.search_rounded,
-            '搜索',
-            () => Get.to(() => const ToolSearchPage()),
+          Positioned(
+            right: 36,
+            bottom: -46,
+            child: Container(
+              width: 86,
+              height: 86,
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(18),
+                shape: BoxShape.circle,
+              ),
+            ),
           ),
-          // ★ 1015：移除 App 端布局切换 —— 布局模板完全由后台控制
-          _topIcon(
-            Icons.star_outline_rounded,
-            '收藏',
-            () => Get.to(() => const ToolFavPage()),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('工具箱',
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        )),
+                    const SizedBox(height: 7),
+                    // 统计胶囊
+                    Wrap(
+                      spacing: 7,
+                      runSpacing: 7,
+                      children: [
+                        _statPill('${_meta['total'] ?? _count} 个工具'),
+                        _statPill('${_groups.length} 个分类'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              _roundIcon(Icons.search_rounded, '搜索',
+                  () => Get.to(() => const ToolSearchPage())),
+              const SizedBox(width: 8),
+              _roundIcon(Icons.star_rounded, '收藏',
+                  () => Get.to(() => const ToolFavPage())),
+            ],
           ),
         ],
       ),
     );
   }
+
+  /// 头部统计胶囊（半透明白底）
+  Widget _statPill(String text) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white.withAlpha(46),
+          borderRadius: BorderRadius.circular(R.full),
+        ),
+        child: Text(text,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            )),
+      );
+
+  /// 头部圆形图标按钮
+  Widget _roundIcon(IconData icon, String tip, VoidCallback onTap) => Tooltip(
+        message: tip,
+        child: AppPressable(
+          onTap: onTap,
+          child: Container(
+            width: 40,
+            height: 40,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(52),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 20, color: Colors.white),
+          ),
+        ),
+      );
 
   Widget _topIcon(IconData icon, String tip, VoidCallback onTap) => Tooltip(
     message: tip,
@@ -275,21 +364,40 @@ class _ToolsComponentState extends State<ToolsComponent>
   Widget _catHead(Map<String, dynamic> g, int count) {
     final title = '${g['title'] ?? ''}';
     final hint = '${g['hint'] ?? ''}';
+    // ★ 1015 美化：渐变图标块 + 左侧色条 + 数量胶囊
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+      padding: const EdgeInsets.fromLTRB(14, 15, 14, 13),
       child: Row(
         children: [
+          // 左侧竖色条
           Container(
-            width: 52,
-            height: 52,
+            width: 3.5,
+            height: 34,
             decoration: BoxDecoration(
-              color: C.brand.withAlpha(context.isDark ? 34 : 20),
-              borderRadius: BorderRadius.circular(R.md),
+              gradient: Deco.brandGradient,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 11),
+          // 渐变图标块
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              gradient: Deco.brandGradient,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: C.brand.withAlpha(context.isDark ? 60 : 80),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             alignment: Alignment.center,
-            child: Icon(ToolIcons.cat(title), size: 25, color: C.brand),
+            child: Icon(ToolIcons.cat(title), size: 23, color: Colors.white),
           ),
-          const SizedBox(width: 13),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,9 +408,10 @@ class _ToolsComponentState extends State<ToolsComponent>
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 17,
+                    fontSize: 16,
                     fontWeight: FontWeight.w900,
                     color: context.t1,
+                    letterSpacing: 0.2,
                   ),
                 ),
                 if (hint.isNotEmpty) ...[
@@ -312,8 +421,9 @@ class _ToolsComponentState extends State<ToolsComponent>
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Ty.tiny.copyWith(
-                      fontSize: 11.5,
+                      fontSize: 11,
                       color: context.t3,
+                      letterSpacing: 0.3,
                     ),
                   ),
                 ],

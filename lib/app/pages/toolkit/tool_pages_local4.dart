@@ -70,7 +70,7 @@ class _UnitConvPageState extends State<_UnitConvPage> {
     return ToolScaffold(
       title: widget.title,
       subtitle: widget.subtitle,
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolCard(
@@ -423,7 +423,7 @@ class _TaxPageState extends State<TaxPage> {
     return ToolScaffold(
       title: '个税计算',
       subtitle: '工资个税（含起征点与专项扣除）',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolField(controller: _salary, label: '税前工资（元）', keyboard: TextInputType.number, onChanged: (_) => setState(() {})),
@@ -521,7 +521,7 @@ class _MortgagePageState extends State<MortgagePage> {
     return ToolScaffold(
       title: '房贷计算',
       subtitle: '等额本息 / 等额本金',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolChips<int>(
@@ -598,7 +598,7 @@ class _InterestPageState extends State<InterestPage> {
     return ToolScaffold(
       title: '存款利息',
       subtitle: '单利 / 复利 收益计算',
-      scrollable: true,
+      
       child: Column(
         children: [
           ToolChips<int>(
