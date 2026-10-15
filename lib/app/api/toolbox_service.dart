@@ -130,16 +130,18 @@ class ToolboxService {
   }
 
   /// 漫画章节
+  /// ★ 1015 修复：服务端参数名是 comicid（原来传 id → 「参数错误」→ 漫画点进去空白）
   Future<List<Map<String, dynamic>>> comicChapters(String id) async {
-    final r = await _ss.toolbox1('comic_chapters', query: {'id': id});
+    final r = await _ss.toolbox1('comic_chapters', query: {'comicid': id});
     return _asList(r?['list'] ?? r?['data']);
   }
 
   /// 漫画图片（纯字符串列表）
+  /// ★ 1015 修复：服务端参数名是 chapterid（原来传 id/chapter → 「参数错误」）
   Future<List<String>> comicImages(String id, String chapter) async {
     final r = await _ss.toolbox1(
       'comic_images',
-      query: {'id': id, 'chapter': chapter},
+      query: {'chapterid': chapter},
     );
     final d = r?['list'] ?? r?['data'];
     if (d is List) return d.map((e) => '$e').toList();
