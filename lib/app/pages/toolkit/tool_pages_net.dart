@@ -11,6 +11,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
+import '../../utils/img_saver.dart';
 import '../../widgets/media_preview.dart';
 import 'tool_browser_page.dart';
 import 'tool_kit.dart';
@@ -2615,6 +2616,7 @@ class _HeroGalleryPageState extends State<HeroGalleryPage> {
                   return ToolCard(
                     padding: EdgeInsets.zero,
                     onTap: () => MediaPreview.showImage(context, '${s['url'] ?? ''}'),
+                                            onLongPress: () => ImgSaver.saveUrl('${s['url'] ?? ''}'),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(R.lg),
                       child: Stack(
@@ -3128,6 +3130,8 @@ class _WallpaperPageState extends State<WallpaperPage> {
                     itemCount: _urls.length,
                     itemBuilder: (c, i) => AppPressable(
                       onTap: () => MediaPreview.showImages(context, _urls, index: i),
+                      // ★ 1015：长按直接保存到相册
+                      onLongPress: () => ImgSaver.saveUrl(_urls[i]),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(R.md),
                         child: CachedNetworkImage(

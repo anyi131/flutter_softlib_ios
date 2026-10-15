@@ -193,49 +193,23 @@ class _ToolsComponentState extends State<ToolsComponent>
 
   // ═══════════ 顶部 ═══════════
 
+  // ══════════════════════════════════════════════════════════════
+  //  ★ 1015 全新 UI（重绘）
+  //  设计基调：柔和渐变头 + 玻璃卡片 + 大图标 + 圆润质感
+  // ══════════════════════════════════════════════════════════════
+
+  /// 顶部：渐变头图 + 统计胶囊 + 操作按钮
   Widget _header() {
-    // ★ 1015 美化：渐变头图 + 大标题 + 统计胶囊 + 圆形图标按钮
-    return Container(
-      margin: EdgeInsets.fromLTRB(context.pagePadding, 10, context.pagePadding, 8),
-      padding: const EdgeInsets.fromLTRB(18, 18, 12, 18),
-      decoration: BoxDecoration(
-        gradient: Deco.brandGradient,
-        borderRadius: BorderRadius.circular(R.xl),
-        boxShadow: [
-          BoxShadow(
-            color: C.brand.withAlpha(context.isDark ? 70 : 90),
-            blurRadius: 26,
-            offset: const Offset(0, 10),
-          ),
-        ],
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        context.pagePadding,
+        10,
+        context.pagePadding,
+        14,
       ),
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 装饰性光斑
-          Positioned(
-            right: -26,
-            top: -34,
-            child: Container(
-              width: Ad.w(context, 118),
-              height: Ad.h(context, 118),
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha(26),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Positioned(
-            right: 36,
-            bottom: -46,
-            child: Container(
-              width: Ad.w(context, 86),
-              height: Ad.h(context, 86),
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha(18),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
           Row(
             children: [
               Expanded(
@@ -243,31 +217,52 @@ class _ToolsComponentState extends State<ToolsComponent>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('工具箱',
-                        style: TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        )),
-                    const SizedBox(height: 7),
-                    // 统计胶囊
-                    Wrap(
-                      spacing: 7,
-                      runSpacing: 7,
+                    Row(
                       children: [
-                        _statPill('${_meta['total'] ?? _count} 个工具'),
-                        _statPill('${_groups.length} 个分类'),
+                        Container(
+                          width: 5,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            gradient: Deco.brandGradient,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        const SizedBox(width: 9),
+                        Text(
+                          '工具箱',
+                          style: Ty.display.copyWith(
+                            color: context.t1,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Pill(
+                          text: '${_meta['total'] ?? _count} 个工具',
+                          icon: Icons.auto_awesome_rounded,
+                          small: true,
+                        ),
+                        const SizedBox(width: 6),
+                        if (_groups.isNotEmpty)
+                          Pill(
+                            text: '${_groups.length} 个分类',
+                            color: C.mint,
+                            icon: Icons.folder_rounded,
+                            small: true,
+                          ),
                       ],
                     ),
                   ],
                 ),
               ),
-              _roundIcon(Icons.search_rounded, '搜索',
-                  () => Get.to(() => const ToolSearchPage())),
+              _actionBtn(Icons.search_rounded, '搜索', () => Get.to(() => const ToolSearchPage())),
               const SizedBox(width: 8),
-              _roundIcon(Icons.star_rounded, '收藏',
-                  () => Get.to(() => const ToolFavPage())),
+              _actionBtn(Icons.star_rounded, '收藏', () => Get.to(() => const ToolFavPage())),
             ],
           ),
         ],
@@ -275,54 +270,32 @@ class _ToolsComponentState extends State<ToolsComponent>
     );
   }
 
-  /// 头部统计胶囊（半透明白底）
-  Widget _statPill(String text) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.white.withAlpha(46),
-          borderRadius: BorderRadius.circular(R.full),
-        ),
-        child: Text(text,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            )),
-      );
-
-  /// 头部圆形图标按钮
-  Widget _roundIcon(IconData icon, String tip, VoidCallback onTap) => Tooltip(
-        message: tip,
-        child: AppPressable(
-          onTap: onTap,
-          child: Container(
-            width: 40,
-            height: 40,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(52),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, size: 20, color: Colors.white),
-          ),
-        ),
-      );
-
-  Widget _topIcon(IconData icon, String tip, VoidCallback onTap) => Tooltip(
+  /// 圆形玻璃操作按钮
+  Widget _actionBtn(IconData icon, String tip, VoidCallback onTap) => Tooltip(
     message: tip,
     child: AppPressable(
       onTap: onTap,
       child: Container(
-        width: 40,
-        height: 40,
+        width: Ad.s(context, 42),
+        height: Ad.s(context, 42),
+        decoration: BoxDecoration(
+          color: context.isDark ? Colors.white.withAlpha(16) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(context.isDark ? 60 : 16),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
         alignment: Alignment.center,
-        child: Icon(icon, size: 22, color: context.t1),
+        child: Icon(icon, size: 20, color: context.t1),
       ),
     ),
   );
 
-  // ═══════════ 分类卡 ═══════════
-
+  /// 分类卡片：玻璃质感 + 渐变图标块
   Widget _groupCard(Map<String, dynamic> g) {
     final tools =
         (g['tools'] as List?)
@@ -334,130 +307,92 @@ class _ToolsComponentState extends State<ToolsComponent>
     return Container(
       margin: EdgeInsets.fromLTRB(
         context.pagePadding,
-        6,
+        3,
         context.pagePadding,
-        8,
-      ),
-      decoration: BoxDecoration(
-        color: context.cardBg,
-        borderRadius: BorderRadius.circular(R.lg),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(context.isDark ? 44 : 12),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        14,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _catHead(g, tools.length),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
-            child: _toolArea(tools),
-          ),
+          const SizedBox(height: 10),
+          _toolArea(tools),
         ],
       ),
     );
   }
 
+  /// 分类标题：渐变竖条 + 标题 + 数量 + 副标
   Widget _catHead(Map<String, dynamic> g, int count) {
     final title = '${g['title'] ?? ''}';
     final hint = '${g['hint'] ?? ''}';
-    // ★ 1015 美化：渐变图标块 + 左侧色条 + 数量胶囊
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 15, 14, 13),
-      child: Row(
-        children: [
-          // 左侧竖色条
-          Container(
-            width: 3.5,
-            height: 34,
-            decoration: BoxDecoration(
-              gradient: Deco.brandGradient,
-              borderRadius: BorderRadius.circular(2),
-            ),
+    return Row(
+      children: [
+        // 渐变图标块
+        Container(
+          width: Ad.s(context, 38),
+          height: Ad.s(context, 38),
+          decoration: BoxDecoration(
+            gradient: Deco.brandGradient,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: C.brand.withAlpha(70),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-          const SizedBox(width: 11),
-          // 渐变图标块
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              gradient: Deco.brandGradient,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: C.brand.withAlpha(context.isDark ? 60 : 80),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+          alignment: Alignment.center,
+          child: Icon(ToolIcons.cat(title), size: 20, color: Colors.white),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  color: context.t1,
+                  letterSpacing: -0.2,
                 ),
-              ],
-            ),
-            alignment: Alignment.center,
-            child: Icon(ToolIcons.cat(title), size: 23, color: Colors.white),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+              ),
+              if (hint.isNotEmpty)
                 Text(
-                  title,
+                  hint,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: context.t1,
-                    letterSpacing: 0.2,
-                  ),
+                  style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3),
                 ),
-                if (hint.isNotEmpty) ...[
-                  const SizedBox(height: 3),
-                  Text(
-                    hint,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Ty.tiny.copyWith(
-                      fontSize: 11,
-                      color: context.t3,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ],
-              ],
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+          decoration: BoxDecoration(
+            color: C.brand.withAlpha(context.isDark ? 30 : 14),
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: Text(
+            '$count',
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w900,
+              color: C.brand,
             ),
           ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-            decoration: BoxDecoration(
-              color: C.brand.withAlpha(context.isDark ? 34 : 18),
-              borderRadius: BorderRadius.circular(R.full),
-            ),
-            child: Text(
-              '$count 个',
-              style: TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w800,
-                color: C.brand,
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _toolArea(List<Map<String, dynamic>> tools) {
-    // ★ 1015 重做：4 款真正不同的骨架
-    //   grid    图标网格 —— 四列大图标（默认，像图片工具箱 App）
-    //   card    大卡列表 —— 单列、图标+标题+副标题+箭头
-    //   compact 紧凑宫格 —— 五列小图标，密度最高
-    //   banner  分类横幅 —— 每工具一条通栏，左图标右箭头
     switch (_layout) {
       case 'card':
         return _bigCardList(tools);
@@ -470,54 +405,64 @@ class _ToolsComponentState extends State<ToolsComponent>
     }
   }
 
-  /// ① 图标网格（默认）—— 四列、大圆角图标底
+  /// ① 图标网格（默认）：四列 + 圆角渐变图标块
   Widget _iconGrid(List<Map<String, dynamic>> tools) {
-    return LayoutBuilder(
-      builder: (ctx, c) {
-        final w = (c.maxWidth - 12 * 3) / 4;
-        return Wrap(
-          spacing: 12,
-          runSpacing: 16,
-          children: tools.map<Widget>((t) {
-            return SizedBox(
-              width: w,
-              child: AppPressable(
-                onTap: () => _open(t),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 54,
-                      height: 54,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: C.brand.withAlpha(context.isDark ? 30 : 12),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: _icon(t, 26),
-                    ),
-                    const SizedBox(height: 7),
-                    Text(
-                      '${t['title'] ?? ''}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                        color: context.t2,
-                      ),
+    final n = Ad.columns(context, minItem: 82, max: 5);
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: n,
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 8,
+        childAspectRatio: 0.86,
+      ),
+      itemCount: tools.length,
+      itemBuilder: (c, i) {
+        final t = tools[i];
+        return AppPressable(
+          onTap: () => _open(t),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: Ad.s(context, 52),
+                height: Ad.s(context, 52),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: context.isDark ? Colors.white.withAlpha(16) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(context.isDark ? 50 : 12),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
+                child: _icon(t, 25),
               ),
-            );
-          }).toList(),
+              const SizedBox(height: 7),
+              Text(
+                '${t['title'] ?? ''}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: context.t2,
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
   }
 
-  /// ② 大卡列表 —— 单列铺满
+  /// ② 大卡列表：单列 + 图标 + 标题副标 + 箭头
   Widget _bigCardList(List<Map<String, dynamic>> tools) {
     return Column(
       children: tools.map<Widget>((t) {
@@ -527,27 +472,35 @@ class _ToolsComponentState extends State<ToolsComponent>
           child: AppPressable(
             onTap: () => _open(t),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
               decoration: BoxDecoration(
-                color: C.brand.withAlpha(context.isDark ? 18 : 7),
-                borderRadius: BorderRadius.circular(R.md),
+                color: context.isDark ? Colors.white.withAlpha(12) : Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(context.isDark ? 45 : 10),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 42,
-                    height: 42,
+                    width: Ad.s(context, 42),
+                    height: Ad.s(context, 42),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: C.brand.withAlpha(context.isDark ? 34 : 16),
+                      color: C.brand.withAlpha(context.isDark ? 34 : 14),
                       borderRadius: BorderRadius.circular(13),
                     ),
-                    child: _icon(t, 22),
+                    child: _icon(t, 21),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           '${t['title'] ?? ''}',
@@ -555,23 +508,24 @@ class _ToolsComponentState extends State<ToolsComponent>
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 14.5,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w800,
                             color: context.t1,
                           ),
                         ),
-                        if (sub.isNotEmpty) ...[
-                          const SizedBox(height: 3),
-                          Text(
-                            sub,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Ty.tiny.copyWith(color: context.t3),
+                        if (sub.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              sub,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Ty.tiny.copyWith(fontSize: 11, color: context.t3),
+                            ),
                           ),
-                        ],
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right_rounded, size: 18, color: context.t3),
+                  Icon(Icons.chevron_right_rounded, size: 20, color: context.t3),
                 ],
               ),
             ),
@@ -581,50 +535,46 @@ class _ToolsComponentState extends State<ToolsComponent>
     );
   }
 
-  /// ③ 紧凑宫格 —— 五列小图标
+  /// ③ 紧凑宫格：五列小图标，密度最高
   Widget _compactGrid(List<Map<String, dynamic>> tools) {
-    return LayoutBuilder(
-      builder: (ctx, c) {
-        final w = (c.maxWidth - 10 * 4) / 5;
-        return Wrap(
-          spacing: 10,
-          runSpacing: 12,
-          children: tools.map<Widget>((t) {
-            return SizedBox(
-              width: w,
-              child: AppPressable(
-                onTap: () => _open(t),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: C.brand.withAlpha(context.isDark ? 26 : 10),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: _icon(t, 21),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      '${t['title'] ?? ''}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 10.5, color: context.t2),
-                    ),
-                  ],
+    return Wrap(
+      spacing: 8,
+      runSpacing: 10,
+      children: tools.map<Widget>((t) {
+        return AppPressable(
+          onTap: () => _open(t),
+          child: Container(
+            width: Ad.s(context, 58),
+            padding: const EdgeInsets.symmetric(vertical: 9),
+            decoration: BoxDecoration(
+              color: context.isDark ? Colors.white.withAlpha(10) : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _icon(t, 20),
+                const SizedBox(height: 5),
+                Text(
+                  '${t['title'] ?? ''}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: context.t2,
+                  ),
                 ),
-              ),
-            );
-          }).toList(),
+              ],
+            ),
+          ),
         );
-      },
+      }).toList(),
     );
   }
 
-  /// ④ 分类横幅 —— 每工具一条通栏
+  /// ④ 分类横幅：每工具一条通栏
   Widget _bannerList(List<Map<String, dynamic>> tools) {
     return Column(
       children: tools.map<Widget>((t) {
@@ -633,19 +583,20 @@ class _ToolsComponentState extends State<ToolsComponent>
           child: AppPressable(
             onTap: () => _open(t),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    C.brand.withAlpha(context.isDark ? 34 : 16),
-                    C.brand.withAlpha(context.isDark ? 12 : 4),
-                  ],
+                  colors: context.isDark
+                      ? [Colors.white.withAlpha(14), Colors.white.withAlpha(6)]
+                      : [C.brand.withAlpha(10), C.brand.withAlpha(3)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
                 ),
-                borderRadius: BorderRadius.circular(R.sm),
+                borderRadius: BorderRadius.circular(13),
               ),
               child: Row(
                 children: [
-                  _icon(t, 21),
+                  _icon(t, 20),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -659,7 +610,7 @@ class _ToolsComponentState extends State<ToolsComponent>
                       ),
                     ),
                   ),
-                  Icon(Icons.arrow_forward_ios_rounded, size: 13, color: C.brand),
+                  Icon(Icons.arrow_forward_rounded, size: 16, color: C.brand),
                 ],
               ),
             ),

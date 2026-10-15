@@ -8,7 +8,6 @@ import 'package:video_player/video_player.dart';
 
 import '../../design/ad.dart';
 import '../../design/adaptive.dart';
-import '../../player/global_player.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
@@ -86,47 +85,76 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   void initState() {
     super.initState();
     _cur = widget.initialIndex;
-    GlobalPlayer.I.ctrl?.addListener(_onTick);
     _open();
   }
 
   @override
   void dispose() {
     _hideTimer?.cancel();
-    _c?.removeListener(_onTick);
-    _c?.dispose();
+    // ★★★ 1015 关键修复（No active player 崩溃）：
+    //   必须先摘监听 → dispose → 再把 _c 置 null。
+    //   否则 dispose 之后仍有异步回调（手势/定时器）访问 _c，
+    //   打到已销毁的原生播放器 → Bad state: No active player → 闪退。
+    final c = _c;
+    _c = null;
+    if (c != null) {
+      try {
+        c.removeListener(_onTick);
+      } catch (_) {}
+      try {
+        c.dispose();
+      } catch (_) {}
+    }
     // ★ 1015：退出播放器恢复竖屏
     if (_isFullscreen) _restoreOrientation();
     super.dispose();
   }
 
   Future<void> _open() async {
-    // ★ 1015：改用全局播放器 —— 切页面/切 App 不断播，并驱动悬浮窗
-    final gp = GlobalPlayer.I;
-    gp.onComplete = () => _next();
+    // ★ 1015：恢复为页面独立播放（已去除全局悬浮窗/灵动岛）
+    final old = _c;
     setState(() {
       _ready = false;
       _failed = false;
       _err = '';
     });
-    await gp.open(
-      u: _url,
-      t: widget.title,
-      sub: widget.subtitle ?? '',
-      pic: widget.cover ?? '',
-      audio: widget.isAudio,
+    final host = Uri.tryParse(_url)?.host ?? '';
+    final ref = host.contains('126.net')
+        ? 'https://music.163.com/'
+        : (host.contains('lz') || host.contains('bfvvs') || host.contains('jisuzyv'))
+        ? 'https://$host/'
+        : '';
+    final c = VideoPlayerController.networkUrl(
+      Uri.parse(_url),
+      httpHeaders: {
+        'User-Agent':
+            'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 '
+            '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+        if (ref.isNotEmpty) 'Referer': ref,
+      },
     );
-    if (!mounted) return;
-    if (gp.failed.value.isNotEmpty) {
+    _c = c;
+    old?.dispose();
+    try {
+      await c.initialize();
+      if (!mounted || _c != c) {
+        await c.dispose();
+        return;
+      }
+      c.setLooping(widget.isAudio);
+      setState(() => _ready = true);
+      await c.play();
+      _autoHide();
+      c.addListener(_onTick);
+    } catch (e) {
+      if (!mounted || _c != c) return;
+      await c.dispose();
+      if (_c == c) _c = null;
       setState(() {
         _failed = true;
-        _err = gp.failed.value;
+        _err = _friendly(e);
       });
-      return;
     }
-    _c = gp.ctrl;
-    setState(() => _ready = true);
-    return;
   }
 
   String _friendly(Object e) {
@@ -143,7 +171,9 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   /// 切换倍速
   void _setSpeed(double v) {
     setState(() => _speed = v);
-    _c?.setPlaybackSpeed(v);
+    try {
+      _c?.setPlaybackSpeed(v);
+    } catch (_) {}
     ToastUtil.info('${v}x 播放');
   }
 
@@ -200,9 +230,8 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
 
   /// 监听全局播放器状态（跳过片头按钮、自动隐藏控制栏）
   void _onTick() {
-    final gp = GlobalPlayer.I;
     if (!mounted) return;
-    final v = gp.ctrl?.value;
+    final v = _c?.value;
     if (v != null && v.isInitialized) {
       // 片头区间内显示「跳过片头」
       final inHead = v.position.inSeconds < 90 && v.position.inSeconds > 2;
@@ -212,7 +241,9 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
 
   /// 跳过片头（跳到 90 秒）
   Future<void> _skipHead() async {
-    await GlobalPlayer.I.seekTo(90 * 1000);
+    try {
+      await _c?.seekTo(const Duration(seconds: 90));
+    } catch (_) {}
     if (mounted) setState(() => _showSkipBtn = false);
     ToastUtil.info('已跳过片头');
   }
@@ -248,7 +279,9 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   /// 手势开始
   void _onDragStart(DragStartDetails d, Size size) {
     _dragStart = d.localPosition;
-    _dragPos = _c?.value.position;
+    try {
+      _dragPos = _c?.value.position;
+    } catch (_) {}
     setState(() => _gesture = 0);
   }
 
@@ -272,7 +305,9 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
         _gesture = 3;
         _gestureValue = total == 0 ? 0 : t.inMilliseconds / total;
       });
-      _c?.seekTo(t);
+      try {
+        _c?.seekTo(t);
+      } catch (_) {}
       return;
     }
 
@@ -289,7 +324,9 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
           _gesture = 2;
           _volume = (_volume + delta).clamp(0.0, 1.0);
           _gestureValue = _volume;
-          _c?.setVolume(_volume);
+          try {
+            _c?.setVolume(_volume);
+          } catch (_) {}
         }
       });
     }
@@ -329,7 +366,10 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
     final isAudio = widget.isAudio;
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
+      // ★ 1015：全屏时隐藏标题栏（否则横屏全屏还顶着一条 AppBar，很碍事）
+      appBar: _isFullscreen
+          ? null
+          : AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -340,6 +380,7 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
           overflow: TextOverflow.ellipsis,
         ),
       ),
+      extendBodyBehindAppBar: true,
       body: Column(
         children: [
           // ── 播放区 ──

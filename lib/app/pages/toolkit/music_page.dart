@@ -188,6 +188,10 @@ class _MusicHomePageState extends State<MusicHomePage> {
                             child: cover.startsWith('http')
                                 ? CachedNetworkImage(
                                     imageUrl: cover,
+                                    httpHeaders: const {
+                                      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+                                      'Referer': 'https://music.163.com/',
+                                    },
                                     width: Ad.w(context, 108),
                                     height: Ad.h(context, 100),
                                     fit: BoxFit.cover,
@@ -246,6 +250,10 @@ class _MusicHomePageState extends State<MusicHomePage> {
                                     child: cover.startsWith('http')
                                         ? CachedNetworkImage(
                                             imageUrl: cover,
+                                            httpHeaders: const {
+                                              'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+                                              'Referer': 'https://music.163.com/',
+                                            },
                                             width: w,
                                             height: w,
                                             fit: BoxFit.cover,
@@ -371,6 +379,10 @@ class _MusicHomePageState extends State<MusicHomePage> {
                 child: cover.startsWith('http')
                     ? CachedNetworkImage(
                         imageUrl: cover,
+                        httpHeaders: const {
+                          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+                          'Referer': 'https://music.163.com/',
+                        },
                         width: 46,
                         height: 46,
                         fit: BoxFit.cover,

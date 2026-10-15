@@ -6,6 +6,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 
 import '../design/ad.dart';
 import '../design/ui.dart';
+import '../utils/img_saver.dart';
 import '../utils/toast_util.dart';
 
 /// ═══════════════════════════════════════════════════════════════
@@ -124,7 +125,17 @@ class _GalleryPageState extends State<_GalleryPage> {
                     '${_i + 1} / ${widget.urls.length}',
                     style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 6),
+                  // ★ 1015：保存到相册
+                  IconButton(
+                    icon: const Icon(Icons.download_rounded, color: Colors.white),
+                    tooltip: '保存到相册',
+                    onPressed: () {
+                      if (_i >= 0 && _i < widget.urls.length) {
+                        ImgSaver.saveUrl(widget.urls[_i]);
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
@@ -143,7 +154,7 @@ class _GalleryPageState extends State<_GalleryPage> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
-                    '双指缩放 · 双击放大 · 左右翻页',
+                    '双指缩放 · 左右翻页 · 右上角可保存',
                     style: TextStyle(color: Colors.white70, fontSize: 11.5),
                   ),
                 ),
