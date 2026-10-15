@@ -109,7 +109,7 @@ class AppConfig {
     this.appSource = 'all',
     this.aboutEnable = true,
     this.aboutName = '安逸软件汇',
-    this.aboutVersion = '3.3.0',
+    this.aboutVersion = '', // ★ 1015：空=跟随 App 真实版本
     this.aboutLogo = '',
     this.aboutSlogan = '优质软件 · 持续更新',
     this.aboutDesc = '',

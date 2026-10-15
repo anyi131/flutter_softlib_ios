@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -28,8 +29,21 @@ class MineComponent extends StatelessWidget {
   static UiConfig get _uiCfg =>
       SoftService.instance.cachedConfig?.uiConfig ?? const UiConfig();
 
+  /// ★ 1015：头像旁的版本徽标 —— 自动跟随真实版本（原来写死 'v3.3'）
+  static final RxString verTag = 'v3.3.4'.obs;
+  static bool _verLoaded = false;
+  static Future<void> _loadVer() async {
+    if (_verLoaded) return;
+    try {
+      final info = await PackageInfo.fromPlatform();
+      verTag.value = 'v${info.version}';
+      _verLoaded = true;
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
+    _loadVer(); // 首次进入异步读取（无 await，不阻塞首帧）
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -907,14 +921,15 @@ class MineComponent extends StatelessWidget {
                       color: C.brand.withAlpha(30),
                       borderRadius: BorderRadius.circular(R.xs),
                     ),
-                    child: Text(
-                      'v3.3',
+                    child: Obx(() => Text(
+                      // ★ 1015 修复：原来写死 'v3.3'，永远不跟随真实版本
+                      MineComponent.verTag.value,
                       style: TextStyle(
                         fontSize: 9.5,
                         fontWeight: FontWeight.w800,
                         color: C.brandBright,
                       ),
-                    ),
+                    )),
                   ),
                 ],
               ),
