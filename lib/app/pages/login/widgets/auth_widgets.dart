@@ -40,10 +40,14 @@ class AuthScaffold extends StatelessWidget {
   ///   floating 悬浮胶囊     —— 浮动圆形返回 + 胶囊输入
   Widget build(BuildContext context) {
     // ★ 1015 修复：监听 configVersion —— 后台改登录模板后立即重建
+    final svc = SoftService.instance;
     return Obx(() {
-      SoftService.instance.configVersion.value; // 订阅
-      final tpl =
-          SoftService.instance.cachedConfig?.uiConfig.authTemplate ?? 'classic';
+      // ★ 1015：Obx 内只读响应式变量（configVersion），
+      //   非响应式的 cachedConfig 在下面单独取，避免 GetX 误用检测
+      final ver = svc.configVersion.value;
+      final tpl = ver >= 0
+          ? (svc.cachedConfig?.uiConfig.authTemplate ?? 'classic')
+          : 'classic';
       return switch (tpl) {
         'split' => _buildSplit(context),
         'sheet' => _buildSheet(context),

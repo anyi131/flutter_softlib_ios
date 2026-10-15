@@ -37,13 +37,17 @@ class MiniPlayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = GlobalPlayer.I;
+    // ★★★ 1015 修复：原先把 Get.find 和配置读取放在 Obx 里，
+    //   触发 GetX「improper use」检测 → 界面渲染失败 → 整个页面卡死。
+    //   正确做法：非响应式操作放 Obx 外面，Obx 内**只**读响应式变量。
+    final cfg = SoftService.instance.cachedConfig;
+    final ui = cfg?.uiConfig;
+    final fOn = floatOn && (ui == null || ui.playerFloatOn);
+    final iOn = islandOn && (ui == null || ui.playerIslandOn);
+
     return Obx(() {
-      if (!p.active) return const SizedBox.shrink();
-      // ★ 1015：后台可配（ui_config.player_float_on / player_island_on）
-      final cfg = Get.find<SoftService>().cachedConfig;
-      final ui = cfg?.uiConfig;
-      final fOn = floatOn && (ui == null || ui.playerFloatOn);
-      final iOn = islandOn && (ui == null || ui.playerIslandOn);
+      // Obx 内只读响应式变量（active 依赖 ready/ctrl）
+      if (!p.ready.value) return const SizedBox.shrink();
       return Stack(
         children: [
           if (fOn) Positioned(left: 0, right: 0, bottom: 0, child: _bar(context, p)),
