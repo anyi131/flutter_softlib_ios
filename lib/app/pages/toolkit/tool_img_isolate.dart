@@ -162,11 +162,11 @@ Uint8List? _round(ImgJobArgs a) {
         final dx = x - cx, dy = y - cy;
         inside = dx * dx + dy * dy <= rr * rr;
       } else if (radius > 0) {
-        var ox = 0.0, oy = 0.0;
-        if (x < radius) ox = radius - x;
-        if (x > w - radius - 1) ox = x - (w - radius - 1);
-        if (y < radius) oy = radius - y;
-        if (y > h - radius - 1) oy = y - (h - radius - 1);
+        double ox = 0, oy = 0;
+        if (x < radius) ox = (radius - x).toDouble();
+        if (x > w - radius - 1) ox = (x - (w - radius - 1)).toDouble();
+        if (y < radius) oy = (radius - y).toDouble();
+        if (y > h - radius - 1) oy = (y - (h - radius - 1)).toDouble();
         if (ox > 0 && oy > 0) {
           inside = (ox * ox + oy * oy) <= radius * radius;
         }

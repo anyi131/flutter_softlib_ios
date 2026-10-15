@@ -536,7 +536,7 @@ extension ToolboxService on SoftService {
           'tag': tag,
           'error': error.length > 1800 ? error.substring(0, 1800) : error,
           'stack': stack.length > 5000 ? stack.substring(0, 5000) : stack,
-          'device': deviceModel,
+          'device': SoftService.deviceModel,
           'version': version,
         },
         options: Options(receiveTimeout: const Duration(seconds: 8)),
