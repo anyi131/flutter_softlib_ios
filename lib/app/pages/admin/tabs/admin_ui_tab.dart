@@ -293,9 +293,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
           ThemeController.instance.applyServerPalette(ui.themePalette);
           AppStyleController.instance.applyServerDefault(ui.listStyle);
           // ★ 详情模板也热应用（修复切换不生效）
-          AppStyleController.instance.detailStyle.value = parseDetailStyle(
-            ui.detailStyle,
-          );
+          AppStyleController.instance.applyServerDetail(ui.detailStyle);
           // ★ v54：导航/后台模板热切换
           try {
             Get.find<NavigateLogic>().applyUiConfig(force: true);

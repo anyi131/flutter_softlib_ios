@@ -103,6 +103,8 @@ Future<void> _initializeServices() async {
       });
       ThemeController.instance.applyServerPalette(ui.themePalette);
       AppStyleController.instance.applyServerDefault(ui.listStyle);
+      // ★ 1015 修复：详情页模板此前完全没应用后台下发值
+      AppStyleController.instance.applyServerDetail(ui.detailStyle);
     }
   } catch (_) {}
   // 配置EasyLoading

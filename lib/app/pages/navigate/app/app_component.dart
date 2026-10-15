@@ -82,6 +82,8 @@ class _AppComponentState extends State<AppComponent> {
     if (cfg != null) {
       // ★ v52：列表样式与主题统一由后台「界面配置」下发
       AppStyleController.instance.applyServerDefault(cfg.uiConfig.listStyle);
+      // ★ 1015 修复：详情页模板也要跟随后台（原来只有本地旧偏好生效）
+      AppStyleController.instance.applyServerDetail(cfg.uiConfig.detailStyle);
       ThemeController.instance.applyServerPalette(cfg.uiConfig.themePalette);
     }
     // 若配置指定了数据源筛选，且与「全部」结果不同，再静默重取一次

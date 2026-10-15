@@ -30,7 +30,8 @@ class ToolsComponent extends StatefulWidget {
   State<ToolsComponent> createState() => _ToolsComponentState();
 }
 
-class _ToolsComponentState extends State<ToolsComponent> {
+class _ToolsComponentState extends State<ToolsComponent>
+    with WidgetsBindingObserver {
   final _svc = ToolboxService.instance;
 
   List<Map<String, dynamic>> _groups = [];
@@ -42,7 +43,51 @@ class _ToolsComponentState extends State<ToolsComponent> {
   @override
   void initState() {
     super.initState();
+    // ★ 1015 修复：工具 Tab 常驻不重建，原来只在 initState 拉一次目录，
+    //   后台新增/改动的工具在 App 里永远看不到。
+    //   现在回到前台（从后台管理页切回）自动静默刷新一次。
+    WidgetsBinding.instance.addObserver(this);
     _load();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _silentReload();
+    }
+  }
+
+  /// 静默刷新：不闪 loading，拉到新数据再 setState
+  Future<void> _silentReload() async {
+    try {
+      final cfg = await _svc.fetchConfig(force: true);
+      if (!mounted || cfg == null) return;
+      final groups =
+          (cfg['groups'] as List?)
+              ?.map((e) => Map<String, dynamic>.from(e as Map))
+              .toList() ??
+          [];
+      var layout = '${cfg['default_style'] ?? 'flow'}';
+      if (!['flow', 'square', 'circle'].contains(layout)) layout = 'flow';
+      if (groups.length == _groups.length &&
+          groups.isNotEmpty &&
+          _layout == layout &&
+          _meta['updated'] == cfg['updated']) {
+        return; // 没变化就不重建
+      }
+      setState(() {
+        _groups = groups;
+        _meta = cfg;
+        _layout = layout;
+        _err = groups.isEmpty ? '工具目录为空，请稍后重试' : '';
+      });
+    } catch (_) {}
   }
 
   Future<void> _load() async {
@@ -417,11 +462,16 @@ class _ToolsComponentState extends State<ToolsComponent> {
       fn(title: title, apiUrl: apiUrl);
       return;
     }
-    if (target.startsWith('http')) {
-      JumpUtil.openUrl(target);
+    // ★ 1015 修复：后台新增工具默认 kind=local（或留空），原来直接落到
+    //   「暂未开放」提示，用户以为「后台加了没用」。
+    //   现在只要有外部链接就打开它（新窗口/浏览器），真正没配才提示。
+    final link = target.isNotEmpty ? target : apiUrl;
+    if (link.startsWith('http')) {
+      JumpUtil.openUrl(link);
       return;
     }
-    ToastUtil.info('「$title」暂未开放');
+    // 内置页未命中且没配链接 —— 给出可操作的提示，而不是只说「未开放」
+    ToastUtil.info('「$title」未配置打开方式（后台填 kind 或外部链接）');
   }
 
   void _open(Map<String, dynamic> t) => openTool(t);

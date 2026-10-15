@@ -51,7 +51,7 @@ class AppStyleController extends GetxController {
     }
   }
 
-  /// 应用后台下发的样式（v52i：服务端强制生效）
+  /// 应用后台下发的列表样式（v52i：服务端强制生效）
   /// 「外观设置」已移除，本地旧偏好作废（清掉历史残留）
   Future<void> applyServerDefault(String? style) async {
     _serverDefault = (style ?? '').trim().isEmpty ? 'glass' : style!;
@@ -59,6 +59,21 @@ class AppStyleController extends GetxController {
       final sp = await SharedPreferences.getInstance();
       await sp.remove(_kList); // 清掉旧版「外观设置」的本地残留
       listStyle.value = parseListStyle(_serverDefault);
+    } catch (_) {}
+  }
+
+  /// ★ 1015 修复：应用后台下发的详情页模板
+  ///   原来后台的 home.detail_style 下发后**没有任何人应用**，
+  ///   详情页模板只认本机旧偏好（存在 SharedPreferences 里的
+  ///   ui_detail_style），导致「后台改模板怎么都不生效」。
+  ///   现在与列表样式一致：清掉本地残留，按后台值强制生效。
+  Future<void> applyServerDetail(String? style) async {
+    final s = (style ?? '').trim();
+    if (s.isEmpty) return;
+    try {
+      final sp = await SharedPreferences.getInstance();
+      await sp.remove(_kDetail); // 清掉旧版本地残留
+      detailStyle.value = parseDetailStyle(s);
     } catch (_) {}
   }
 

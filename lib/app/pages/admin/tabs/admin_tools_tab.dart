@@ -697,11 +697,15 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                     ),
                     child: Text(
                       'kind 可选：hotsearch 热榜 / news 日报 / epic / earthquake '
-                      '/ poem / hitokoto / movie 影视 / music 音乐 / drama 短剧 '
-                      '/ comic 漫画 / heroes 王者 / wallpaper 壁纸 / translate '
-                      '/ exchange 汇率 / ipquery / weather / qrcode / stopwatch '
-                      '/ countdown / unit / bmi / loan / base64 / random '
-                      '/ password / relative',
+                      '/ poem / hitokoto / movie 影视 / music 音乐 / '
+                      'shortvideo(或 drama) 短剧 / comic 漫画 / heroes 王者 '
+                      '/ wallpaper 壁纸 / translate 翻译 / exchange 汇率 / '
+                      'ipquery IP查询 / weather 天气 / qrcode 二维码 / '
+                      'stopwatch 秒表 / countdown 倒计时 / unit 单位换算 / '
+                      'bmi / loan 房贷 / base64 / random 随机数 / '
+                      'password 密码 / relative 亲戚称呼\n'
+                      '★ kind 留空或填 local 时，必须填「外部链接 target」，'
+                      '否则点开只会提示「暂未开放」。',
                       style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t2),
                     ),
                   ),

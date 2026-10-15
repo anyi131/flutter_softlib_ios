@@ -629,6 +629,14 @@ class AppDetailsLogic extends GetxController {
       fileName += '_${DateTime.now().millisecondsSinceEpoch}.apk';
     }
 
+    // Android 11+ 写入公共目录「安逸软件汇」需要「所有文件访问」授权
+    if (Platform.isAndroid) {
+      try {
+        final m = Permission.manageExternalStorage;
+        if (!await m.isGranted) await m.request();
+      } catch (_) {}
+    }
+
     final newTaskId = await FlutterDownloader.enqueue(
       url: parseUrl,
       fileName: fileName,
