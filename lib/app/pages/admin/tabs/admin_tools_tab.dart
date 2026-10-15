@@ -639,6 +639,13 @@ class _AdminToolsTabState extends State<AdminToolsTab>
     final target = TextEditingController(text: '${t?['target'] ?? ''}');
     final apiUrl = TextEditingController(text: '${t?['api_url'] ?? ''}');
     final weigh = TextEditingController(text: '${t?['weigh'] ?? 0}');
+    // ★ 1015：通用接口工具配置（后台配参数就能出工具，不用改 App）
+    final apiPath = TextEditingController(text: '${t?['api_path'] ?? ''}');
+    final fTitle = TextEditingController(text: '${t?['f_title'] ?? ''}');
+    final fSub = TextEditingController(text: '${t?['f_sub'] ?? ''}');
+    final fImage = TextEditingController(text: '${t?['f_image'] ?? ''}');
+    final fLink = TextEditingController(text: '${t?['f_link'] ?? ''}');
+    final fExtra = TextEditingController(text: '${t?['f_extra'] ?? ''}');
     var catId = _int(t?['cat_id'] ?? (_cats.isNotEmpty ? _cats.first['id'] : 0));
     var on = t == null || _on(t['enable_switch']);
 
@@ -676,6 +683,39 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                   _f('route（兼容字段，一般填 local）', route),
                   _f('外部链接 target（kind 未命中时打开）', target),
                   _f('接口地址 api_url（联网工具用）', apiUrl),
+                  // ★ 1015：通用接口工具 —— 配好下面 6 项，App 不用改就能出新工具
+                  Padding(
+                    padding: const EdgeInsets.only(top: 14, bottom: 4),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 3,
+                          height: 13,
+                          decoration: BoxDecoration(
+                            color: C.brand,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        const SizedBox(width: 7),
+                        Text('通用接口工具（填了就给 App 出界面）',
+                            style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                      ],
+                    ),
+                  ),
+                  _f('列表路径 api_path（如 data.list）', apiPath),
+                  _f('标题字段 f_title（如 title）', fTitle),
+                  _f('副标题字段 f_sub（可空）', fSub),
+                  _f('图片字段 f_image（可空）', fImage),
+                  _f('链接字段 f_link（可空，点击打开）', fLink),
+                  _f('额外字段 f_extra（可空，如热度）', fExtra),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Text(
+                      '提示：只填 api_url 不填 api_path → 当作普通外链在 App 内打开；\n'
+                      '两个都填 → 用通用列表页渲染（自动解析 JSON、自动兜底路径）',
+                      style: Ty.tiny.copyWith(color: context.t3, height: 1.6),
+                    ),
+                  ),
                   _f('排序权重（越大越靠前）', weigh),
                   Row(
                     children: [
@@ -734,6 +774,12 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                   'route': route.text.trim(),
                   'target': target.text.trim(),
                   'api_url': apiUrl.text.trim(),
+                  'api_path': apiPath.text.trim(),
+                  'f_title': fTitle.text.trim(),
+                  'f_sub': fSub.text.trim(),
+                  'f_image': fImage.text.trim(),
+                  'f_link': fLink.text.trim(),
+                  'f_extra': fExtra.text.trim(),
                   'weigh': int.tryParse(weigh.text.trim()) ?? 0,
                   'enable_switch': on ? 1 : 0,
                 };

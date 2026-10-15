@@ -10,6 +10,7 @@ import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
 import '../../widgets/tab_bottom_pad.dart';
 import 'tool_kit.dart';
+import 'tool_api_page.dart';
 import 'tool_browser_page.dart';
 import 'tool_router.dart';
 
@@ -463,11 +464,26 @@ class _ToolsComponentState extends State<ToolsComponent>
       fn(title: title, apiUrl: apiUrl);
       return;
     }
-    // ★ 1015 修复：后台新增工具默认 kind=local（或留空），原来直接落到
-    //   「暂未开放」提示，用户以为「后台加了没用」。
-    //   现在只要有外部链接就打开它。
-    //   ★ 另外：外链改为**App 内 WebView 打开**（不再跳系统浏览器），
-    //     用户不用在浏览器和 App 之间来回切，退出 App 也不丢页面。
+    // ★ 1015：三类兜底，优先级从高到低
+    //   ① 配了 api_url + api_path → 通用接口工具（后台配参数就能出工具）
+    //   ② 配了外部链接 → App 内 WebView 打开（不跳浏览器，自带广告清理）
+    //   ③ 都没配 → 给可操作的提示
+    final apiPath = '${t['api_path'] ?? ''}';
+    if (apiUrl.startsWith('http') && apiPath.isNotEmpty) {
+      Get.to(() => ApiToolPage(
+        title: title,
+        apiUrl: apiUrl,
+        cfg: {
+          'api_path': apiPath,
+          'f_title': '${t['f_title'] ?? ''}',
+          'f_sub': '${t['f_sub'] ?? ''}',
+          'f_image': '${t['f_image'] ?? ''}',
+          'f_link': '${t['f_link'] ?? ''}',
+          'f_extra': '${t['f_extra'] ?? ''}',
+        },
+      ));
+      return;
+    }
     final link = target.isNotEmpty ? target : apiUrl;
     if (link.startsWith('http')) {
       Get.to(() => ToolBrowserPage(
@@ -699,9 +715,25 @@ class _ToolSearchPageState extends State<ToolSearchPage> {
       fn(title: '${t['title'] ?? ''}', apiUrl: '${t['api_url'] ?? ''}');
       return;
     }
-    // ★ 1015：与主页一致 —— 外链走 App 内 WebView，且 api_url 也作为兜底
+    // ★ 1015：与主页一致 —— 通用接口 / 外链 / 提示
     final target = '${t['target'] ?? ''}';
     final api = '${t['api_url'] ?? ''}';
+    final ap = '${t['api_path'] ?? ''}';
+    if (api.startsWith('http') && ap.isNotEmpty) {
+      Get.to(() => ApiToolPage(
+        title: '${t['title'] ?? ''}',
+        apiUrl: api,
+        cfg: {
+          'api_path': ap,
+          'f_title': '${t['f_title'] ?? ''}',
+          'f_sub': '${t['f_sub'] ?? ''}',
+          'f_image': '${t['f_image'] ?? ''}',
+          'f_link': '${t['f_link'] ?? ''}',
+          'f_extra': '${t['f_extra'] ?? ''}',
+        },
+      ));
+      return;
+    }
     final link = target.isNotEmpty ? target : api;
     if (link.startsWith('http')) {
       Get.to(() => ToolBrowserPage(
