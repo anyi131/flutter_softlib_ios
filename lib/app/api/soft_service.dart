@@ -47,6 +47,9 @@ class SoftService {
 
   /// 拉取全局配置（开屏/公告/远程控制）
   /// ★ 带内存缓存 + 并发去重：同一次会话内多个页面同时调用只发一次网络请求
+  /// ★ 1015：设备型号（崩溃日志用）
+  static String deviceModel = '';
+
   AppConfig? _configCache;
   DateTime? _configAt;
   Future<AppConfig?>? _configInflight;
@@ -516,6 +519,31 @@ extension ToolboxService on SoftService {
       debugPrint('[Softlib] toolbox config: $e');
     }
     return _jzsCache;
+  }
+
+  /// ★ 1015：把崩溃日志上报到服务器（release 版看不到 debugPrint）
+  /// 用于排查真机闪退，后台可查 fa_softlib_crash_log
+  Future<void> reportLog({
+    required String tag,
+    required String error,
+    String stack = '',
+    String version = '',
+  }) async {
+    try {
+      await dio.post(
+        '/api/softlib/log/report',
+        data: {
+          'tag': tag,
+          'error': error.length > 1800 ? error.substring(0, 1800) : error,
+          'stack': stack.length > 5000 ? stack.substring(0, 5000) : stack,
+          'device': deviceModel,
+          'version': version,
+        },
+        options: Options(receiveTimeout: const Duration(seconds: 8)),
+      );
+    } catch (_) {
+      // 上报失败就算了，绝不能因为上报再崩一次
+    }
   }
 
   /// ★ 1015：通用接口代理 —— 后台配好地址就能出工具

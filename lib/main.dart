@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -47,6 +48,10 @@ Future<void> main() async {
       };
 
       try {
+        try {
+          final info = await PackageInfo.fromPlatform();
+          _appVersion = '${info.version}+${info.buildNumber}';
+        } catch (_) {}
         await _initializeServices();
         runApp(const SoftLibApp());
       } catch (error, stackTrace) {
@@ -59,10 +64,26 @@ Future<void> main() async {
 }
 
 /// 统一错误日志（不弹窗、不中断用户操作）
+/// ★ 1015：同时上报到服务器，方便排查真机闪退（release 看不到 debugPrint）
+int _reportCount = 0;
 void _logError(String tag, Object error, StackTrace? stack) {
   debugPrint('[Softlib][$tag] $error');
   if (stack != null) debugPrint(stack.toString());
+  // 每个会话最多上报 30 条，避免崩溃风暴刷爆服务器
+  if (_reportCount >= 30) return;
+  _reportCount++;
+  try {
+    SoftService.instance.reportLog(
+      tag: tag,
+      error: error.toString(),
+      stack: stack?.toString() ?? '',
+      version: _appVersion,
+    );
+  } catch (_) {}
 }
+
+/// 应用版本（启动时填，供上报用）
+String _appVersion = '';
 
 /// 初始化应用服务
 Future<void> _initializeServices() async {

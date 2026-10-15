@@ -13,6 +13,7 @@ import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
+import 'tool_img_isolate.dart';
 import 'tool_kit.dart';
 
 // ═══════════════════════════════════════════════════════════════
@@ -32,14 +33,8 @@ class _ImgCompressPageState extends State<ImgCompressPage> with ImgToolMixin {
   int _quality = 70;
   int _maxW = 1080;
 
-  Future<void> _go() => run(() async {
-        var im = img.decodeImage(srcBytes!);
-        if (im == null) return null;
-        if (im.width > _maxW) {
-          im = img.copyResize(im, width: _maxW);
-        }
-        return Uint8List.fromList(img.encodeJpg(im, quality: _quality));
-      });
+  Future<void> _go() => run(() => ImgJob.run(ImgJobArgs(srcBytes!,
+      mode: 'compress', a: _quality, b: _maxW)));
 
   @override
   Widget build(BuildContext context) {

@@ -10,7 +10,9 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
+import 'tool_browser_page.dart';
 import 'tool_kit.dart';
+import 'tool_player_page.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 工具箱 · 联网工具（v3.3.4）
@@ -24,6 +26,14 @@ import 'tool_kit.dart';
 /// ═══════════════════════════════════════════════════════════════
 
 // ═══════════ 热榜（百度多榜 + B站） ═══════════
+/// ★ 1015：App 内打开外链（不跳系统浏览器）
+///   工具页里所有「内容/详情类」链接都走这里，统一用内置 WebView 打开
+void _openInApp(String url) {
+  if (url.isEmpty || !url.startsWith('http')) return;
+  Get.to(() => ToolBrowserPage(title: '详情', url: url));
+}
+
+/// 工具箱公共
 class HotPage extends StatefulWidget {
   final String title;
   final String apiUrl;
@@ -138,7 +148,7 @@ class _HotPageState extends State<HotPage> {
                         return AppPressable(
                           onTap: () {
                             final u = '${it['url'] ?? ''}';
-                            if (u.isNotEmpty) JumpUtil.openUrl(u);
+                            if (u.isNotEmpty) _openInApp(u);
                           },
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 13),
@@ -438,7 +448,7 @@ class _EpicPageState extends State<EpicPage> {
                   padding: EdgeInsets.zero,
                   onTap: () {
                     final u = '${it['url'] ?? ''}';
-                    if (u.isNotEmpty) JumpUtil.openUrl(u);
+                    if (u.isNotEmpty) _openInApp(u);
                   },
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -591,7 +601,7 @@ class _EarthquakePageState extends State<EarthquakePage> {
                   padding: const EdgeInsets.all(13),
                   onTap: () {
                     final u = '${it['url'] ?? ''}';
-                    if (u.isNotEmpty) JumpUtil.openUrl(u);
+                    if (u.isNotEmpty) _openInApp(u);
                   },
                   child: Row(
                     children: [
@@ -1922,6 +1932,10 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   bool _loading = true;
   String _err = '';
 
+  /// ★ 1015：播放源分组（服务端返回 play_groups，原来只读 play_url 导致「不能看」）
+  List<Map<String, dynamic>> _groups = [];
+  int _g = 0;
+
   @override
   void initState() {
     super.initState();
@@ -1936,8 +1950,17 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     try {
       final d = await _svc.movieDetail(widget.src, widget.id);
       if (!mounted) return;
+      final raw = d?['play_groups'];
+      final gs = <Map<String, dynamic>>[];
+      if (raw is List) {
+        for (final g in raw) {
+          if (g is Map) gs.add(Map<String, dynamic>.from(g));
+        }
+      }
       setState(() {
         _d = d;
+        _groups = gs;
+        _g = 0;
         _loading = false;
         _err = d == null ? '详情加载失败' : '';
       });
@@ -1950,86 +1973,214 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     }
   }
 
+  /// 当前源的剧集列表
+  List<(String, String)> get _episodes {
+    if (_groups.isEmpty || _g >= _groups.length) return const [];
+    final eps = _groups[_g]['episodes'];
+    if (eps is! List) return const [];
+    final out = <(String, String)>[];
+    for (final e in eps) {
+      if (e is Map) {
+        final n = '${e['name'] ?? ''}';
+        final u = '${e['url'] ?? ''}';
+        if (u.startsWith('http')) out.add((n.isEmpty ? '第${out.length + 1}集' : n, u));
+      }
+    }
+    return out;
+  }
+
+  /// ★ 关键：用内置播放器播（原来是 JumpUtil → 跳浏览器，用户以为「不能看」）
+  void _play(int index) {
+    final eps = _episodes;
+    if (eps.isEmpty) {
+      ToastUtil.error('该源暂无可用播放地址，换个源试试');
+      return;
+    }
+    final d = _d;
+    Get.to(() => ToolPlayerPage(
+      url: eps[index].$2,
+      title: '${d?['name'] ?? widget.name}',
+      cover: '${d?['pic'] ?? widget.cover}',
+      subtitle: eps[index].$1,
+      playlist: eps,
+      initialIndex: index,
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     final d = _d;
     final cover = '${d?['pic'] ?? widget.cover}';
-    final play = '${d?['play_url'] ?? d?['playUrl'] ?? ''}';
+    final name = '${d?['name'] ?? widget.name}';
     final intro = '${d?['content'] ?? d?['intro'] ?? ''}';
+    final eps = _episodes;
+
     return ToolScaffold(
-      title: widget.name.isEmpty ? '详情' : widget.name,
-      subtitle: '${d?['year'] ?? ''} ${d?['type'] ?? ''}'.trim(),
+      title: name.isEmpty ? '影片详情' : name,
+      subtitle: '${d?['type'] ?? ''} ${d?['year'] ?? ''}'.trim(),
       scrollable: true,
       child: _loading
           ? const Padding(
-              padding: EdgeInsets.only(top: 60),
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2.4)),
+              padding: EdgeInsets.symmetric(vertical: 60),
+              child: LoadingState(text: '加载详情…'),
             )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (cover.isNotEmpty)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(R.lg),
-                    child: CachedNetworkImage(
-                      imageUrl: cover,
-                      height: 200,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 900,
-                    ),
+                // 头部：封面 + 基本信息
+                ToolCard(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(R.md),
+                        child: cover.startsWith('http')
+                            ? Image.network(
+                                cover,
+                                width: 110,
+                                height: 155,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Container(
+                                  width: 110,
+                                  height: 155,
+                                  color: C.brand.withAlpha(24),
+                                  child: const Icon(Icons.movie_rounded, size: 34),
+                                ),
+                              )
+                            : Container(
+                                width: 110,
+                                height: 155,
+                                color: C.brand.withAlpha(24),
+                                child: const Icon(Icons.movie_rounded, size: 34),
+                              ),
+                      ),
+                      const SizedBox(width: 13),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(name,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 15.5, fontWeight: FontWeight.w900, color: context.t1, height: 1.35)),
+                            const SizedBox(height: 7),
+                            if ('${d?['score'] ?? ''}'.isNotEmpty && '${d?['score']}' != '0.0')
+                              _kv(context, '评分', '${d?['score']}'),
+                            if ('${d?['area'] ?? ''}'.isNotEmpty) _kv(context, '地区', '${d?['area']}'),
+                            if ('${d?['remarks'] ?? ''}'.isNotEmpty) _kv(context, '状态', '${d?['remarks']}'),
+                            if ('${d?['director'] ?? ''}'.isNotEmpty)
+                              _kv(context, '导演', '${d?['director']}'),
+                            if ('${d?['actor'] ?? ''}'.isNotEmpty)
+                              _kv(context, '主演', '${d?['actor']}'),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                const SizedBox(height: 14),
-                if (play.isNotEmpty)
+                ),
+                const SizedBox(height: 12),
+
+                // 播放源选择（多源时显示）
+                if (_groups.length > 1) ...[
+                  Text('播放源', style: Ty.small.copyWith(fontWeight: FontWeight.w800, color: context.t1)),
+                  const SizedBox(height: 8),
+                  ToolChips<int>(
+                    items: [
+                      for (int i = 0; i < _groups.length; i++)
+                        (i, '${_groups[i]['from'] ?? '源${i + 1}'}'),
+                    ],
+                    current: _g,
+                    onPick: (v) => setState(() => _g = v),
+                  ),
+                  const SizedBox(height: 14),
+                ],
+
+                // 选集
+                if (eps.isNotEmpty) ...[
+                  Row(
+                    children: [
+                      Text('选集', style: Ty.small.copyWith(fontWeight: FontWeight.w800, color: context.t1)),
+                      const SizedBox(width: 8),
+                      Text('共 ${eps.length} 集', style: Ty.tiny.copyWith(color: context.t3)),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (int i = 0; i < eps.length; i++)
+                        AppPressable(
+                          onTap: () => _play(i),
+                          child: Container(
+                            constraints: const BoxConstraints(minWidth: 58),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: C.brand.withAlpha(context.isDark ? 26 : 12),
+                              borderRadius: BorderRadius.circular(R.sm),
+                            ),
+                            child: Text(
+                              eps[i].$1,
+                              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: C.brand),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
                   ToolButton(
-                    label: '立即播放',
+                    label: '从第 1 集开始播放',
                     icon: Icons.play_arrow_rounded,
-                    onPressed: () => JumpUtil.openUrl(play, allowDownload: true),
+                    onPressed: () => _play(0),
                   ),
-                if (_err.isNotEmpty) ...[
-                  const SizedBox(height: 12),
+                ] else if (!_loading)
                   ToolCard(
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          size: 17,
-                          color: C.warning,
-                        ),
+                        Icon(Icons.info_outline_rounded, size: 19, color: C.warning),
                         const SizedBox(width: 9),
                         Expanded(
                           child: Text(
-                            _err,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: context.t2,
-                            ),
+                            _err.isNotEmpty ? _err : '该影片暂无可用播放地址，可返回换一个源',
+                            style: Ty.small.copyWith(color: context.t2),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
+
                 if (intro.isNotEmpty) ...[
                   const SizedBox(height: 16),
-                  Text('剧情简介', style: Ty.h3.copyWith(color: context.t1)),
+                  Text('剧情简介', style: Ty.small.copyWith(fontWeight: FontWeight.w800, color: context.t1)),
                   const SizedBox(height: 8),
-                  Text(
-                    intro,
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      height: 1.7,
-                      color: context.t2,
-                    ),
-                  ),
+                  Text(intro,
+                      style: Ty.small.copyWith(color: context.t2, height: 1.75)),
                 ],
+                const SizedBox(height: 24),
               ],
             ),
     );
   }
+
+  Widget _kv(BuildContext context, String k, String v) => Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(width: 34, child: Text(k, style: Ty.tiny.copyWith(color: context.t3))),
+            Expanded(
+              child: Text(v,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Ty.tiny.copyWith(color: context.t2, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      );
 }
 
-// ═══════════ 音乐 ═══════════
 class MusicPage extends StatefulWidget {
   const MusicPage({super.key});
   @override
@@ -2116,7 +2267,20 @@ class _MusicPageState extends State<MusicPage> {
         ToastUtil.error('该歌曲暂无可用音源');
         return;
       }
-      JumpUtil.openUrl(url, allowDownload: true);
+      // ★ 1015：改为 App 内播放（原来 openUrl 跳浏览器，用户以为「不能听」）
+      final list = _list
+          .where((e) => '${e['name'] ?? ''}'.isNotEmpty)
+          .map((e) => ('${e['name'] ?? ''}', ''))
+          .toList();
+      Get.to(() => ToolPlayerPage(
+        url: url,
+        title: '${it['name'] ?? ''}',
+        subtitle: '${it['artist'] ?? ''}',
+        cover: '${it['pic'] ?? ''}',
+        isAudio: true,
+        playlist: list.length > 1 ? list : null,
+        initialIndex: list.indexWhere((e) => e.$1 == '${it['name'] ?? ''}').clamp(0, list.isEmpty ? 0 : list.length - 1),
+      ));
     } catch (e) {
       if (!mounted) return;
       setState(() => _busyId = null);
@@ -2356,7 +2520,7 @@ class _HeroGalleryPageState extends State<HeroGalleryPage> {
                   final s = skins[i];
                   return ToolCard(
                     padding: EdgeInsets.zero,
-                    onTap: () => JumpUtil.openUrl('${s['url'] ?? ''}'),
+                    onTap: () => _openInApp('${s['url'] ?? ''}'),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(R.lg),
                       child: Stack(
@@ -2869,7 +3033,7 @@ class _WallpaperPageState extends State<WallpaperPage> {
                         ),
                     itemCount: _urls.length,
                     itemBuilder: (c, i) => AppPressable(
-                      onTap: () => JumpUtil.openUrl(_urls[i]),
+                      onTap: () => _openInApp(_urls[i]),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(R.md),
                         child: CachedNetworkImage(

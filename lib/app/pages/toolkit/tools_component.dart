@@ -76,7 +76,7 @@ class _ToolsComponentState extends State<ToolsComponent>
               .toList() ??
           [];
       var layout = '${cfg['default_style'] ?? 'flow'}';
-      if (!['flow', 'square', 'circle'].contains(layout)) layout = 'flow';
+      if (!['flow', 'square', 'circle', 'card', 'two'].contains(layout)) layout = 'flow';
       if (groups.length == _groups.length &&
           groups.isNotEmpty &&
           _layout == layout &&
@@ -106,7 +106,7 @@ class _ToolsComponentState extends State<ToolsComponent>
               .toList() ??
           [];
       var layout = '${cfg?['default_style'] ?? 'flow'}';
-      if (!['flow', 'square', 'circle'].contains(layout)) layout = 'flow';
+      if (!['flow', 'square', 'circle', 'card', 'two'].contains(layout)) layout = 'flow';
       setState(() {
         _groups = groups;
         _meta = cfg ?? {};
@@ -347,6 +347,11 @@ class _ToolsComponentState extends State<ToolsComponent>
         return _grid(tools, circle: false);
       case 'circle':
         return _grid(tools, circle: true);
+      // ★ 1015：新增两种真正的骨架差异布局
+      case 'card':
+        return _bigCardList(tools);   // 大卡列表：单列、图标+标题+副标题+箭头
+      case 'two':
+        return _twoColumn(tools);     // 双列卡片：两列、图标上标题下
       default:
         return Wrap(
           spacing: 8,
@@ -354,6 +359,130 @@ class _ToolsComponentState extends State<ToolsComponent>
           children: tools.map<Widget>(_chip).toList(),
         );
     }
+  }
+
+  /// ★ 1015 新布局①：大卡列表
+  ///   骨架特征：单列铺满、左侧大图标块 + 中间标题/副标题 + 右侧箭头
+  ///   和「胶囊流式」的区别：一行一个、有副标题、可按压整行
+  Widget _bigCardList(List<Map<String, dynamic>> tools) {
+    return Column(
+      children: tools.map<Widget>((t) {
+        final sub = '${t['subtitle'] ?? ''}';
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: AppPressable(
+            onTap: () => _open(t),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+              decoration: BoxDecoration(
+                color: C.brand.withAlpha(context.isDark ? 18 : 8),
+                borderRadius: BorderRadius.circular(R.md),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: C.brand.withAlpha(context.isDark ? 32 : 16),
+                      borderRadius: BorderRadius.circular(R.sm),
+                    ),
+                    child: _icon(t, 21),
+                  ),
+                  const SizedBox(width: 11),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${t['title'] ?? ''}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: context.t1,
+                          ),
+                        ),
+                        if (sub.isNotEmpty) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            sub,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Ty.tiny.copyWith(color: context.t3),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded, size: 18, color: context.t3),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  /// ★ 1015 新布局②：双列卡片
+  ///   骨架特征：两列网格、图标在上标题在下、每格是独立卡片
+  ///   和「方形宫格」的区别：只两列（不是四列）、有卡片背景、横向更宽
+  Widget _twoColumn(List<Map<String, dynamic>> tools) {
+    return LayoutBuilder(
+      builder: (ctx, c) {
+        final w = (c.maxWidth - 10) / 2;
+        return Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: tools.map<Widget>((t) {
+            return SizedBox(
+              width: w,
+              child: AppPressable(
+                onTap: () => _open(t),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+                  decoration: BoxDecoration(
+                    color: C.brand.withAlpha(context.isDark ? 18 : 8),
+                    borderRadius: BorderRadius.circular(R.md),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: C.brand.withAlpha(context.isDark ? 32 : 16),
+                          borderRadius: BorderRadius.circular(R.sm),
+                        ),
+                        child: _icon(t, 19),
+                      ),
+                      const SizedBox(width: 9),
+                      Expanded(
+                        child: Text(
+                          '${t['title'] ?? ''}',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: context.t1,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
   }
 
   /// 胶囊（flow 布局，样本同款）
@@ -504,6 +633,8 @@ class _ToolsComponentState extends State<ToolsComponent>
   Future<void> _pickLayout() async {
     const opts = <(String, String, IconData)>[
       ('flow', '胶囊流式', Icons.view_stream_rounded),
+      ('card', '大卡列表', Icons.list_alt_rounded),
+      ('two', '双列卡片', Icons.grid_view_rounded),
       ('square', '方形宫格', Icons.grid_view_rounded),
       ('circle', '圆形宫格', Icons.apps_rounded),
     ];

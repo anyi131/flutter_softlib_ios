@@ -320,9 +320,12 @@ class _ClockPageState extends State<ClockPage> {
   }
 
   Future<void> _tick() async {
+    // ★ 1015：加「是否在顶层页面」判断，被其他页面盖住时不重建（省电、防卡）
     while (mounted) {
       await Future.delayed(const Duration(seconds: 1));
       if (!mounted) return;
+      final route = ModalRoute.of(context);
+      if (route != null && route.isCurrent == false) continue;
       setState(() => _now = DateTime.now());
     }
   }
@@ -494,10 +497,12 @@ class _LapTimerPageState extends State<LapTimerPage> {
   }
 
   Future<void> _tick() async {
+    // ★ 1015：原来 100ms 刷新一次（每秒 10 次整页重建）→ 页面卡顿。
+    //   改为 200ms，且只在「计时中」才重建，暂停时不重建。
     while (mounted) {
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 200));
       if (!mounted) return;
-      if (_sw.isRunning) setState(() {});
+      if (_sw.isRunning && mounted) setState(() {});
     }
   }
 

@@ -14,6 +14,7 @@ import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
+import 'tool_img_isolate.dart';
 import 'tool_kit.dart';
 import 'tool_pages_image.dart';
 
@@ -99,37 +100,9 @@ class _ImgRoundPageState extends State<ImgRoundPage> with ImgToolMixin {
   int _r = 30;
   bool _circle = false;
 
-  Future<void> _go() => run(() async {
-        final im = img.decodeImage(srcBytes!);
-        if (im == null) return null;
-        final w = im.width, h = im.height;
-        final radius = _circle ? math.min(w, h) ~/ 2 : (_r * w / 400).round();
-        final out = img.Image(width: w, height: h, numChannels: 4);
-        for (var y = 0; y < h; y++) {
-          for (var x = 0; x < w; x++) {
-            // 圆角/圆形遮罩判断
-            var inside = true;
-            if (_circle) {
-              final cx = w / 2, cy = h / 2;
-              final rr = math.min(w, h) / 2;
-              inside = math.pow(x - cx, 2) + math.pow(y - cy, 2) <= rr * rr;
-            } else {
-              final cx = x < radius ? radius - x : (x > w - radius - 1 ? x - (w - radius - 1) : 0);
-              final cy = y < radius ? radius - y : (y > h - radius - 1 ? y - (h - radius - 1) : 0);
-              if (cx > 0 && cy > 0) {
-                inside = math.sqrt(cx * cx + cy * cy).toDouble() <= radius;
-              }
-            }
-            final p = im.getPixel(x, y);
-            if (inside) {
-              out.setPixelRgba(x, y, p.r, p.g, p.b, 255);
-            } else {
-              out.setPixelRgba(x, y, 0, 0, 0, 0);
-            }
-          }
-        }
-        return Uint8List.fromList(img.encodePng(out));
-      });
+  // ★ 1015：改到后台 isolate
+  Future<void> _go() => run(() => ImgJob.run(ImgJobArgs(srcBytes!,
+      mode: 'round', a: _r, flag: _circle)));
 
   @override
   Widget build(BuildContext context) {
@@ -143,13 +116,11 @@ class _ImgRoundPageState extends State<ImgRoundPage> with ImgToolMixin {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Switch(value: _circle, activeThumbColor: C.brand, onChanged: (v) => setState(() => _circle = v)),
-                    Text('裁成圆形', style: Ty.small.copyWith(color: context.t2)),
-                  ],
-                ),
+              Row(
+                children: [
+                  Switch(value: _circle, activeThumbColor: C.brand, onChanged: (v) => setState(() => _circle = v)),
+                  Text('裁成圆形', style: Ty.small.copyWith(color: context.t2)),
+                ],
               ),
             ],
           ),
@@ -182,33 +153,9 @@ class ImgMosaicPage extends StatefulWidget {
 class _ImgMosaicPageState extends State<ImgMosaicPage> with ImgToolMixin {
   int _block = 16;
 
-  Future<void> _go() => run(() async {
-        final im = img.decodeImage(srcBytes!);
-        if (im == null) return null;
-        final out = img.Image.from(im);
-        for (var by = 0; by < im.height; by += _block) {
-          for (var bx = 0; bx < im.width; bx += _block) {
-            var r = 0, g = 0, b = 0, n = 0;
-            for (var y = by; y < math.min(by + _block, im.height); y++) {
-              for (var x = bx; x < math.min(bx + _block, im.width); x++) {
-                final p = im.getPixel(x, y);
-                r += p.r.toInt();
-                g += p.g.toInt();
-                b += p.b.toInt();
-                n++;
-              }
-            }
-            if (n == 0) continue;
-            final ar = r ~/ n, ag = g ~/ n, ab = b ~/ n;
-            for (var y = by; y < math.min(by + _block, im.height); y++) {
-              for (var x = bx; x < math.min(bx + _block, im.width); x++) {
-                out.setPixelRgb(x, y, ar, ag, ab);
-              }
-            }
-          }
-        }
-        return Uint8List.fromList(img.encodeJpg(out, quality: 90));
-      });
+  // ★ 1015：逐像素处理改到后台 isolate，否则大图会卡死界面
+  Future<void> _go() => run(() => ImgJob.run(ImgJobArgs(srcBytes!,
+      mode: 'mosaic', a: _block)));
 
   @override
   Widget build(BuildContext context) {
