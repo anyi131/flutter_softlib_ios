@@ -49,6 +49,14 @@ class _AboutPageState extends State<AboutPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ★ 1015 修复：监听 configVersion —— 后台改模板后本页立即重建
+    return Obx(() {
+      SoftService.instance.configVersion.value; // 订阅
+      return _buildBody(context);
+    });
+  }
+
+  Widget _buildBody(BuildContext context) {
     final cfg = _cfg;
     return Scaffold(
       backgroundColor: Colors.transparent,

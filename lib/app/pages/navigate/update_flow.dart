@@ -49,10 +49,12 @@ class UpdateFlow {
     final content = (d['content'] ?? '请及时更新以获取最佳体验').toString();
     final url = (d['dow_url'] ?? '').toString();
     final forced = '${d['forced_switch']}' == '1' || d['forced_switch'] == true;
-    // 模板：后台 ui_config.update_template 下发（取不到用 classic）
-    String template = 'classic';
+    // 模板：后台 ui_config.update_template 下发
+    // ★ 1015 修复：必须用 force 拉最新配置。原来走缓存（10 分钟 TTL），
+    //   后台刚改完模板时弹窗读到的还是旧值 → 用户以为「切换没生效」。
+    String template = 'aurora';
     try {
-      final cfg = await SoftService.instance.fetchConfig();
+      final cfg = await SoftService.instance.fetchConfig(force: true);
       final t = cfg?.uiConfig.updateTemplate ?? '';
       if (t.isNotEmpty) template = t;
     } catch (_) {}

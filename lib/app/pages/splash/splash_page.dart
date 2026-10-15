@@ -54,7 +54,7 @@ class _SplashPageState extends State<SplashPage> {
     final localFuture = LocalSplash.get().timeout(
         const Duration(seconds: 5), onTimeout: () => '');
     final cfgFuture = SoftService.instance
-        .fetchConfig()
+        .fetchConfig(force: true) // ★ 1015：开屏模板等配置必须拿最新（原来走 10 分钟缓存）
         .timeout(const Duration(seconds: 8), onTimeout: () => null);
     if (mounted) setState(() => _diag = 'boot:awaiting');
     Future.delayed(const Duration(seconds: 8), () {

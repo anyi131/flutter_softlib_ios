@@ -86,6 +86,15 @@ class _InvitePageState extends State<InvitePage> {
 
   @override
   Widget build(BuildContext context) {
+    // ★ 1015 修复：监听 configVersion —— 后台改模板后本页立即重建
+    //   （原来不监听，导致「有的页面切了会变、这几个不变」）
+    return Obx(() {
+      SoftService.instance.configVersion.value; // 订阅
+      return _buildBody(context);
+    });
+  }
+
+  Widget _buildBody(BuildContext context) {
     final tpl =
         SoftService.instance.cachedConfig?.uiConfig.inviteTemplate ?? 'classic';
     return Scaffold(

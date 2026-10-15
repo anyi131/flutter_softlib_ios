@@ -38,16 +38,20 @@ class AuthScaffold extends StatelessWidget {
   ///   minimal  极简线性     —— 无卡片，下划线输入 + 纯文字
   ///   floating 悬浮胶囊     —— 浮动圆形返回 + 胶囊输入
   Widget build(BuildContext context) {
-    final tpl =
-        SoftService.instance.cachedConfig?.uiConfig.authTemplate ?? 'classic';
-    return switch (tpl) {
-      'split' => _buildSplit(context),
-      'sheet' => _buildSheet(context),
-      'banner' => _buildBanner(context),
-      'minimal' => _buildMinimal(context),
-      'floating' => _buildFloating(context),
-      _ => _buildClassic(context),
-    };
+    // ★ 1015 修复：监听 configVersion —— 后台改登录模板后立即重建
+    return Obx(() {
+      SoftService.instance.configVersion.value; // 订阅
+      final tpl =
+          SoftService.instance.cachedConfig?.uiConfig.authTemplate ?? 'classic';
+      return switch (tpl) {
+        'split' => _buildSplit(context),
+        'sheet' => _buildSheet(context),
+        'banner' => _buildBanner(context),
+        'minimal' => _buildMinimal(context),
+        'floating' => _buildFloating(context),
+        _ => _buildClassic(context),
+      };
+    });
   }
 
   Widget _backBtn(BuildContext context, {Color? fg}) {
