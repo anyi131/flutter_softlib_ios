@@ -92,7 +92,10 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
             return NavigationDecision.prevent;
           },
         ),
-      );
+      )
+      // ★★★ 1015 关键修复：原来只建了 WebView 却从没加载 URL！
+      //   所以所有用内置浏览器打开的工具都是「全白界面」。
+      ..loadRequest(Uri.parse(widget.url));
   }
 
   Future<void> _openExternal(String u) async {

@@ -182,6 +182,40 @@ class ToolboxService {
     return _asList(r?['list'] ?? r?['data']);
   }
 
+  // ═══════════ ★ 1015 音乐模块（对标样本 App）═══════════
+
+  /// 榜单列表（热歌榜/飙升榜/新歌榜…）
+  Future<List<Map<String, dynamic>>> musicToplists() async {
+    final r = await _ss.media('music_toplists');
+    return _asList(r?['list'] ?? r?['data']);
+  }
+
+  /// 榜单详情（歌单 + 歌曲列表）
+  Future<Map<String, dynamic>?> musicToplistDetail(String id) =>
+      _ss.media('music_toplist', query: {'id': id});
+
+  /// 推荐歌单
+  Future<List<Map<String, dynamic>>> musicPlaylists() async {
+    final r = await _ss.media('music_playlists');
+    return _asList(r?['list'] ?? r?['data']);
+  }
+
+  /// 新歌速递
+  Future<List<Map<String, dynamic>>> musicNewSongs() async {
+    final r = await _ss.media('music_newsong');
+    return _asList(r?['list'] ?? r?['data']);
+  }
+
+  /// 歌单详情
+  Future<Map<String, dynamic>?> musicPlaylistDetail(String id) =>
+      _ss.media('music_playlist', query: {'id': id});
+
+  /// 歌手热门歌曲
+  Future<List<Map<String, dynamic>>> musicArtistHot(String id) async {
+    final r = await _ss.media('music_artist', query: {'id': id});
+    return _asList(r?['list'] ?? r?['data']);
+  }
+
   Future<Map<String, dynamic>?> musicUrl(String src, String id) =>
       _ss.media('music_url', query: {'src': src, 'id': id});
 

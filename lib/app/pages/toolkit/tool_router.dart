@@ -12,6 +12,7 @@ import 'tool_pages_eng.dart';
 import 'tool_pages_gen.dart';
 import 'tool_pages_fin.dart';
 import 'tool_pages_misc.dart';
+import 'music_page.dart';
 import 'tool_pages_net.dart';
 
 /// 工具打开函数签名（标题 + 后台配置的接口地址）
@@ -49,7 +50,7 @@ ToolOpen? toolRoute(String kind, {String route = ''}) {
           Get.to(() => MoviePage(title: title));
     case 'music':
       return ({required String title, String apiUrl = ''}) =>
-          Get.to(() => const MusicPage());
+          Get.to(() => const MusicHomePage());
     case 'shortvideo':
     case 'drama':
       return ({required String title, String apiUrl = ''}) =>
