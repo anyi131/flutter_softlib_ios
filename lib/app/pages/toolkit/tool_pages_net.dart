@@ -35,14 +35,22 @@ class HotPage extends StatefulWidget {
 
 class _HotPageState extends State<HotPage> {
   final _svc = ToolboxService.instance;
-  static const _tabs = <(String, String, String)>[
+  /// ★ 1015：板块改为「服务端下发 + 内置兜底」。
+  ///   原来写死 6 个，导致微博/抖音/头条这些必须各占一条工具（3 条功能重复）。
+  ///   现在一条「全网热搜」就能覆盖所有平台/板块，板块随服务端增加而自动变多。
+  static const _fallbackTabs = <(String, String, String)>[
     ('baidu', 'realtime', '百度热搜'),
+    ('weibo', '', '微博热搜'),
+    ('douyin', '', '抖音热点'),
+    ('toutiao', '', '头条热榜'),
+    ('zhihu', '', '知乎热榜'),
+    ('bili', '', 'B站热搜'),
     ('baidu', 'finance', '财经'),
     ('baidu', 'sports', '体育'),
     ('baidu', 'new_entertainment', '文娱'),
     ('baidu', 'livelihood', '民生'),
-    ('bili', '', 'B站热搜'),
   ];
+  List<(String, String, String)> _tabs = List.of(_fallbackTabs);
   int _i = 0;
   List<Map<String, dynamic>> _list = [];
   String _label = '';

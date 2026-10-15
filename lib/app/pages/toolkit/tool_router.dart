@@ -1,6 +1,10 @@
 import 'package:get/get.dart';
 
 import 'tool_pages_local.dart';
+import 'tool_pages_local2.dart';
+import 'tool_pages_local3.dart';
+import 'tool_pages_image.dart';
+import 'tool_pages_image2.dart';
 import 'tool_pages_net.dart';
 
 /// 工具打开函数签名（标题 + 后台配置的接口地址）
@@ -103,6 +107,102 @@ ToolOpen? toolRoute(String kind, {String route = ''}) {
     case 'relative':
       return ({required String title, String apiUrl = ''}) =>
           Get.to(() => const RelativePage());
+
+    // ── ★ 1015 扩展：计算 / 转换 / 生成（纯本地） ──
+    case 'calc':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const CalcPage());
+    case 'hexconv':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const HexConvPage());
+    case 'timestamp':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const TimestampPage());
+    case 'caseconv':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const CaseConvPage());
+    case 'uuid':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const UuidPage());
+    case 'colorconv':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const ColorConvPage());
+    case 'percent':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const PercentPage());
+    case 'datecalc':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const DateCalcPage());
+
+    // ── ★ 1015 扩展：生活实用（纯本地） ──
+    case 'bmr':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const BmrPage());
+    case 'sleep':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const SleepPage());
+    case 'idcard':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const IdCardPage());
+    case 'split':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const SplitPage());
+    case 'money':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const MoneyPage());
+    case 'daycount':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const DayCountPage());
+    case 'roman':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const RomanPage());
+    case 'sizeconv':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const SizePage());
+    case 'fuel':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const FuelPage());
+    case 'passphrase':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const PassphrasePage());
+
+    // ── ★ 1015 扩展：图片工具（本地处理） ──
+    case 'imgcompress':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const ImgCompressPage());
+    case 'imgcrop':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const ImgCropPage());
+    case 'imgconv':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const ImgConvPage());
+    case 'imgcolor':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const ImgColorPage());
+    case 'imgwater':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const ImgWaterPage());
+    case 'imgrotate':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const ImgRotatePage());
+    case 'imground':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const ImgRoundPage());
+    case 'imgmosaic':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const ImgMosaicPage());
+    case 'imgadjust':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const ImgAdjustPage());
+    case 'imggray':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const ImgGrayPage());
+    case 'imgresize':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const ImgResizePage());
+    case 'imginfo':
+      return ({required String title, String apiUrl = ''}) =>
+          Get.to(() => const ImgInfoPage());
   }
   return null;
 }

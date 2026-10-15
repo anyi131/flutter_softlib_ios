@@ -69,6 +69,9 @@ dependencies:
   image_picker: ^1.1.2
   file_picker: ^8.1.7
   open_filex: ^4.7.0
+  # ★ 1015：图片工具箱（压缩/裁剪/转格式/取色/加水印等，纯本地处理）
+  image: ^4.3.0
+  path_provider: ^2.1.5
 
 
 dev_dependencies:
