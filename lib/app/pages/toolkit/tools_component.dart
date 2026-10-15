@@ -682,7 +682,17 @@ class _ToolsComponentState extends State<ToolsComponent>
     ToastUtil.info('「$title」未配置打开方式（后台填 kind 或外部链接）');
   }
 
-  void _open(Map<String, dynamic> t) => openTool(t);
+  void _open(Map<String, dynamic> t) {
+    // ★ 1015：打开工具前先上报 —— Native 崩溃抓不到堆栈，
+    //   但「最后一条准备打开记录」就能指出是哪个工具导致的闪退
+    try {
+      SoftService.instance.reportLog(
+        tag: 'open',
+        error: '[open] ${t['title']} kind=${t['kind']} url=${t['api_url'] ?? t['target'] ?? ''}',
+      ).catchError((_) {});
+    } catch (_) {}
+    openTool(t);
+  }
 
   // ═══════════ 布局切换 ═══════════
 

@@ -58,6 +58,9 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   double? _prevSpeed;                // 长按倍速前速度
   int _sleepMin = 0;                 // 定时关闭（分钟）
   Timer? _sleepTimer;                // 定时器
+  bool _doubleTapLeft = false;       // 双击位置（左=后退 右=快进）
+  String _seekHint = '';             // 快进/后退提示
+  Timer? _seekHintTimer;
   int _waitSec = 0; // ★ 1015：加载等待秒数（超时提示用）
   Timer? _waitTimer;
   bool _failed = false;
@@ -103,6 +106,7 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
     _hideTimer?.cancel();
     _waitTimer?.cancel();
     _sleepTimer?.cancel();
+    _seekHintTimer?.cancel();
     _sleepTimer?.cancel();
     _savePos();
     // ★★★ 1015 关键修复（No active player 崩溃）：
@@ -460,6 +464,12 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
     final v = c.value;
     return GestureDetector(
       onTap: _toggleCtrl,
+      // ★ 1015：双击左半屏后退 10s / 右半屏快进 10s（播放器基本功能）
+      onDoubleTapDown: (d) {
+        final w = MediaQuery.of(context).size.width;
+        _doubleTapLeft = d.localPosition.dx < w / 2;
+      },
+      onDoubleTap: () => _seekStep(_doubleTapLeft ? -10 : 10),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -489,6 +499,28 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
                     ? '音量 ${(_gestureValue * 100).round()}%'
                     : '进度 ${(_gestureValue * 100).round()}%',
                 style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700),
+              ),
+            ),
+          // ★ 1015：快进/后退提示（双击时短暂显示）
+          if (_seekHint.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha(180),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _seekHint.startsWith('-') ? Icons.fast_rewind_rounded : Icons.fast_forward_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(_seekHint,
+                      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800)),
+                ],
               ),
             ),
           if (_showCtrl) ...[
@@ -639,6 +671,11 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
         onVerticalDragStart: (d) => _onDragStart(d, box.biggest),
         onVerticalDragUpdate: (d) => _onDragUpdate(d, box.biggest),
         onVerticalDragEnd: _onDragEnd,
+        onDoubleTapDown: (d) {
+          final w = MediaQuery.of(context).size.width;
+          _doubleTapLeft = d.localPosition.dx < w / 2;
+        },
+        onDoubleTap: () => _seekStep(_doubleTapLeft ? -10 : 10),
         child: Stack(
         alignment: Alignment.center,
         children: [
@@ -689,6 +726,28 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
                         : '进度 ${(_gestureValue * 100).round()}%',
                     style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w700),
                   ),
+                ],
+              ),
+            ),
+          // ★ 1015：快进/后退提示（双击时短暂显示）
+          if (_seekHint.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha(180),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _seekHint.startsWith('-') ? Icons.fast_rewind_rounded : Icons.fast_forward_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(_seekHint,
+                      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800)),
                 ],
               ),
             ),
@@ -810,6 +869,25 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
     );
   }
 
+
+  /// 快进/后退 N 秒（双击用）
+  Future<void> _seekStep(int seconds) async {
+    final c = _c;
+    if (c == null || !c.value.isInitialized) return;
+    final total = c.value.duration;
+    var t = c.value.position + Duration(seconds: seconds);
+    if (t < Duration.zero) t = Duration.zero;
+    if (t > total) t = total;
+    await c.seekTo(t);
+    if (!mounted) return;
+    setState(() {
+      _seekHint = (seconds > 0 ? '+' : '') + '$seconds 秒';
+    });
+    _seekHintTimer?.cancel();
+    _seekHintTimer = Timer(const Duration(milliseconds: 800), () {
+      if (mounted) setState(() => _seekHint = '');
+    });
+  }
 
   /// 圆角进度条（可拖动/可点击定位）
   Widget _progressBar(VideoPlayerValue v) {

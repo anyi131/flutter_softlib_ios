@@ -280,7 +280,15 @@ class _ApiToolPageState extends State<ApiToolPage> {
                 ),
                 itemCount: items.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (c, i) => _card(items[i], i),
+                itemBuilder: (c, i) {
+                  // ★ 1015：单条渲染加保护 —— 任何一条异常都不会拖垮整页
+                  try {
+                    return _card(items[i], i);
+                  } catch (e) {
+                    debugPrint('[ApiTool] card render: $e');
+                    return const SizedBox(height: 1);
+                  }
+                },
               ),
             ),
     );
@@ -309,7 +317,7 @@ class _ApiToolPageState extends State<ApiToolPage> {
                   )),
             ),
             const SizedBox(width: 10),
-            Expanded(child: SelectableText('${m['__line']}', style: Ty.small.copyWith(color: context.t1, height: 1.6))),
+            Expanded(child: Text('${m['__line']}', style: Ty.small.copyWith(color: context.t1, height: 1.6))),
           ],
         ),
       );
