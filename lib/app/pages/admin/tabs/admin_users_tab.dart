@@ -680,10 +680,12 @@ class _AdminUsersTabState extends State<AdminUsersTab>
         ],
       );
 
-  /// 会员天数调整：赠送 / 扣减 / 设为永久
+  /// 会员天数调整：赠送 / 扣减 / 选日期 / 设为永久
   Future<void> _grantVip(int id, int days) async {
-    String mode = 'add'; // add | sub | forever
+    String mode = 'add'; // add | sub | date | forever
     final dayCtrl = TextEditingController(text: '30');
+    // ★ 1015：新增「选日期」模式 —— 直接指定会员到期日（到某年某月某日）
+    DateTime? pickDate;
     String err = '';
 
     final ok = await Get.dialog<bool>(
@@ -708,11 +710,65 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                           (m) => setD(() => mode = m)),
                       _modeChip('扣减', 'sub', mode, ctx,
                           (m) => setD(() => mode = m)),
+                      _modeChip('选日期', 'date', mode, ctx,
+                          (m) => setD(() => mode = m)),
                       _modeChip('设为永久', 'forever', mode, ctx,
                           (m) => setD(() => mode = m)),
                     ],
                   ),
-                  if (mode != 'forever') ...[
+                  // ★ 1015：选日期模式 —— 直接指定到期日
+                  if (mode == 'date') ...[
+                    const SizedBox(height: 14),
+                    const Text('直接指定会员到期日（到期自动恢复为非会员）',
+                        style: TextStyle(fontSize: 12)),
+                    const SizedBox(height: 10),
+                    GestureDetector(
+                      onTap: () async {
+                        final now = DateTime.now();
+                        final d = await showDatePicker(
+                          context: ctx,
+                          initialDate: pickDate ?? now.add(const Duration(days: 30)),
+                          firstDate: now,
+                          lastDate: DateTime(2099, 12, 31),
+                          helpText: '选择会员到期日',
+                          cancelText: '取消',
+                          confirmText: '确定',
+                        );
+                        if (d != null) setD(() => pickDate = d);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 13),
+                        decoration: BoxDecoration(
+                          color: Theme.of(ctx).cardColor,
+                          borderRadius: BorderRadius.circular(R.sm),
+                          border: Border.all(
+                              color: pickDate == null ? C.stroke : C.brand,
+                              width: pickDate == null ? 1 : 1.5),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.calendar_month_rounded,
+                                size: 18,
+                                color: pickDate == null ? ctx.t3 : C.brand),
+                            const SizedBox(width: 9),
+                            Text(
+                              pickDate == null
+                                  ? '点击选择到期日期'
+                                  : '到期日：${pickDate!.year}-${pickDate!.month.toString().padLeft(2, '0')}-${pickDate!.day.toString().padLeft(2, '0')}',
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                color: pickDate == null ? ctx.t3 : ctx.t1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (mode != 'forever' && mode != 'date') ...[
                     const SizedBox(height: 14),
                     Wrap(
                       spacing: 8,
@@ -801,12 +857,30 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       }),
     );
     if (ok != true) return;
-    final n = mode == 'forever' ? 0 : (int.tryParse(dayCtrl.text.trim()) ?? 0);
+    // ★ 1015：选日期模式必须真的选了日期
+    if (mode == 'date' && pickDate == null) {
+      ToastUtil.error('请先选择到期日期');
+      return;
+    }
+    final n = (mode == 'forever' || mode == 'date')
+        ? 0
+        : (int.tryParse(dayCtrl.text.trim()) ?? 0);
+    if (mode != 'forever' && mode != 'date' && n <= 0) {
+      ToastUtil.error('请输入有效天数');
+      return;
+    }
     try {
-      final r = await _svc.grantVip(id, n, mode: mode);
-      ToastUtil.success(mode == 'forever'
-          ? '已设为永久会员'
-          : (mode == 'sub' ? '已扣减 $n 天' : '已赠送 $n 天'));
+      // 选日期模式：把到期日（yyyy-MM-dd）交给服务端按当天 23:59:59 生效
+      final dateStr = mode == 'date'
+          ? '${pickDate!.year}-${pickDate!.month.toString().padLeft(2, '0')}-${pickDate!.day.toString().padLeft(2, '0')}'
+          : null;
+      final r = await _svc.grantVip(id, n, mode: mode, expireDate: dateStr);
+      ToastUtil.success(switch (mode) {
+        'forever' => '已设为永久会员',
+        'date' => '会员到期日已设为 $dateStr',
+        'sub' => '已扣减 $n 天',
+        _ => '已赠送 $n 天',
+      });
       _load();
     } catch (e) {
       ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));

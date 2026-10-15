@@ -371,8 +371,14 @@ class AdminService {
     int id,
     int days, {
     String mode = 'add',
+    String? expireDate,
   }) async => Map<String, dynamic>.from(
-    (await _post('user_vip', {'id': id, 'days': days, 'mode': mode}))['data'] ??
+    (await _post('user_vip', {
+      'id': id,
+      'days': days,
+      'mode': mode,
+      if (expireDate != null && expireDate.isNotEmpty) 'expire_date': expireDate,
+    }))['data'] ??
         {},
   );
 
