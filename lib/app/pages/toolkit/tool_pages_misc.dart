@@ -35,11 +35,11 @@ class ShoeSizePage extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    _th('脚长cm', 1.2),
-                    _th('中国', 1),
-                    _th('欧洲', 1),
-                    _th('美国', 1),
-                    _th('英国', 1),
+                    _th(context, '脚长cm', 1.2),
+                    _th(context, '中国', 1),
+                    _th(context, '欧洲', 1),
+                    _th(context, '美国', 1),
+                    _th(context, '英国', 1),
                   ],
                 ),
                 const Divider(height: 16),
@@ -47,11 +47,11 @@ class ShoeSizePage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 5),
                       child: Row(
                         children: [
-                          _td(r.$1.toStringAsFixed(1), 1.2, bold: true),
-                          _td(r.$2.toStringAsFixed(0), 1),
-                          _td(r.$3.toStringAsFixed(1), 1),
-                          _td(r.$4.toStringAsFixed(1), 1),
-                          _td(r.$5.toStringAsFixed(1), 1),
+                          _td(context, r.$1.toStringAsFixed(1), 1.2, bold: true),
+                          _td(context, r.$2.toStringAsFixed(0), 1),
+                          _td(context, r.$3.toStringAsFixed(1), 1),
+                          _td(context, r.$4.toStringAsFixed(1), 1),
+                          _td(context, r.$5.toStringAsFixed(1), 1),
                         ],
                       ),
                     )),
@@ -65,12 +65,12 @@ class ShoeSizePage extends StatelessWidget {
     );
   }
 
-  Widget _th(String s, double f) => Expanded(
+  Widget _th(BuildContext context, String s, double f) => Expanded(
         flex: (f * 10).round(),
         child: Text(s, style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: C.brand)),
       );
 
-  Widget _td(String s, double f, {bool bold = false}) => Expanded(
+  Widget _td(BuildContext context, String s, double f, {bool bold = false}) => Expanded(
         flex: (f * 10).round(),
         child: Text(s,
             style: TextStyle(

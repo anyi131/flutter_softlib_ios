@@ -135,8 +135,8 @@ class _TimerPageState extends State<TimerPage> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: <Widget>[1, 3, 5, 10, 15, 30, 60]
-                      .map((m) => AppPressable(
+                  children: [1, 3, 5, 10, 15, 30, 60]
+                      .map<Widget>((m) => AppPressable(
                             onTap: () => setState(() {
                               _h.text = '0';
                               _m.text = '$m';
