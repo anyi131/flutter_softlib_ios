@@ -243,14 +243,14 @@ class _ToolsComponentState extends State<ToolsComponent>
                     Row(
                       children: [
                         Pill(
-                          text: '${_meta['total'] ?? _count} 个工具',
+                          '${_meta['total'] ?? _count} 个工具',
                           icon: Icons.auto_awesome_rounded,
                           small: true,
                         ),
                         const SizedBox(width: 6),
                         if (_groups.isNotEmpty)
                           Pill(
-                            text: '${_groups.length} 个分类',
+                            '${_groups.length} 个分类',
                             color: C.mint,
                             icon: Icons.folder_rounded,
                             small: true,

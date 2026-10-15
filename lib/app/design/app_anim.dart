@@ -115,11 +115,14 @@ class _AppStaggerInState extends State<AppStaggerIn>
 class AppPressable extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
+  /// ★ 1015：长按（图片保存等场景）
+  final VoidCallback? onLongPress;
   final double scale;
   const AppPressable({
     super.key,
     required this.child,
     this.onTap,
+    this.onLongPress,
     this.scale = 0.97,
   });
 
@@ -138,6 +141,7 @@ class _AppPressableState extends State<AppPressable> {
       onTapCancel: enabled ? () => setState(() => _down = false) : null,
       onTapUp: enabled ? (_) => setState(() => _down = false) : null,
       onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
       child: AnimatedScale(
         scale: _down ? widget.scale : 1.0,
         duration: AppAnim.fast,

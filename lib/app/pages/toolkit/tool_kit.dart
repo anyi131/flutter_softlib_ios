@@ -228,6 +228,8 @@ class ToolCard extends StatelessWidget {
   final EdgeInsets? padding;
   final EdgeInsets? margin;
   final VoidCallback? onTap;
+  /// ★ 1015：长按（图片保存等）
+  final VoidCallback? onLongPress;
 
   const ToolCard({
     super.key,
@@ -235,6 +237,7 @@ class ToolCard extends StatelessWidget {
     this.padding,
     this.margin,
     this.onTap,
+    this.onLongPress,
   });
 
   @override
@@ -255,7 +258,8 @@ class ToolCard extends StatelessWidget {
       ),
       child: child,
     );
-    return onTap == null ? card : AppPressable(onTap: onTap!, child: card);
+    if (onTap == null && onLongPress == null) return card;
+    return AppPressable(onTap: onTap, onLongPress: onLongPress, child: card);
   }
 }
 
