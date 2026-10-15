@@ -66,6 +66,9 @@ class _HotPageState extends State<HotPage> {
   String _label = '';
   bool _loading = true;
   String _err = '';
+  /// ★ 1015：请求序号 —— 快速切板块时丢弃过期响应，防止旧数据覆盖新数据
+  ///   （原来每次切 Tab 都发新请求且不取消旧的，连点会堆积 → 卡顿/卡死）
+  int _reqSeq = 0;
 
   @override
   void initState() {
@@ -74,13 +77,17 @@ class _HotPageState extends State<HotPage> {
   }
 
   Future<void> _load() async {
+    // ★ 1015：记录本次请求序号，响应回来时比对，过期就丢弃
+    final seq = ++_reqSeq;
     setState(() {
       _loading = true;
       _err = '';
     });
     try {
-      final d = await _svc.hot(type: _tabs[_i].$1, board: _tabs[_i].$2);
-      if (!mounted) return;
+      final idx = _i; // 记住发起时的板块下标
+      final d = await _svc.hot(type: _tabs[idx].$1, board: _tabs[idx].$2);
+      // 过期响应（用户已经切到别的板块了）→ 直接丢弃，不 setState
+      if (!mounted || seq != _reqSeq || idx != _i) return;
       final l = ((d?['list'] as List?) ?? [])
           .map((e) => Map<String, dynamic>.from(e as Map))
           .toList();
@@ -91,7 +98,7 @@ class _HotPageState extends State<HotPage> {
         _err = l.isEmpty ? '暂时没有拿到榜单数据' : '';
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || seq != _reqSeq) return;
       setState(() {
         _loading = false;
         _err = e.toString().replaceFirst('Exception: ', '');
@@ -948,7 +955,7 @@ class _TranslatePageState extends State<TranslatePage> {
     return ToolScaffold(
       title: '在线翻译',
       subtitle: '多语言互译',
-      scrollable: true,
+      // ★ 1015：去掉 scrollable（内含 Expanded，滚动容器里放 Expanded 会布局死循环→卡死）
       child: Column(
         children: [
           Row(
@@ -1128,7 +1135,7 @@ class _ExchangePageState extends State<ExchangePage> {
       title: '汇率换算',
       subtitle: '实时汇率 · 每日更新',
       actions: [_refresh(_load, context)],
-      scrollable: true,
+      // ★ 1015：去掉 scrollable（内含 Expanded，滚动容器里放 Expanded 会布局死循环→卡死）
       child: _loading
           ? const Padding(
               padding: EdgeInsets.only(top: 80),
@@ -1392,7 +1399,7 @@ class _IpPageState extends State<IpPage> {
     return ToolScaffold(
       title: 'IP 查询',
       subtitle: '归属地 / 运营商',
-      scrollable: true,
+      // ★ 1015：去掉 scrollable（内含 Expanded，滚动容器里放 Expanded 会布局死循环→卡死）
       child: Column(
         children: [
           ToolField(
@@ -1531,7 +1538,7 @@ class _WeatherPageState extends State<WeatherPage> {
     return ToolScaffold(
       title: '天气查询',
       subtitle: '实时天气 + 3 日预报',
-      scrollable: true,
+      // ★ 1015：去掉 scrollable（内含 Expanded，滚动容器里放 Expanded 会布局死循环→卡死）
       child: Column(
         children: [
           ToolField(
@@ -2082,7 +2089,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     return ToolScaffold(
       title: name.isEmpty ? '影片详情' : name,
       subtitle: '${d?['type'] ?? ''} ${d?['year'] ?? ''}'.trim(),
-      scrollable: true,
+      // ★ 1015：去掉 scrollable（内含 Expanded）
       child: _loading
           ? const Padding(
               padding: EdgeInsets.symmetric(vertical: 60),

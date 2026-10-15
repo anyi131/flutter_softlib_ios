@@ -672,8 +672,12 @@ extension ToolboxService on SoftService {
         queryParameters: query,
         options: Options(receiveTimeout: timeout),
       );
-      if (r.data is Map && r.data['code'] == 1 && r.data['data'] is Map) {
-        return Map<String, dynamic>.from(r.data['data'] as Map);
+      if (r.data is Map && r.data['code'] == 1) {
+        final d = r.data['data'];
+        if (d is Map) return Map<String, dynamic>.from(d);
+        // ★ 1015 修复：data 是数组时（music_search / comic_tags 等）也要能解包。
+        //   原来只接受 Map，数组直接返回 null → 列表永远为空 → 用户看到「没数据」。
+        if (d is List) return {'list': d};
       }
       return null;
     } catch (e) {

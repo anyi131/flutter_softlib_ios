@@ -53,6 +53,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
   // 列表样式
   String _listStyle = 'glass';
   // 更新弹窗模板（v52g #1）
+  String _toolLayout = 'grid'; // ★ 1015：工具箱布局（grid/card/compact/banner）
   String _updateTemplate = 'classic';
   // 页面模板（v52i #4）
   String _homeTemplate = 'classic';
@@ -147,6 +148,8 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _listStyle = '${home['list_style'] ?? cfg['app_ui_style'] ?? 'glass'}';
         _updateTemplate = '${ui['update_template'] ?? 'aurora'}';
         _homeTemplate = '${home['template'] ?? 'classic'}';
+        // ★ 1015：工具箱布局（后台可配）
+        _toolLayout = '${ui['tool_home_style'] ?? 'grid'}';
         _detailStyle = '${home['detail_style'] ?? 'standard'}';
         _tipsTemplate = '${ui['tips_template'] ?? 'card'}';
         _mineTemplate = '${ui['mine_template'] ?? 'classic'}';
@@ -389,6 +392,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
             _card('公告弹窗模板', _noticeTemplatePicker()),
             _card('邀请页模板', _inviteTemplatePicker()),
             _card('底部导航栏模板', _navTemplatePicker()),
+            _card('工具箱布局模板', _toolLayoutPicker()),
             _card('管理后台整体模板', _adminTemplatePicker()),
             _card('邀请配置', _inviteConfig()),
             _card('支付弹窗文案', _payNoticeConfig()),
@@ -985,6 +989,18 @@ class _AdminUiTabState extends State<AdminUiTab> {
   );
 
   // v54：管理后台整体模板
+  /// ★ 1015：工具箱布局模板（4 款骨架级差异）
+  Widget _toolLayoutPicker() => _chipRow(
+    const [
+      ('grid', '图标网格'),
+      ('card', '大卡列表'),
+      ('compact', '紧凑宫格'),
+      ('banner', '分类横幅'),
+    ],
+    _toolLayout,
+    (v) => setState(() => _toolLayout = v),
+  );
+
   Widget _adminTemplatePicker() => _chipRow(
     const [
       ('light_card', '浅色卡片'),
