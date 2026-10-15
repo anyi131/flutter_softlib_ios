@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../api/toolbox_service.dart';
+import '../../design/ad.dart';
 import '../../design/adaptive.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';
@@ -1450,7 +1451,7 @@ class _IpPageState extends State<IpPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(
-                            width: 84,
+                            width: Ad.w(context, 84),
                             child: Text(
                               e.$1,
                               style: Ty.small.copyWith(color: context.t3),
@@ -2108,19 +2109,19 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                         child: cover.startsWith('http')
                             ? Image.network(
                                 cover,
-                                width: 110,
-                                height: 155,
+                                width: Ad.w(context, 110),
+                                height: Ad.h(context, 155),
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) => Container(
-                                  width: 110,
-                                  height: 155,
+                                  width: Ad.w(context, 110),
+                                  height: Ad.h(context, 155),
                                   color: C.brand.withAlpha(24),
                                   child: const Icon(Icons.movie_rounded, size: 34),
                                 ),
                               )
                             : Container(
-                                width: 110,
-                                height: 155,
+                                width: Ad.w(context, 110),
+                                height: Ad.h(context, 155),
                                 color: C.brand.withAlpha(24),
                                 child: const Icon(Icons.movie_rounded, size: 34),
                               ),
@@ -2610,16 +2611,16 @@ class _HeroGalleryPageState extends State<HeroGalleryPage> {
                         children: [
                           CachedNetworkImage(
                             imageUrl: '${s['url'] ?? ''}',
-                            height: 170,
+                            height: Ad.h(context, 170),
                             width: double.infinity,
                             fit: BoxFit.cover,
                             memCacheWidth: 900,
                             placeholder: (_, __) => Container(
-                              height: 170,
+                              height: Ad.h(context, 170),
                               color: C.brand.withAlpha(14),
                             ),
                             errorWidget: (_, __, ___) => Container(
-                              height: 170,
+                              height: Ad.h(context, 170),
                               color: C.brand.withAlpha(14),
                               child: Icon(
                                 Icons.broken_image_outlined,
@@ -3020,11 +3021,11 @@ class _ComicReadPageState extends State<ComicReadPage> {
                               imageUrl: _images[i],
                               fit: BoxFit.fitWidth,
                               placeholder: (_, __) => Container(
-                                height: 220,
+                                height: Ad.h(context, 220),
                                 color: C.brand.withAlpha(12),
                               ),
                               errorWidget: (_, __, ___) => Container(
-                                height: 120,
+                                height: Ad.h(context, 120),
                                 color: C.brand.withAlpha(12),
                                 child: Icon(
                                   Icons.broken_image_outlined,

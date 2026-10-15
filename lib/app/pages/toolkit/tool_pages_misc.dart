@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../design/app_anim.dart';
+import '../../design/ad.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
@@ -579,7 +580,7 @@ class NumSlangPage extends StatelessWidget {
                     child: Row(
                       children: [
                         SizedBox(
-                          width: 92,
+                          width: Ad.w(context, 92),
                           child: Text(e.$1,
                               style: TextStyle(
                                 fontSize: 14,

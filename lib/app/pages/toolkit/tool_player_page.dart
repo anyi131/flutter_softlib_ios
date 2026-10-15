@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../design/ad.dart';
 import '../../design/adaptive.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';
@@ -105,13 +106,21 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
       _err = '';
     });
     // ★ 关键：带上 UA，很多 m3u8 源没 UA 会 403
+    // ★★ 1015 修复：原来传了空 Referer ''，网易云 CDN 会直接 403 → 音乐播放失败！
+    //   正确做法：按域名给对应 Referer（网易云用 music.163.com）
+    final host = Uri.tryParse(_url)?.host ?? '';
+    final ref = host.contains('126.net')
+        ? 'https://music.163.com/'
+        : (host.contains('lz') || host.contains('bfvvs') || host.contains('jisuzyv'))
+            ? 'https://$host/'
+            : '';
     final c = VideoPlayerController.networkUrl(
       Uri.parse(_url),
-      httpHeaders: const {
+      httpHeaders: {
         'User-Agent':
             'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 '
             '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
-        'Referer': '',
+        if (ref.isNotEmpty) 'Referer': ref,
       },
     );
     _c = c;
@@ -359,7 +368,7 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
             flex: isAudio ? 0 : 1,
             child: isAudio
                 ? SizedBox(
-                    height: 320,
+                    height: Ad.h(context, 320),
                     child: _audioView(),
                   )
                 : _videoView(),
@@ -391,12 +400,26 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
         child: Stack(
         alignment: Alignment.center,
         children: [
-          Center(
-            child: AspectRatio(
-              aspectRatio: v.aspectRatio == 0 ? 16 / 9 : v.aspectRatio,
-              child: VideoPlayer(_c!),
-            ),
-          ),
+          // ★ 1015：全屏时按屏幕铺满（FittedBox.cover），
+          //   非全屏保持原比例居中。原来写死 AspectRatio，
+          //   竖屏视频横屏全屏后只占中间一条，四周全黑 = 「布局乱」。
+          _isFullscreen
+              ? SizedBox.expand(
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: SizedBox(
+                      width: v.size.width,
+                      height: v.size.height,
+                      child: VideoPlayer(_c!),
+                    ),
+                  ),
+                )
+              : Center(
+                  child: AspectRatio(
+                    aspectRatio: v.aspectRatio == 0 ? 16 / 9 : v.aspectRatio,
+                    child: VideoPlayer(_c!),
+                  ),
+                ),
           // ★ 1015：手势调节提示（亮度/音量/进度）
           if (_gesture != 0)
             Container(
@@ -437,8 +460,8 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
                 _autoHide();
               },
               child: Container(
-                width: 64,
-                height: 64,
+                width: Ad.w(context, 64),
+                height: Ad.h(context, 64),
                 decoration: BoxDecoration(
                   color: Colors.black.withAlpha(110),
                   shape: BoxShape.circle,
@@ -557,8 +580,8 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
         children: [
           // 封面
           Container(
-            width: 168,
-            height: 168,
+            width: Ad.w(context, 168),
+            height: Ad.h(context, 168),
             decoration: BoxDecoration(
               color: Colors.white10,
               borderRadius: BorderRadius.circular(18),
@@ -649,8 +672,8 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
                     v.isPlaying ? _c!.pause() : _c!.play();
                   }),
                   child: Container(
-                    width: 62,
-                    height: 62,
+                    width: Ad.w(context, 62),
+                    height: Ad.h(context, 62),
                     decoration: BoxDecoration(gradient: Deco.brandGradient, shape: BoxShape.circle),
                     child: Icon(
                       v.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,

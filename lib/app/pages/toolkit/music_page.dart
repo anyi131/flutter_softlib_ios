@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../api/toolbox_service.dart';
+import '../../design/ad.dart';
 import '../../design/adaptive.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';
@@ -178,7 +179,7 @@ class _MusicHomePageState extends State<MusicHomePage> {
                   return AppPressable(
                     onTap: () => _openToplist(t),
                     child: SizedBox(
-                      width: 108,
+                      width: Ad.w(context, 108),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -187,20 +188,20 @@ class _MusicHomePageState extends State<MusicHomePage> {
                             child: cover.startsWith('http')
                                 ? CachedNetworkImage(
                                     imageUrl: cover,
-                                    width: 108,
-                                    height: 100,
+                                    width: Ad.w(context, 108),
+                                    height: Ad.h(context, 100),
                                     fit: BoxFit.cover,
                                     memCacheWidth: 320,
                                     placeholder: (_, __) => Container(
-                                        width: 108, height: 100, color: C.brand.withAlpha(20)),
+                                        width: Ad.w(context, 108), height: Ad.h(context, 100), color: C.brand.withAlpha(20)),
                                     errorWidget: (_, __, ___) => Container(
-                                      width: 108,
-                                      height: 100,
+                                      width: Ad.w(context, 108),
+                                      height: Ad.h(context, 100),
                                       color: C.brand.withAlpha(20),
                                       child: const Icon(Icons.music_note_rounded, size: 28),
                                     ),
                                   )
-                                : Container(width: 108, height: 100, color: C.brand.withAlpha(20)),
+                                : Container(width: Ad.w(context, 108), height: Ad.h(context, 100), color: C.brand.withAlpha(20)),
                           ),
                           const SizedBox(height: 6),
                           Text('${t['name'] ?? ''}',
@@ -689,7 +690,7 @@ class _MusicListPageState extends State<MusicListPage> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(R.md),
                           child: CachedNetworkImage(
-                              imageUrl: widget.cover, width: 92, height: 92, fit: BoxFit.cover),
+                              imageUrl: widget.cover, width: Ad.w(context, 92), height: Ad.h(context, 92), fit: BoxFit.cover),
                         ),
                         const SizedBox(width: 12),
                         Expanded(

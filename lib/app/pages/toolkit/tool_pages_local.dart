@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../../design/ad.dart';
 import '../../design/adaptive.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';
@@ -62,7 +63,7 @@ class _QrcodePageState extends State<QrcodePage> {
               child: _data.isEmpty
                   ? SizedBox(
                       width: 220,
-                      height: 220,
+                      height: Ad.h(context, 220),
                       child: Center(
                         child: Text(
                           '请输入内容',
@@ -295,8 +296,8 @@ class _CountdownPageState extends State<CountdownPage> {
               alignment: Alignment.center,
               children: [
                 SizedBox(
-                  width: 200,
-                  height: 200,
+                  width: Ad.w(context, 200),
+                  height: Ad.h(context, 200),
                   child: CircularProgressIndicator(
                     value: pct,
                     strokeWidth: 10,

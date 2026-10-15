@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../design/app_anim.dart';
+import '../../design/ad.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
@@ -303,7 +304,7 @@ class _HashPageState extends State<HashPage> {
                           padding: const EdgeInsets.symmetric(vertical: 7),
                           child: Row(
                             children: [
-                              SizedBox(width: 96, child: Text(e.key, style: Ty.small.copyWith(color: context.t3))),
+                              SizedBox(width: Ad.w(context, 96), child: Text(e.key, style: Ty.small.copyWith(color: context.t3))),
                               Expanded(
                                 child: SelectableText(
                                   e.value,

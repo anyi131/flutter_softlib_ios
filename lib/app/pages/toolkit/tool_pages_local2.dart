@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../design/app_anim.dart';
+import '../../design/ad.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
@@ -328,7 +329,7 @@ class _HexConvPageState extends State<HexConvPage> {
         padding: const EdgeInsets.symmetric(vertical: 7),
         child: Row(
           children: [
-            SizedBox(width: 96, child: Text(k, style: Ty.small.copyWith(color: context.t3))),
+            SizedBox(width: Ad.w(context, 96), child: Text(k, style: Ty.small.copyWith(color: context.t3))),
             Expanded(
               child: SelectableText(
                 v,
@@ -673,7 +674,7 @@ class _ColorConvPageState extends State<ColorConvPage> {
               child: Column(
                 children: [
                   Container(
-                    height: 80,
+                    height: Ad.h(context, 80),
                     decoration: BoxDecoration(
                       color: Color(0xff000000 | v),
                       borderRadius: BorderRadius.circular(R.md),
@@ -699,7 +700,7 @@ class _ColorConvPageState extends State<ColorConvPage> {
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
           children: [
-            SizedBox(width: 66, child: Text(k, style: Ty.small.copyWith(color: context.t3))),
+            SizedBox(width: Ad.w(context, 66), child: Text(k, style: Ty.small.copyWith(color: context.t3))),
             Expanded(child: SelectableText(v, style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: context.t1))),
             AppPressable(
               onTap: () {

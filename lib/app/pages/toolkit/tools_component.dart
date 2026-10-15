@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../api/toolbox_service.dart';
+import '../../design/ad.dart';
 import '../../design/adaptive.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';
@@ -215,8 +216,8 @@ class _ToolsComponentState extends State<ToolsComponent>
             right: -26,
             top: -34,
             child: Container(
-              width: 118,
-              height: 118,
+              width: Ad.w(context, 118),
+              height: Ad.h(context, 118),
               decoration: BoxDecoration(
                 color: Colors.white.withAlpha(26),
                 shape: BoxShape.circle,
@@ -227,8 +228,8 @@ class _ToolsComponentState extends State<ToolsComponent>
             right: 36,
             bottom: -46,
             child: Container(
-              width: 86,
-              height: 86,
+              width: Ad.w(context, 86),
+              height: Ad.h(context, 86),
               decoration: BoxDecoration(
                 color: Colors.white.withAlpha(18),
                 shape: BoxShape.circle,

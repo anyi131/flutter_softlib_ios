@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../api/soft_service.dart';
 import '../../design/app_anim.dart';
+import '../../design/ad.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
@@ -347,8 +348,8 @@ class _ApiToolPageState extends State<ApiToolPage> {
               borderRadius: BorderRadius.circular(R.sm),
               child: Image.network(
                 img,
-                width: 62,
-                height: 62,
+                width: Ad.w(context, 62),
+                height: Ad.h(context, 62),
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => const SizedBox(width: 62, height: 62),
               ),

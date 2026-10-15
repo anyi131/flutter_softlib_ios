@@ -240,7 +240,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
       ),
       body: Stack(
         children: [
-          WebViewWidget(controller: _c),
+          Expanded(child: WebViewWidget(controller: _c)),
           if (_loading && _progress < 100)
             Positioned(
               top: 0,
