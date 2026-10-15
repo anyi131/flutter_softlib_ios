@@ -60,7 +60,6 @@ Future<void> main() async {
           SoftService.instance.reportLog(
             tag: 'boot',
             error: '[v=$_appVersion] App 启动',
-            device: '',
             version: _appVersion.isEmpty ? 'unknown' : _appVersion,
           ).catchError((_) {});
         } catch (_) {}
