@@ -466,6 +466,18 @@ class SoftService {
     if (item.url.isNotEmpty) return resolveLzy(item.url);
     return null;
   }
+  static String proxyImage(String url) {
+    if (url.isEmpty || !url.startsWith('http')) return url;
+    // 只代理已知会 403 的域名，其他直连（省服务器带宽）
+    const need = ['music.126.net', 'baozimh.com', 'lzipic.com'];
+    if (!need.any((d) => url.contains(d))) return url;
+    try {
+      return '$baseUrl/api/softlib/proxy/img?url=${Uri.encodeComponent(url)}';
+    } catch (_) {
+      return url;
+    }
+  }
+
 }
 
 class _CacheEntry {
@@ -549,17 +561,6 @@ extension ToolboxService on SoftService {
   /// ★ 1015：图片代理 —— 某些图床（网易云 CDN）对部分运营商 403，
   ///   走自己的服务器中转，App 只连本站，彻底绕开网络屏蔽。
   ///   只对白名单域名生效（服务端校验）。
-  static String proxyImage(String url) {
-    if (url.isEmpty || !url.startsWith('http')) return url;
-    // 只代理已知会 403 的域名，其他直连（省服务器带宽）
-    const need = ['music.126.net', 'baozimh.com', 'lzipic.com'];
-    if (!need.any((d) => url.contains(d))) return url;
-    try {
-      return '$baseUrl/api/softlib/proxy/img?url=${Uri.encodeComponent(url)}';
-    } catch (_) {
-      return url;
-    }
-  }
 
   /// ★ 1015：通用接口代理 —— 后台配好地址就能出工具
   /// （走服务端中转，避免第三方 UA/CORS 拦截；服务端带 5 分钟缓存）
