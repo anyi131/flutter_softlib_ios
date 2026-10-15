@@ -681,7 +681,7 @@ class _ToolsComponentState extends State<ToolsComponent>
     // ★ 1015：打开工具前先上报 —— Native 崩溃抓不到堆栈，
     //   但「最后一条准备打开记录」就能指出是哪个工具导致的闪退
     try {
-      SoftService.instance.reportLog(
+      SoftService.reportLogStatic(
         tag: 'open',
         error: '[open] ${t['title']} kind=${t['kind']} url=${t['api_url'] ?? t['target'] ?? ''}',
       ).catchError((_) {});

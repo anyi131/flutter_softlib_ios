@@ -478,6 +478,15 @@ class SoftService {
     }
   }
 
+  /// ★ 1015：类级入口（避开 extension 被同名 class 遮蔽的问题）
+  static Future<void> reportLogStatic({
+    required String tag,
+    required String error,
+    String stack = '',
+    String version = '',
+  }) => SoftService.instance.reportLog(
+        tag: tag, error: error, stack: stack, version: version);
+
 }
 
 class _CacheEntry {

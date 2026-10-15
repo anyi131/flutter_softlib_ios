@@ -83,7 +83,7 @@ Future<void> main() async {
         // ★ 1015：启动心跳上报 —— 每次冷启动都记一条，
         //   便于确认「用户到底装的是哪个版本」，排查「日志版本对不上」。
         try {
-          SoftService.instance.reportLog(
+          SoftService.reportLogStatic(
             tag: 'boot',
             error: '[v=$_appVersion] App 启动',
             version: _appVersion.isEmpty ? 'unknown' : _appVersion,
@@ -122,14 +122,12 @@ void _logError(String tag, Object error, StackTrace? stack) {
   _reportCount++;
   try {
     // 不 await（避免阻塞 UI），但立即发起；异常自己吞掉
-    SoftService.instance
-        .reportLog(
-          tag: tag,
-          error: '[v=$_appVersion][route=$route] ' + error.toString(),
-          stack: stack?.toString() ?? '',
-          version: _appVersion.isEmpty ? 'unknown' : _appVersion,
-        )
-        .catchError((_) {});
+    SoftService.reportLogStatic(
+      tag: tag,
+      error: '[v=$_appVersion][route=$route] ' + error.toString(),
+      stack: stack?.toString() ?? '',
+      version: _appVersion.isEmpty ? 'unknown' : _appVersion,
+    ).catchError((_) {});
   } catch (_) {}
 }
 
