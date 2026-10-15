@@ -1,11 +1,14 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../api/admin_service.dart';
+import '../../../api/soft_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../navigate/navigate_logic.dart';
 import '../../../utils/toast_util.dart';
 
 /// 开屏与远程控制管理
@@ -372,10 +375,22 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
             qqKeySet = true;
             qqAppKeyCtrl.clear();
           }
+          // ★ 1015：AppKey 不回显是安全设计，但要让用户确认「确实存住了」
+          final justSavedQqKey = qqKeySet;
+          if (justSavedQqKey) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                ToastUtil.success('AppKey 已保存到服务器（密钥不回显，输入框留空属正常）');
+              }
+            });
+          }
         });
       }
       // v331z：保存成功后回读线上配置，输入框与线上一致（杜绝「保存又返回旧值」错觉）
       try {
+        // ★ 1015 修复：先强制刷新客户端配置缓存并递增版本号，
+        //   否则 App 其它页面读到的还是 10 分钟内的旧缓存 → 表现为「保存不生效」。
+        await SoftService.instance.fetchConfig(force: true);
         final fresh = await _svc.config();
         final cfg = Map<String, dynamic>.from((fresh['data'] ?? {}) as Map);
         // 直接复用 _load 的赋值段太重，这里只回填关键开关/输入框
@@ -384,7 +399,18 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         payNotifyBuyerOn = '${cfg['pay_notify_buyer_on'] ?? 1}' != '0';
         feedGroupCtrl.text = '${cfg['feedback_group'] ?? ''}';
         feedGroupOn = '${cfg['feedback_group_on'] ?? 0}' != '0';
+        // ★ 1015：QQ 登录相关也回读，避免「填了又变空」的错觉
+        qqOn = '${cfg['qq_login_on'] ?? 0}' == '1';
+        qqAppIdCtrl.text = '${cfg['qq_app_id'] ?? ''}';
+        qqRedirectCtrl.text = '${cfg['qq_redirect'] ?? ''}';
+        qqKeySet =
+            '${cfg['qq_app_key_set']}' == 'true' ||
+            '${cfg['qq_app_key_set']}' == '1';
         setState(() {});
+        // ★ 1015：后台模板/主题等即时生效（与「界面」Tab 行为对齐）
+        try {
+          Get.find<NavigateLogic>().applyUiConfig(force: true);
+        } catch (_) {}
       } catch (_) {}
       if (mounted) {
         ToastUtil.success('保存成功，App 下次启动生效');
@@ -784,7 +810,20 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
           children: [
             _switch('登录页显示 QQ 登录', qqOn, (v) => setState(() => qqOn = v)),
             _field('QQ 互联 AppID', qqAppIdCtrl),
-            _field('QQ 互联 AppKey（留空表示不修改）', qqAppKeyCtrl),
+            _field(
+              qqKeySet
+                  ? 'QQ 互联 AppKey（已设置 ✓ 留空=不修改，要换才填）'
+                  : 'QQ 互联 AppKey（必填，否则 QQ 登录不可用）',
+              qqAppKeyCtrl,
+            ),
+            if (qqKeySet)
+              Padding(
+                padding: const EdgeInsets.only(top: 2, bottom: 4),
+                child: Text(
+                  '✓ AppKey 已保存在服务器（密钥不回显，界面显示空是正常的）',
+                  style: Ty.tiny.copyWith(color: C.success),
+                ),
+              ),
             _field('授权回调地址（留空用默认）', qqRedirectCtrl),
             Padding(
               padding: const EdgeInsets.only(bottom: 6),
