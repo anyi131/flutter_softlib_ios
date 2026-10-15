@@ -206,14 +206,14 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
     if (v != null && v.isInitialized) {
       // 片头区间内显示「跳过片头」
       final inHead = v.position.inSeconds < 90 && v.position.inSeconds > 2;
-      if (inHead != _skipHeadBtn) setState(() => _skipHeadBtn = inHead);
+      if (inHead != _showSkipBtn) setState(() => _showSkipBtn = inHead);
     }
   }
 
   /// 跳过片头（跳到 90 秒）
   Future<void> _skipHead() async {
     await GlobalPlayer.I.seekTo(90 * 1000);
-    if (mounted) setState(() => _skipHeadBtn = false);
+    if (mounted) setState(() => _showSkipBtn = false);
     ToastUtil.info('已跳过片头');
   }
 
