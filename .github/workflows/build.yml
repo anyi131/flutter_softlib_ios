@@ -47,59 +47,27 @@ jobs:
         run: flutter pub get
 
       # ═══════════════════════════════════════════════════════════════════
-      # ★ 签名（关键：必须「先生成一次 → 永久复用」，不能每次重新生成）
-      #   原因：keytool -genkeypair 每次都会写入不同的序列号/时间/salt，
-      #        即使 -dname/-alias/-password 完全一样，产出的证书也不同，
-      #        导致每次构建签名不一致 → 新包无法覆盖安装旧包。
+      # ★ 1015 签名方案（重大变更）：
+      #   直接使用仓库内固定的签名库 android/app/keystore/ayrjh.jks
+      #   （别名 ayrjh，v1+v2+v3 全开）。
       #
-      #   方案（按优先级）：
-      #     ① Secrets 提供 ANDROID_KEYSTORE_BASE64 → 用你的固定签名库
-      #     ② 否则用 GitHub Actions cache 保存一份自动生成的 keystore，
-      #        首次生成后永久复用（cache 未失效则签名恒定）
+      #   为什么不用「自动生成 + 缓存复用」那套：
+      #     ① keytool -genkeypair 每次生成的证书都不同（序列号/时间/salt），
+      #        一旦 cache 失效重建 → 签名变化 → 新包装不上旧包；
+      #     ② Secrets 方式需要你手动维护密码，容易配错。
+      #   现在签名库随仓库走，任何机器、任何时候构建，签名都完全一致。
       # ═══════════════════════════════════════════════════════════════════
 
-      - name: Restore auto keystore from cache
-        id: auto-ks
-        uses: actions/cache@v4
-        with:
-          path: ~/anyi-keystore
-          key: anyi-release-keystore-fixed-v3
-
       - name: Prepare keystore
-        env:
-          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          KS_PASS: ${{ secrets.ANDROID_STORE_PASSWORD }}
-          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KS_KEYPASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          AUTO_HIT: ${{ steps.auto-ks.outputs.cache-hit }}
         run: |
-          mkdir -p android/app/keystore
-          KS="$GITHUB_WORKSPACE/android/app/keystore/release.jks"
-
-          if [ -n "$KS_B64" ]; then
-            echo "→ 使用 Secrets 提供的签名库"
-            echo "$KS_B64" | base64 -d > "$KS"
-            STORE_PASS="$KS_PASS"
-            ALIAS="$KS_ALIAS"
-            KEY_PASS="${KS_KEYPASS:-$KS_PASS}"
-          else
-            mkdir -p "$HOME/anyi-keystore"
-            SRC="$HOME/anyi-keystore/anyi.jks"
-            if [ ! -f "$SRC" ]; then
-              echo "→ 首次生成固定签名库（之后永久复用）"
-              keytool -genkeypair \
-                -keystore "$SRC" -storetype JKS \
-                -keyalg RSA -keysize 2048 -validity 10950 \
-                -alias yfx -storepass 'bm666...' -keypass 'bm666...' \
-                -dname "CN=鲁梓熙, OU=Dev, O=Anyi, L=Beijing, ST=Beijing, C=CN"
-            else
-              echo "→ 复用缓存中的固定签名库"
-            fi
-            cp "$SRC" "$KS"
-            STORE_PASS='bm666...'
-            ALIAS='yfx'
-            KEY_PASS='bm666...'
+          KS="$GITHUB_WORKSPACE/android/app/keystore/ayrjh.jks"
+          if [ ! -f "$KS" ]; then
+            echo "::error::签名库不存在：$KS"
+            exit 1
           fi
+          STORE_PASS='bm666...'
+          ALIAS='ayrjh'
+          KEY_PASS='bm666...'
 
           echo "ANDROID_KEYSTORE_PATH=$KS" >> $GITHUB_ENV
           echo "ANDROID_STORE_PASSWORD=$STORE_PASS" >> $GITHUB_ENV
@@ -108,7 +76,7 @@ jobs:
 
           echo "=== 本次使用的签名证书指纹 ==="
           keytool -list -v -keystore "$KS" -storepass "$STORE_PASS" 2>/dev/null \
-            | grep -iE "MD5|SHA1|SHA256|Alias|别名" | head -5 || true
+            | grep -iE "MD5|SHA1|SHA256|Alias|Valid" | head -6 || true
 
       - name: Build APK (release)
         run: |

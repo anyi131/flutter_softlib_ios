@@ -12,3 +12,6 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# ★ 1015：固定签名库例外（随仓库走）
+!app/keystore/ayrjh.jks

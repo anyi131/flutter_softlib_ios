@@ -70,6 +70,13 @@ android {
                         ?: System.getenv("ANDROID_STORE_PASSWORD")
                 }
             }
+            // ★ 1015：v1 + v2 + v3 全开
+            //   v1(JAR)   —— 兼容 Android 6 及以下的旧机型
+            //   v2(APK)   —— Android 7.0+ 整包校验，防篡改
+            //   v3(APK)   —— Android 9.0+ 密钥轮换，支持后续换签名
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
         }
     }
 

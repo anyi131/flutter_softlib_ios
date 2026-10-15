@@ -48,3 +48,6 @@ app.*.map.json
 android/keystore.properties
 *.jks
 *.keystore
+
+# ★ 1015：固定签名库随仓库走（保证每次构建签名一致）
+!android/app/keystore/ayrjh.jks
