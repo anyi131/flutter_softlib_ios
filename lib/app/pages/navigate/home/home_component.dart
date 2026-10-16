@@ -92,8 +92,8 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _quickGrid()),
             SliverToBoxAdapter(child: _banner()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-            if (uiCfg.featureReferral) _referralTitle(),
-            if (uiCfg.featureReferral) _referralGrid(),
+            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralTitle()),
+            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralGrid()),
             tail,
           ],
         );
@@ -106,8 +106,8 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _magazineHero()),
             SliverToBoxAdapter(child: _search()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-            if (uiCfg.featureReferral) _magazineTitle(),
-            if (uiCfg.featureReferral) _magazineList(),
+            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _magazineTitle()),
+            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _magazineList()),
             tail,
           ],
         );
@@ -121,7 +121,7 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _search()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             SliverToBoxAdapter(child: _gridWallTabs()),
-            if (uiCfg.featureReferral) _gridWall(),
+            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _gridWall()),
             tail,
           ],
         );
@@ -132,8 +132,8 @@ class _HomeComponentState extends State<HomeComponent> {
           physics: const BouncingScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(child: _immersiveTop()),
-            if (uiCfg.featureReferral) _referralTitle(),
-            if (uiCfg.featureReferral) _referralGrid(),
+            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralTitle()),
+            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralGrid()),
             tail,
           ],
         );
@@ -147,8 +147,8 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _search()),
             SliverToBoxAdapter(child: _drawerGroups()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-            if (uiCfg.featureReferral) _referralTitle(),
-            if (uiCfg.featureReferral) _referralGrid(),
+            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralTitle()),
+            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralGrid()),
             tail,
           ],
         );
@@ -176,7 +176,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _minimalHeader()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-            if (uiCfg.featureReferral) _minimalList(),
+            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _minimalList()),
             tail,
           ],
         );
@@ -190,7 +190,7 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _storeTopBar()),
             SliverToBoxAdapter(child: _storeCats()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-            if (uiCfg.featureReferral) _storeGrid(),
+            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _storeGrid()),
             tail,
           ],
         );
@@ -209,8 +209,8 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _quickGrid()),
             SliverToBoxAdapter(child: _banner()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-            if (uiCfg.featureReferral) _referralTitle(),
-            if (uiCfg.featureReferral) _referralGrid(),
+            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralTitle()),
+            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralGrid()),
             tail,
           ],
         );
