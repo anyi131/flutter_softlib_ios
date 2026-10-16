@@ -136,3 +136,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# ══════════════════════════════════════════════════════════════
+# ★ 1015：QQ SDK 配置（tencent_kit 插件要求，缺了会构建失败）
+#   注意：这块必须在顶层，且 app_id 与 QQ 开放平台登记的一致
+# ══════════════════════════════════════════════════════════════
+tencent_kit:
+  app_id: 1905800958
