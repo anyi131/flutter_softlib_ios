@@ -1016,22 +1016,20 @@ class _AdminUiTabState extends State<AdminUiTab> {
   );
 
   Widget _templatePicker() {
-    // ★ v3.3.4：更新弹窗模板重做为 8 款**骨架级**差异（不再同款换色）
+    // ★ 1016：整套重做为 6 款（旧模板名会自动映射到最接近的新模板，不会白屏）
     const opts = [
-      ('aurora', '流光玻璃', '渐变 Hero + 上浮日志卡', Icons.auto_awesome_rounded),
-      ('minimal', '极简竖条', '零装饰 + 深色实心按钮', Icons.horizontal_rule_rounded),
-      ('neon', '暗夜霓虹', '深底霓虹描边 + 状态栏', Icons.bolt_rounded),
-      ('ticket', '更新券', '票券打孔 + 虚线撕口', Icons.confirmation_number_rounded),
-      ('poster', '海报大字', '版本号当主角 + 满血渐变', Icons.wallpaper_rounded),
-      ('meta', '信息双列', '版本/大小/时间 数据网格', Icons.grid_view_rounded),
-      ('banner', '通告条', '顶部通栏 + 大留白正文', Icons.campaign_rounded),
-      ('combo', '图标双钮', '拖拽手柄 + 大图标 + 三键', Icons.apps_rounded),
+      ('classic', '经典卡', '居中图标 + 标题 + 正文', Icons.crop_square_rounded),
+      ('banner', '通栏条', '顶部满宽渐变条 + 大留白正文', Icons.campaign_rounded),
+      ('poster', '海报大字', '版本号当主角（34号字）', Icons.wallpaper_rounded),
+      ('list', '更新清单', '逐条圆点清单（信息密度最高）', Icons.checklist_rounded),
+      ('split', '左右分栏', '左窄栏放版本 + 右侧正文按钮', Icons.view_sidebar_rounded),
+      ('sheet', '底部抽屉', '拖拽手柄 + 大图标行', Icons.vertical_align_bottom_rounded),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '共 8 款，每款骨架不同（不是换色）。当前：'
+          '共 6 款，每款结构不同（不是换色）。当前：'
           '${opts.firstWhere((e) => e.$1 == _updateTemplate, orElse: () => opts.first).$2}',
           style: Ty.tiny.copyWith(color: context.t3),
         ),

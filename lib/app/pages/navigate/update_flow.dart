@@ -257,1341 +257,661 @@ class _UpdateCardState extends State<_UpdateCard> {
   }
 
   @override
+  // ═══════════════════════════════════════════════════════════════
+  //  ★ 1016 更新弹窗模板体系 —— 全部重做（六套）
+  //
+  //  这次重写是为了根治之前反复出问题的根源。下面每一条都是踩过的坑：
+  //    · 绝不做「初始透明度 0、靠动画变可见」的包装 —— 动画一不跑内容就永远看不见
+  //    · 绝不用 HtmlWidget 渲染正文 —— 它在无界高度里会死循环（安卓/iOS 通杀）
+  //    · 阴影一律 ≤ 10 —— 弹窗是整屏遮罩，30~40 的大阴影会把主线程/GPU 拖死
+  //    · 卡片总高 ≤ 屏幕 72%；正文区用 Flexible（必须是 Column 直接子级）自适应 + 可滚动
+  //    · 六套是**结构级差异**：信息架构 / 排版动线 / 操作区各不相同，不是换色
+  // ═══════════════════════════════════════════════════════════════
+  @override
   Widget build(BuildContext context) {
-    // ★ v3.3.4 更新弹窗模板体系重做：
-    //   旧 7 款只是「同一张卡换头图/换底色」，用户反馈「都是同款换色」。
-    //   新 8 款是**骨架级**差异：信息架构、动线、底部操作区各不相同。
-    //   旧模板名做了向后兼容映射（后台存的旧值不会白屏）。
     final tpl = switch (widget.template) {
-      'minimal' => 'minimal', // 保持：极简竖条 → 已重做
-      'dark' => 'neon', // 暗黑 → 暗夜霓虹
-      'poster' => 'poster', // 保持：海报大字
-      'compact' => 'meta', // 紧凑 → 信息双列
-      'ticket' => 'ticket', // 保持：更新券
-      'side' => 'banner', // 左竖条 → 通告条
-      'aurora' => 'aurora',
-      'neon' => 'neon',
+      'classic' => 'classic',
       'banner' => 'banner',
-      'combo' => 'combo',
-      'meta' => 'meta',
+      'poster' => 'poster',
+      'list' => 'list',
+      'split' => 'split',
+      'sheet' => 'sheet',
+      // 旧模板名一律映射到最接近的新模板（后台存旧值也不会白屏）
+      'aurora' || 'neon' || 'dark' => 'banner',
+      'meta' || 'compact' => 'split',
+      'ticket' => 'list',
+      'combo' || 'side' => 'sheet',
+      'minimal' || 'simple' => 'classic',
       final v => v,
     };
     return switch (tpl) {
-      'simple' => _tplSimple(),
-      'minimal' => _tplMinimal(),
-      'neon' => _tplNeon(),
-      'poster' => _tplPoster(),
-      'meta' => _tplMeta(),
-      'ticket' => _tplTicket(),
       'banner' => _tplBanner(),
-      'combo' => _tplCombo(),
-      _ => _tplAurora(),
+      'poster' => _tplPoster(),
+      'list' => _tplList(),
+      'split' => _tplSplit(),
+      'sheet' => _tplSheet(),
+      _ => _tplClassic(),
     };
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  //  v3.3.4 更新弹窗 8 款骨架级模板
-  //
-  //  设计原则（用户反馈「都是同款换色」后重做）：
-  //    每款的信息架构、动线、底部操作区都不同，
-  //    而不仅仅是换头图/换底色。
-  //
-  //    ① aurora  流光玻璃  渐变 Hero + 上浮玻璃日志卡
-  //    ② minimal 极简竖条  零装饰，左竖条 + 纯文字 + 双按钮
-  //    ③ neon    暗夜霓虹  深底 + 霓虹描边 + 发光进度
-  //    ④ ticket  更新券    票券打孔 + 虚线撕口 + 信息栏
-  //    ⑤ poster  海报大字  版本号当主角 + 满血渐变
-  //    ⑥ meta    信息双列  版本/大小/时间 数据网格
-  //    ⑦ banner  通告条    顶部通栏 + 大留白正文
-  //    ⑧ combo   图标双钮  拖拽手柄 + 大图标 + 三键行
-  // ═══════════════════════════════════════════════════════════════
+  // ─────────── 公共：安全骨架 ───────────
 
-  /// 模板⓪ simple —— **安全款**：零阴影 / 零动画 / 不做裁剪 / 内容超高可滚动。
-  ///   专门用于「其它模板导致卡死」期间的兜底展示。
-  Widget _tplSimple() {
+  /// 卡片外壳：总高 ≤ 屏幕 72%，中段正文自适应且可滚动（超长也不会把按钮挤出屏幕）
+  Widget _shell({
+    required List<Widget> top,
+    required List<Widget> bottom,
+    double radius = 20,
+    Color? bg,
+    Widget? body,
+  }) {
     final isDark = context.isDark;
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? C.bg2 : Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isDark ? Colors.white24 : Colors.black12,
-        ),
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.72,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-            child: Text(
-              widget.title.isEmpty ? '发现新版本' : widget.title,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: context.t1,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
-            child: Text(
-              '最新版本 v${widget.version}',
-              style: TextStyle(fontSize: 13, color: context.t3),
-            ),
-          ),
-          const SizedBox(height: 12),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 300),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                widget.content.isEmpty ? '请更新到最新版本' : widget.content,
-                style: TextStyle(fontSize: 13.5, height: 1.7, color: context.t2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-            child: Row(
-              children: [
-                if (!widget.forced)
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('稍后再说'),
-                    ),
-                  ),
-                if (!widget.forced) const SizedBox(width: 10),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: _start,
-                    child: const Text('立即更新'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 模板① aurora —— 流光玻璃：渐变 Hero 头 + 上浮玻璃日志卡
-  Widget _tplAurora() {
-    final isDark = context.isDark;
-    return AppScaleIn(
       child: Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: isDark ? C.bg2 : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: C.brand.withAlpha(isDark ? 60 : 70),
-              blurRadius: 12,
-              offset: const Offset(0, 18),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 渐变 Hero：内部叠两个半透明圆做流光
-            Stack(
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(22, 22, 22, 30),
-                  decoration: BoxDecoration(gradient: Deco.brandGradient),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.rocket_launch_rounded,
-                            color: Colors.white,
-                            size: 22,
-                          ),
-                          const SizedBox(width: 9),
-                          Expanded(
-                            child: Text(
-                              widget.title.isEmpty ? '发现新版本' : widget.title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 11,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(60),
-                          borderRadius: BorderRadius.circular(R.full),
-                        ),
-                        child: Text(
-                          'v${widget.version} · 全新体验',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // 装饰光斑
-                Positioned(
-                  right: -40,
-                  top: -50,
-                  child: Container(
-                    width: 140,
-                    height: 140,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(34),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            // 日志卡上浮叠在 Hero 上
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-              child: Transform.translate(
-                offset: const Offset(0, -16),
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                  decoration: BoxDecoration(
-                    color: isDark ? C.bg1 : Colors.white,
-                    borderRadius: BorderRadius.circular(R.md),
-                    border: Border.all(
-                      color: isDark
-                          ? Colors.white.withAlpha(20)
-                          : Colors.black.withAlpha(10),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(isDark ? 60 : 14),
-                        blurRadius: 18,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: _scrollBody(isDark),
-                ),
-              ),
-            ),
-            Transform.translate(
-              offset: const Offset(0, -4),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
-                child: _actionRow(isDark),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 模板⑥ meta —— 信息双列：版本/大小/时间 数据网格
-  Widget _tplMeta() {
-    final isDark = context.isDark;
-    return AppScaleIn(
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: isDark ? C.bg2 : Colors.white,
-          borderRadius: BorderRadius.circular(22),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(isDark ? 70 : 18),
-              blurRadius: 10,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      gradient: Deco.brandGradient,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.system_update_alt_rounded,
-                      color: Colors.white,
-                      size: 21,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.title.isEmpty ? '发现新版本' : widget.title,
-                          style: TextStyle(
-                            fontSize: 15.5,
-                            fontWeight: FontWeight.w900,
-                            color: isDark ? C.t1 : C.lt1,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '建议在 WiFi 环境下载',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isDark ? C.t3 : C.lt3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // 数据网格：2 列，中间用 1px 分隔线
-            Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: isDark
-                        ? Colors.white.withAlpha(14)
-                        : Colors.black.withAlpha(8),
-                  ),
-                  bottom: BorderSide(
-                    color: isDark
-                        ? Colors.white.withAlpha(14)
-                        : Colors.black.withAlpha(8),
-                  ),
-                ),
-              ),
-              child: Column(
-                children: [
-                  _metaRow(isDark, [
-                    ('版本号', 'v${widget.version}'),
-                    ('安装包', _sizeText(_total)),
-                  ]),
-                  Divider(
-                    height: 1,
-                    color: isDark
-                        ? Colors.white.withAlpha(14)
-                        : Colors.black.withAlpha(8),
-                  ),
-                  _metaRow(isDark, [
-                    ('发布时间', _today()),
-                    ('强制更新', widget.forced ? '是' : '否'),
-                  ]),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
-              child: _scrollBody(isDark),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
-              child: _actionRow(isDark),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _metaRow(bool isDark, List<(String, String)> cells) {
-    return Row(
-      children: [
-        for (int i = 0; i < cells.length; i++) ...[
-          if (i > 0)
-            Container(
-              width: 1,
-              height: 34,
-              color: isDark
-                  ? Colors.white.withAlpha(14)
-                  : Colors.black.withAlpha(8),
-            ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    cells[i].$1,
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      color: isDark ? C.t3 : C.lt3,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    cells[i].$2.isEmpty ? '—' : cells[i].$2,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w900,
-                      color: isDark ? C.t1 : C.lt1,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  /// 模板⑦ banner —— 通告条：顶部通栏 + 大留白正文 + 文字「稍后提醒我」
-  Widget _tplBanner() {
-    final isDark = context.isDark;
-    return AppScaleIn(
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: isDark ? C.bg2 : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(isDark ? 70 : 18),
-              blurRadius: 10,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 通栏条：左右到边，无圆角（与卡同宽）
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [C.brand, C.brandBright],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.campaign_rounded,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '版本更新通知 · v${widget.version}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 6),
-              child: _scrollBody(isDark),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
-              child: _actionRow(isDark),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 模板⑧ combo —— 图标双钮：拖拽手柄 + 大图标 + 三键行
-  Widget _tplCombo() {
-    final isDark = context.isDark;
-    return AppScaleIn(
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: isDark ? C.bg2 : Colors.white,
-          borderRadius: BorderRadius.circular(26),
+          color: bg ?? (isDark ? C.bg2 : Colors.white),
+          borderRadius: BorderRadius.circular(radius),
+          border: Border.all(color: isDark ? Colors.white24 : Colors.black12),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(isDark ? 80 : 22),
-              blurRadius: 12,
-              offset: const Offset(0, 14),
+              blurRadius: 10,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 顶部拖拽手柄
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Container(
-                width: 38,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withAlpha(30)
-                      : Colors.black.withAlpha(20),
-                  borderRadius: BorderRadius.circular(R.full),
-                ),
+            ...top,
+            // ★ Flexible 必须是 Column 的直接子级（松约束 → 内容多高就多高，超了才滚动）
+            Flexible(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.zero,
+                child: body ?? _currentBody(),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
-              child: Row(
-                children: [
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      gradient: Deco.brandGradient,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: const Icon(
-                      Icons.system_update_alt_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 13),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '安逸软件汇',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                            color: isDark ? C.t1 : C.lt1,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          'v${widget.version} 已发布'
-                          '${_total > 0 ? ' · ${_sizeText(_total)}' : ''}',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            color: isDark ? C.t3 : C.lt3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 2, 20, 4),
-              child: _scrollBody(isDark),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-              child: _actionRow(isDark),
-            ),
+            ...bottom,
           ],
         ),
       ),
     );
   }
 
-  /// 模板② minimal —— 极简竖条
-  /// 骨架：零装饰（无头图/无渐变头/无阴影），左竖条 + 时间副标 + 纯文字 + 深色实心主按钮
-  Widget _tplMinimal() {
-    final isDark = context.isDark;
-    return AppScaleIn(
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        width: 320,
-        padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
-        decoration: BoxDecoration(
-          color: isDark ? C.bg2 : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+  /// 正文区：正常态显示更新说明，下载/完成/失败态显示进度
+  Widget _currentBody() {
+    if (_phase != 'idle') return _progressBody();
+    final t = _contentToText(widget.content);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 4, 18, 6),
+      child: Text(
+        t.isEmpty ? '请更新到最新版本以获取完整体验。' : t,
+        style: TextStyle(
+          fontSize: 13.4,
+          height: 1.7,
+          color: context.isDark ? C.t2 : C.lt2,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 左竖条 + 标题（无头图、无阴影）
-            Row(
-              children: [
-                Container(
-                  width: 3,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: C.brand,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    '发现新版本 v${widget.version}',
-                    style: TextStyle(
-                      fontSize: 15.5,
-                      fontWeight: FontWeight.w900,
-                      color: isDark ? C.t1 : C.lt1,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Padding(
-              padding: const EdgeInsets.only(left: 13),
+      ),
+    );
+  }
+
+  /// 操作区：主按钮独占一行，次要操作为下方小字（永不被挤成两行）
+  Widget _actions({bool compact = false}) {
+    if (_phase == 'downloading') return const SizedBox(height: 10);
+    final isDark = context.isDark;
+    final minorStyle = TextStyle(
+      fontSize: 12.5,
+      fontWeight: FontWeight.w700,
+      color: isDark ? C.t3 : C.lt3,
+    );
+    return Padding(
+      padding: EdgeInsets.fromLTRB(compact ? 16 : 18, 4, compact ? 16 : 18, 14),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AppPressable(
+            onTap: _phase == 'failed'
+                ? () => setState(() => _phase = 'idle')
+                : _start,
+            child: Container(
+              height: 46,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                gradient: C.brandGradient,
+                borderRadius: BorderRadius.circular(999),
+              ),
               child: Text(
-                '${_today()}${_total > 0 ? ' · 约 ${_sizeText(_total)}' : ''}',
-                style: Ty.tiny.copyWith(color: isDark ? C.t3 : C.lt3),
-              ),
-            ),
-            const SizedBox(height: 6),
-            _tplBody(isDark),
-            const SizedBox(height: 12),
-            // 纯文字按钮行：次要=文字链，主=深色实心（非渐变）
-            Row(
-              children: [
-                if (!widget.forced)
-                  AppPressable(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 12,
-                      ),
-                      child: Text(
-                        '稍后',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? C.t3 : C.lt3,
-                        ),
-                      ),
-                    ),
-                  ),
-                const Spacer(),
-                AppPressable(
-                  onTap: _start,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white : C.lt1,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      '立即更新',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                        color: isDark ? C.bg0 : Colors.white,
-                      ),
-                    ),
-                  ),
+                _phase == 'failed' ? '重试' : '立即更新',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
                 ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 模板③ neon —— 暗夜霓虹
-  /// 骨架：深底 + 霓虹描边 + 顶部状态行 + 发光进度条 + 等宽数字
-  Widget _tplNeon() {
-    return AppScaleIn(
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: C.bg0,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: C.brandBright.withAlpha(110), width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: C.brand.withAlpha(70),
-              blurRadius: 12,
-              offset: const Offset(0, 14),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 顶部状态行：信号灯 + 版本（像终端状态栏）
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-              child: Row(
-                children: [
-                  Icon(Icons.bolt_rounded, color: C.brandBright, size: 22),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'NEW · v${widget.version}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: C.brandBright,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: C.mint,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(color: C.mint.withAlpha(160), blurRadius: 8),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'READY',
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1,
-                      color: C.mint.withAlpha(200),
-                    ),
-                  ),
-                ],
               ),
             ),
-            _tplBody(true),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-              child: _actionRow(true),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 2),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: _openInBrowser,
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(0, 34),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                ),
+                child: Text('浏览器下载', style: minorStyle),
+              ),
+              if (!widget.forced)
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(0, 34),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                  ),
+                  child: Text('稍后再说', style: minorStyle),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  /// 正文滚动区（各模板共用，替代旧的 _tplBody 命名）
-  /// 模板④ ticket —— 更新券
-  /// 骨架：票券打孔（两侧半圆缺口）+ 虚线撕口 + 三格信息栏 + 底部圆角主按钮
-  Widget _tplTicket() {
+  // ─────────── 模板① classic 经典卡（最朴素可靠，默认兜底）───────────
+  Widget _tplClassic() {
     final isDark = context.isDark;
-    return AppScaleIn(
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? C.bg2 : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: C.brand.withAlpha(isDark ? 45 : 60),
-              blurRadius: 28,
-              offset: const Offset(0, 11),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(9),
-                    decoration: BoxDecoration(
-                      gradient: Deco.brandGradient,
-                      borderRadius: BorderRadius.circular(13),
-                    ),
-                    child: const Icon(
-                      Icons.confirmation_number_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '新版本 v${widget.version}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 15.5,
-                            fontWeight: FontWeight.w900,
-                            color: isDark ? C.t1 : C.lt1,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          '安逸软件汇 · 更新券',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isDark ? C.t3 : C.lt3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: C.brand.withAlpha(isDark ? 36 : 22),
-                      borderRadius: BorderRadius.circular(7),
-                    ),
-                    child: Text(
-                      '官方',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w900,
-                        color: C.brand,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // 撕口：左右半圆缺口 + 虚线
-            SizedBox(
-              height: 18,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Positioned(
-                    left: 14,
-                    right: 14,
-                    child: CustomPaint(
-                      size: const Size(double.infinity, 1),
-                      painter: _DashLinePainter(
-                        color: isDark
-                            ? Colors.white.withAlpha(30)
-                            : Colors.black.withAlpha(24),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: -9,
-                    child: _notch(isDark),
-                  ),
-                  Positioned(
-                    right: -9,
-                    child: _notch(isDark),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 12, 18, 2),
-              child: _tplBody(isDark),
-            ),
-            // 三格信息栏
-            Container(
-              margin: const EdgeInsets.fromLTRB(18, 10, 18, 0),
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: isDark
-                        ? Colors.white.withAlpha(14)
-                        : Colors.black.withAlpha(8),
-                  ),
+    return _shell(
+      top: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 22, 20, 12),
+          child: Column(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  gradient: C.brandGradient,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.rocket_launch_rounded,
+                  color: Colors.white,
+                  size: 26,
                 ),
               ),
-              child: Row(
-                children: [
-                  for (final c in [
-                    ('版本', 'v${widget.version}'),
-                    ('大小', _total > 0 ? _sizeText(_total) : '—'),
-                    ('类型', widget.forced ? '强制' : '正式版'),
-                  ])
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 9),
-                        child: Column(
-                          children: [
-                            Text(
-                              c.$1,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: isDark ? C.t3 : C.lt3,
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              c.$2,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w900,
-                                color: isDark ? C.t1 : C.lt1,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
-              child: _actionRow(isDark),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _notch(bool isDark) => Container(
-    width: 18,
-    height: 18,
-    decoration: BoxDecoration(
-      color: isDark ? C.bg1 : const Color(0xFFF1F3F9),
-      shape: BoxShape.circle,
-      border: Border.all(
-        color: isDark ? Colors.white.withAlpha(14) : Colors.black.withAlpha(8),
-      ),
-    ),
-  );
-
-  /// 模板⑤ poster —— 海报大字
-  /// 骨架：版本号当主角（超大字） + 满血渐变满卡 + 内嵌白卡承载正文
-  Widget _tplPoster() {
-    return AppScaleIn(
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          gradient: Deco.brandGradient,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: C.brand.withAlpha(90),
-              blurRadius: 12,
-              offset: const Offset(0, 18),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(22, 24, 22, 4),
-              child: Column(
-                children: [
-                  Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(46),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.system_update_alt_rounded,
-                      color: Colors.white,
-                      size: 27,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'v${widget.version}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.8,
-                      height: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    widget.title.isEmpty ? '安逸软件汇 · 发现新版本' : widget.title,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withAlpha(210),
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.all(14),
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _tplBody(false),
-                  const SizedBox(height: 12),
-                  _actionRow(false),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _scrollBody(bool isDark) => _tplBody(isDark);
-
-  /// 今天的日期（meta 模板用）
-  String _today() {
-    final d = DateTime.now();
-    return '${d.month.toString().padLeft(2, '0')}-'
-        '${d.day.toString().padLeft(2, '0')}';
-  }
-  /// 正文区（更新日志 / 进度态）——各模板共用
-  Widget _tplBody(bool isDark) {
-    // ★★ 1016 关键修复（跨平台卡死真因）：
-    //   这里原来是 `Flexible(child: SingleChildScrollView(...))`，
-    //   而它被调用方包在 `Padding` 里 ——
-    //   **Flexible 必须是 Column/Row 的直接子级**，中间夹了 Padding 之后
-    //   parentData 类型不匹配，release 下布局会卡死/整块渲染不出来
-    //   （Android/iOS 通杀，且 Dart 不报错，只能被系统判定 ANR 杀掉）。
-    //   改用「限高 + 滚动」，与安全款模板一致。
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxHeight: 300),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(2, 8, 2, 4),
-        child: _phase == 'idle'
-            // ★ 1016：改用纯 Text（原来用 HtmlWidget —— 跨平台卡死的高危点）
-            ? Text(
-                _contentToText(widget.content).isEmpty
-                    ? '请更新到最新版本'
-                    : _contentToText(widget.content),
+              const SizedBox(height: 12),
+              Text(
+                widget.title.isEmpty ? '发现新版本' : widget.title,
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 13.8,
-                  height: 1.65,
-                  color: isDark ? C.t2 : C.lt2,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? C.t1 : C.lt1,
                 ),
-              )
-            : _progressBody(isDark),
-      ),
-    );
-  }
-
-  Widget _progressBody(bool isDark) {
-    if (_phase == 'done') {
-      return Row(
-        children: [
-          const Icon(Icons.check_circle_rounded, color: C.success, size: 40),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(
-              '下载完成，正在安装…',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                color: isDark ? C.t1 : C.lt1,
               ),
-            ),
-          ),
-        ],
-      );
-    }
-    if (_phase == 'failed') {
-      return Row(
-        children: [
-          const Icon(Icons.error_outline_rounded, color: C.danger, size: 40),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(
-              '下载失败，请重试或用浏览器下载',
-              style: TextStyle(
-                fontSize: 14.5,
-                fontWeight: FontWeight.w700,
-                color: isDark ? C.t1 : C.lt1,
+              const SizedBox(height: 4),
+              Text(
+                '新版本 v${widget.version} 已发布',
+                style: TextStyle(fontSize: 12.5, color: isDark ? C.t3 : C.lt3),
               ),
-            ),
-          ),
-        ],
-      );
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            SizedBox(
-              width: 34,
-              height: 34,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    value: _progress / 100,
-                    strokeWidth: 3,
-                    backgroundColor: C.brand.withAlpha(isDark ? 46 : 28),
-                    valueColor: AlwaysStoppedAnimation(C.brand),
-                  ),
-                  Text(
-                    '$_progress%',
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w900,
-                      color: C.brand,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '正在下载更新包…',
-                    style: TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? C.t1 : C.lt1,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    _total > 0
-                        ? '${_sizeText((_progress * _total / 100).round())} / ${_sizeText(_total)}'
-                        : '已下载 $_progress%',
-                    style: TextStyle(fontSize: 11.5, color: context.t3),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0, end: _progress / 100),
-            duration: AppAnim.base,
-            curve: AppAnim.emphasized,
-            builder: (c, v, _) => LinearProgressIndicator(
-              value: v,
-              minHeight: 8,
-              backgroundColor: C.brand.withAlpha(isDark ? 36 : 22),
-              valueColor: AlwaysStoppedAnimation(C.brand),
-            ),
+            ],
           ),
         ),
       ],
+      bottom: [_actions()],
     );
   }
 
-  Widget _actionRow(bool isDark) {
-    if (_phase == 'downloading') {
-      return const SizedBox(height: 6);
-    }
-    // 失败态：关闭 / 浏览器下载 / 重试（v52f #1）
-    if (_phase == 'failed') {
-      return Row(
-        children: [
-          Expanded(
-            child: OutlinedButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                side: BorderSide(
-                  color: isDark ? C.t3.withAlpha(80) : C.lt3.withAlpha(70),
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-              child: Text(
-                '关闭',
-                style: TextStyle(
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? C.t2 : C.lt2,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: OutlinedButton(
-              onPressed: _fallbackBrowser,
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                side: BorderSide(color: C.brand.withAlpha(120)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.public_rounded, size: 16, color: C.brand),
-                  const SizedBox(width: 5),
-                  Text(
-                    '浏览器下载',
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                      color: C.brand,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: AppPressable(
-              onTap: () => setState(() => _phase = 'idle'),
-              child: Container(
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  gradient: C.brandGradient,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Text(
-                  '重试',
-                  style: TextStyle(
+  // ─────────── 模板② banner 通栏条（顶部满宽渐变 + 大留白正文）───────────
+  Widget _tplBanner() {
+    final isDark = context.isDark;
+    return _shell(
+      radius: 18,
+      top: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(18, 13, 18, 13),
+          decoration: BoxDecoration(gradient: C.brandGradient),
+          child: Row(
+            children: [
+              const Icon(Icons.campaign_rounded, color: Colors.white, size: 19),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Text(
+                  widget.title.isEmpty ? '版本更新通知' : widget.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14.5,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
-      );
-    }
-    // ★ 1016：**主按钮独占一行，次要操作放下面一行小字**。
-    //   原来「稍后再说 / 浏览器下载 / 立即更新」三个按钮挤在一行（flex 1:2:2），
-    //   弹窗宽度有限 → 「稍后再说」被压成两行（用户反馈的「遮挡」）。
-    final minorStyle = TextStyle(
-      fontSize: 13,
-      fontWeight: FontWeight.w700,
-      color: isDark ? C.t3 : C.lt3,
-    );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        AppPressable(
-          onTap: _start,
-          child: Container(
-            height: 48,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              gradient: C.brandGradient,
-              borderRadius: BorderRadius.circular(999),
-              boxShadow: [
-                BoxShadow(
-                  color: C.brand.withAlpha(60),
-                  blurRadius: 12,
-                  offset: const Offset(0, 5),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.white.withAlpha(60),
+                  borderRadius: BorderRadius.circular(999),
                 ),
-              ],
-            ),
-            child: const Text(
-              '立即更新',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 15.5,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextButton(
-              onPressed: _openInBrowser,
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                minimumSize: const Size(0, 36),
-              ),
-              child: Text('浏览器下载', style: minorStyle),
-            ),
-            if (!widget.forced)
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  minimumSize: const Size(0, 36),
+                child: Text(
+                  'v${widget.version}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-                child: Text('稍后再说', style: minorStyle),
               ),
-          ],
+            ],
+          ),
         ),
       ],
+      bottom: [_actions()],
     );
   }
-}
 
-/// 虚线画笔（ticket 模板的撕口线）
-class _DashLinePainter extends CustomPainter {
-  final Color color;
-  _DashLinePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1.2;
-    const dash = 5.0;
-    const gap = 4.0;
-    double x = 0;
-    while (x < size.width) {
-      canvas.drawLine(Offset(x, 0), Offset(x + dash, 0), paint);
-      x += dash + gap;
-    }
+  // ─────────── 模板③ poster 海报大字（版本号当主角 + 极简正文）───────────
+  Widget _tplPoster() {
+    final isDark = context.isDark;
+    return _shell(
+      radius: 24,
+      top: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 18),
+          decoration: BoxDecoration(gradient: C.brandGradient),
+          child: Column(
+            children: [
+              const Text(
+                '发现新版本',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'v${widget.version}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 34,
+                  fontWeight: FontWeight.w900,
+                  height: 1.1,
+                ),
+              ),
+              if (_total > 0) ...[
+                const SizedBox(height: 6),
+                Text(
+                  '安装包约 ${_sizeText(_total)}',
+                  style: const TextStyle(color: Colors.white70, fontSize: 11.5),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+      bottom: [_actions()],
+    );
   }
 
-  @override
-  bool shouldRepaint(covariant _DashLinePainter old) => old.color != color;
+  // ─────────── 模板④ list 更新清单（逐条圆点清单，信息密度最高）───────────
+  Widget _tplList() {
+    final isDark = context.isDark;
+    return _shell(
+      radius: 20,
+      body: _listBody(),
+      top: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+          child: Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: C.brand.withAlpha(isDark ? 40 : 22),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.checklist_rounded,
+                  size: 19,
+                  color: C.brand,
+                ),
+              ),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '本次更新 v${widget.version}',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? C.t1 : C.lt1,
+                      ),
+                    ),
+                    Text(
+                      _today(),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? C.t3 : C.lt3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      bottom: [_actions()],
+    );
+  }
+
+  // ─────────── 模板⑤ split 左右分栏（左窄栏放版本，右侧正文+操作）───────────
+  Widget _tplSplit() {
+    final isDark = context.isDark;
+    return _shell(
+      radius: 20,
+      top: [
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.5,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 左：窄栏
+              Container(
+                width: 92,
+                decoration: BoxDecoration(gradient: C.brandGradient),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.system_update_alt_rounded,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      widget.version,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      '新版本',
+                      style: TextStyle(color: Colors.white70, fontSize: 11.5),
+                    ),
+                  ],
+                ),
+              ),
+              // 右：正文 + 操作
+              Expanded(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(14, 16, 14, 6),
+                        child: _currentBody(),
+                      ),
+                    ),
+                    _actions(compact: true),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      bottom: const [],
+    );
+  }
+
+  // ─────────── 模板⑥ sheet 底部抽屉（拖拽手柄 + 大图标行）───────────
+  Widget _tplSheet() {
+    final isDark = context.isDark;
+    return _shell(
+      radius: 26,
+      top: [
+        Padding(
+          padding: const EdgeInsets.only(top: 10, bottom: 4),
+          child: Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white24 : Colors.black12,
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: C.brandGradient,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.downloading_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.title.isEmpty ? '有新版本可用' : widget.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? C.t1 : C.lt1,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'v${widget.version}${_total > 0 ? ' · ${_sizeText(_total)}' : ''}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? C.t3 : C.lt3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      bottom: [_actions()],
+    );
+  }
+
+  // ─────────── 进度/结果态（下载中 / 已完成 / 失败）───────────
+  Widget _progressBody() {
+    final isDark = context.isDark;
+    final subStyle = TextStyle(fontSize: 12, color: isDark ? C.t3 : C.lt3);
+    if (_phase == 'done') {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.check_circle_rounded,
+              color: Color(0xFF34D399),
+              size: 36,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '下载完成',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      color: isDark ? C.t1 : C.lt1,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text('正在调起安装…', style: subStyle),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    if (_phase == 'failed') {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              color: Color(0xFFFB7185),
+              size: 34,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '下载失败',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      color: isDark ? C.t1 : C.lt1,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text('可重试，或用浏览器打开下载页', style: subStyle),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    // downloading
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                '正在下载 $_progress%',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? C.t1 : C.lt1,
+                ),
+              ),
+              const Spacer(),
+              if (_total > 0)
+                Text(
+                  '${_sizeText((_progress * _total / 100).round())} / ${_sizeText(_total)}',
+                  style: subStyle,
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: _progress <= 0 ? null : _progress / 100,
+              minHeight: 8,
+              backgroundColor: isDark ? Colors.white12 : C.brand.withAlpha(24),
+              color: C.brand,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text('请保持 App 在前台，下载完成后会自动调起安装', style: subStyle),
+        ],
+      ),
+    );
+  }
+
+  /// list 模板专用正文：把更新说明按行拆成「圆点条目」清单
+  ///   —— 与其它模板的整段文字排版是**结构级差异**
+  Widget _listBody() {
+    if (_phase != 'idle') return _progressBody();
+    final isDark = context.isDark;
+    final lines = _contentToText(widget.content)
+        .split('\n')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    if (lines.isEmpty) return _currentBody();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 2, 18, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final l in lines)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 6),
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: C.brand,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 9),
+                  Expanded(
+                    child: Text(
+                      l,
+                      style: TextStyle(
+                        fontSize: 13.4,
+                        height: 1.55,
+                        color: isDark ? C.t2 : C.lt2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// 今天的日期（list 模板用）
+  String _today() {
+    final d = DateTime.now();
+    return '${d.year}-${d.month.toString().padLeft(2, '0')}-'
+        '${d.day.toString().padLeft(2, '0')}';
+  }
 }
