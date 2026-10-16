@@ -128,9 +128,6 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
     //   → 开几个后 Native 层 OOM → **直接闪退回桌面**（Dart 层捕获不到）。
     _disposed = true;
     _loadTimer?.cancel();
-    try {
-      _c.loadRequest(Uri.parse('about:blank')); // 先卸载页面，释放网页资源
-    } catch (_) {}
     super.dispose();
   }
 

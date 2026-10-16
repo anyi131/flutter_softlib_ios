@@ -52,6 +52,12 @@ class _PayWebPageState extends State<PayWebPage> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFFFFFFFF))
       ..setNavigationDelegate(NavigationDelegate(
+        // ★ 1015：加载失败兜底
+        onWebResourceError: (e) {
+          if (mounted && e.isForMainFrame == true) {
+            setState(() => _loading = false);
+          }
+        },
         onPageStarted: (u) {
           if (mounted) setState(() => _loading = true);
         },

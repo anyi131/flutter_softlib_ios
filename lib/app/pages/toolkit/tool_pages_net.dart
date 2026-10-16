@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../api/toolbox_service.dart';
 import '../../design/ad.dart';
@@ -31,9 +32,20 @@ import 'tool_player_page.dart';
 // ═══════════ 热榜（百度多榜 + B站） ═══════════
 /// ★ 1015：App 内打开外链（不跳系统浏览器）
 ///   工具页里所有「内容/详情类」链接都走这里，统一用内置 WebView 打开
+/// ★★★ 1015 致命修复（热搜点条目闪退）：
+///   原来用 App 内 WebView 打开热搜链接。
+///   但热搜条目指向的是**百度/微博/抖音的手机页面** —— 这类页面极重
+///   （大量 JS、自动播放视频、广告），在 WebView 里内存暴涨；
+///   用户连点几条 → Native 层 OOM → **直接闪退回桌面**（Dart 层抓不到）。
+///   改为交给**系统浏览器**打开：不占 App 内存，也符合"看资讯"的使用习惯。
 void _openInApp(String url) {
   if (url.isEmpty || !url.startsWith('http')) return;
-  Get.to(() => ToolBrowserPage(title: '详情', url: url));
+  try {
+    // 交给系统浏览器（不占 App 内存，杜绝 OOM 闪退）
+    launchUrlString(url, mode: LaunchMode.externalApplication);
+  } catch (_) {
+    ToastUtil.error('无法打开链接');
+  }
 }
 
 /// 工具箱公共
@@ -89,6 +101,15 @@ class _HotPageState extends State<HotPage> {
     try {
       final idx = _i; // 记住发起时的板块下标
       final d = await _svc.hot(type: _tabs[idx].$1, board: _tabs[idx].$2);
+      // ★ 1015 诊断：上报实际拿到什么（排查「热搜刷新也不切换」）
+      try {
+        SoftService.reportLogStatic(
+          tag: 'hot',
+          error: '[hot-res] tab=${_tabs[idx].$3} type=${_tabs[idx].$1} board=${_tabs[idx].$2} '
+              'null=${d == null} keys=${d?.keys.toList()} '
+              'listLen=${((d?["list"] as List?) ?? []).length}',
+        ).catchError((_) {});
+      } catch (_) {}
       // 过期响应（用户已经切到别的板块了）→ 直接丢弃，不 setState
       if (!mounted || seq != _reqSeq || idx != _i) return;
       // ★ 1015 加固：逐条容错 —— 任何一条数据格式异常都不允许拖垮整页
@@ -130,6 +151,13 @@ class _HotPageState extends State<HotPage> {
             items: [for (int i = 0; i < _tabs.length; i++) (i, _tabs[i].$3)],
             current: _i,
             onPick: (i) {
+              // ★ 1015 诊断：切换板块时上报
+              try {
+                SoftService.reportLogStatic(
+                  tag: 'hot',
+                  error: '[hot-tab] $i (${_tabs[i].$3})',
+                ).catchError((_) {});
+              } catch (_) {}
               setState(() => _i = i);
               _load();
             },

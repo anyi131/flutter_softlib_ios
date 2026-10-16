@@ -34,6 +34,12 @@ class _QQLoginPageState extends State<QQLoginPage> {
           'Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 '
           '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36')
       ..setNavigationDelegate(NavigationDelegate(
+        // ★ 1015：加载失败兜底
+        onWebResourceError: (e) {
+          if (mounted && e.isForMainFrame == true) {
+            setState(() => _loading = false);
+          }
+        },
         onPageFinished: (_) async {
           if (mounted) setState(() => _loading = false);
           await _tryRead();
@@ -66,9 +72,6 @@ class _QQLoginPageState extends State<QQLoginPage> {
   void dispose() {
     // ★★★ 1015 致命修复：WebView 页面原来没有 dispose！
     //   控制器不释放 → 每次打开泄漏一个 WebView → 多次后 Native OOM → 闪退回桌面。
-    try {
-      _c.loadRequest(Uri.parse('about:blank')); // 先卸载页面释放网页资源
-    } catch (_) {}
     super.dispose();
   }
   @override

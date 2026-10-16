@@ -39,6 +39,12 @@ class _UrlWebviewPageState extends State<UrlWebviewPage> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFFFFFFFF))
       ..setNavigationDelegate(NavigationDelegate(
+        // ★ 1015：加载失败兜底（原来没有 → 失败就永久白屏）
+        onWebResourceError: (e) {
+          if (mounted && e.isForMainFrame == true) {
+            setState(() => _loading = false);
+          }
+        },
         onPageStarted: (_) {
           if (mounted) setState(() => _loading = true);
         },
@@ -60,9 +66,6 @@ class _UrlWebviewPageState extends State<UrlWebviewPage> {
   void dispose() {
     // ★★★ 1015 致命修复：WebView 页面原来没有 dispose！
     //   控制器不释放 → 每次打开泄漏一个 WebView → 多次后 Native OOM → 闪退回桌面。
-    try {
-      _controller.loadRequest(Uri.parse('about:blank')); // 先卸载页面释放网页资源
-    } catch (_) {}
     super.dispose();
   }
   @override
