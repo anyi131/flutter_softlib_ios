@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'app/utils/fcm_service.dart';
 import 'dart:ui';
 
 import 'package:dio/dio.dart';
@@ -43,6 +44,10 @@ Future<void> main() async {
     // ★ 1016：启动就把本机签名指纹读出来缓存（防重打包上报用），
     //   不 await —— 别让它拖慢冷启动
     unawaited(AppSign.warmUp());
+
+    // ★ 1016：FCM 真推送（后台/锁屏也能收到通知）——
+    //   没配 google-services.json / GoogleService-Info.plist 时自动跳过，不影响启动
+    unawaited(FcmService.init());
 
     // ★ 兜底：任何页面/模板构建异常都不允许变成「整屏白屏」
     //   （release 下 Flutter 默认给空白占位，看起来就是白屏）

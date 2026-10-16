@@ -224,6 +224,25 @@ class UserService {
     return true;
   }
 
+  /// ★ 1016：上报设备 FCM token（服务端据此发真推送）
+  Future<void> reportFcmToken(String fcmToken, String platform) async {
+    if (_token.isEmpty) return;
+    try {
+      await _dio.post(
+        '/api/softlib/user/fcm_token',
+        data: {
+          'token': _token,
+          'fcm_token': fcmToken,
+          'platform': platform,
+        },
+        options: Options(
+          sendTimeout: const Duration(seconds: 8),
+          receiveTimeout: const Duration(seconds: 8),
+        ),
+      );
+    } catch (_) {}
+  }
+
   /// ★ 1016：把 QQ 绑定到**当前已登录账号**
   ///   场景：老用户先用自己的邮箱账号登录 → 绑定 QQ →
   ///        以后 QQ 一键登录直接进这个号（不会再自动开一个新号）。

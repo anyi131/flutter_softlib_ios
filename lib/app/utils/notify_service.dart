@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/message_service.dart';
+import 'fcm_service.dart';
 import '../api/user_service.dart';
 
 /// ═══════════════════════════════════════════════════════════════
@@ -145,10 +146,19 @@ class NotifyService with WidgetsBindingObserver {
     if (v) tick();
   }
 
+  bool _fcmReported = false;
+
   /// 拉一次未读消息，给「新消息」弹通知
   Future<void> tick() async {
-    if (!_enabled) return;
     if (!UserService.instance.isLoggedIn) return;
+    // ★ 1016：登录后补报一次 FCM token（启动时上报时可能还没登录，会被服务端拒绝）
+    if (!_fcmReported) {
+      _fcmReported = true;
+      try {
+        FcmService.reportNow();
+      } catch (_) {}
+    }
+    if (!_enabled) return;
     try {
       final d = await MessageService.instance.list(page: 1);
       final raw = (d['list'] as List?) ?? const [];
@@ -227,6 +237,13 @@ class NotifyService with WidgetsBindingObserver {
       body: body.isEmpty ? '打开 App 查看详情' : body,
     );
   }
+
+  /// 立即弹一条通知（FCM 前台消息等场景用）
+  Future<void> showNow(String title, String body) => _raw(
+    id: (DateTime.now().millisecondsSinceEpoch % 100000) + 1,
+    title: title.isEmpty ? '新消息' : title,
+    body: body,
+  );
 
   Future<void> _raw({
     required int id,

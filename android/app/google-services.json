@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "729271936864",
+    "project_id": "ayrjh-d83cb",
+    "storage_bucket": "ayrjh-d83cb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:729271936864:android:bc1c349986369228aea005",
+        "android_client_info": {
+          "package_name": "com.soft.anyi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACw8uPMzuFw1tRiHv7ftR8Nnf9gZsW3ko"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
