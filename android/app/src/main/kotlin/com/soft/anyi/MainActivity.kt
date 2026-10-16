@@ -116,4 +116,14 @@ class MainActivity : FlutterActivity() {
         }
         startActivity(intent)
     }
+
+    // ★ 1015：把 QQ 授权结果转发给桥接（新版 Flutter 已无 PluginRegistry API）
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        try {
+            QQLoginBridge.handleActivityResult(requestCode, resultCode, data)
+        } catch (e: Throwable) {
+            android.util.Log.w("QQLoginBridge", "onActivityResult: ${e.message}")
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
 }
