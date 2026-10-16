@@ -62,12 +62,9 @@ class UpdateFlow {
       if (t.isNotEmpty) template = t;
     } catch (_) {}
 
-    // ★★ 1016：暂时**强制使用「安全款」模板**。
-    //   原因：8 款花式模板里有 blurRadius 30~40 的大阴影 + 整卡裁剪，
-    //   在「整屏遮罩 + 弹窗」这种场景下会把主线程/GPU 拖死 ——
-    //   表现就是「弹窗出不来 → 界面卡死 → 系统杀进程闪退」。
-    //   排查期间先用零阴影、零动画、不做裁剪的安全款；稳定后再逐款放回。
-    template = 'simple';
+    // ★ 1016：后台模板照常生效（不再强制安全款）。
+    //   卡死的真因不是模板本身，而是模板里 30~40 的大范围阴影 ——
+    //   已把阴影统一调轻（见各模板），观感几乎不变但开销小很多。
     if (url.isEmpty) return;
     showDialog(
       context: Get.context!,
@@ -373,7 +370,7 @@ class _UpdateCardState extends State<_UpdateCard> {
           boxShadow: [
             BoxShadow(
               color: C.brand.withAlpha(isDark ? 60 : 70),
-              blurRadius: 40,
+              blurRadius: 12,
               offset: const Offset(0, 18),
             ),
           ],
@@ -502,7 +499,7 @@ class _UpdateCardState extends State<_UpdateCard> {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(isDark ? 70 : 18),
-              blurRadius: 30,
+              blurRadius: 10,
               offset: const Offset(0, 12),
             ),
           ],
@@ -660,7 +657,7 @@ class _UpdateCardState extends State<_UpdateCard> {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(isDark ? 70 : 18),
-              blurRadius: 30,
+              blurRadius: 10,
               offset: const Offset(0, 12),
             ),
           ],
@@ -726,7 +723,7 @@ class _UpdateCardState extends State<_UpdateCard> {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(isDark ? 80 : 22),
-              blurRadius: 34,
+              blurRadius: 12,
               offset: const Offset(0, 14),
             ),
           ],
@@ -925,7 +922,7 @@ class _UpdateCardState extends State<_UpdateCard> {
           boxShadow: [
             BoxShadow(
               color: C.brand.withAlpha(70),
-              blurRadius: 36,
+              blurRadius: 12,
               offset: const Offset(0, 14),
             ),
           ],
@@ -1188,7 +1185,7 @@ class _UpdateCardState extends State<_UpdateCard> {
           boxShadow: [
             BoxShadow(
               color: C.brand.withAlpha(90),
-              blurRadius: 40,
+              blurRadius: 12,
               offset: const Offset(0, 18),
             ),
           ],
