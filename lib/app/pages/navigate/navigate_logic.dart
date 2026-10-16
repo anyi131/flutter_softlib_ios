@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../utils/notify_service.dart';
 
 import '../../utils/apk_installer.dart';
 
@@ -176,10 +175,6 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
     applyUiConfig();
     //检查更新（v52：独立 UpdateFlow，带进度条）
     UpdateFlow.check();
-    // ★ 1016：通知栏推送（动态/回复/点赞/订单）—— 默认开，可在消息页关
-    try {
-      NotifyService.instance.init();
-    } catch (_) {}
   }
 
   /// ★ v3.3.4：按语义跳转 —— Tab 数量随后台配置变化（可能有工具箱/即存），

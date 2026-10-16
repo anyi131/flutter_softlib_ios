@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../utils/notify_service.dart';
 import 'package:get/get.dart';
 
 import '../../design/adaptive.dart';
@@ -269,29 +268,6 @@ class _MessagePageState extends State<MessagePage> {
             Text(unread > 0 ? '消息（$unread）' : '消息',
                 style: Ty.h3.copyWith(color: context.t1, fontSize: 15)),
             const Spacer(),
-            // ★ 1016：通知栏开关（动态/回复/点赞提醒）
-            GestureDetector(
-              onTap: () async {
-                final v = !NotifyService.instance.enabled;
-                await NotifyService.instance.setEnabled(v);
-                if (mounted) {
-                  setState(() {});
-                  ToastUtil.success(v ? '已开启通知提醒' : '已关闭通知提醒');
-                }
-              },
-              child: SizedBox(
-                width: 36,
-                child: Icon(
-                  NotifyService.instance.enabled
-                      ? Icons.notifications_active_rounded
-                      : Icons.notifications_off_rounded,
-                  size: 19,
-                  color: NotifyService.instance.enabled
-                      ? C.brand
-                      : context.t3,
-                ),
-              ),
-            ),
             GestureDetector(
               onTap: unread > 0 ? _markAllRead : null,
               child: SizedBox(
