@@ -99,6 +99,18 @@ public class QQLoginBridge implements MethodChannel.MethodCallHandler {
         pendingResult = result;
         try {
             tencent = Tencent.createInstance(appId, activity.getApplicationContext());
+
+            // ★★★ 1016 关键修复（-6「用户未授权」的真因）：
+            //   QQ互联官方文档原文：
+            //   「手Q OpenSDK 3.5.7 版本开始更新了权限相关功能，用户未授权使用设备信息前
+            //     无法使用 sdk 相关功能。接入方 android 需调用
+            //     Tencent.setIsPermissionGranted(true, Build.MODEL)」
+            //   本项目 SDK 是 3.5.17.3（≥3.5.7），但从来没调过这个方法
+            //   → QQ 客户端一律以「用户未授权，暂时无法使用QQ登录及分享等功能」(-6) 拒绝。
+            //   用反射调用：不同 SDK 小版本签名可能是 (Z) 或 (Z,String)，
+            //   且静态/实例不确定，反射可全部兼容，调不到也不会崩。
+            grantPermission();
+
             tencent.login(activity, "get_user_info", listener);
         } catch (Throwable e) {
             pendingResult = null;
@@ -106,9 +118,38 @@ public class QQLoginBridge implements MethodChannel.MethodCallHandler {
         }
     }
 
+    /**
+     * ★ 1016：向 SDK 声明「已获得用户设备信息授权」——
+     *   不调这一步，手Q OpenSDK ≥3.5.7 会直接以 -6「用户未授权」拒绝登录。
+     *   用反射兼容不同小版本的签名（(Z) / (Z,String)）与静态/实例差异。
+     */
+    private void grantPermission() {
+        final String model = (android.os.Build.MODEL == null) ? "" : android.os.Build.MODEL;
+        // ① 先试 (boolean, String)
+        try {
+            java.lang.reflect.Method m = Tencent.class.getMethod(
+                    "setIsPermissionGranted", boolean.class, String.class);
+            Object target = java.lang.reflect.Modifier.isStatic(m.getModifiers()) ? null : tencent;
+            m.invoke(target, true, model);
+            android.util.Log.i("QQLoginBridge", "setIsPermissionGranted(true, " + model + ") ok");
+            return;
+        } catch (Throwable ignored) {
+        }
+        // ② 再试 (boolean)
+        try {
+            java.lang.reflect.Method m = Tencent.class.getMethod(
+                    "setIsPermissionGranted", boolean.class);
+            Object target = java.lang.reflect.Modifier.isStatic(m.getModifiers()) ? null : tencent;
+            m.invoke(target, true);
+            android.util.Log.i("QQLoginBridge", "setIsPermissionGranted(true) ok");
+            return;
+        } catch (Throwable ignored) {
+        }
+        android.util.Log.w("QQLoginBridge", "本 SDK 没有 setIsPermissionGranted，跳过");
+    }
+
     /** 探测 QQ 是否安装（不依赖 Tencent 实例） */
-    private boolean isQQInstalled() {
-        Activity activity = activityRef != null ? activityRef.get() : null;
+    private boolean isQQInstalled() {        Activity activity = activityRef != null ? activityRef.get() : null;
         if (activity == null) return false;
         try {
             activity.getPackageManager().getPackageInfo("com.tencent.mobileqq", 0);
