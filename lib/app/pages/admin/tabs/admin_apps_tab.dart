@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import '../admin_ui_kit.dart';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
@@ -39,10 +41,11 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
     setState(() => _loading = true);
     try {
       final l = await _svc.apps(keyword: _kw);
-      if (mounted) setState(() {
-        _list = l;
-        _loading = false;
-      });
+      if (mounted)
+        setState(() {
+          _list = l;
+          _loading = false;
+        });
     } catch (e) {
       if (mounted) setState(() => _loading = false);
       ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
@@ -64,23 +67,32 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-              child: Text('置顶操作（已选 ${target.length} 个）',
-                  style: Ty.h2.copyWith(fontSize: 16, color: ctx.t1)),
+              child: Text(
+                '置顶操作（已选 ${target.length} 个）',
+                style: Ty.h2.copyWith(fontSize: 16, color: ctx.t1),
+              ),
             ),
             ListTile(
-              leading: const Icon(Icons.vertical_align_top_rounded,
-                  color: C.gold, size: 21),
+              leading: const Icon(
+                Icons.vertical_align_top_rounded,
+                color: C.gold,
+                size: 21,
+              ),
               title: const Text('设为置顶'),
-              subtitle: Text('排到软件列表最前面',
-                  style: Ty.tiny.copyWith(color: ctx.t3)),
+              subtitle: Text(
+                '排到软件列表最前面',
+                style: Ty.tiny.copyWith(color: ctx.t3),
+              ),
               onTap: () => Navigator.pop(ctx, true),
             ),
             ListTile(
-              leading: const Icon(Icons.vertical_align_bottom_rounded,
-                  color: C.t3, size: 21),
+              leading: const Icon(
+                Icons.vertical_align_bottom_rounded,
+                color: C.t3,
+                size: 21,
+              ),
               title: const Text('取消置顶'),
-              subtitle: Text('恢复按权重排序',
-                  style: Ty.tiny.copyWith(color: ctx.t3)),
+              subtitle: Text('恢复按权重排序', style: Ty.tiny.copyWith(color: ctx.t3)),
               onTap: () => Navigator.pop(ctx, false),
             ),
           ],
@@ -96,7 +108,10 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
         _sel.clear();
       });
       ToastUtil.success(
-          on ? '已置顶 ${r['updated'] ?? target.length} 个' : '已取消置顶 ${r['updated'] ?? target.length} 个');
+        on
+            ? '已置顶 ${r['updated'] ?? target.length} 个'
+            : '已取消置顶 ${r['updated'] ?? target.length} 个',
+      );
       await _load();
     } catch (e) {
       if (mounted) {
@@ -120,16 +135,19 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-              child: Text('设置打开方式（已选 ${target.length} 个）',
-                  style: Ty.h2.copyWith(fontSize: 16, color: ctx.t1)),
+              child: Text(
+                '设置打开方式（已选 ${target.length} 个）',
+                style: Ty.h2.copyWith(fontSize: 16, color: ctx.t1),
+              ),
             ),
-            ..._urlTypeOptions().map((o) => ListTile(
-                  leading: Icon(o.$1, color: o.$3, size: 21),
-                  title: Text(o.$2),
-                  subtitle:
-                      Text(o.$4, style: Ty.tiny.copyWith(color: ctx.t3)),
-                  onTap: () => Navigator.pop(ctx, o.$5),
-                )),
+            ..._urlTypeOptions().map(
+              (o) => ListTile(
+                leading: Icon(o.$1, color: o.$3, size: 21),
+                title: Text(o.$2),
+                subtitle: Text(o.$4, style: Ty.tiny.copyWith(color: ctx.t3)),
+                onTap: () => Navigator.pop(ctx, o.$5),
+              ),
+            ),
           ],
         ),
       ),
@@ -153,10 +171,10 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
 
   /// 打开方式选项：(图标, 名称, 颜色, 说明, 值)
   List<(IconData, String, Color, String, String)> _urlTypeOptions() => [
-        (Icons.android_rounded, '安装包下载', C.brand, '常规 apk 下载安装流程', 'apk'),
-        (Icons.open_in_new_rounded, '跳转浏览器', C.cyan, '用系统浏览器打开链接', 'browser'),
-        (Icons.language_rounded, '内置浏览器', C.violet, 'App 内嵌网页打开', 'webview'),
-      ];
+    (Icons.android_rounded, '安装包下载', C.brand, '常规 apk 下载安装流程', 'apk'),
+    (Icons.open_in_new_rounded, '跳转浏览器', C.cyan, '用系统浏览器打开链接', 'browser'),
+    (Icons.language_rounded, '内置浏览器', C.violet, 'App 内嵌网页打开', 'webview'),
+  ];
 
   void _toggleSel(int id) {
     if (id <= 0) return;
@@ -190,7 +208,10 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
       });
       final raw = r['details'];
       final details = raw is List ? raw : const [];
-      _showFillResult('检查 $total 个 · 补全 $filled · 已完整 $skipped · 失败 $failed', details);
+      _showFillResult(
+        '检查 $total 个 · 补全 $filled · 已完整 $skipped · 失败 $failed',
+        details,
+      );
       await _load();
     } catch (e) {
       if (mounted) setState(() => _filling = false);
@@ -204,12 +225,19 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
       builder: (ctx) => AlertDialog(
         title: const Text('一键补全缺失参数'),
         content: const Text(
-            '将扫描所有「信息不全」的蓝奏云软件，'
-            '自动补齐图标 / 大小 / 简介 / 版本号。\n\n'
-            '信息已完整的软件不会被改动，是否继续？'),
+          '将扫描所有「信息不全」的蓝奏云软件，'
+          '自动补齐图标 / 大小 / 简介 / 版本号。\n\n'
+          '信息已完整的软件不会被改动，是否继续？',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('开始补全')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('开始补全'),
+          ),
         ],
       ),
     );
@@ -238,8 +266,11 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
             Expanded(
               child: details.isEmpty
                   ? Center(
-                      child: Text('没有需要补全的软件 ✅',
-                          style: Ty.small.copyWith(color: ctx.t3)))
+                      child: Text(
+                        '没有需要补全的软件 ✅',
+                        style: Ty.small.copyWith(color: ctx.t3),
+                      ),
+                    )
                   : ListView.separated(
                       itemCount: details.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 7),
@@ -249,21 +280,26 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                         return Row(
                           children: [
                             Icon(
-                                success
-                                    ? Icons.check_circle_rounded
-                                    : Icons.error_rounded,
-                                size: 16,
-                                color: success ? C.success : C.danger),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text('${d['title'] ?? ''}',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Ty.small.copyWith(color: ctx.t2)),
+                              success
+                                  ? Icons.check_circle_rounded
+                                  : Icons.error_rounded,
+                              size: 16,
+                              color: success ? C.success : C.danger,
                             ),
                             const SizedBox(width: 8),
-                            Text('${d['note'] ?? ''}',
-                                style: Ty.tiny.copyWith(color: ctx.t3)),
+                            Expanded(
+                              child: Text(
+                                '${d['title'] ?? ''}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Ty.small.copyWith(color: ctx.t2),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${d['note'] ?? ''}',
+                              style: Ty.tiny.copyWith(color: ctx.t3),
+                            ),
                           ],
                         );
                       },
@@ -302,44 +338,57 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        constraints:
-            BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.6),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(ctx).size.height * 0.6,
+        ),
         decoration: BoxDecoration(
           color: ctx.isDark ? C.bg1 : Colors.white,
-          borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(R.xl)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(R.xl)),
         ),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('设置分类（已选 ${target.length} 个）',
-                style: Ty.h2.copyWith(fontSize: 17, color: ctx.t1)),
+            Text(
+              '设置分类（已选 ${target.length} 个）',
+              style: Ty.h2.copyWith(fontSize: 17, color: ctx.t1),
+            ),
             const SizedBox(height: 10),
             Flexible(
               child: ListView(
                 shrinkWrap: true,
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.category_outlined,
-                        color: C.t3, size: 20),
-                    title:
-                        Text('未分类', style: Ty.small.copyWith(color: ctx.t2)),
+                    leading: const Icon(
+                      Icons.category_outlined,
+                      color: C.t3,
+                      size: 20,
+                    ),
+                    title: Text('未分类', style: Ty.small.copyWith(color: ctx.t2)),
                     onTap: () => Navigator.pop(ctx, 0),
                   ),
-                  ...cats.map((c) => ListTile(
-                        leading: const Icon(Icons.category_rounded,
-                            color: C.violet, size: 20),
-                        title: Text('${c['title']}',
-                            style: Ty.small.copyWith(color: ctx.t2)),
-                        subtitle: c['count'] != null
-                            ? Text('${c['count']} 款软件',
-                                style: Ty.tiny.copyWith(color: ctx.t3))
-                            : null,
-                        onTap: () => Navigator.pop(
-                            ctx, int.tryParse('${c['id']}') ?? 0),
-                      )),
+                  ...cats.map(
+                    (c) => ListTile(
+                      leading: const Icon(
+                        Icons.category_rounded,
+                        color: C.violet,
+                        size: 20,
+                      ),
+                      title: Text(
+                        '${c['title']}',
+                        style: Ty.small.copyWith(color: ctx.t2),
+                      ),
+                      subtitle: c['count'] != null
+                          ? Text(
+                              '${c['count']} 款软件',
+                              style: Ty.tiny.copyWith(color: ctx.t3),
+                            )
+                          : null,
+                      onTap: () =>
+                          Navigator.pop(ctx, int.tryParse('${c['id']}') ?? 0),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -385,26 +434,31 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
               if (vip) ...[
                 TextField(
                   controller: price,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(
                     labelText: '会员价 / 购买价（¥，可留空）',
                     isDense: true,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text('填了价格后：会员可免费下，非会员需用余额购买',
-                    style: Ty.tiny.copyWith(color: ctx.t3)),
+                Text(
+                  '填了价格后：会员可免费下，非会员需用余额购买',
+                  style: Ty.tiny.copyWith(color: ctx.t3),
+                ),
               ],
             ],
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(dctx, false),
-                child: const Text('取消')),
+              onPressed: () => Navigator.pop(dctx, false),
+              child: const Text('取消'),
+            ),
             FilledButton(
-                onPressed: () => Navigator.pop(dctx, true),
-                child: const Text('应用')),
+              onPressed: () => Navigator.pop(dctx, true),
+              child: const Text('应用'),
+            ),
           ],
         ),
       ),
@@ -470,8 +524,9 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
         content: const Text('删除后无法恢复，服务器上的安装包文件也会一并删除。\n\n确定继续吗？'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('取消')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('取消'),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: C.danger),
             onPressed: () => Navigator.pop(ctx, true),
@@ -513,26 +568,38 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.category_rounded,
-                  color: C.violet, size: 20),
+              leading: const Icon(
+                Icons.category_rounded,
+                color: C.violet,
+                size: 20,
+              ),
               title: const Text('设分类'),
               onTap: () => Navigator.pop(ctx, 'cat'),
             ),
             ListTile(
-              leading: const Icon(Icons.workspace_premium_rounded,
-                  color: C.gold, size: 20),
+              leading: const Icon(
+                Icons.workspace_premium_rounded,
+                color: C.gold,
+                size: 20,
+              ),
               title: const Text('设会员下载'),
               onTap: () => Navigator.pop(ctx, 'vip'),
             ),
             ListTile(
-              leading: const Icon(Icons.vertical_align_top_rounded,
-                  color: C.gold, size: 20),
+              leading: const Icon(
+                Icons.vertical_align_top_rounded,
+                color: C.gold,
+                size: 20,
+              ),
               title: const Text('置顶 / 取消置顶'),
               onTap: () => Navigator.pop(ctx, 'top'),
             ),
             ListTile(
-              leading: const Icon(Icons.language_rounded,
-                  color: C.cyan, size: 20),
+              leading: const Icon(
+                Icons.language_rounded,
+                color: C.cyan,
+                size: 20,
+              ),
               title: const Text('设置打开方式'),
               onTap: () => Navigator.pop(ctx, 'url'),
             ),
@@ -563,17 +630,23 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
           color: enabled ? color.withAlpha(24) : context.t3.withAlpha(12),
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-              color: enabled ? color.withAlpha(110) : Colors.transparent,
-              width: 1.2),
+            color: enabled ? color.withAlpha(110) : Colors.transparent,
+            width: 1.2,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 15, color: fg),
             const SizedBox(width: 5),
-            Text(label,
-                style: TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.w700, color: fg)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: fg,
+              ),
+            ),
           ],
         ),
       ),
@@ -603,10 +676,12 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                           hintText: '搜索软件名称',
                           isDense: true,
                           prefixIcon: const Icon(Icons.search, size: 18),
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                          ),
                           border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(R.md)),
+                            borderRadius: BorderRadius.circular(R.md),
+                          ),
                         ),
                       ),
                     ),
@@ -621,8 +696,11 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                   const SizedBox(width: 6),
                   IconButton(
                     tooltip: '分类管理',
-                    icon: const Icon(Icons.category_rounded,
-                        size: 21, color: C.violet),
+                    icon: const Icon(
+                      Icons.category_rounded,
+                      size: 21,
+                      color: C.violet,
+                    ),
                     onPressed: _manageCats,
                   ),
                 ],
@@ -711,9 +789,11 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                           _sel.clear();
                         } else {
                           _sel.clear();
-                          _sel.addAll(_list
-                              .map((a) => int.tryParse('${a['id']}') ?? 0)
-                              .where((v) => v > 0));
+                          _sel.addAll(
+                            _list
+                                .map((a) => int.tryParse('${a['id']}') ?? 0)
+                                .where((v) => v > 0),
+                          );
                         }
                       }),
                     ),
@@ -730,8 +810,10 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                   ],
                   const Spacer(),
                   if (_selMode && _sel.isNotEmpty)
-                    Text('已选 ${_sel.length}',
-                        style: Ty.tiny.copyWith(color: context.t3)),
+                    Text(
+                      '已选 ${_sel.length}',
+                      style: Ty.tiny.copyWith(color: context.t3),
+                    ),
                 ],
               ),
             ],
@@ -751,7 +833,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                       // ★ 一键补全：多选标记
                       final aid = int.tryParse('${a['id']}') ?? 0;
                       final picked = _sel.contains(aid);
-                      return KitCard(
+                      return AdCard(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(12),
                         onTap: _selMode ? () => _toggleSel(aid) : null,
@@ -759,11 +841,12 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                           children: [
                             if (_selMode) ...[
                               Icon(
-                                  picked
-                                      ? Icons.check_circle_rounded
-                                      : Icons.radio_button_unchecked,
-                                  size: 20,
-                                  color: picked ? C.brand : context.t3),
+                                picked
+                                    ? Icons.check_circle_rounded
+                                    : Icons.radio_button_unchecked,
+                                size: 20,
+                                color: picked ? C.brand : context.t3,
+                              ),
                               const SizedBox(width: 8),
                             ],
                             AppImage(
@@ -779,17 +862,20 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('${a['title']}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: Ty.h3.copyWith(
-                                          fontSize: 14.5, color: context.t1)),
+                                  Text(
+                                    '${a['title']}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Ty.h3.copyWith(
+                                      fontSize: 14.5,
+                                      color: context.t1,
+                                    ),
+                                  ),
                                   const SizedBox(height: 3),
                                   Row(
                                     children: [
                                       if ('${a['is_top'] ?? 0}' == '1') ...[
-                                        Pill('置顶',
-                                            color: C.gold, small: true),
+                                        Pill('置顶', color: C.gold, small: true),
                                         const SizedBox(width: 6),
                                       ],
                                       Pill(
@@ -797,7 +883,8 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                         color: isLocal ? C.cyan : C.gold,
                                         small: true,
                                       ),
-                                      if ('${a['url_type'] ?? 'apk'}' != 'apk') ...[
+                                      if ('${a['url_type'] ?? 'apk'}' !=
+                                          'apk') ...[
                                         const SizedBox(width: 6),
                                         Pill(
                                           '${a['url_type']}' == 'browser'
@@ -813,8 +900,9 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                           '${a['size_str'] ?? ''} ${a['version_name'] ?? ''}',
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
-                                          style: Ty.tiny
-                                              .copyWith(color: context.t3),
+                                          style: Ty.tiny.copyWith(
+                                            color: context.t3,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -825,27 +913,38 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                             if (!_selMode) ...[
                               IconButton(
                                 tooltip: '快速设置分类/会员',
-                                icon: const Icon(Icons.tune_rounded,
-                                    size: 19, color: C.violet),
+                                icon: const Icon(
+                                  Icons.tune_rounded,
+                                  size: 19,
+                                  color: C.violet,
+                                ),
                                 onPressed: () => _quickSet(aid),
                               ),
                               IconButton(
                                 tooltip: '补全此软件',
                                 icon: const Icon(
-                                    Icons.auto_fix_high_rounded,
-                                    size: 19, color: C.success),
+                                  Icons.auto_fix_high_rounded,
+                                  size: 19,
+                                  color: C.success,
+                                ),
                                 onPressed: _filling
                                     ? null
                                     : () => _fill(ids: [aid]),
                               ),
                               IconButton(
-                                icon: Icon(Icons.edit_outlined,
-                                    size: 19, color: C.brand),
+                                icon: Icon(
+                                  Icons.edit_outlined,
+                                  size: 19,
+                                  color: C.brand,
+                                ),
                                 onPressed: () => _edit(a),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete_outline,
-                                    size: 19, color: C.danger),
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  size: 19,
+                                  color: C.danger,
+                                ),
                                 onPressed: () => _del(a),
                               ),
                             ],
@@ -873,177 +972,216 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => StatefulBuilder(builder: (ctx, setS) {
-        Future<void> reload() async {
-          final l = await _svc.appCats();
-          setS(() => cats = l);
-        }
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) {
+          Future<void> reload() async {
+            final l = await _svc.appCats();
+            setS(() => cats = l);
+          }
 
-        Future<void> editCat(Map? c) async {
-          final t = TextEditingController(text: '${c?['title'] ?? ''}');
-          final w = TextEditingController(text: '${c?['weigh'] ?? 0}');
-          await showDialog(
-            context: ctx,
-            builder: (dctx) => AlertDialog(
-              title: Text(c == null ? '新增分类' : '编辑分类'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: t,
-                    decoration: const InputDecoration(
-                        labelText: '分类名称', isDense: true),
+          Future<void> editCat(Map? c) async {
+            final t = TextEditingController(text: '${c?['title'] ?? ''}');
+            final w = TextEditingController(text: '${c?['weigh'] ?? 0}');
+            await showDialog(
+              context: ctx,
+              builder: (dctx) => AlertDialog(
+                title: Text(c == null ? '新增分类' : '编辑分类'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: t,
+                      decoration: const InputDecoration(
+                        labelText: '分类名称',
+                        isDense: true,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: w,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: '权重（越大越靠前）',
+                        isDense: true,
+                      ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(dctx),
+                    child: const Text('取消'),
                   ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: w,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                        labelText: '权重（越大越靠前）', isDense: true),
+                  FilledButton(
+                    onPressed: () async {
+                      if (t.text.trim().isEmpty) return;
+                      Navigator.pop(dctx);
+                      try {
+                        await _svc.saveCat({
+                          'id': c?['id'] ?? 0,
+                          'title': t.text.trim(),
+                          'weigh': int.tryParse(w.text) ?? 0,
+                        });
+                        ToastUtil.success('已保存');
+                        await reload();
+                      } catch (e) {
+                        ToastUtil.error(
+                          e.toString().replaceFirst('Exception: ', ''),
+                        );
+                      }
+                    },
+                    child: const Text('保存'),
                   ),
                 ],
               ),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(dctx),
-                    child: const Text('取消')),
-                FilledButton(
-                  onPressed: () async {
-                    if (t.text.trim().isEmpty) return;
-                    Navigator.pop(dctx);
-                    try {
-                      await _svc.saveCat({
-                        'id': c?['id'] ?? 0,
-                        'title': t.text.trim(),
-                        'weigh': int.tryParse(w.text) ?? 0,
-                      });
-                      ToastUtil.success('已保存');
-                      await reload();
-                    } catch (e) {
-                      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
-                    }
-                  },
-                  child: const Text('保存'),
+            );
+          }
+
+          Future<void> delCat(Map c) async {
+            final ok = await Get.dialog<bool>(
+              AlertDialog(
+                title: const Text('删除分类'),
+                content: Text('确定删除「${c['title']}」吗？该分类下的软件会变成未分类。'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Get.back(result: false),
+                    child: const Text('取消'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Get.back(result: true),
+                    child: const Text('删除'),
+                  ),
+                ],
+              ),
+            );
+            if (ok != true) return;
+            try {
+              await _svc.deleteCat(int.tryParse('${c['id']}') ?? 0);
+              ToastUtil.success('已删除');
+              await reload();
+            } catch (e) {
+              ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+            }
+          }
+
+          return Container(
+            height: MediaQuery.of(ctx).size.height * 0.72,
+            decoration: BoxDecoration(
+              color: Theme.of(ctx).brightness == Brightness.dark
+                  ? C.bg1
+                  : Colors.white,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(R.xl),
+              ),
+            ),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.category_rounded,
+                      color: C.violet,
+                      size: 21,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '分类管理',
+                      style: Ty.h2.copyWith(fontSize: 17, color: ctx.t1),
+                    ),
+                    const Spacer(),
+                    SoftButton(
+                      label: '新增分类',
+                      icon: Icons.add_rounded,
+                      height: 36,
+                      onPressed: () => editCat(null),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: cats.isEmpty
+                      ? const Center(child: Text('暂无分类，点击右上角新增'))
+                      : ListView.separated(
+                          itemCount: cats.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 8),
+                          itemBuilder: (_, i) {
+                            final c = cats[i];
+                            return AdCard(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${c['title']}',
+                                          style: Ty.h3.copyWith(
+                                            fontSize: 14.5,
+                                            color: ctx.t1,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '权重 ${c['weigh'] ?? 0} · ${c['count'] ?? 0} 款软件',
+                                          style: Ty.tiny.copyWith(
+                                            color: ctx.t3,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.edit_outlined,
+                                      size: 19,
+                                      color: C.brand,
+                                    ),
+                                    onPressed: () => editCat(c),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.delete_outline,
+                                      size: 19,
+                                      color: C.danger,
+                                    ),
+                                    onPressed: () => delCat(c),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                 ),
               ],
             ),
           );
-        }
-
-        Future<void> delCat(Map c) async {
-          final ok = await Get.dialog<bool>(AlertDialog(
-            title: const Text('删除分类'),
-            content: Text('确定删除「${c['title']}」吗？该分类下的软件会变成未分类。'),
-            actions: [
-              TextButton(
-                  onPressed: () => Get.back(result: false),
-                  child: const Text('取消')),
-              FilledButton(
-                  onPressed: () => Get.back(result: true),
-                  child: const Text('删除')),
-            ],
-          ));
-          if (ok != true) return;
-          try {
-            await _svc.deleteCat(int.tryParse('${c['id']}') ?? 0);
-            ToastUtil.success('已删除');
-            await reload();
-          } catch (e) {
-            ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
-          }
-        }
-
-        return Container(
-          height: MediaQuery.of(ctx).size.height * 0.72,
-          decoration: BoxDecoration(
-            color: Theme.of(ctx).brightness == Brightness.dark
-                ? C.bg1
-                : Colors.white,
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(R.xl)),
-          ),
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.category_rounded, color: C.violet, size: 21),
-                  const SizedBox(width: 8),
-                  Text('分类管理',
-                      style: Ty.h2.copyWith(fontSize: 17, color: ctx.t1)),
-                  const Spacer(),
-                  SoftButton(
-                    label: '新增分类',
-                    icon: Icons.add_rounded,
-                    height: 36,
-                    onPressed: () => editCat(null),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: cats.isEmpty
-                    ? const Center(child: Text('暂无分类，点击右上角新增'))
-                    : ListView.separated(
-                        itemCount: cats.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
-                        itemBuilder: (_, i) {
-                          final c = cats[i];
-                          return KitCard(
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('${c['title']}',
-                                          style: Ty.h3.copyWith(
-                                              fontSize: 14.5,
-                                              color: ctx.t1)),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                          '权重 ${c['weigh'] ?? 0} · ${c['count'] ?? 0} 款软件',
-                                          style: Ty.tiny.copyWith(color: ctx.t3)),
-                                    ],
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.edit_outlined,
-                                      size: 19, color: C.brand),
-                                  onPressed: () => editCat(c),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline,
-                                      size: 19, color: C.danger),
-                                  onPressed: () => delCat(c),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
-        );
-      }),
+        },
+      ),
     );
     _load();
   }
 
   Future<void> _del(Map a) async {
-    final ok = await Get.dialog<bool>(AlertDialog(
-      title: const Text('删除软件'),
-      content: Text('确定删除「${a['title']}」吗？'),
-      actions: [
-        TextButton(
-            onPressed: () => Get.back(result: false), child: const Text('取消')),
-        FilledButton(
-            onPressed: () => Get.back(result: true), child: const Text('删除')),
-      ],
-    ));
+    final ok = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('删除软件'),
+        content: Text('确定删除「${a['title']}」吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
     if (ok != true) return;
     try {
       await _svc.deleteApp(int.tryParse('${a['id']}') ?? 0);
@@ -1078,485 +1216,562 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
     String urlType = ('${a?['url_type'] ?? 'apk'}').isEmpty
         ? 'apk'
         : '${a?['url_type']}';
-    final adminNote =
-        TextEditingController(text: '${a?['admin_note'] ?? ''}');
+    final adminNote = TextEditingController(text: '${a?['admin_note'] ?? ''}');
 
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => StatefulBuilder(builder: (ctx, setS) {
-        bool saving = false;
-        bool parsing = false;
-        String err = '';
-        String okTip = '';
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) {
+          bool saving = false;
+          bool parsing = false;
+          String err = '';
+          String okTip = '';
 
-        /// 自动解析（蓝奏云链接 → 名称/大小/图标/描述/版本）
-        Future<void> doParse() async {
-          if (url.text.trim().isEmpty) {
-            setS(() => err = '请先填写蓝奏云链接');
-            return;
-          }
-          setS(() {
-            parsing = true;
-            err = '';
-            okTip = '';
-          });
-          try {
-            final d = await _svc.parse(type: 'lzy', url: url.text.trim());
+          /// 自动解析（蓝奏云链接 → 名称/大小/图标/描述/版本）
+          Future<void> doParse() async {
+            if (url.text.trim().isEmpty) {
+              setS(() => err = '请先填写蓝奏云链接');
+              return;
+            }
             setS(() {
-              parsing = false;
-              if ((d['name'] ?? '').toString().isNotEmpty && title.text.isEmpty) {
-                title.text = d['name'].toString().replaceAll('.apk', '');
-              }
-              if ((d['size_str'] ?? '').toString().isNotEmpty) {
-                size.text = d['size_str'].toString();
-              }
-              if ((d['icon'] ?? '').toString().isNotEmpty) {
-                icon.text = d['icon'].toString();
-              }
-              if ((d['description'] ?? '').toString().isNotEmpty) {
-                desc.text = d['description'].toString();
-              }
-              if ((d['version'] ?? '').toString().isNotEmpty) {
-                ver.text = d['version'].toString();
-              }
-              okTip = '解析成功，已自动填充信息 ✅';
+              parsing = true;
+              err = '';
+              okTip = '';
             });
-          } catch (e) {
-            setS(() {
-              parsing = false;
-              err = e.toString().replaceFirst('Exception: ', '');
-            });
+            try {
+              final d = await _svc.parse(type: 'lzy', url: url.text.trim());
+              setS(() {
+                parsing = false;
+                if ((d['name'] ?? '').toString().isNotEmpty &&
+                    title.text.isEmpty) {
+                  title.text = d['name'].toString().replaceAll('.apk', '');
+                }
+                if ((d['size_str'] ?? '').toString().isNotEmpty) {
+                  size.text = d['size_str'].toString();
+                }
+                if ((d['icon'] ?? '').toString().isNotEmpty) {
+                  icon.text = d['icon'].toString();
+                }
+                if ((d['description'] ?? '').toString().isNotEmpty) {
+                  desc.text = d['description'].toString();
+                }
+                if ((d['version'] ?? '').toString().isNotEmpty) {
+                  ver.text = d['version'].toString();
+                }
+                okTip = '解析成功，已自动填充信息 ✅';
+              });
+            } catch (e) {
+              setS(() {
+                parsing = false;
+                err = e.toString().replaceFirst('Exception: ', '');
+              });
+            }
           }
-        }
 
-        return Container(
-          height: MediaQuery.of(ctx).size.height * 0.9,
-          decoration: BoxDecoration(
-            color: Theme.of(ctx).brightness == Brightness.dark
-                ? C.bg1
-                : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(R.xl)),
-          ),
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
-          ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Text(a == null ? '新增软件' : '编辑软件',
-                      style: Ty.h2.copyWith(
-                          fontSize: 17,
-                          color: Theme.of(ctx).brightness == Brightness.dark
-                              ? C.t1
-                              : C.lt1)),
-                  const Spacer(),
-                  IconButton(
-                      icon: const Icon(Icons.close, size: 20),
-                      onPressed: () => Navigator.pop(ctx)),
-                ],
+          return Container(
+            height: MediaQuery.of(ctx).size.height * 0.9,
+            decoration: BoxDecoration(
+              color: Theme.of(ctx).brightness == Brightness.dark
+                  ? C.bg1
+                  : Colors.white,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(R.xl),
               ),
-              Expanded(
-                child: ListView(
+            ),
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+            ),
+            child: Column(
+              children: [
+                Row(
                   children: [
-                    // ===== 来源选择 =====
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Row(
-                        children: [
-                          ChoiceChip(
-                            label: const Text('蓝奏云链接'),
-                            selected: provider == 'lzy',
-                            onSelected: (_) => setS(() => provider = 'lzy'),
-                          ),
-                          const SizedBox(width: 8),
-                          ChoiceChip(
-                            label: const Text('服务器文件'),
-                            selected: provider == 'local',
-                            onSelected: (_) => setS(() => provider = 'local'),
-                          ),
-                        ],
+                    Text(
+                      a == null ? '新增软件' : '编辑软件',
+                      style: Ty.h2.copyWith(
+                        fontSize: 17,
+                        color: Theme.of(ctx).brightness == Brightness.dark
+                            ? C.t1
+                            : C.lt1,
                       ),
                     ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 20),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      // ===== 来源选择 =====
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          children: [
+                            ChoiceChip(
+                              label: const Text('蓝奏云链接'),
+                              selected: provider == 'lzy',
+                              onSelected: (_) => setS(() => provider = 'lzy'),
+                            ),
+                            const SizedBox(width: 8),
+                            ChoiceChip(
+                              label: const Text('服务器文件'),
+                              selected: provider == 'local',
+                              onSelected: (_) => setS(() => provider = 'local'),
+                            ),
+                          ],
+                        ),
+                      ),
 
-                    // ===== 蓝奏云：链接 + 一键解析 =====
-                    if (provider == 'lzy') ...[
-                      TextField(
-                        controller: url,
-                        style: const TextStyle(fontSize: 13.5),
-                        decoration: InputDecoration(
-                          labelText: '蓝奏云分享链接',
-                          hintText: 'https://xxx.lanzoup.com/xxxx',
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 12),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          suffixIcon: IconButton(
-                            tooltip: '自动解析软件信息',
-                            icon: parsing
-                                ? const SizedBox(
-                                    width: 17,
-                                    height: 17,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2))
-                                : const Icon(Icons.auto_fix_high, size: 19),
+                      // ===== 蓝奏云：链接 + 一键解析 =====
+                      if (provider == 'lzy') ...[
+                        TextField(
+                          controller: url,
+                          style: const TextStyle(fontSize: 13.5),
+                          decoration: InputDecoration(
+                            labelText: '蓝奏云分享链接',
+                            hintText: 'https://xxx.lanzoup.com/xxxx',
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            suffixIcon: IconButton(
+                              tooltip: '自动解析软件信息',
+                              icon: parsing
+                                  ? const SizedBox(
+                                      width: 17,
+                                      height: 17,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.auto_fix_high, size: 19),
+                              onPressed: parsing ? null : doParse,
+                            ),
+                          ),
+                          onChanged: (v) {},
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 40,
+                          child: OutlinedButton.icon(
                             onPressed: parsing ? null : doParse,
+                            icon: const Icon(
+                              Icons.cloud_download_outlined,
+                              size: 17,
+                            ),
+                            label: Text(
+                              parsing ? '正在解析…' : '自动解析软件信息（名称/大小/图标/版本）',
+                              style: const TextStyle(fontSize: 13),
+                            ),
                           ),
                         ),
-                        onChanged: (v) {},
+                      ],
+
+                      // ===== 本地文件：上传 =====
+                      if (provider == 'local') ...[
+                        SizedBox(
+                          width: double.infinity,
+                          height: 44,
+                          child: OutlinedButton.icon(
+                            onPressed: () async {
+                              try {
+                                final picked = await FilePicker.platform
+                                    .pickFiles(withData: false);
+                                if (picked == null || picked.files.isEmpty)
+                                  return;
+                                final f = picked.files.first;
+                                setS(() {
+                                  parsing = true;
+                                  err = '';
+                                });
+                                final d = await _svc.uploadFile(File(f.path!));
+                                setS(() {
+                                  parsing = false;
+                                  filePath = '${d['file_path'] ?? ''}';
+                                  if ((d['name'] ?? '').toString().isNotEmpty) {
+                                    title.text = '${d['name']}';
+                                  }
+                                  if ((d['size_str'] ?? '')
+                                      .toString()
+                                      .isNotEmpty) {
+                                    size.text = '${d['size_str']}';
+                                  }
+                                  okTip = '上传成功，已自动填充信息 ✅';
+                                });
+                              } catch (e) {
+                                setS(() {
+                                  parsing = false;
+                                  err = e.toString().replaceFirst(
+                                    'Exception: ',
+                                    '',
+                                  );
+                                });
+                              }
+                            },
+                            icon: const Icon(Icons.upload_file, size: 17),
+                            label: Text(
+                              parsing
+                                  ? '上传中…'
+                                  : (filePath.isEmpty
+                                        ? '选择并上传安装包'
+                                        : '已上传 ✓ 点击重选'),
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          ),
+                        ),
+                        if (filePath.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              '文件路径：$filePath',
+                              style: Ty.tiny.copyWith(color: context.t3),
+                            ),
+                          ),
+                      ],
+
+                      if (okTip.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 9,
+                            ),
+                            decoration: BoxDecoration(
+                              color: C.success.withAlpha(
+                                context.isDark ? 40 : 22,
+                              ),
+                              borderRadius: BorderRadius.circular(R.sm),
+                            ),
+                            child: Text(
+                              okTip,
+                              style: Ty.small.copyWith(color: C.success),
+                            ),
+                          ),
+                        ),
+
+                      const SizedBox(height: 14),
+                      Text(
+                        '基础信息',
+                        style: Ty.h3.copyWith(fontSize: 13, color: context.t3),
                       ),
                       const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 40,
-                        child: OutlinedButton.icon(
-                          onPressed: parsing ? null : doParse,
-                          icon: const Icon(Icons.cloud_download_outlined,
-                              size: 17),
-                          label: Text(
-                            parsing ? '正在解析…' : '自动解析软件信息（名称/大小/图标/版本）',
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                        ),
-                      ),
-                    ],
-
-                    // ===== 本地文件：上传 =====
-                    if (provider == 'local') ...[
-                      SizedBox(
-                        width: double.infinity,
-                        height: 44,
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            try {
-                              final picked = await FilePicker.platform
-                                  .pickFiles(withData: false);
-                              if (picked == null || picked.files.isEmpty) return;
-                              final f = picked.files.first;
-                              setS(() {
-                                parsing = true;
-                                err = '';
-                              });
-                              final d = await _svc.uploadFile(File(f.path!));
-                              setS(() {
-                                parsing = false;
-                                filePath = '${d['file_path'] ?? ''}';
-                                if ((d['name'] ?? '').toString().isNotEmpty) {
-                                  title.text = '${d['name']}';
-                                }
-                                if ((d['size_str'] ?? '').toString().isNotEmpty) {
-                                  size.text = '${d['size_str']}';
-                                }
-                                okTip = '上传成功，已自动填充信息 ✅';
-                              });
-                            } catch (e) {
-                              setS(() {
-                                parsing = false;
-                                err = e.toString().replaceFirst('Exception: ', '');
-                              });
-                            }
-                          },
-                          icon: const Icon(Icons.upload_file, size: 17),
-                          label: Text(
-                            parsing
-                                ? '上传中…'
-                                : (filePath.isEmpty ? '选择并上传安装包' : '已上传 ✓ 点击重选'),
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                        ),
-                      ),
-                      if (filePath.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text('文件路径：$filePath',
-                              style: Ty.tiny.copyWith(color: context.t3)),
-                        ),
-                    ],
-
-                    if (okTip.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 9),
-                          decoration: BoxDecoration(
-                            color: C.success
-                                .withAlpha(context.isDark ? 40 : 22),
-                            borderRadius: BorderRadius.circular(R.sm),
-                          ),
-                          child: Text(okTip,
-                              style: Ty.small.copyWith(color: C.success)),
-                        ),
-                      ),
-
-                    const SizedBox(height: 14),
-                    Text('基础信息',
-                        style: Ty.h3.copyWith(
-                            fontSize: 13, color: context.t3)),
-                    const SizedBox(height: 8),
-                    _field('软件名称 *', title),
-                    // 图标：URL + 上传
-                    Row(
-                      children: [
-                        Expanded(child: _field('图标 URL', icon)),
-                        IconButton(
-                          tooltip: '上传图标',
-                          icon: const Icon(Icons.add_photo_alternate_outlined,
-                              size: 21),
-                          onPressed: () async {
-                            try {
-                              final picked = await ImagePicker()
-                                  .pickImage(source: ImageSource.gallery,
-                                      imageQuality: 85);
-                              if (picked == null) return;
-                              setS(() => parsing = true);
-                              final url = await _svc
-                                  .uploadImage(File(picked.path));
-                              setS(() {
-                                icon.text = url;
-                                parsing = false;
-                                okTip = '图标上传成功 ✅';
-                              });
-                            } catch (e) {
-                              setS(() {
-                                parsing = false;
-                                err = e.toString().replaceFirst('Exception: ', '');
-                              });
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                    _field('文件大小', size),
-                    _field('版本号', ver),
-                    _field('软件描述', desc, maxLines: 3),
-                    Row(
-                      children: [
-                        Expanded(child: _field('截图 URL（逗号分隔）', shots)),
-                        IconButton(
-                          tooltip: '上传截图（可多选）',
-                          icon: const Icon(Icons.collections_outlined, size: 21),
-                          onPressed: () async {
-                            try {
-                              final picked = await ImagePicker()
-                                  .pickMultiImage(imageQuality: 80);
-                              if (picked.isEmpty) return;
-                              setS(() => parsing = true);
-                              final urls = <String>[];
-                              for (final f in picked) {
-                                urls.add(await _svc.uploadImage(File(f.path)));
-                              }
-                              final cur = shots.text.trim();
-                              shots.text = cur.isEmpty
-                                  ? urls.join(',')
-                                  : '$cur,${urls.join(',')}';
-                              setS(() {
-                                parsing = false;
-                                okTip = '已上传 ${urls.length} 张截图 ✅';
-                              });
-                            } catch (e) {
-                              setS(() {
-                                parsing = false;
-                                err = e.toString().replaceFirst('Exception: ', '');
-                              });
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-
-                    // ===== 会员专享 + 付费设置 =====
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: C.gold.withAlpha(context.isDark ? 34 : 20),
-                        borderRadius: BorderRadius.circular(R.sm),
-                        border: Border.all(color: C.gold.withAlpha(90)),
-                      ),
-                      child: Column(
+                      _field('软件名称 *', title),
+                      // 图标：URL + 上传
+                      Row(
                         children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.workspace_premium_rounded,
-                                  size: 18, color: C.gold),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text('会员专享资源',
-                                    style: Ty.h3.copyWith(
-                                        fontSize: 13.5, color: C.gold)),
-                              ),
-                              Switch(
-                                value: isVip,
-                                activeThumbColor: C.gold,
-                                onChanged: (v) => setS(() => isVip = v),
-                              ),
-                            ],
+                          Expanded(child: _field('图标 URL', icon)),
+                          IconButton(
+                            tooltip: '上传图标',
+                            icon: const Icon(
+                              Icons.add_photo_alternate_outlined,
+                              size: 21,
+                            ),
+                            onPressed: () async {
+                              try {
+                                final picked = await ImagePicker().pickImage(
+                                  source: ImageSource.gallery,
+                                  imageQuality: 85,
+                                );
+                                if (picked == null) return;
+                                setS(() => parsing = true);
+                                final url = await _svc.uploadImage(
+                                  File(picked.path),
+                                );
+                                setS(() {
+                                  icon.text = url;
+                                  parsing = false;
+                                  okTip = '图标上传成功 ✅';
+                                });
+                              } catch (e) {
+                                setS(() {
+                                  parsing = false;
+                                  err = e.toString().replaceFirst(
+                                    'Exception: ',
+                                    '',
+                                  );
+                                });
+                              }
+                            },
                           ),
-                          Text('开启后，非会员下载时会提示开通会员',
-                              style: Ty.tiny.copyWith(color: context.t3)),
-                          const SizedBox(height: 10),
-                          // ★ 会员价独立于「会员专享」开关：
-                          //   只要填了价格（>0），非会员就必须「余额购买」才能下载。
-                          //   （以前只勾会员专享才显示价格框，导致设了价也白设）
-                          _field('会员价 / 购买价（¥，填了即需付费，留空=免费）',
-                              vipPrice),
-                          Text('填了价格后：会员可免费下，非会员需用余额购买',
-                              style: Ty.tiny.copyWith(color: context.t3)),
                         ],
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: DropdownButtonFormField<int>(
-                        initialValue: catId,
-                        decoration: const InputDecoration(
-                          labelText: '所属分类',
-                          border: OutlineInputBorder(),
-                          isDense: true,
+                      _field('文件大小', size),
+                      _field('版本号', ver),
+                      _field('软件描述', desc, maxLines: 3),
+                      Row(
+                        children: [
+                          Expanded(child: _field('截图 URL（逗号分隔）', shots)),
+                          IconButton(
+                            tooltip: '上传截图（可多选）',
+                            icon: const Icon(
+                              Icons.collections_outlined,
+                              size: 21,
+                            ),
+                            onPressed: () async {
+                              try {
+                                final picked = await ImagePicker()
+                                    .pickMultiImage(imageQuality: 80);
+                                if (picked.isEmpty) return;
+                                setS(() => parsing = true);
+                                final urls = <String>[];
+                                for (final f in picked) {
+                                  urls.add(
+                                    await _svc.uploadImage(File(f.path)),
+                                  );
+                                }
+                                final cur = shots.text.trim();
+                                shots.text = cur.isEmpty
+                                    ? urls.join(',')
+                                    : '$cur,${urls.join(',')}';
+                                setS(() {
+                                  parsing = false;
+                                  okTip = '已上传 ${urls.length} 张截图 ✅';
+                                });
+                              } catch (e) {
+                                setS(() {
+                                  parsing = false;
+                                  err = e.toString().replaceFirst(
+                                    'Exception: ',
+                                    '',
+                                  );
+                                });
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+
+                      // ===== 会员专享 + 付费设置 =====
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: C.gold.withAlpha(context.isDark ? 34 : 20),
+                          borderRadius: BorderRadius.circular(R.sm),
+                          border: Border.all(color: C.gold.withAlpha(90)),
                         ),
-                        items: [
-                          const DropdownMenuItem(value: 0, child: Text('未分类')),
-                          ...cats.map((c) => DropdownMenuItem(
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.workspace_premium_rounded,
+                                  size: 18,
+                                  color: C.gold,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    '会员专享资源',
+                                    style: Ty.h3.copyWith(
+                                      fontSize: 13.5,
+                                      color: C.gold,
+                                    ),
+                                  ),
+                                ),
+                                Switch(
+                                  value: isVip,
+                                  activeThumbColor: C.gold,
+                                  onChanged: (v) => setS(() => isVip = v),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              '开启后，非会员下载时会提示开通会员',
+                              style: Ty.tiny.copyWith(color: context.t3),
+                            ),
+                            const SizedBox(height: 10),
+                            // ★ 会员价独立于「会员专享」开关：
+                            //   只要填了价格（>0），非会员就必须「余额购买」才能下载。
+                            //   （以前只勾会员专享才显示价格框，导致设了价也白设）
+                            _field('会员价 / 购买价（¥，填了即需付费，留空=免费）', vipPrice),
+                            Text(
+                              '填了价格后：会员可免费下，非会员需用余额购买',
+                              style: Ty.tiny.copyWith(color: context.t3),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: DropdownButtonFormField<int>(
+                          initialValue: catId,
+                          decoration: const InputDecoration(
+                            labelText: '所属分类',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          items: [
+                            const DropdownMenuItem(
+                              value: 0,
+                              child: Text('未分类'),
+                            ),
+                            ...cats.map(
+                              (c) => DropdownMenuItem(
                                 value: int.tryParse('${c['id']}') ?? 0,
                                 child: Text('${c['title']}'),
-                              )),
-                        ],
-                        onChanged: (v) => setS(() => catId = v ?? 0),
+                              ),
+                            ),
+                          ],
+                          onChanged: (v) => setS(() => catId = v ?? 0),
+                        ),
                       ),
-                    ),
-                    _field('权重（越大越靠前）', weigh),
-                    // ★ 1014 需求2：置顶（置顶优先级高于权重）
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      value: isTop,
-                      activeThumbColor: C.gold,
-                      title: Text('置顶该软件',
-                          style: Ty.small.copyWith(color: ctx.t1)),
-                      subtitle: Text('置顶后固定排在软件列表最前面，优先于权重',
-                          style: Ty.tiny.copyWith(color: ctx.t3)),
-                      onChanged: (v) => setS(() => isTop = v),
-                    ),
-                    // ★ 1014 需求3：打开方式（安装包 / 跳浏览器 / 内置网页）
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12, top: 4),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('打开方式',
-                              style: Ty.small.copyWith(color: ctx.t2)),
-                          const SizedBox(height: 7),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: _urlTypeOptions()
-                                .map((o) => ChoiceChip(
+                      _field('权重（越大越靠前）', weigh),
+                      // ★ 1014 需求2：置顶（置顶优先级高于权重）
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                        value: isTop,
+                        activeThumbColor: C.gold,
+                        title: Text(
+                          '置顶该软件',
+                          style: Ty.small.copyWith(color: ctx.t1),
+                        ),
+                        subtitle: Text(
+                          '置顶后固定排在软件列表最前面，优先于权重',
+                          style: Ty.tiny.copyWith(color: ctx.t3),
+                        ),
+                        onChanged: (v) => setS(() => isTop = v),
+                      ),
+                      // ★ 1014 需求3：打开方式（安装包 / 跳浏览器 / 内置网页）
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12, top: 4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '打开方式',
+                              style: Ty.small.copyWith(color: ctx.t2),
+                            ),
+                            const SizedBox(height: 7),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: _urlTypeOptions()
+                                  .map(
+                                    (o) => ChoiceChip(
                                       selected: urlType == o.$5,
                                       onSelected: (_) =>
                                           setS(() => urlType = o.$5),
                                       avatar: Icon(o.$1, size: 15, color: o.$3),
-                                      label: Text(o.$2,
-                                          style: const TextStyle(fontSize: 12)),
-                                    ))
-                                .toList(),
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            urlType == 'apk'
-                                ? '常规安装包：走下载安装流程'
-                                : (urlType == 'browser'
-                                    ? '跳转浏览器：点「打开链接」用系统浏览器打开 url'
-                                    : '内置浏览器：点「打开页面」在 App 内打开 url'),
-                            style: Ty.tiny.copyWith(color: ctx.t3),
-                          ),
-                          if (urlType != 'apk')
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Text('提示：请把网页地址填在上方「蓝奏云分享链接」输入框里',
-                                  style:
-                                      Ty.tiny.copyWith(color: C.warning)),
+                                      label: Text(
+                                        o.$2,
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
                             ),
-                        ],
+                            const SizedBox(height: 5),
+                            Text(
+                              urlType == 'apk'
+                                  ? '常规安装包：走下载安装流程'
+                                  : (urlType == 'browser'
+                                        ? '跳转浏览器：点「打开链接」用系统浏览器打开 url'
+                                        : '内置浏览器：点「打开页面」在 App 内打开 url'),
+                              style: Ty.tiny.copyWith(color: ctx.t3),
+                            ),
+                            if (urlType != 'apk')
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  '提示：请把网页地址填在上方「蓝奏云分享链接」输入框里',
+                                  style: Ty.tiny.copyWith(color: C.warning),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                    // ★ 1014：后台备注（仅后台可见，用户端不展示）
-                    _field('后台备注（仅后台可见）', adminNote),
-                    if (err.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Text(err,
-                            style: Ty.small.copyWith(color: C.danger)),
-                      ),
-                  ],
+                      // ★ 1014：后台备注（仅后台可见，用户端不展示）
+                      _field('后台备注（仅后台可见）', adminNote),
+                      if (err.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Text(
+                            err,
+                            style: Ty.small.copyWith(color: C.danger),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              PrimaryButton(
-                label: '保存',
-                loading: saving,
-                height: 46,
-                onPressed: saving
-                    ? null
-                    : () async {
-                        if (title.text.trim().isEmpty) {
-                          setS(() => err = '软件名称不能为空');
-                          return;
-                        }
-                        if (provider == 'lzy' && url.text.trim().isEmpty) {
-                          setS(() => err = '请填写蓝奏云链接');
-                          return;
-                        }
-                        if (provider == 'local' && filePath.isEmpty) {
-                          setS(() => err = '请先上传安装包');
-                          return;
-                        }
-                        setS(() {
-                          saving = true;
-                          err = '';
-                        });
-                        try {
-                          await _svc.saveApp({
-                            'id': a?['id'] ?? 0,
-                            'title': title.text.trim(),
-                            'provider': provider,
-                            'url': url.text.trim(),
-                            'icon': icon.text.trim(),
-                            'size_str': size.text.trim(),
-                            'version_name': ver.text.trim(),
-                            'description': desc.text.trim(),
-                            'screenshots': shots.text.trim(),
-                            'cat_id': catId,
-                            'weigh': int.tryParse(weigh.text) ?? 0,
-                            'enable_switch': 1,
-                            'file_path': filePath,
-                            'is_vip': isVip ? 1 : 0,
-                            'vip_price': vipPrice.text.trim(),
-                            'is_top': isTop ? 1 : 0,
-                            'url_type': urlType,
-                            'admin_note': adminNote.text.trim(),
-                          });
-                          if (ctx.mounted) Navigator.pop(ctx);
-                          ToastUtil.success('保存成功');
-                          _load();
-                        } catch (e) {
+                PrimaryButton(
+                  label: '保存',
+                  loading: saving,
+                  height: 46,
+                  onPressed: saving
+                      ? null
+                      : () async {
+                          if (title.text.trim().isEmpty) {
+                            setS(() => err = '软件名称不能为空');
+                            return;
+                          }
+                          if (provider == 'lzy' && url.text.trim().isEmpty) {
+                            setS(() => err = '请填写蓝奏云链接');
+                            return;
+                          }
+                          if (provider == 'local' && filePath.isEmpty) {
+                            setS(() => err = '请先上传安装包');
+                            return;
+                          }
                           setS(() {
-                            saving = false;
-                            err = e.toString().replaceFirst('Exception: ', '');
+                            saving = true;
+                            err = '';
                           });
-                        }
-                      },
-              ),
-            ],
-          ),
-        );
-      }),
+                          try {
+                            await _svc.saveApp({
+                              'id': a?['id'] ?? 0,
+                              'title': title.text.trim(),
+                              'provider': provider,
+                              'url': url.text.trim(),
+                              'icon': icon.text.trim(),
+                              'size_str': size.text.trim(),
+                              'version_name': ver.text.trim(),
+                              'description': desc.text.trim(),
+                              'screenshots': shots.text.trim(),
+                              'cat_id': catId,
+                              'weigh': int.tryParse(weigh.text) ?? 0,
+                              'enable_switch': 1,
+                              'file_path': filePath,
+                              'is_vip': isVip ? 1 : 0,
+                              'vip_price': vipPrice.text.trim(),
+                              'is_top': isTop ? 1 : 0,
+                              'url_type': urlType,
+                              'admin_note': adminNote.text.trim(),
+                            });
+                            if (ctx.mounted) Navigator.pop(ctx);
+                            ToastUtil.success('保存成功');
+                            _load();
+                          } catch (e) {
+                            setS(() {
+                              saving = false;
+                              err = e.toString().replaceFirst(
+                                'Exception: ',
+                                '',
+                              );
+                            });
+                          }
+                        },
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -1570,8 +1785,10 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
         decoration: InputDecoration(
           labelText: label,
           isDense: true,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(R.md)),
         ),
       ),

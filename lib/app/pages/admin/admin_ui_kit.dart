@@ -43,27 +43,36 @@ class AdCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(15),
     this.onTap,
     this.accent,
+
+    /// 兼容旧组件参数（KitCard/GlassCard 的 glow/radius/blur/alpha）
+    /// 这样后台页面可以安全地把 KitCard(...)/GlassCard(...) 直接换成 AdCard(...)
+    this.glow,
     this.margin,
     this.radius = Ad.rCard,
+    this.blur,
+    this.alpha,
   });
 
   final Widget child;
-  final EdgeInsets padding;
+  final EdgeInsets? padding;
   final VoidCallback? onTap;
   final Color? accent;
+  final Color? glow;
   final EdgeInsets? margin;
   final double radius;
+  final double? blur;
+  final double? alpha;
 
   @override
   Widget build(BuildContext context) {
     final body = Container(
-      padding: padding,
+      padding: padding ?? EdgeInsets.zero,
       decoration: BoxDecoration(
         color: Ad.cardBg(context),
         borderRadius: BorderRadius.circular(radius),
         border: Border.all(
-          color: accent != null
-              ? accent!.withAlpha(context.isDark ? 70 : 60)
+          color: (accent ?? glow) != null
+              ? (accent ?? glow)!.withAlpha(context.isDark ? 70 : 60)
               : Ad.stroke(context),
         ),
       ),
@@ -81,15 +90,19 @@ class AdSection extends StatelessWidget {
   const AdSection({
     super.key,
     required this.title,
-    this.subtitle = '',
+    this.subtitle,
     this.accent,
     this.trailing,
+
+    /// 兼容旧 SectionHeader 的 action 参数
+    this.action,
   });
 
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final Color? accent;
   final Widget? trailing;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -116,11 +129,11 @@ class AdSection extends StatelessWidget {
                   title,
                   style: Ty.h3.copyWith(fontSize: 14.5, color: context.t1),
                 ),
-                if (subtitle.isNotEmpty)
+                if ((subtitle ?? '').isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 1),
                     child: Text(
-                      subtitle,
+                      subtitle!,
                       style: Ty.tiny.copyWith(
                         fontSize: 10.5,
                         color: context.t3,
@@ -131,6 +144,7 @@ class AdSection extends StatelessWidget {
             ),
           ),
           if (trailing != null) trailing!,
+          if (action != null) action!,
         ],
       ),
     );

@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import '../admin_ui_kit.dart';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
@@ -160,7 +162,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       padding: const EdgeInsets.all(14),
       children: [
         // ★ 动态审核卡（1013d）：开关 + 待审数
-        KitCard(
+        AdCard(
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(12),
           child: Row(
@@ -228,7 +230,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       final status = int.tryParse('${p['status'] ?? 1}') ?? 1;
       final pending = status == 0;
       final rejected = status == 2;
-      return KitCard(
+      return AdCard(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -577,7 +579,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       itemCount: _reviews.length,
       itemBuilder: (context, i) {
         final r = _reviews[i];
-        return KitCard(
+        return AdCard(
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.all(12),
           child: Column(
@@ -650,7 +652,7 @@ class _AdminContentTabState extends State<AdminContentTab>
 
         const SizedBox(height: 12),
         for (final c in _cats)
-          KitCard(
+          AdCard(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
@@ -759,7 +761,7 @@ class _AdminContentTabState extends State<AdminContentTab>
 
         const SizedBox(height: 12),
         for (final c in _carousels)
-          KitCard(
+          AdCard(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(10),
             child: Row(
@@ -988,7 +990,7 @@ class _AdminContentTabState extends State<AdminContentTab>
   }
 
   Widget _reportTile(Map r) {
-    return KitCard(
+    return AdCard(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
@@ -1178,7 +1180,7 @@ class _AdminContentTabState extends State<AdminContentTab>
 
         const SizedBox(height: 12),
         for (final s in _sources)
-          KitCard(
+          AdCard(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(12),
             child: Row(
@@ -1531,7 +1533,7 @@ class _AdminContentTabState extends State<AdminContentTab>
 
         const SizedBox(height: 12),
         for (final r in _referrals)
-          KitCard(
+          AdCard(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(10),
             child: Row(
@@ -1740,7 +1742,7 @@ class _AdminContentTabState extends State<AdminContentTab>
 
         const SizedBox(height: 12),
         for (final v in _versions)
-          KitCard(
+          AdCard(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
@@ -1910,7 +1912,7 @@ class _AdminContentTabState extends State<AdminContentTab>
 
         const SizedBox(height: 12),
         for (final c in _cards)
-          KitCard(
+          AdCard(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
             child: Row(

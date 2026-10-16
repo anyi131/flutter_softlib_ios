@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../admin_ui_kit.dart';
+
 import 'package:get/get.dart';
 
 import '../../../api/admin_service.dart';
@@ -58,8 +61,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
       if (mounted) setState(() => _loading = true);
     }
     try {
-      final r = await _svc.opLogs(
-          keyword: _kw, action: _action, page: _page);
+      final r = await _svc.opLogs(keyword: _kw, action: _action, page: _page);
       final list = ((r['list'] as List?) ?? [])
           .map((e) => Map<String, dynamic>.from(e))
           .toList();
@@ -103,10 +105,12 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                           hintText: '搜索昵称 / IP / 设备',
                           isDense: true,
                           prefixIcon: const Icon(Icons.search, size: 18),
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                          ),
                           border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(R.md)),
+                            borderRadius: BorderRadius.circular(R.md),
+                          ),
                         ),
                       ),
                     ),
@@ -114,36 +118,46 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                   const SizedBox(width: 8),
                   IconButton(
                     tooltip: '清理日志',
-                    icon: const Icon(Icons.cleaning_services_rounded,
-                        size: 20, color: C.warning),
+                    icon: const Icon(
+                      Icons.cleaning_services_rounded,
+                      size: 20,
+                      color: C.warning,
+                    ),
                     onPressed: () async {
                       // ★ 需求 #6：区分「清理30天前」和「清空全部」
                       //   （以前只有 30 天前，用户点完发现最近日志还在，以为没清）
-                      final mode = await Get.dialog<String>(AlertDialog(
-                        title: const Text('清理日志'),
-                        content: const Text('请选择清理方式：'),
-                        actions: [
-                          TextButton(
+                      final mode = await Get.dialog<String>(
+                        AlertDialog(
+                          title: const Text('清理日志'),
+                          content: const Text('请选择清理方式：'),
+                          actions: [
+                            TextButton(
                               onPressed: () => Get.back(),
-                              child: const Text('取消')),
-                          TextButton(
+                              child: const Text('取消'),
+                            ),
+                            TextButton(
                               onPressed: () => Get.back(result: 'days'),
-                              child: const Text('清理 30 天前')),
-                          FilledButton(
+                              child: const Text('清理 30 天前'),
+                            ),
+                            FilledButton(
                               onPressed: () => Get.back(result: 'all'),
-                              child: Text('清空全部',
-                                  style: TextStyle(color: C.danger))),
-                        ],
-                      ));
+                              child: Text(
+                                '清空全部',
+                                style: TextStyle(color: C.danger),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                       if (mode == null) return;
                       try {
-                        await _svc.clearOpLogs(
-                            days: 30, all: mode == 'all');
+                        await _svc.clearOpLogs(days: 30, all: mode == 'all');
                         ToastUtil.success(mode == 'all' ? '已清空全部日志' : '已清理');
                         _load(reset: true);
                       } catch (e) {
                         ToastUtil.error(
-                            e.toString().replaceFirst('Exception: ', ''));
+                          e.toString().replaceFirst('Exception: ', ''),
+                        );
                       }
                     },
                   ),
@@ -165,21 +179,27 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: sel
                                 ? C.brand
                                 : (context.isDark
-                                    ? Colors.white.withAlpha(12)
-                                    : Colors.black.withAlpha(6)),
+                                      ? Colors.white.withAlpha(12)
+                                      : Colors.black.withAlpha(6)),
                             borderRadius: BorderRadius.circular(R.full),
                           ),
-                          child: Text(e.value,
-                              style: TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight:
-                                      sel ? FontWeight.w800 : FontWeight.w500,
-                                  color: sel ? Colors.white : context.t2)),
+                          child: Text(
+                            e.value,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: sel
+                                  ? FontWeight.w800
+                                  : FontWeight.w500,
+                              color: sel ? Colors.white : context.t2,
+                            ),
+                          ),
                         ),
                       ),
                     );
@@ -193,33 +213,36 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
           child: _loading
               ? const LoadingState(text: '加载操作日志…')
               : (_list.isEmpty
-                  ? const EmptyState(
-                      text: '暂无操作日志',
-                      hint: '用户登录、发帖、购买等操作会记录在这里')
-                  : RefreshIndicator(
-                      onRefresh: () => _load(reset: true),
-                      child: ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(14, 4, 14, 20),
-                        itemCount: _list.length + (_hasMore ? 1 : 0),
-                        itemBuilder: (context, i) {
-                          if (i >= _list.length) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              child: Center(
-                                child: TextButton(
-                                  onPressed: () {
-                                    _page++;
-                                    _load();
-                                  },
-                                  child: const Text('加载更多'),
+                    ? const EmptyState(
+                        text: '暂无操作日志',
+                        hint: '用户登录、发帖、购买等操作会记录在这里',
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () => _load(reset: true),
+                        child: ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(14, 4, 14, 20),
+                          itemCount: _list.length + (_hasMore ? 1 : 0),
+                          itemBuilder: (context, i) {
+                            if (i >= _list.length) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
                                 ),
-                              ),
-                            );
-                          }
-                          return _logCard(_list[i]);
-                        },
-                      ),
-                    )),
+                                child: Center(
+                                  child: TextButton(
+                                    onPressed: () {
+                                      _page++;
+                                      _load();
+                                    },
+                                    child: const Text('加载更多'),
+                                  ),
+                                ),
+                              );
+                            }
+                            return _logCard(_list[i]);
+                          },
+                        ),
+                      )),
         ),
       ],
     );
@@ -232,14 +255,14 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
     final color = action == 'login'
         ? C.brand
         : action == 'register'
-            ? C.mint
-            : action == 'buy'
-                ? C.gold
-                : action == 'comment' || action == 'post'
-                    ? C.violet
-                    : C.cyan;
+        ? C.mint
+        : action == 'buy'
+        ? C.gold
+        : action == 'comment' || action == 'post'
+        ? C.violet
+        : C.cyan;
 
-    return KitCard(
+    return AdCard(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -257,21 +280,24 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
               ),
               const SizedBox(width: 9),
               Expanded(
-                child: Text('${r['nickname'] ?? '游客'}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Ty.h3
-                        .copyWith(fontSize: 13.5, color: context.t1)),
+                child: Text(
+                  '${r['nickname'] ?? '游客'}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Ty.h3.copyWith(fontSize: 13.5, color: context.t1),
+                ),
               ),
               Pill(label, color: color, small: true),
             ],
           ),
           if ('${r['detail'] ?? ''}'.isNotEmpty) ...[
             const SizedBox(height: 7),
-            Text('${r['detail']}',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Ty.small.copyWith(fontSize: 12.5, color: context.t2)),
+            Text(
+              '${r['detail']}',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Ty.small.copyWith(fontSize: 12.5, color: context.t2),
+            ),
           ],
           const SizedBox(height: 8),
           Wrap(
@@ -279,8 +305,10 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
             runSpacing: 5,
             children: [
               _meta(Icons.access_time_rounded, '${r['createtime_text'] ?? ''}'),
-              _meta(Icons.location_on_outlined,
-                  '${r['ip'] ?? ''}${(r['address'] ?? '') != '' ? ' · ${r['address']}' : ''}'),
+              _meta(
+                Icons.location_on_outlined,
+                '${r['ip'] ?? ''}${(r['address'] ?? '') != '' ? ' · ${r['address']}' : ''}',
+              ),
               if ('${r['device'] ?? ''}'.isNotEmpty)
                 _meta(Icons.phone_android_rounded, '${r['device']}'),
               if ('${r['os'] ?? ''}'.isNotEmpty)
@@ -299,8 +327,10 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
       children: [
         Icon(i, size: 11.5, color: context.t3),
         const SizedBox(width: 3),
-        Text(t.trim(),
-            style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3)),
+        Text(
+          t.trim(),
+          style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3),
+        ),
       ],
     );
   }

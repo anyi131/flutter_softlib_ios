@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../admin_ui_kit.dart';
+
 import '../../../api/admin_service.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
@@ -125,7 +127,7 @@ class _CollectAutoViewState extends State<CollectAutoView> {
         30,
       ),
       children: [
-        GlassCard(
+        AdCard(
           radius: R.xl,
           padding: const EdgeInsets.all(16),
           glow: C.mint,
@@ -156,9 +158,9 @@ class _CollectAutoViewState extends State<CollectAutoView> {
           ),
         ),
         const SizedBox(height: 16),
-        SectionHeader(title: '采集参数', accent: C.brand),
+        AdSection(title: '采集参数', accent: C.brand),
         const SizedBox(height: 8),
-        KitCard(
+        AdCard(
           radius: R.lg,
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -198,13 +200,13 @@ class _CollectAutoViewState extends State<CollectAutoView> {
         ),
         if (_cats.isNotEmpty) ...[
           const SizedBox(height: 16),
-          SectionHeader(
+          AdSection(
             title: '分类过滤',
             subtitle: '勾选后只采集这些分类',
             accent: C.brandBright,
           ),
           const SizedBox(height: 8),
-          KitCard(
+          AdCard(
             radius: R.lg,
             padding: const EdgeInsets.all(12),
             child: Wrap(
@@ -439,7 +441,7 @@ class _CollectConfigViewState extends State<CollectConfigView> {
           30,
         ),
         children: [
-          GlassCard(
+          AdCard(
             radius: R.xl,
             padding: const EdgeInsets.all(16),
             glow: C.brand,
@@ -492,7 +494,7 @@ class _CollectConfigViewState extends State<CollectConfigView> {
           ),
           if (_needCode) ...[
             const SizedBox(height: 14),
-            KitCard(
+            AdCard(
               radius: R.lg,
               padding: const EdgeInsets.all(13),
               child: Column(
@@ -548,7 +550,7 @@ class _CollectConfigViewState extends State<CollectConfigView> {
             ),
           ],
           const SizedBox(height: 16),
-          SectionHeader(title: '配置项', accent: C.brandBright),
+          AdSection(title: '配置项', accent: C.brandBright),
           const SizedBox(height: 8),
           ..._fields.map(_fieldCard),
           const SizedBox(height: 20),
@@ -581,7 +583,7 @@ class _CollectConfigViewState extends State<CollectConfigView> {
         type == 'number' ||
         type == 'email' ||
         type == 'url';
-    return KitCard(
+    return AdCard(
       radius: R.lg,
       margin: const EdgeInsets.only(bottom: 9),
       padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),

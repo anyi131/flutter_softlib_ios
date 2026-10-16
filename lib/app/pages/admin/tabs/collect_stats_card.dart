@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../admin_ui_kit.dart';
+
 import '../../../api/admin_service.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
@@ -68,7 +70,7 @@ class _CollectStatsCardState extends State<CollectStatsCard> {
   @override
   Widget build(BuildContext context) {
     if (_err.isNotEmpty) {
-      return GlassCard(
+      return AdCard(
         radius: R.lg,
         padding: const EdgeInsets.all(14),
         child: Row(
@@ -90,7 +92,7 @@ class _CollectStatsCardState extends State<CollectStatsCard> {
       );
     }
     if (_loading) {
-      return GlassCard(
+      return AdCard(
         radius: R.lg,
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -106,7 +108,7 @@ class _CollectStatsCardState extends State<CollectStatsCard> {
         ),
       );
     }
-    return GlassCard(
+    return AdCard(
       radius: R.xl,
       padding: const EdgeInsets.all(16),
       glow: C.violet,

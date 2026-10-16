@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../admin_ui_kit.dart';
+
 import 'package:get/get.dart';
 
 import '../../../api/admin_service.dart';
@@ -63,18 +66,22 @@ class _CollectLogsViewState extends State<CollectLogsView>
       onRefresh: _load,
       child: ListView(
         padding: EdgeInsets.fromLTRB(
-            context.pagePadding, 8, context.pagePadding, 24),
+          context.pagePadding,
+          8,
+          context.pagePadding,
+          24,
+        ),
         children: [
           _statCard(),
           const SizedBox(height: 10),
           if (_groups.isNotEmpty) ...[
-            SectionHeader(title: '任务记录', accent: C.brand),
+            AdSection(title: '任务记录', accent: C.brand),
             const SizedBox(height: 6),
             ..._groups.map(_groupCard),
             const SizedBox(height: 10),
           ],
           if (_items.isNotEmpty) ...[
-            const SectionHeader(title: '可导入的软件', accent: C.mint),
+            const AdSection(title: '可导入的软件', accent: C.mint),
             const SizedBox(height: 6),
             Padding(
               padding: const EdgeInsets.only(bottom: 6),
@@ -92,7 +99,7 @@ class _CollectLogsViewState extends State<CollectLogsView>
 
   Widget _statCard() {
     int v(String k) => (_stat[k] as num?)?.toInt() ?? 0;
-    return KitCard(
+    return AdCard(
       radius: R.md,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       child: Row(
@@ -110,30 +117,28 @@ class _CollectLogsViewState extends State<CollectLogsView>
   }
 
   Widget _divider() => Container(
-        width: 1,
-        height: 26,
-        color: context.isDark
-            ? Colors.white.withAlpha(18)
-            : Colors.black.withAlpha(10),
-      );
+    width: 1,
+    height: 26,
+    color: context.isDark
+        ? Colors.white.withAlpha(18)
+        : Colors.black.withAlpha(10),
+  );
 
   Widget _statItem(String label, String value, Color color) => Expanded(
-        child: Column(
-          children: [
-            Text(value,
-                style: Ty.h3.copyWith(fontSize: 17, color: color)),
-            const SizedBox(height: 2),
-            Text(label,
-                style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3)),
-          ],
-        ),
-      );
+    child: Column(
+      children: [
+        Text(value, style: Ty.h3.copyWith(fontSize: 17, color: color)),
+        const SizedBox(height: 2),
+        Text(label, style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3)),
+      ],
+    ),
+  );
 
   Widget _groupCard(Map<String, dynamic> g) {
     final fail = (g['fail'] as num?)?.toInt() ?? 0;
     final total = (g['total'] as num?)?.toInt() ?? 0;
     final ok = (g['success'] as num?)?.toInt() ?? 0;
-    return KitCard(
+    return AdCard(
       margin: const EdgeInsets.only(bottom: 8),
       radius: R.md,
       padding: const EdgeInsets.all(12),
@@ -143,8 +148,10 @@ class _CollectLogsViewState extends State<CollectLogsView>
           Row(
             children: [
               Expanded(
-                child: Text('${g['time']}',
-                    style: Ty.tiny.copyWith(color: context.t3)),
+                child: Text(
+                  '${g['time']}',
+                  style: Ty.tiny.copyWith(color: context.t3),
+                ),
               ),
               Pill(
                 fail == 0 ? '全部成功' : '部分失败',
@@ -154,12 +161,13 @@ class _CollectLogsViewState extends State<CollectLogsView>
             ],
           ),
           const SizedBox(height: 6),
-          Text('共 $total 个 · 成功 $ok 个 · 失败 $fail 个',
-              style: Ty.small.copyWith(fontSize: 12.5, color: context.t1)),
+          Text(
+            '共 $total 个 · 成功 $ok 个 · 失败 $fail 个',
+            style: Ty.small.copyWith(fontSize: 12.5, color: context.t1),
+          ),
           if ((g['cost'] ?? '').toString().isNotEmpty) ...[
             const SizedBox(height: 3),
-            Text('耗时 ${g['cost']}',
-                style: Ty.tiny.copyWith(color: context.t3)),
+            Text('耗时 ${g['cost']}', style: Ty.tiny.copyWith(color: context.t3)),
           ],
         ],
       ),
@@ -169,7 +177,7 @@ class _CollectLogsViewState extends State<CollectLogsView>
   Widget _itemCard(Map<String, dynamic> it) {
     final name = (it['name'] ?? '').toString();
     final url = (it['url'] ?? '').toString();
-    return KitCard(
+    return AdCard(
       margin: const EdgeInsets.only(bottom: 7),
       radius: R.sm,
       padding: const EdgeInsets.all(11),
@@ -179,18 +187,23 @@ class _CollectLogsViewState extends State<CollectLogsView>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Ty.small.copyWith(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: context.t1)),
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Ty.small.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: context.t1,
+                  ),
+                ),
                 const SizedBox(height: 3),
-                Text(url,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Ty.tiny.copyWith(fontSize: 10.5, color: C.brand)),
+                Text(
+                  url,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Ty.tiny.copyWith(fontSize: 10.5, color: C.brand),
+                ),
               ],
             ),
           ),
@@ -207,17 +220,22 @@ class _CollectLogsViewState extends State<CollectLogsView>
   }
 
   Future<void> _import(Map<String, dynamic> it) async {
-    final ok = await Get.dialog<bool>(AlertDialog(
-      title: const Text('导入软件库'),
-      content: Text('把「${it['name']}」加入你的软件库？'),
-      actions: [
-        TextButton(
+    final ok = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('导入软件库'),
+        content: Text('把「${it['name']}」加入你的软件库？'),
+        actions: [
+          TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('取消')),
-        FilledButton(
-            onPressed: () => Get.back(result: true), child: const Text('导入')),
-      ],
-    ));
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('导入'),
+          ),
+        ],
+      ),
+    );
     if (ok != true) return;
     try {
       final r = await AdminService.instance.collectImport([
@@ -226,10 +244,9 @@ class _CollectLogsViewState extends State<CollectLogsView>
           'url': it['url'],
           'desc': it['desc'],
           'category': it['category'],
-        }
+        },
       ]);
-      ToastUtil.success(
-          '已导入 ${r['added']} 条，跳过重复 ${r['skipped']} 条');
+      ToastUtil.success('已导入 ${r['added']} 条，跳过重复 ${r['skipped']} 条');
     } catch (e) {
       ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
     }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../admin_ui_kit.dart';
+
 import '../../../api/admin_service.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
@@ -109,7 +111,7 @@ class _CollectStatsViewState extends State<CollectStatsView> {
         children: [
           _summaryCard(),
           const SizedBox(height: 14),
-          SectionHeader(
+          AdSection(
             title: '各软件数据明细',
             subtitle: '统计信息仅供参考，实际以加群人数为准',
             accent: C.brand,
@@ -148,7 +150,7 @@ class _CollectStatsViewState extends State<CollectStatsView> {
       ('联系作者', '${_sum('联系作者')}', C.accentOrange, Icons.support_agent_rounded),
       ('总分享', '${_sum('分享次数')}', C.violet, Icons.share_rounded),
     ];
-    return GlassCard(
+    return AdCard(
       radius: R.xl,
       padding: const EdgeInsets.all(16),
       glow: C.brand,
@@ -252,7 +254,7 @@ class _CollectStatsViewState extends State<CollectStatsView> {
     final title = '${it['title'] ?? ''}';
     final appid = '${it['appid'] ?? ''}';
 
-    return KitCard(
+    return AdCard(
       radius: R.lg,
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),

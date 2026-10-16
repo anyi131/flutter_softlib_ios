@@ -73,8 +73,9 @@ class PrimaryButton extends StatelessWidget {
           boxShadow: active
               ? [
                   BoxShadow(
-                    color: (gold ? C.gold : _c)
-                        .withAlpha(context.isDark ? 90 : 72),
+                    color: (gold ? C.gold : _c).withAlpha(
+                      context.isDark ? 90 : 72,
+                    ),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -99,7 +100,8 @@ class PrimaryButton extends StatelessWidget {
                     height: height * 0.5,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(R.full)),
+                        top: Radius.circular(R.full),
+                      ),
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -112,8 +114,7 @@ class PrimaryButton extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: expand ? 0 : 18),
+                  padding: EdgeInsets.symmetric(horizontal: expand ? 0 : 18),
                   child: Center(
                     child: loading
                         ? SizedBox(
@@ -208,7 +209,10 @@ class SoftButton extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w800, color: _c),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: _c,
+                ),
               ),
             ],
           ),
@@ -252,11 +256,14 @@ class MiniAction extends StatelessWidget {
           children: [
             Icon(icon, size: 13, color: _c),
             const SizedBox(width: 4),
-            Text(label,
-                style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
-                    color: _c)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+                color: _c,
+              ),
+            ),
           ],
         ),
       ),
@@ -357,6 +364,43 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ★ 1016：后台页面统一改用「商业化卡片」样式 ——
+    //   原来的 Deco.glass 带 22px 大阴影 + 光晕，多个卡片叠在一起显得脏；
+    //   新样式：细描边 + 极轻阴影 + 统一底色，观感干净、成组时有层次。
+    //   （GlassCard 只有后台页面在用，所以这里是安全的全量升级）
+    final isDark = context.isDark;
+    return Container(
+      margin: margin,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1A1D26) : Colors.white,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(
+          color: glow != null
+              ? glow!.withAlpha(isDark ? 70 : 60)
+              : (isDark
+                    ? Colors.white.withAlpha(20)
+                    : Colors.black.withAlpha(12)),
+        ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: const Color(0xFF2C3550).withAlpha(10),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+      ),
+      child: Padding(
+        padding: padding ?? EdgeInsets.zero,
+        child: onTap == null
+            ? child
+            : GestureDetector(onTap: onTap, child: child),
+      ),
+    );
+  }
+
+  Widget _legacyGlass(BuildContext context) {
     return Deco.glass(
       context,
       radius: radius,
@@ -393,7 +437,9 @@ class Pill extends StatelessWidget {
     final _c = color ?? C.brand;
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: small ? 7 : 9, vertical: small ? 3 : 4.5),
+        horizontal: small ? 7 : 9,
+        vertical: small ? 3 : 4.5,
+      ),
       decoration: BoxDecoration(
         color: solid ? _c : _c.withAlpha(context.isDark ? 40 : 24),
         borderRadius: BorderRadius.circular(R.full),
@@ -403,7 +449,11 @@ class Pill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: small ? 10 : 11.5, color: solid ? Colors.white : _c),
+            Icon(
+              icon,
+              size: small ? 10 : 11.5,
+              color: solid ? Colors.white : _c,
+            ),
             const SizedBox(width: 3),
           ],
           // ★ 弹性 + 省略号：防止长文本（如用户自定义头衔）撑破父级 Row
@@ -469,8 +519,7 @@ class SectionHeader extends StatelessWidget {
               Text(title, style: Ty.h2.copyWith(color: context.t1)),
               if (subtitle != null) ...[
                 const SizedBox(height: 2),
-                Text(subtitle!,
-                    style: Ty.tiny.copyWith(color: context.t3)),
+                Text(subtitle!, style: Ty.tiny.copyWith(color: context.t3)),
               ],
             ],
           ),
@@ -515,18 +564,16 @@ class EmptyState extends StatelessWidget {
               child: Icon(icon, size: 34, color: C.brand.withAlpha(180)),
             ),
             const SizedBox(height: 16),
-            Text(text,
-                style: Ty.h3.copyWith(color: context.t2)),
+            Text(text, style: Ty.h3.copyWith(color: context.t2)),
             if (hint != null) ...[
               const SizedBox(height: 6),
-              Text(hint!,
-                  textAlign: TextAlign.center,
-                  style: Ty.small.copyWith(color: context.t3)),
+              Text(
+                hint!,
+                textAlign: TextAlign.center,
+                style: Ty.small.copyWith(color: context.t3),
+              ),
             ],
-            if (action != null) ...[
-              const SizedBox(height: 18),
-              action!,
-            ],
+            if (action != null) ...[const SizedBox(height: 18), action!],
           ],
         ),
       ),
@@ -624,8 +671,12 @@ class _SkeletonState extends State<Skeleton>
 
   @override
   Widget build(BuildContext context) {
-    final base = context.isDark ? Colors.white.withAlpha(14) : Colors.black.withAlpha(10);
-    final shine = context.isDark ? Colors.white.withAlpha(30) : Colors.white.withAlpha(180);
+    final base = context.isDark
+        ? Colors.white.withAlpha(14)
+        : Colors.black.withAlpha(10);
+    final shine = context.isDark
+        ? Colors.white.withAlpha(30)
+        : Colors.white.withAlpha(180);
     return AnimatedBuilder(
       animation: _c,
       builder: (context, _) {
@@ -706,8 +757,9 @@ class KitProgress extends StatelessWidget {
       child: LinearProgressIndicator(
         value: value.clamp(0, 1),
         minHeight: height,
-        backgroundColor:
-            context.isDark ? Colors.white.withAlpha(24) : Colors.black12,
+        backgroundColor: context.isDark
+            ? Colors.white.withAlpha(24)
+            : Colors.black12,
         valueColor: AlwaysStoppedAnimation<Color>(_c),
       ),
     );
@@ -758,9 +810,10 @@ class StatItem extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(value,
-            style: Ty.h3.copyWith(
-                fontSize: 16, color: _c ?? context.t1)),
+        Text(
+          value,
+          style: Ty.h3.copyWith(fontSize: 16, color: _c ?? context.t1),
+        ),
         const SizedBox(height: 3),
         Text(label, style: Ty.tiny.copyWith(color: context.t3)),
       ],
@@ -796,16 +849,21 @@ class AppImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fallbackBg =
-        bg ?? (context.isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(8));
+        bg ??
+        (context.isDark
+            ? Colors.white.withAlpha(12)
+            : Colors.black.withAlpha(8));
     Widget fallback(IconData icon) => Container(
-          width: width,
-          height: height,
-          color: fallbackBg,
-          alignment: Alignment.center,
-          child: Icon(icon,
-              size: (width != null && width! < 40) ? 14 : 22,
-              color: context.t3.withAlpha(150)),
-        );
+      width: width,
+      height: height,
+      color: fallbackBg,
+      alignment: Alignment.center,
+      child: Icon(
+        icon,
+        size: (width != null && width! < 40) ? 14 : 22,
+        color: context.t3.withAlpha(150),
+      ),
+    );
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
@@ -821,8 +879,8 @@ class AppImage extends StatelessWidget {
               //   （列表大量图片时这是内存与掉帧的主要来源）
               memCacheWidth: width != null
                   ? (width! * MediaQuery.of(context).devicePixelRatio)
-                      .round()
-                      .clamp(64, 1024)
+                        .round()
+                        .clamp(64, 1024)
                   : null,
               maxWidthDiskCache: 1024,
               placeholder: (_, __) => fallback(placeholderIcon),
@@ -831,4 +889,3 @@ class AppImage extends StatelessWidget {
     );
   }
 }
-

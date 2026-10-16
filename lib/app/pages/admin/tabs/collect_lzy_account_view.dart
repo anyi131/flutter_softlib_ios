@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../admin_ui_kit.dart';
+
 import 'package:get/get.dart';
 
 import '../../../api/admin_service.dart';
@@ -84,19 +87,23 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
   }
 
   Future<void> _clear() async {
-    final ok = await Get.dialog<bool>(AlertDialog(
-      title: const Text('清空蓝奏云 Cookie'),
-      content: const Text('清空后需要重新填写账号密码才能采集。是否继续？'),
-      actions: [
-        TextButton(
+    final ok = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('清空蓝奏云 Cookie'),
+        content: const Text('清空后需要重新填写账号密码才能采集。是否继续？'),
+        actions: [
+          TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('取消')),
-        FilledButton(
+            child: const Text('取消'),
+          ),
+          FilledButton(
             style: FilledButton.styleFrom(backgroundColor: C.danger),
             onPressed: () => Get.back(result: true),
-            child: const Text('清空')),
-      ],
-    ));
+            child: const Text('清空'),
+          ),
+        ],
+      ),
+    );
     if (ok != true) return;
     setState(() => _busy = true);
     try {
@@ -116,11 +123,15 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
     if (_loading) return const LoadingState(text: '读取蓝奏云配置…');
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
-          context.pagePadding, 10, context.pagePadding, 24),
+        context.pagePadding,
+        10,
+        context.pagePadding,
+        24,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          KitCard(
+          AdCard(
             radius: R.md,
             padding: const EdgeInsets.all(14),
             child: Row(
@@ -137,12 +148,16 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(_configured ? '蓝奏云 Cookie 已配置' : '尚未配置蓝奏云 Cookie',
-                          style: Ty.h3.copyWith(fontSize: 14, color: context.t1)),
+                      Text(
+                        _configured ? '蓝奏云 Cookie 已配置' : '尚未配置蓝奏云 Cookie',
+                        style: Ty.h3.copyWith(fontSize: 14, color: context.t1),
+                      ),
                       if (_updated.isNotEmpty) ...[
                         const SizedBox(height: 3),
-                        Text('更新时间：$_updated',
-                            style: Ty.tiny.copyWith(color: context.t3)),
+                        Text(
+                          '更新时间：$_updated',
+                          style: Ty.tiny.copyWith(color: context.t3),
+                        ),
                       ],
                     ],
                   ),
@@ -158,13 +173,13 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
             ),
           ),
           const SizedBox(height: 12),
-          KitCard(
+          AdCard(
             radius: R.md,
             padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SectionHeader(title: '填写蓝奏云账号', accent: C.brand),
+                AdSection(title: '填写蓝奏云账号', accent: C.brand),
                 const SizedBox(height: 4),
                 Text(
                   '采集选中的软件时，会由采集平台上传到你的蓝奏云。'
@@ -178,10 +193,13 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
                   decoration: InputDecoration(
                     labelText: '蓝奏云账号',
                     isDense: true,
-                    prefixIcon:
-                        const Icon(Icons.person_outline_rounded, size: 18),
+                    prefixIcon: const Icon(
+                      Icons.person_outline_rounded,
+                      size: 18,
+                    ),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(R.md)),
+                      borderRadius: BorderRadius.circular(R.md),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -192,8 +210,10 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
                   decoration: InputDecoration(
                     labelText: '蓝奏云密码',
                     isDense: true,
-                    prefixIcon:
-                        const Icon(Icons.lock_outline_rounded, size: 18),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline_rounded,
+                      size: 18,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _showPass
@@ -205,7 +225,8 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
                       onPressed: () => setState(() => _showPass = !_showPass),
                     ),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(R.md)),
+                      borderRadius: BorderRadius.circular(R.md),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -220,7 +241,7 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
             ),
           ),
           const SizedBox(height: 12),
-          KitCard(
+          AdCard(
             radius: R.md,
             padding: const EdgeInsets.all(13),
             child: Row(

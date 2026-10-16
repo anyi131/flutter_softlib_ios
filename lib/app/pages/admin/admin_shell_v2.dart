@@ -451,11 +451,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            _items[i].$2,
-            size: 19,
-            color: on ? C.brand : context.t3,
-          ),
+          Icon(_items[i].$2, size: 19, color: on ? C.brand : context.t3),
           const SizedBox(height: 2),
           Text(
             _items[i].$1,
@@ -599,7 +595,9 @@ class _AdminShellV2State extends State<AdminShellV2> {
                           color: _i == i ? null : Ad.cardBg(context),
                           borderRadius: BorderRadius.circular(11),
                           border: Border.all(
-                            color: _i == i ? Colors.transparent : Ad.stroke(context),
+                            color: _i == i
+                                ? Colors.transparent
+                                : Ad.stroke(context),
                           ),
                         ),
                         child: Column(

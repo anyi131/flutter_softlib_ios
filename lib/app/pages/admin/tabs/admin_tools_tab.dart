@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../admin_ui_kit.dart';
+
 import '../../../api/admin_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
@@ -213,10 +215,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                           isDense: true,
                           border: InputBorder.none,
                           hintText: '搜索工具名',
-                          hintStyle: TextStyle(
-                            fontSize: 13,
-                            color: context.t3,
-                          ),
+                          hintStyle: TextStyle(fontSize: 13, color: context.t3),
                         ),
                       ),
                     ),
@@ -325,7 +324,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
     final isEmoji = icon.isNotEmpty && icon.runes.first > 0x2000;
     final hasApi = '${t['api_url'] ?? ''}'.isNotEmpty;
     final target = '${t['target'] ?? ''}';
-    return KitCard(
+    return AdCard(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
       child: Column(
@@ -406,7 +405,10 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                       '${target.isEmpty ? '' : ' · ${target.length > 28 ? '${target.substring(0, 28)}…' : target}'}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3),
+                      style: Ty.tiny.copyWith(
+                        fontSize: 10.5,
+                        color: context.t3,
+                      ),
                     ),
                   ],
                 ),
@@ -419,7 +421,10 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                   activeThumbColor: C.brand,
                   onChanged: (v) async {
                     try {
-                      await _svc.saveJzsTool({...t, 'enable_switch': v ? 1 : 0});
+                      await _svc.saveJzsTool({
+                        ...t,
+                        'enable_switch': v ? 1 : 0,
+                      });
                       setState(() => t['enable_switch'] = v ? 1 : 0);
                       ToastUtil.success(v ? '已启用' : '已停用');
                     } catch (e) {
@@ -552,7 +557,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
   Widget _catRow(Map<String, dynamic> c) {
     final on = _on(c['enable_switch']);
     final cnt = ((c['tools'] as List?) ?? []).length;
-    return KitCard(
+    return AdCard(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
       child: Column(
@@ -574,7 +579,10 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                     const SizedBox(height: 3),
                     Text(
                       '${c['hint'] ?? ''}${cnt > 0 ? ' · $cnt 个工具' : ''}',
-                      style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3),
+                      style: Ty.tiny.copyWith(
+                        fontSize: 10.5,
+                        color: context.t3,
+                      ),
                     ),
                   ],
                 ),
@@ -586,10 +594,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                   activeThumbColor: C.brand,
                   onChanged: (v) async {
                     try {
-                      await _svc.saveJzsCat({
-                        ...c,
-                        'enable_switch': v ? 1 : 0,
-                      });
+                      await _svc.saveJzsCat({...c, 'enable_switch': v ? 1 : 0});
                       setState(() => c['enable_switch'] = v ? 1 : 0);
                       ToastUtil.success(v ? '已启用' : '已停用');
                     } catch (e) {
@@ -646,7 +651,9 @@ class _AdminToolsTabState extends State<AdminToolsTab>
     final fImage = TextEditingController(text: '${t?['f_image'] ?? ''}');
     final fLink = TextEditingController(text: '${t?['f_link'] ?? ''}');
     final fExtra = TextEditingController(text: '${t?['f_extra'] ?? ''}');
-    var catId = _int(t?['cat_id'] ?? (_cats.isNotEmpty ? _cats.first['id'] : 0));
+    var catId = _int(
+      t?['cat_id'] ?? (_cats.isNotEmpty ? _cats.first['id'] : 0),
+    );
     var on = t == null || _on(t['enable_switch']);
 
     await showDialog(
@@ -697,8 +704,10 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                           ),
                         ),
                         const SizedBox(width: 7),
-                        Text('通用接口工具（填了就给 App 出界面）',
-                            style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                        Text(
+                          '通用接口工具（填了就给 App 出界面）',
+                          style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                        ),
                       ],
                     ),
                   ),
@@ -719,7 +728,10 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                   _f('排序权重（越大越靠前）', weigh),
                   Row(
                     children: [
-                      Text('启用', style: TextStyle(fontSize: 13.5, color: ctx.t1)),
+                      Text(
+                        '启用',
+                        style: TextStyle(fontSize: 13.5, color: ctx.t1),
+                      ),
                       const Spacer(),
                       Switch(
                         value: on,
@@ -746,7 +758,10 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                       'password 密码 / relative 亲戚称呼\n'
                       '★ kind 留空或填 local 时，必须填「外部链接 target」，'
                       '否则点开只会提示「暂未开放」。',
-                      style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t2),
+                      style: Ty.tiny.copyWith(
+                        fontSize: 10.5,
+                        color: context.t2,
+                      ),
                     ),
                   ),
                 ],

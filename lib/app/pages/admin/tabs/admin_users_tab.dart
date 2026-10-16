@@ -1,4 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
+
+import '../admin_ui_kit.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -108,17 +111,23 @@ class _AdminUsersTabState extends State<AdminUsersTab>
           child: RefreshIndicator(
             onRefresh: _load,
             child: _list.isEmpty
-                ? ListView(children: [
-                    const SizedBox(height: 80),
-                    EmptyState(
-                      text: '没有匹配的用户',
-                      hint: '换个关键词或筛选条件试试',
-                      icon: Icons.person_search_outlined,
-                    ),
-                  ])
+                ? ListView(
+                    children: [
+                      const SizedBox(height: 80),
+                      EmptyState(
+                        text: '没有匹配的用户',
+                        hint: '换个关键词或筛选条件试试',
+                        icon: Icons.person_search_outlined,
+                      ),
+                    ],
+                  )
                 : ListView.builder(
                     padding: EdgeInsets.fromLTRB(
-                        context.pagePadding, 4, context.pagePadding, 20),
+                      context.pagePadding,
+                      4,
+                      context.pagePadding,
+                      20,
+                    ),
                     itemCount: _list.length,
                     itemBuilder: (context, i) => _userCard(_list[i]),
                   ),
@@ -133,7 +142,11 @@ class _AdminUsersTabState extends State<AdminUsersTab>
   Widget _searchBar() {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          context.pagePadding, 10, context.pagePadding, 6),
+        context.pagePadding,
+        10,
+        context.pagePadding,
+        6,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -151,7 +164,8 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                   isDense: true,
                   prefixIcon: const Icon(Icons.search, size: 18),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(R.full)),
+                    borderRadius: BorderRadius.circular(R.full),
+                  ),
                 ),
               ),
             ),
@@ -173,8 +187,12 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     );
   }
 
-  Widget _iconBtn(IconData i, VoidCallback f,
-      {bool active = false, String? tip}) {
+  Widget _iconBtn(
+    IconData i,
+    VoidCallback f, {
+    bool active = false,
+    String? tip,
+  }) {
     return GestureDetector(
       onTap: f,
       child: Tooltip(
@@ -202,8 +220,12 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     final money = (_stat['money'] ?? '0').toString();
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          context.pagePadding, 2, context.pagePadding, 6),
-      child: KitCard(
+        context.pagePadding,
+        2,
+        context.pagePadding,
+        6,
+      ),
+      child: AdCard(
         radius: R.md,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
         child: Row(
@@ -224,25 +246,27 @@ class _AdminUsersTabState extends State<AdminUsersTab>
   }
 
   Widget _divider() => Container(
-        width: 1,
-        height: 26,
-        color: context.isDark
-            ? Colors.white.withAlpha(18)
-            : Colors.black.withAlpha(10),
-      );
+    width: 1,
+    height: 26,
+    color: context.isDark
+        ? Colors.white.withAlpha(18)
+        : Colors.black.withAlpha(10),
+  );
 
   Widget _statItem(String label, String value, Color color) => Expanded(
-        child: Column(
-          children: [
-            Text(value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Ty.h3.copyWith(fontSize: 14, color: color)),
-            const SizedBox(height: 2),
-            Text(label, style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3)),
-          ],
+    child: Column(
+      children: [
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Ty.h3.copyWith(fontSize: 14, color: color),
         ),
-      );
+        const SizedBox(height: 2),
+        Text(label, style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3)),
+      ],
+    ),
+  );
 
   // ───────── 筛选胶囊 ─────────
   Widget _filterBar() {
@@ -258,7 +282,11 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.fromLTRB(
-            context.pagePadding, 4, context.pagePadding, 4),
+          context.pagePadding,
+          4,
+          context.pagePadding,
+          4,
+        ),
         itemCount: items.length,
         separatorBuilder: (_, __) => const SizedBox(width: 7),
         itemBuilder: (_, i) {
@@ -272,7 +300,9 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                 gradient: sel ? Deco.brandGradient : null,
                 color: sel
                     ? null
-                    : (context.isDark ? Colors.white.withAlpha(10) : Colors.white),
+                    : (context.isDark
+                          ? Colors.white.withAlpha(10)
+                          : Colors.white),
                 borderRadius: BorderRadius.circular(R.full),
                 border: sel ? null : Border.all(color: C.stroke),
               ),
@@ -296,17 +326,25 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     final n = _selected.length;
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          context.pagePadding, 4, context.pagePadding, 6),
-      child: KitCard(
+        context.pagePadding,
+        4,
+        context.pagePadding,
+        6,
+      ),
+      child: AdCard(
         radius: R.md,
         padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
         child: Column(
           children: [
             Row(
               children: [
-                Text('已选 $n 位',
-                    style: Ty.tiny.copyWith(
-                        color: C.brand, fontWeight: FontWeight.w800)),
+                Text(
+                  '已选 $n 位',
+                  style: Ty.tiny.copyWith(
+                    color: C.brand,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 const SizedBox(width: 10),
                 GestureDetector(
                   onTap: () => setState(() {
@@ -314,22 +352,24 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                       _selected.clear();
                     } else {
                       _selected.addAll(
-                          _list.map((u) => int.tryParse('${u['id']}') ?? 0));
+                        _list.map((u) => int.tryParse('${u['id']}') ?? 0),
+                      );
                       _selected.remove(0);
                     }
                   }),
                   child: Text(
                     _selected.length == _list.length ? '取消全选' : '全选本页',
                     style: Ty.tiny.copyWith(
-                        color: context.t2, fontWeight: FontWeight.w700),
+                      color: context.t2,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 const Spacer(),
                 if (n > 0)
                   GestureDetector(
                     onTap: () => setState(_selected.clear),
-                    child: Text('清空',
-                        style: Ty.tiny.copyWith(color: C.danger)),
+                    child: Text('清空', style: Ty.tiny.copyWith(color: C.danger)),
                   ),
               ],
             ),
@@ -378,28 +418,27 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     final ids = _selected.toList();
     if (ids.isEmpty) return;
     if (op != 'unban') {
-      final label = const {
-            'vip': '赠送 30 天会员',
-            'ban': '禁用',
-            'delete': '删除',
-          }[op] ??
-          op;
-      final ok = await Get.dialog<bool>(AlertDialog(
-        title: Text('批量$label'),
-        content: Text('将对选中的 ${ids.length} 位用户执行「$label」，是否继续？'),
-        actions: [
-          TextButton(
+      final label =
+          const {'vip': '赠送 30 天会员', 'ban': '禁用', 'delete': '删除'}[op] ?? op;
+      final ok = await Get.dialog<bool>(
+        AlertDialog(
+          title: Text('批量$label'),
+          content: Text('将对选中的 ${ids.length} 位用户执行「$label」，是否继续？'),
+          actions: [
+            TextButton(
               onPressed: () => Get.back(result: false),
-              child: const Text('取消')),
-          FilledButton(
-            style: op == 'delete'
-                ? FilledButton.styleFrom(backgroundColor: C.danger)
-                : null,
-            onPressed: () => Get.back(result: true),
-            child: const Text('确定'),
-          ),
-        ],
-      ));
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              style: op == 'delete'
+                  ? FilledButton.styleFrom(backgroundColor: C.danger)
+                  : null,
+              onPressed: () => Get.back(result: true),
+              child: const Text('确定'),
+            ),
+          ],
+        ),
+      );
       if (ok != true) return;
     }
     try {
@@ -422,10 +461,13 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       await showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.xl)),
-          title: const Text('用户数据 CSV',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(R.xl),
+          ),
+          title: const Text(
+            '用户数据 CSV',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+          ),
           content: SizedBox(
             width: double.maxFinite,
             child: SingleChildScrollView(
@@ -445,7 +487,9 @@ class _AdminUsersTabState extends State<AdminUsersTab>
               child: const Text('复制'),
             ),
             FilledButton(
-                onPressed: () => Navigator.pop(ctx), child: const Text('关闭')),
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('关闭'),
+            ),
           ],
         ),
       );
@@ -457,7 +501,8 @@ class _AdminUsersTabState extends State<AdminUsersTab>
   // ───────── 用户卡片 ─────────
   Widget _userCard(Map u) {
     final id = int.tryParse('${u['id']}') ?? 0;
-    final isAdmin = u['is_admin'] == true || u['is_admin'] == 1 || u['is_admin'] == '1';
+    final isAdmin =
+        u['is_admin'] == true || u['is_admin'] == 1 || u['is_admin'] == '1';
     final isVip = u['is_vip'] == true || u['is_vip'] == 1 || u['is_vip'] == '1';
     // ★ 1014_viptime：会员状态（会员 / 永久 / 已过期）一眼可见
     final vipRaw = int.tryParse('${u['vip_expire'] ?? 0}') ?? 0;
@@ -465,17 +510,19 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     final banned = u['status'] == 'hidden';
     final sel = _selected.contains(id);
 
-    return KitCard(
+    return AdCard(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       border: sel,
-      onTap: _selectMode ? () => setState(() {
-        if (sel) {
-          _selected.remove(id);
-        } else {
-          _selected.add(id);
-        }
-      }) : null,
+      onTap: _selectMode
+          ? () => setState(() {
+              if (sel) {
+                _selected.remove(id);
+              } else {
+                _selected.add(id);
+              }
+            })
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -497,13 +544,14 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                         width: 40,
                         height: 40,
                         color: C.brand.withAlpha(context.isDark ? 40 : 26),
-                        child:
-                            Icon(Icons.person, size: 21, color: C.brand))
+                        child: Icon(Icons.person, size: 21, color: C.brand),
+                      )
                     : CachedNetworkImage(
                         imageUrl: '${u['avatar']}',
                         width: 40,
                         height: 40,
-                        fit: BoxFit.cover),
+                        fit: BoxFit.cover,
+                      ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -515,20 +563,22 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                       runSpacing: 3,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Text('${u['nickname'] ?? '未设置昵称'}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Ty.h3.copyWith(
-                                fontSize: 14.5, color: context.t1)),
-                        if (isAdmin)
-                          Pill('管理员', color: C.brand, small: true),
+                        Text(
+                          '${u['nickname'] ?? '未设置昵称'}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Ty.h3.copyWith(
+                            fontSize: 14.5,
+                            color: context.t1,
+                          ),
+                        ),
+                        if (isAdmin) Pill('管理员', color: C.brand, small: true),
                         if (isVip)
                           const Pill('VIP', color: C.gold, small: true),
                         if (banned)
                           const Pill('已禁用', color: C.danger, small: true),
                         if ((u['title'] ?? '').toString().isNotEmpty)
-                          Pill('${u['title']}',
-                              color: C.violet, small: true),
+                          Pill('${u['title']}', color: C.violet, small: true),
                       ],
                     ),
                     const SizedBox(height: 3),
@@ -556,44 +606,56 @@ class _AdminUsersTabState extends State<AdminUsersTab>
             runSpacing: 4,
             children: [
               _meta(Icons.stars_outlined, '积分 ${u['score'] ?? 0}'),
-              _meta(Icons.account_balance_wallet_outlined,
-                  '余额 ¥${u['money'] ?? '0.00'}'),
-              _meta(Icons.event_outlined,
-                  '注册 ${u['createtime_text'] ?? '-'}'),
+              _meta(
+                Icons.account_balance_wallet_outlined,
+                '余额 ¥${u['money'] ?? '0.00'}',
+              ),
+              _meta(Icons.event_outlined, '注册 ${u['createtime_text'] ?? '-'}'),
               if (isVip)
-                _meta(Icons.workspace_premium_outlined,
-                    vipForever ? '永久会员' : '会员至 ${u['vip_expire_text']}',
-                    color: C.gold),
+                _meta(
+                  Icons.workspace_premium_outlined,
+                  vipForever ? '永久会员' : '会员至 ${u['vip_expire_text']}',
+                  color: C.gold,
+                ),
               if (!isVip && vipRaw > 0)
-                _meta(Icons.history_rounded,
-                    '会员已过期 ${u['vip_expire_text']}', color: C.warning),
+                _meta(
+                  Icons.history_rounded,
+                  '会员已过期 ${u['vip_expire_text']}',
+                  color: C.warning,
+                ),
               _meta(Icons.login_rounded, '${u['login_time_text'] ?? '-'}'),
             ],
           ),
-          if (_selectMode) const SizedBox.shrink() else ...[
+          if (_selectMode)
+            const SizedBox.shrink()
+          else ...[
             const SizedBox(height: 9),
             Wrap(
               spacing: 7,
               runSpacing: 6,
               children: [
                 MiniAction(
-                    label: '详情',
-                    icon: Icons.info_outline_rounded,
-                    onTap: () => _showDetail(u)),
+                  label: '详情',
+                  icon: Icons.info_outline_rounded,
+                  onTap: () => _showDetail(u),
+                ),
                 MiniAction(
-                    label: '操作日志',
-                    icon: Icons.history_rounded,
-                    color: C.cyan,
-                    onTap: () => _showUserLogs(id, '${u['nickname']}')),
+                  label: '操作日志',
+                  icon: Icons.history_rounded,
+                  color: C.cyan,
+                  onTap: () => _showUserLogs(id, '${u['nickname']}'),
+                ),
                 MiniAction(
-                    label: '编辑',
-                    icon: Icons.edit_outlined,
-                    onTap: () => _editUser(u)),
+                  label: '编辑',
+                  icon: Icons.edit_outlined,
+                  onTap: () => _editUser(u),
+                ),
                 MiniAction(
-                    label: '自定义IP',
-                    icon: Icons.location_on_outlined,
-                    color: C.cyan,
-                    onTap: () => _editCustomIp(u)),
+                  label: '自定义IP',
+                  icon: Icons.location_on_outlined,
+                  color: C.cyan,
+                  onTap: () => _editCustomIp(u),
+                ),
                 MiniAction(
                   label: '重置密码',
                   icon: Icons.key_rounded,
@@ -625,9 +687,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                 ),
                 MiniAction(
                   label: banned ? '解禁' : '禁用',
-                  icon: banned
-                      ? Icons.lock_open_rounded
-                      : Icons.block_rounded,
+                  icon: banned ? Icons.lock_open_rounded : Icons.block_rounded,
                   color: C.warning,
                   onTap: () async {
                     await _svc.toggleUserStatus(id);
@@ -640,22 +700,27 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                   icon: Icons.delete_outline_rounded,
                   color: C.danger,
                   onTap: () async {
-                    final ok = await Get.dialog<bool>(AlertDialog(
-                      title: const Text('删除用户'),
-                      content: Text(
-                          '确定删除「${u['nickname']}」？\n该操作不可恢复，其登录态会一并清除。'),
-                      actions: [
-                        TextButton(
-                            onPressed: () => Get.back(result: false),
-                            child: const Text('取消')),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                              backgroundColor: C.danger),
-                          onPressed: () => Get.back(result: true),
-                          child: const Text('删除'),
+                    final ok = await Get.dialog<bool>(
+                      AlertDialog(
+                        title: const Text('删除用户'),
+                        content: Text(
+                          '确定删除「${u['nickname']}」？\n该操作不可恢复，其登录态会一并清除。',
                         ),
-                      ],
-                    ));
+                        actions: [
+                          TextButton(
+                            onPressed: () => Get.back(result: false),
+                            child: const Text('取消'),
+                          ),
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: C.danger,
+                            ),
+                            onPressed: () => Get.back(result: true),
+                            child: const Text('删除'),
+                          ),
+                        ],
+                      ),
+                    );
                     if (ok != true) return;
                     await _svc.deleteUser(id);
                     ToastUtil.success('已删除');
@@ -671,14 +736,16 @@ class _AdminUsersTabState extends State<AdminUsersTab>
   }
 
   Widget _meta(IconData i, String text, {Color? color}) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(i, size: 12, color: color ?? context.t3),
-          const SizedBox(width: 3),
-          Text(text,
-              style: Ty.tiny.copyWith(fontSize: 11, color: color ?? context.t3)),
-        ],
-      );
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(i, size: 12, color: color ?? context.t3),
+      const SizedBox(width: 3),
+      Text(
+        text,
+        style: Ty.tiny.copyWith(fontSize: 11, color: color ?? context.t3),
+      ),
+    ],
+  );
 
   /// 会员天数调整：赠送 / 扣减 / 选日期 / 设为永久
   Future<void> _grantVip(int id, int days) async {
@@ -689,172 +756,222 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     String err = '';
 
     final ok = await Get.dialog<bool>(
-      StatefulBuilder(builder: (ctx, setD) {
-        return AlertDialog(
-          title: const Text('会员天数调整',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('「赠送」在现有到期日上叠加；「扣减」从到期日往前扣。',
-                      style: TextStyle(fontSize: 12)),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      _modeChip('赠送', 'add', mode, ctx,
-                          (m) => setD(() => mode = m)),
-                      _modeChip('扣减', 'sub', mode, ctx,
-                          (m) => setD(() => mode = m)),
-                      _modeChip('选日期', 'date', mode, ctx,
-                          (m) => setD(() => mode = m)),
-                      _modeChip('设为永久', 'forever', mode, ctx,
-                          (m) => setD(() => mode = m)),
-                    ],
-                  ),
-                  // ★ 1015：选日期模式 —— 直接指定到期日
-                  if (mode == 'date') ...[
-                    const SizedBox(height: 14),
-                    const Text('直接指定会员到期日（到期自动恢复为非会员）',
-                        style: TextStyle(fontSize: 12)),
-                    const SizedBox(height: 10),
-                    GestureDetector(
-                      onTap: () async {
-                        final now = DateTime.now();
-                        final d = await showDatePicker(
-                          context: ctx,
-                          initialDate: pickDate ?? now.add(const Duration(days: 30)),
-                          firstDate: now,
-                          lastDate: DateTime(2099, 12, 31),
-                          helpText: '选择会员到期日',
-                          cancelText: '取消',
-                          confirmText: '确定',
-                        );
-                        if (d != null) setD(() => pickDate = d);
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 13),
-                        decoration: BoxDecoration(
-                          color: Theme.of(ctx).cardColor,
-                          borderRadius: BorderRadius.circular(R.sm),
-                          border: Border.all(
-                              color: pickDate == null ? C.stroke : C.brand,
-                              width: pickDate == null ? 1 : 1.5),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.calendar_month_rounded,
-                                size: 18,
-                                color: pickDate == null ? ctx.t3 : C.brand),
-                            const SizedBox(width: 9),
-                            Text(
-                              pickDate == null
-                                  ? '点击选择到期日期'
-                                  : '到期日：${pickDate!.year}-${pickDate!.month.toString().padLeft(2, '0')}-${pickDate!.day.toString().padLeft(2, '0')}',
-                              style: TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w700,
-                                color: pickDate == null ? ctx.t3 : ctx.t1,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+      StatefulBuilder(
+        builder: (ctx, setD) {
+          return AlertDialog(
+            title: const Text(
+              '会员天数调整',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '「赠送」在现有到期日上叠加；「扣减」从到期日往前扣。',
+                      style: TextStyle(fontSize: 12),
                     ),
-                  ],
-                  if (mode != 'forever' && mode != 'date') ...[
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
-                      runSpacing: 8,
-                      children: [1, 7, 30, 90, 365].map((n) {
-                        final sel = dayCtrl.text == '$n';
-                        return GestureDetector(
-                          onTap: () => setD(() => dayCtrl.text = '$n'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 13, vertical: 8),
-                            decoration: BoxDecoration(
-                              gradient: sel ? Deco.brandGradient : null,
-                              color: sel ? null : Theme.of(ctx).cardColor,
-                              borderRadius: BorderRadius.circular(R.full),
-                              border: sel ? null : Border.all(color: C.stroke),
-                            ),
-                            child: Text('$n 天',
-                                style: TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: sel ? Colors.white : ctx.t2)),
+                      children: [
+                        _modeChip(
+                          '赠送',
+                          'add',
+                          mode,
+                          ctx,
+                          (m) => setD(() => mode = m),
+                        ),
+                        _modeChip(
+                          '扣减',
+                          'sub',
+                          mode,
+                          ctx,
+                          (m) => setD(() => mode = m),
+                        ),
+                        _modeChip(
+                          '选日期',
+                          'date',
+                          mode,
+                          ctx,
+                          (m) => setD(() => mode = m),
+                        ),
+                        _modeChip(
+                          '设为永久',
+                          'forever',
+                          mode,
+                          ctx,
+                          (m) => setD(() => mode = m),
+                        ),
+                      ],
+                    ),
+                    // ★ 1015：选日期模式 —— 直接指定到期日
+                    if (mode == 'date') ...[
+                      const SizedBox(height: 14),
+                      const Text(
+                        '直接指定会员到期日（到期自动恢复为非会员）',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                      const SizedBox(height: 10),
+                      GestureDetector(
+                        onTap: () async {
+                          final now = DateTime.now();
+                          final d = await showDatePicker(
+                            context: ctx,
+                            initialDate:
+                                pickDate ?? now.add(const Duration(days: 30)),
+                            firstDate: now,
+                            lastDate: DateTime(2099, 12, 31),
+                            helpText: '选择会员到期日',
+                            cancelText: '取消',
+                            confirmText: '确定',
+                          );
+                          if (d != null) setD(() => pickDate = d);
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 13,
                           ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: dayCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: '天数（也可自己输入）',
-                        isDense: true,
+                          decoration: BoxDecoration(
+                            color: Theme.of(ctx).cardColor,
+                            borderRadius: BorderRadius.circular(R.sm),
+                            border: Border.all(
+                              color: pickDate == null ? C.stroke : C.brand,
+                              width: pickDate == null ? 1 : 1.5,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.calendar_month_rounded,
+                                size: 18,
+                                color: pickDate == null ? ctx.t3 : C.brand,
+                              ),
+                              const SizedBox(width: 9),
+                              Text(
+                                pickDate == null
+                                    ? '点击选择到期日期'
+                                    : '到期日：${pickDate!.year}-${pickDate!.month.toString().padLeft(2, '0')}-${pickDate!.day.toString().padLeft(2, '0')}',
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: pickDate == null ? ctx.t3 : ctx.t1,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      onChanged: (_) => setD(() {}),
-                    ),
-                  ] else ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: C.gold.withAlpha(24),
-                        borderRadius: BorderRadius.circular(R.sm),
+                    ],
+                    if (mode != 'forever' && mode != 'date') ...[
+                      const SizedBox(height: 14),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [1, 7, 30, 90, 365].map((n) {
+                          final sel = dayCtrl.text == '$n';
+                          return GestureDetector(
+                            onTap: () => setD(() => dayCtrl.text = '$n'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 13,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: sel ? Deco.brandGradient : null,
+                                color: sel ? null : Theme.of(ctx).cardColor,
+                                borderRadius: BorderRadius.circular(R.full),
+                                border: sel
+                                    ? null
+                                    : Border.all(color: C.stroke),
+                              ),
+                              child: Text(
+                                '$n 天',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: sel ? Colors.white : ctx.t2,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
-                      child: const Text('设为永久会员（到期日 2099-12-31）',
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: dayCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: '天数（也可自己输入）',
+                          isDense: true,
+                        ),
+                        onChanged: (_) => setD(() {}),
+                      ),
+                    ] else ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: C.gold.withAlpha(24),
+                          borderRadius: BorderRadius.circular(R.sm),
+                        ),
+                        child: const Text(
+                          '设为永久会员（到期日 2099-12-31）',
                           style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                              color: C.gold)),
-                    ),
-                  ],
-                  if (err.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Text(err,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: C.gold,
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (err.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Text(
+                          err,
                           style: const TextStyle(
-                              fontSize: 12.5,
-                              color: C.danger,
-                              fontWeight: FontWeight.w700)),
-                    ),
-                ],
+                            fontSize: 12.5,
+                            color: C.danger,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(
+            actions: [
+              TextButton(
                 onPressed: () => Get.back(result: false),
-                child: const Text('取消')),
-            FilledButton(
-              onPressed: () {
-                if (mode != 'forever') {
-                  final n = int.tryParse(dayCtrl.text.trim()) ?? 0;
-                  if (n <= 0) {
-                    setD(() => err = '请输入大于 0 的天数');
-                    return;
+                child: const Text('取消'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  if (mode != 'forever') {
+                    final n = int.tryParse(dayCtrl.text.trim()) ?? 0;
+                    if (n <= 0) {
+                      setD(() => err = '请输入大于 0 的天数');
+                      return;
+                    }
                   }
-                }
-                Get.back(result: true);
-              },
-              child: const Text('确定'),
-            ),
-          ],
-        );
-      }),
+                  Get.back(result: true);
+                },
+                child: const Text('确定'),
+              ),
+            ],
+          );
+        },
+      ),
     );
     if (ok != true) return;
     // ★ 1015：选日期模式必须真的选了日期
@@ -895,48 +1012,52 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     final ipCtrl = TextEditingController(text: '${u['custom_ip'] ?? ''}');
     final addrCtrl = TextEditingController(text: '${u['custom_addr'] ?? ''}');
     bool on = '${u['custom_ip_on'] ?? 0}' == '1';
-    final ok = await Get.dialog<bool>(AlertDialog(
-      title: Text('自定义IP显示 · ${u['nickname'] ?? ''}'),
-      content: StatefulBuilder(
-        builder: (ctx, setD) => Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: ipCtrl,
-              decoration: const InputDecoration(
-                labelText: '显示 IP',
-                hintText: '留空 = 用真实登录 IP',
-                isDense: true,
+    final ok = await Get.dialog<bool>(
+      AlertDialog(
+        title: Text('自定义IP显示 · ${u['nickname'] ?? ''}'),
+        content: StatefulBuilder(
+          builder: (ctx, setD) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: ipCtrl,
+                decoration: const InputDecoration(
+                  labelText: '显示 IP',
+                  hintText: '留空 = 用真实登录 IP',
+                  isDense: true,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: addrCtrl,
-              decoration: const InputDecoration(
-                labelText: '归属地',
-                hintText: '如：广东·深圳',
-                isDense: true,
+              const SizedBox(height: 12),
+              TextField(
+                controller: addrCtrl,
+                decoration: const InputDecoration(
+                  labelText: '归属地',
+                  hintText: '如：广东·深圳',
+                  isDense: true,
+                ),
               ),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              title: const Text('启用自定义显示', style: TextStyle(fontSize: 14)),
-              value: on,
-              onChanged: (v) => setD(() => on = v),
-            ),
-          ],
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                title: const Text('启用自定义显示', style: TextStyle(fontSize: 14)),
+                value: on,
+                onChanged: (v) => setD(() => on = v),
+              ),
+            ],
+          ),
         ),
-      ),
-      actions: [
-        TextButton(
+        actions: [
+          TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('取消')),
-        FilledButton(
+            child: const Text('取消'),
+          ),
+          FilledButton(
             onPressed: () => Get.back(result: true),
-            child: const Text('保存')),
-      ],
-    ));
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
     if (ok != true) return;
     try {
       await _svc.userCustomIp(
@@ -962,86 +1083,102 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     bool hide = true;
 
     final go = await Get.dialog<bool>(
-      StatefulBuilder(builder: (ctx, setD) {
-        return AlertDialog(
-          title: Text('重置密码：${u['nickname']}',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: C.warning.withAlpha(22),
-                  borderRadius: BorderRadius.circular(R.sm),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.lock_outline_rounded,
-                        size: 15, color: C.warning),
-                    const SizedBox(width: 7),
-                    Expanded(
-                      child: Text(
-                        '出于安全考虑，密码不支持查看（服务端只保存不可逆哈希）。'
-                        '如需协助用户，请为其设置一个新密码。',
-                        style: TextStyle(
-                            fontSize: 11.5, height: 1.6, color: ctx.t2),
+      StatefulBuilder(
+        builder: (ctx, setD) {
+          return AlertDialog(
+            title: Text(
+              '重置密码：${u['nickname']}',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: C.warning.withAlpha(22),
+                    borderRadius: BorderRadius.circular(R.sm),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.lock_outline_rounded,
+                        size: 15,
+                        color: C.warning,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-              const Text('设置一个新的登录密码（至少 6 位）。',
-                  style: TextStyle(fontSize: 12.5)),
-              const SizedBox(height: 12),
-              TextField(
-                controller: c1,
-                obscureText: hide,
-                decoration: InputDecoration(
-                  labelText: '新密码',
-                  isDense: true,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      hide
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                      size: 18,
-                    ),
-                    onPressed: () => setD(() => hide = !hide),
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: Text(
+                          '出于安全考虑，密码不支持查看（服务端只保存不可逆哈希）。'
+                          '如需协助用户，请为其设置一个新密码。',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            height: 1.6,
+                            color: ctx.t2,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              if (err.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Text(err,
-                      style: const TextStyle(
-                          fontSize: 12.5,
-                          color: C.danger,
-                          fontWeight: FontWeight.w700)),
+                const SizedBox(height: 14),
+                const Text(
+                  '设置一个新的登录密码（至少 6 位）。',
+                  style: TextStyle(fontSize: 12.5),
                 ),
-            ],
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Get.back(result: false),
-                child: const Text('取消')),
-            FilledButton(
-              onPressed: () {
-                if (c1.text.trim().length < 6) {
-                  setD(() => err = '密码至少 6 位');
-                  return;
-                }
-                Get.back(result: true);
-              },
-              child: const Text('重置'),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: c1,
+                  obscureText: hide,
+                  decoration: InputDecoration(
+                    labelText: '新密码',
+                    isDense: true,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        hide
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        size: 18,
+                      ),
+                      onPressed: () => setD(() => hide = !hide),
+                    ),
+                  ),
+                ),
+                if (err.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Text(
+                      err,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: C.danger,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          ],
-        );
-      }),
+            actions: [
+              TextButton(
+                onPressed: () => Get.back(result: false),
+                child: const Text('取消'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  if (c1.text.trim().length < 6) {
+                    setD(() => err = '密码至少 6 位');
+                    return;
+                  }
+                  Get.back(result: true);
+                },
+                child: const Text('重置'),
+              ),
+            ],
+          );
+        },
+      ),
     );
 
     if (go != true) return;
@@ -1061,78 +1198,113 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     final noteCtrl = TextEditingController();
     String mode = 'add'; // add | sub | set
 
-    final ok = await Get.dialog<bool>(AlertDialog(
-      title: Text('修改余额：${u['nickname']}',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-      content: StatefulBuilder(builder: (ctx, setD) {
-        final amt = double.tryParse(amtCtrl.text.trim()) ?? 0;
-        double preview = cur;
-        if (mode == 'add') preview = cur + amt;
-        if (mode == 'sub') preview = cur - amt;
-        if (mode == 'set') preview = amt;
-        if (preview < 0) preview = 0;
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('当前余额  ¥${cur.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 12.5)),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
+    final ok = await Get.dialog<bool>(
+      AlertDialog(
+        title: Text(
+          '修改余额：${u['nickname']}',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
+        content: StatefulBuilder(
+          builder: (ctx, setD) {
+            final amt = double.tryParse(amtCtrl.text.trim()) ?? 0;
+            double preview = cur;
+            if (mode == 'add') preview = cur + amt;
+            if (mode == 'sub') preview = cur - amt;
+            if (mode == 'set') preview = amt;
+            if (preview < 0) preview = 0;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _modeChip('充值', 'add', mode, ctx, (m) => setD(() => mode = m)),
-                _modeChip('扣减', 'sub', mode, ctx, (m) => setD(() => mode = m)),
-                _modeChip('直接设定', 'set', mode, ctx,
-                    (m) => setD(() => mode = m)),
-              ],
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: amtCtrl,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: '金额（元）',
-                isDense: true,
-                prefixText: '¥ ',
-              ),
-              onChanged: (_) => setD(() {}),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: noteCtrl,
-              decoration: const InputDecoration(
-                labelText: '备注（选填）',
-                hintText: '如：活动奖励 / 退款',
-                isDense: true,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              decoration: BoxDecoration(
-                color: C.success.withAlpha(22),
-                borderRadius: BorderRadius.circular(R.sm),
-              ),
-              child: Text('改后余额  ¥${preview.toStringAsFixed(2)}',
-                  style: const TextStyle(
+                Text(
+                  '当前余额  ¥${cur.toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 12.5),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    _modeChip(
+                      '充值',
+                      'add',
+                      mode,
+                      ctx,
+                      (m) => setD(() => mode = m),
+                    ),
+                    _modeChip(
+                      '扣减',
+                      'sub',
+                      mode,
+                      ctx,
+                      (m) => setD(() => mode = m),
+                    ),
+                    _modeChip(
+                      '直接设定',
+                      'set',
+                      mode,
+                      ctx,
+                      (m) => setD(() => mode = m),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: amtCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: '金额（元）',
+                    isDense: true,
+                    prefixText: '¥ ',
+                  ),
+                  onChanged: (_) => setD(() {}),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: noteCtrl,
+                  decoration: const InputDecoration(
+                    labelText: '备注（选填）',
+                    hintText: '如：活动奖励 / 退款',
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 9,
+                  ),
+                  decoration: BoxDecoration(
+                    color: C.success.withAlpha(22),
+                    borderRadius: BorderRadius.circular(R.sm),
+                  ),
+                  child: Text(
+                    '改后余额  ¥${preview.toStringAsFixed(2)}',
+                    style: const TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w800,
-                      color: C.success)),
-            ),
-          ],
-        );
-      }),
-      actions: [
-        TextButton(
+                      color: C.success,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+        actions: [
+          TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('取消')),
-        FilledButton(
-            onPressed: () => Get.back(result: true), child: const Text('确定')),
-      ],
-    ));
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
     if (ok != true) return;
 
     final amt = double.tryParse(amtCtrl.text.trim()) ?? 0;
@@ -1142,10 +1314,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     if (mode == 'set') target = amt;
     if (target < 0) target = 0;
     try {
-      await _svc.saveUser({
-        'id': id,
-        'money': target.toStringAsFixed(2),
-      });
+      await _svc.saveUser({'id': id, 'money': target.toStringAsFixed(2)});
       ToastUtil.success('余额已更新为 ¥${target.toStringAsFixed(2)}');
       _load();
     } catch (e) {
@@ -1153,8 +1322,13 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     }
   }
 
-  Widget _modeChip(String label, String value, String cur, BuildContext ctx,
-      ValueChanged<String> onTap) {
+  Widget _modeChip(
+    String label,
+    String value,
+    String cur,
+    BuildContext ctx,
+    ValueChanged<String> onTap,
+  ) {
     final sel = cur == value;
     return GestureDetector(
       onTap: () => onTap(value),
@@ -1166,11 +1340,14 @@ class _AdminUsersTabState extends State<AdminUsersTab>
           borderRadius: BorderRadius.circular(R.full),
           border: sel ? null : Border.all(color: C.stroke),
         ),
-        child: Text(label,
-            style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w700,
-                color: sel ? Colors.white : ctx.t2)),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+            color: sel ? Colors.white : ctx.t2,
+          ),
+        ),
       ),
     );
   }
@@ -1220,12 +1397,15 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                 const Icon(Icons.history_rounded, color: C.cyan, size: 21),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('$nickname · 操作日志',
-                      style: Ty.h2.copyWith(fontSize: 17, color: ctx.t1)),
+                  child: Text(
+                    '$nickname · 操作日志',
+                    style: Ty.h2.copyWith(fontSize: 17, color: ctx.t1),
+                  ),
                 ),
                 IconButton(
-                    icon: const Icon(Icons.close, size: 20),
-                    onPressed: () => Navigator.pop(ctx)),
+                  icon: const Icon(Icons.close, size: 20),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
               ],
             ),
             // 汇总信息
@@ -1239,12 +1419,16 @@ class _AdminUsersTabState extends State<AdminUsersTab>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('共 ${stat['total'] ?? 0} 条记录',
-                      style: Ty.h3.copyWith(fontSize: 14, color: ctx.t1)),
+                  Text(
+                    '共 ${stat['total'] ?? 0} 条记录',
+                    style: Ty.h3.copyWith(fontSize: 14, color: ctx.t1),
+                  ),
                   const SizedBox(height: 6),
                   if (user['email'] != null && '${user['email']}'.isNotEmpty)
-                    Text('邮箱：${user['email']}',
-                        style: Ty.tiny.copyWith(color: ctx.t3)),
+                    Text(
+                      '邮箱：${user['email']}',
+                      style: Ty.tiny.copyWith(color: ctx.t3),
+                    ),
                   if (devices.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
@@ -1269,68 +1453,89 @@ class _AdminUsersTabState extends State<AdminUsersTab>
               child: loading
                   ? const Center(
                       child: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2.4)))
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2.4),
+                      ),
+                    )
                   : (logs.isEmpty
-                      ? const Center(child: Text('暂无操作记录'))
-                      : ListView.separated(
-                          itemCount: logs.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 7),
-                          itemBuilder: (_, i) {
-                            final L = logs[i];
-                            return Container(
-                              padding: const EdgeInsets.all(11),
-                              decoration: BoxDecoration(
-                                color: ctx.isDark
-                                    ? Colors.white.withAlpha(8)
-                                    : C.bg2,
-                                borderRadius: BorderRadius.circular(R.md),
-                                border: Border.all(
-                                    color: C.stroke.withAlpha(50), width: 0.8),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Pill('${L['action']}',
-                                          color: C.brand, small: true),
-                                      const SizedBox(width: 7),
-                                      Expanded(
-                                        child: Text('${L['detail'] ?? ''}',
+                        ? const Center(child: Text('暂无操作记录'))
+                        : ListView.separated(
+                            itemCount: logs.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 7),
+                            itemBuilder: (_, i) {
+                              final L = logs[i];
+                              return Container(
+                                padding: const EdgeInsets.all(11),
+                                decoration: BoxDecoration(
+                                  color: ctx.isDark
+                                      ? Colors.white.withAlpha(8)
+                                      : C.bg2,
+                                  borderRadius: BorderRadius.circular(R.md),
+                                  border: Border.all(
+                                    color: C.stroke.withAlpha(50),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Pill(
+                                          '${L['action']}',
+                                          color: C.brand,
+                                          small: true,
+                                        ),
+                                        const SizedBox(width: 7),
+                                        Expanded(
+                                          child: Text(
+                                            '${L['detail'] ?? ''}',
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: Ty.small.copyWith(
-                                                fontSize: 12.5,
-                                                color: ctx.t2)),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Wrap(
-                                    spacing: 10,
-                                    runSpacing: 4,
-                                    children: [
-                                      _miniMeta(ctx,
+                                              fontSize: 12.5,
+                                              color: ctx.t2,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Wrap(
+                                      spacing: 10,
+                                      runSpacing: 4,
+                                      children: [
+                                        _miniMeta(
+                                          ctx,
                                           Icons.access_time_rounded,
-                                          '${L['createtime_text'] ?? ''}'),
-                                      _miniMeta(ctx, Icons.location_on_outlined,
-                                          '${L['ip']} ${L['address']}'),
-                                      if ('${L['device'] ?? ''}'.isNotEmpty)
-                                        _miniMeta(ctx,
+                                          '${L['createtime_text'] ?? ''}',
+                                        ),
+                                        _miniMeta(
+                                          ctx,
+                                          Icons.location_on_outlined,
+                                          '${L['ip']} ${L['address']}',
+                                        ),
+                                        if ('${L['device'] ?? ''}'.isNotEmpty)
+                                          _miniMeta(
+                                            ctx,
                                             Icons.phone_android_rounded,
-                                            '${L['device']}'),
-                                      if ('${L['os'] ?? ''}'.isNotEmpty)
-                                        _miniMeta(ctx, Icons.memory_rounded,
-                                            '${L['os']}'),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        )),
+                                            '${L['device']}',
+                                          ),
+                                        if ('${L['os'] ?? ''}'.isNotEmpty)
+                                          _miniMeta(
+                                            ctx,
+                                            Icons.memory_rounded,
+                                            '${L['os']}',
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          )),
             ),
           ],
         ),
@@ -1345,8 +1550,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       children: [
         Icon(i, size: 11, color: ctx.t3),
         const SizedBox(width: 3),
-        Text(t.trim(),
-            style: Ty.tiny.copyWith(fontSize: 10.5, color: ctx.t3)),
+        Text(t.trim(), style: Ty.tiny.copyWith(fontSize: 10.5, color: ctx.t3)),
       ],
     );
   }
@@ -1365,10 +1569,13 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.xl)),
-        title: Text('${u['nickname'] ?? '用户详情'}',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(R.xl),
+        ),
+        title: Text(
+          '${u['nickname'] ?? '用户详情'}',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
         content: SizedBox(
           width: double.maxFinite,
           child: SingleChildScrollView(
@@ -1383,15 +1590,23 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                 _detailRow('称号', '${u['title'] ?? '-'}'),
                 _detailRow('积分', '${u['score'] ?? 0}'),
                 _detailRow('余额', '¥${u['money'] ?? '0.00'}'),
-                _detailRow('身份', (u['is_admin'] == true || u['is_admin'] == 1 || u['is_admin'] == '1') ? '管理员' : '普通用户'),
-                _detailRow('状态',
-                    u['status'] == 'hidden' ? '已禁用' : '正常'),
-                _detailRow('会员',
-                    (u['is_vip'] == true ||
-                            u['is_vip'] == 1 ||
-                            u['is_vip'] == '1')
-                        ? 'VIP 至 ${u['vip_expire_text']}'
-                        : '非会员'),
+                _detailRow(
+                  '身份',
+                  (u['is_admin'] == true ||
+                          u['is_admin'] == 1 ||
+                          u['is_admin'] == '1')
+                      ? '管理员'
+                      : '普通用户',
+                ),
+                _detailRow('状态', u['status'] == 'hidden' ? '已禁用' : '正常'),
+                _detailRow(
+                  '会员',
+                  (u['is_vip'] == true ||
+                          u['is_vip'] == 1 ||
+                          u['is_vip'] == '1')
+                      ? 'VIP 至 ${u['vip_expire_text']}'
+                      : '非会员',
+                ),
                 _detailRow('注册时间', '${u['createtime_text'] ?? '-'}'),
                 _detailRow('最后登录', '${u['login_time_text'] ?? '-'}'),
                 _detailRow('显示 IP', displayIp),
@@ -1402,35 +1617,45 @@ class _AdminUsersTabState extends State<AdminUsersTab>
         ),
         actions: [
           FilledButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('关闭')),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('关闭'),
+          ),
         ],
       ),
     );
   }
 
   Widget _detailRow(String k, String v) => Padding(
-        padding: const EdgeInsets.only(bottom: 7),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 66,
-              child: Text(k,
-                  style: Ty.tiny.copyWith(color: context.t3, fontSize: 12)),
-            ),
-            Expanded(
-              child: SelectableText(v,
-                  style: Ty.small.copyWith(fontSize: 12.5, color: context.t1)),
-            ),
-          ],
+    padding: const EdgeInsets.only(bottom: 7),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 66,
+          child: Text(
+            k,
+            style: Ty.tiny.copyWith(color: context.t3, fontSize: 12),
+          ),
         ),
-      );
+        Expanded(
+          child: SelectableText(
+            v,
+            style: Ty.small.copyWith(fontSize: 12.5, color: context.t1),
+          ),
+        ),
+      ],
+    ),
+  );
 
   // ───────── 分页 ─────────
   Widget _pager() {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          context.pagePadding, 2, context.pagePadding, 10),
+        context.pagePadding,
+        2,
+        context.pagePadding,
+        10,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -1446,8 +1671,10 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                 : () {},
           ),
           const SizedBox(width: 14),
-          Text('$_page / $_maxPage  ·  共 $_total 人',
-              style: Ty.tiny.copyWith(color: context.t2)),
+          Text(
+            '$_page / $_maxPage  ·  共 $_total 人',
+            style: Ty.tiny.copyWith(color: context.t2),
+          ),
           const SizedBox(width: 14),
           SoftButton(
             label: '下一页',
@@ -1519,52 +1746,58 @@ class _AdminUsersTabState extends State<AdminUsersTab>
             setD(() {
               // 只选了日期（取消时间选择）时，默认当天 23:59 到期
               vipDt = DateTime(
-                  d.year, d.month, d.day, t?.hour ?? 23, t?.minute ?? 59);
+                d.year,
+                d.month,
+                d.day,
+                t?.hour ?? 23,
+                t?.minute ?? 59,
+              );
               vipForever = false;
               vipTouched = true;
             });
           }
 
           void setDays(int n) => setD(() {
-                final b = vipBase();
-                vipDt = n >= 365
-                    ? DateTime(b.year + 1, b.month, b.day, b.hour, b.minute)
-                    : b.add(Duration(days: n));
-                vipForever = false;
-                vipTouched = true;
-              });
+            final b = vipBase();
+            vipDt = n >= 365
+                ? DateTime(b.year + 1, b.month, b.day, b.hour, b.minute)
+                : b.add(Duration(days: n));
+            vipForever = false;
+            vipTouched = true;
+          });
 
           void setForever() => setD(() {
-                vipForever = true;
-                vipTouched = true;
-              });
+            vipForever = true;
+            vipTouched = true;
+          });
 
           void clearVip() => setD(() {
-                vipDt = null;
-                vipForever = false;
-                vipTouched = true;
-              });
+            vipDt = null;
+            vipForever = false;
+            vipTouched = true;
+          });
 
-          final vipActive = vipForever || (vipDt != null && vipDt!.isAfter(now));
+          final vipActive =
+              vipForever || (vipDt != null && vipDt!.isAfter(now));
           final stateText = vipForever
               ? '已是永久会员'
               : vipDt == null
-                  ? '当前不是会员'
-                  : (vipActive
-                      ? '会员至 ${_fmtVip(vipDt)}'
-                      : '已过期 ${_fmtVip(vipDt)}');
+              ? '当前不是会员'
+              : (vipActive ? '会员至 ${_fmtVip(vipDt)}' : '已过期 ${_fmtVip(vipDt)}');
           final stateColor = vipForever
               ? C.gold
               : vipDt == null
-                  ? context.t3
-                  : (vipActive ? C.gold : C.warning);
+              ? context.t3
+              : (vipActive ? C.gold : C.warning);
 
           return AlertDialog(
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(R.xl)),
-            title: Text('编辑用户：${u['nickname']}',
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              borderRadius: BorderRadius.circular(R.xl),
+            ),
+            title: Text(
+              '编辑用户：${u['nickname']}',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            ),
             content: SizedBox(
               width: double.maxFinite,
               child: SingleChildScrollView(
@@ -1572,46 +1805,51 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
-                        controller: nickCtrl,
-                        decoration: const InputDecoration(labelText: '昵称')),
+                      controller: nickCtrl,
+                      decoration: const InputDecoration(labelText: '昵称'),
+                    ),
                     const SizedBox(height: 10),
                     TextField(
-                        controller: emailCtrl,
-                        decoration: const InputDecoration(labelText: '邮箱')),
+                      controller: emailCtrl,
+                      decoration: const InputDecoration(labelText: '邮箱'),
+                    ),
                     const SizedBox(height: 10),
                     TextField(
-                        controller: qqCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: 'QQ号')),
+                      controller: qqCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'QQ号'),
+                    ),
                     const SizedBox(height: 10),
                     Row(
                       children: [
                         Expanded(
                           child: TextField(
-                              controller: scoreCtrl,
-                              keyboardType: TextInputType.number,
-                              decoration:
-                                  const InputDecoration(labelText: '积分')),
+                            controller: scoreCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(labelText: '积分'),
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: TextField(
-                              controller: moneyCtrl,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                      decimal: true),
-                              decoration:
-                                  const InputDecoration(labelText: '余额')),
+                            controller: moneyCtrl,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            decoration: const InputDecoration(labelText: '余额'),
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
                     TextField(
-                        controller: titleCtrl,
-                        maxLength: 12,
-                        decoration: const InputDecoration(
-                            labelText: '自定义称号',
-                            helperText: '显示在广场动态旁，留空则清除')),
+                      controller: titleCtrl,
+                      maxLength: 12,
+                      decoration: const InputDecoration(
+                        labelText: '自定义称号',
+                        helperText: '显示在广场动态旁，留空则清除',
+                      ),
+                    ),
                     // ───── 会员到期时间（可点选日历 + 时间，支持快捷设置） ─────
                     Container(
                       width: double.infinity,
@@ -1626,24 +1864,33 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.workspace_premium_outlined,
-                                  size: 14, color: C.gold),
+                              const Icon(
+                                Icons.workspace_premium_outlined,
+                                size: 14,
+                                color: C.gold,
+                              ),
                               const SizedBox(width: 5),
-                              const Text('会员到期时间',
-                                  style: TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: C.gold)),
+                              const Text(
+                                '会员到期时间',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: C.gold,
+                                ),
+                              ),
                               const Spacer(),
                               Flexible(
-                                child: Text(stateText,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.right,
-                                    style: TextStyle(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: stateColor)),
+                                child: Text(
+                                  stateText,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.right,
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: stateColor,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -1657,36 +1904,41 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                                     height: 40,
                                     alignment: Alignment.center,
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 10),
+                                      horizontal: 10,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: Theme.of(ctx).cardColor,
-                                      borderRadius:
-                                          BorderRadius.circular(R.sm),
+                                      borderRadius: BorderRadius.circular(R.sm),
                                       border: Border.all(
-                                          color: C.gold.withAlpha(110)),
+                                        color: C.gold.withAlpha(110),
+                                      ),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Icon(Icons.event_rounded,
-                                            size: 15, color: C.gold),
+                                        const Icon(
+                                          Icons.event_rounded,
+                                          size: 15,
+                                          color: C.gold,
+                                        ),
                                         const SizedBox(width: 6),
                                         Flexible(
                                           child: Text(
                                             vipForever
                                                 ? '永久（2099-12-31）'
                                                 : (vipDt == null
-                                                    ? '点此选择到期日期与时间'
-                                                    : _fmtVip(vipDt)),
+                                                      ? '点此选择到期日期与时间'
+                                                      : _fmtVip(vipDt)),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
-                                                fontSize: 12.5,
-                                                fontWeight: FontWeight.w700,
-                                                color: vipDt == null &&
-                                                        !vipForever
-                                                    ? context.t3
-                                                    : context.t1),
+                                              fontSize: 12.5,
+                                              fontWeight: FontWeight.w700,
+                                              color:
+                                                  vipDt == null && !vipForever
+                                                  ? context.t3
+                                                  : context.t1,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -1701,19 +1953,25 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                                   height: 40,
                                   alignment: Alignment.center,
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 12),
+                                    horizontal: 12,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: C.danger.withAlpha(
-                                        context.isDark ? 30 : 20),
+                                      context.isDark ? 30 : 20,
+                                    ),
                                     borderRadius: BorderRadius.circular(R.sm),
                                     border: Border.all(
-                                        color: C.danger.withAlpha(90)),
+                                      color: C.danger.withAlpha(90),
+                                    ),
                                   ),
-                                  child: const Text('清空',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w800,
-                                          color: C.danger)),
+                                  child: const Text(
+                                    '清空',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                      color: C.danger,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -1735,9 +1993,10 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                             '「清空」= 取消会员；快捷按钮在未过期的原到期日上顺延，'
                             '已过期则从当前时间算起；不修改则保持原值。',
                             style: TextStyle(
-                                fontSize: 10.5,
-                                height: 1.4,
-                                color: context.t3),
+                              fontSize: 10.5,
+                              height: 1.4,
+                              color: context.t3,
+                            ),
                           ),
                         ],
                       ),
@@ -1748,11 +2007,13 @@ class _AdminUsersTabState extends State<AdminUsersTab>
             ),
             actions: [
               TextButton(
-                  onPressed: () => Get.back(result: false),
-                  child: const Text('取消')),
+                onPressed: () => Get.back(result: false),
+                child: const Text('取消'),
+              ),
               FilledButton(
-                  onPressed: () => Get.back(result: true),
-                  child: const Text('保存')),
+                onPressed: () => Get.back(result: true),
+                child: const Text('保存'),
+              ),
             ],
           );
         },
@@ -1771,8 +2032,9 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       };
       // ★ 1014_viptime：只有真正改过才发 vip_expire，未改保持数据库原值
       if (vipTouched) {
-        data['vip_expire'] =
-            vipForever ? '2099-12-31 23:59:59' : _fmtVip(vipDt, withSec: true);
+        data['vip_expire'] = vipForever
+            ? '2099-12-31 23:59:59'
+            : _fmtVip(vipDt, withSec: true);
       }
       await _svc.saveUser(data);
       ToastUtil.success('保存成功');
@@ -1793,19 +2055,22 @@ class _AdminUsersTabState extends State<AdminUsersTab>
 
   /// 会员到期时间快捷按钮（金色胶囊）
   Widget _vipChip(String label, VoidCallback onTap) => AppPressable(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            color: C.gold.withAlpha(context.isDark ? 30 : 20),
-            borderRadius: BorderRadius.circular(R.full),
-            border: Border.all(color: C.gold.withAlpha(90)),
-          ),
-          child: Text(label,
-              style: const TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w800,
-                  color: C.gold)),
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: C.gold.withAlpha(context.isDark ? 30 : 20),
+        borderRadius: BorderRadius.circular(R.full),
+        border: Border.all(color: C.gold.withAlpha(90)),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 11.5,
+          fontWeight: FontWeight.w800,
+          color: C.gold,
         ),
-      );
+      ),
+    ),
+  );
 }

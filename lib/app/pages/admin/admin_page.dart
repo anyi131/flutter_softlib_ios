@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'admin_ui_kit.dart';
+
 import 'admin_shell_v2.dart';
 import 'admin_overview_v2.dart';
 
@@ -170,7 +172,7 @@ class _OverviewTabState extends State<_OverviewTab> {
       return const LoadingState(text: '加载概览数据…');
     }
     // v52f #8：概览顶部系统信息卡（视觉重构的一部分）
-    final sysCard = GlassCard(
+    final sysCard = AdCard(
       radius: R.xl,
       padding: const EdgeInsets.all(16),
       glow: C.brand,
@@ -271,7 +273,7 @@ class _OverviewTabState extends State<_OverviewTab> {
             childAspectRatio: 1.7,
             children: items
                 .map(
-                  (it) => GlassCard(
+                  (it) => AdCard(
                     radius: R.lg,
                     padding: const EdgeInsets.all(14),
                     child: Column(
@@ -303,7 +305,7 @@ class _OverviewTabState extends State<_OverviewTab> {
                 .toList(),
           ),
           const SizedBox(height: 20),
-          const SectionHeader(title: '经营数据', accent: C.gold),
+          const AdSection(title: '经营数据', accent: C.gold),
           GridView.count(
             crossAxisCount: context.isWide ? 4 : 2,
             shrinkWrap: true,
@@ -313,7 +315,7 @@ class _OverviewTabState extends State<_OverviewTab> {
             childAspectRatio: 1.7,
             children: biz
                 .map(
-                  (it) => GlassCard(
+                  (it) => AdCard(
                     radius: R.lg,
                     padding: const EdgeInsets.all(14),
                     glow: it.$3,
@@ -352,12 +354,12 @@ class _OverviewTabState extends State<_OverviewTab> {
           const CollectStatsCard(),
           // ═════ 启动数据 ═════
           const SizedBox(height: 20),
-          SectionHeader(
+          AdSection(
             title: '启动数据',
             subtitle: 'App 每次启动都会上报（tag=boot）',
             accent: C.brandBright,
           ),
-          GlassCard(
+          AdCard(
             radius: R.lg,
             padding: const EdgeInsets.all(14),
             child: Column(
@@ -428,12 +430,12 @@ class _OverviewTabState extends State<_OverviewTab> {
           ),
           // ═════ 在线数据 ═════
           const SizedBox(height: 20),
-          SectionHeader(
+          AdSection(
             title: '在线数据',
             subtitle: '按最后活跃时间统计（5 分钟内有请求算活跃）',
             accent: C.mint,
           ),
-          GlassCard(
+          AdCard(
             radius: R.lg,
             padding: const EdgeInsets.all(14),
             child: Column(
@@ -466,12 +468,12 @@ class _OverviewTabState extends State<_OverviewTab> {
           ),
           // ═════ 下载数据 + 下载记录 ═════
           const SizedBox(height: 20),
-          SectionHeader(
+          AdSection(
             title: '下载数据',
             subtitle: '今日下载 / 失败 / 累计 · 点记录看详情',
             accent: C.cyan,
           ),
-          GlassCard(
+          AdCard(
             radius: R.lg,
             padding: const EdgeInsets.all(14),
             child: Column(
@@ -562,12 +564,12 @@ class _OverviewTabState extends State<_OverviewTab> {
           // ═════ 热门软件 ═════
           if (((_d['top_apps'] as List?) ?? []).isNotEmpty) ...[
             const SizedBox(height: 20),
-            SectionHeader(
+            AdSection(
               title: '热门软件 Top5',
               subtitle: '按下载量排序 · 累计下载 ${_d['total_down'] ?? 0} 次',
               accent: C.rose,
             ),
-            GlassCard(
+            AdCard(
               radius: R.lg,
               padding: const EdgeInsets.all(14),
               child: Column(
@@ -630,12 +632,8 @@ class _OverviewTabState extends State<_OverviewTab> {
           ],
           if (trend.isNotEmpty) ...[
             const SizedBox(height: 20),
-            SectionHeader(
-              title: '近 7 日趋势',
-              subtitle: '新增用户 / 收入',
-              accent: C.brand,
-            ),
-            GlassCard(
+            AdSection(title: '近 7 日趋势', subtitle: '新增用户 / 收入', accent: C.brand),
+            AdCard(
               radius: R.lg,
               padding: const EdgeInsets.fromLTRB(14, 16, 14, 10),
               child: Column(

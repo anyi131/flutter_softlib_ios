@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../admin_ui_kit.dart';
+
 import 'package:get/get.dart';
 
 import '../../../api/admin_service.dart';
@@ -172,18 +175,23 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
 
   /// ★ 解除登录（清掉本地会话）
   Future<void> _logout() async {
-    final ok = await Get.dialog<bool>(AlertDialog(
-      title: const Text('解除采集登录'),
-      content: const Text('解除后需要重新登录才能采集。账号密码会保留，重新登录只需一次点击。'),
-      actions: [
-        TextButton(
-            onPressed: () => Get.back(result: false), child: const Text('取消')),
-        FilledButton(
+    final ok = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('解除采集登录'),
+        content: const Text('解除后需要重新登录才能采集。账号密码会保留，重新登录只需一次点击。'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
             style: FilledButton.styleFrom(backgroundColor: C.danger),
             onPressed: () => Get.back(result: true),
-            child: const Text('解除')),
-      ],
-    ));
+            child: const Text('解除'),
+          ),
+        ],
+      ),
+    );
     if (ok != true) return;
     await _run(() async {
       await _svc.collectLogout();
@@ -200,21 +208,22 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
   @override
   Widget build(BuildContext context) {
     if (_loadingCfg) {
-      return KitCard(
+      return AdCard(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2)),
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
             const SizedBox(width: 10),
             Text('读取采集账号…', style: Ty.small.copyWith(color: context.t2)),
           ],
         ),
       );
     }
-    return KitCard(
+    return AdCard(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,8 +248,11 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
         const SizedBox(width: 8),
         Text('采集账号（版权梦）', style: Ty.h3.copyWith(color: context.t1)),
         const Spacer(),
-        Pill(_loggedIn ? '已登录' : '未登录',
-            color: _loggedIn ? C.success : C.warning, small: true),
+        Pill(
+          _loggedIn ? '已登录' : '未登录',
+          color: _loggedIn ? C.success : C.warning,
+          small: true,
+        ),
       ],
     );
   }
@@ -290,21 +302,22 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
   }
 
   Widget _row(String k, String v) => Padding(
-        padding: const EdgeInsets.only(bottom: 5),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 68,
-              child: Text(k, style: Ty.tiny.copyWith(color: context.t3)),
-            ),
-            Expanded(
-              child: Text(v,
-                  style: Ty.small
-                      .copyWith(fontSize: 12.5, color: context.t1)),
-            ),
-          ],
+    padding: const EdgeInsets.only(bottom: 5),
+    child: Row(
+      children: [
+        SizedBox(
+          width: 68,
+          child: Text(k, style: Ty.tiny.copyWith(color: context.t3)),
         ),
-      );
+        Expanded(
+          child: Text(
+            v,
+            style: Ty.small.copyWith(fontSize: 12.5, color: context.t1),
+          ),
+        ),
+      ],
+    ),
+  );
 
   // ───────── 编辑态 ─────────
   Widget _form() {
@@ -315,7 +328,7 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
           _hasPass
               ? '修改账号密码后点「保存并登录」。密码留空表示不修改。'
               : '填写采集平台的账号密码，保存后即可一键登录（含验证码自动识别），'
-                  '不用再手工从浏览器复制 Cookie。',
+                    '不用再手工从浏览器复制 Cookie。',
           style: Ty.small.copyWith(color: context.t2, height: 1.5),
         ),
         const SizedBox(height: 12),
@@ -357,8 +370,9 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
                 child: SoftButton(
                   label: '取消',
                   height: 46,
-                  onPressed:
-                      _busy ? null : () => setState(() => _editing = false),
+                  onPressed: _busy
+                      ? null
+                      : () => setState(() => _editing = false),
                 ),
               ),
               const SizedBox(width: 10),
@@ -380,9 +394,7 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
         TextButton.icon(
           onPressed: () => setState(() => _showCookie = !_showCookie),
           icon: Icon(
-            _showCookie
-                ? Icons.expand_less_rounded
-                : Icons.expand_more_rounded,
+            _showCookie ? Icons.expand_less_rounded : Icons.expand_more_rounded,
             size: 18,
           ),
           label: const Text('登录失败？改用浏览器 Cookie 方式'),
@@ -402,8 +414,9 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
             decoration: InputDecoration(
               hintText: 'PHPSESSID=xxx; ol_token=xxx; ...',
               isDense: true,
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(R.md)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(R.md),
+              ),
             ),
           ),
           const SizedBox(height: 10),
@@ -434,8 +447,10 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
         isDense: true,
         prefixIcon: Icon(icon, size: 18),
         suffixIcon: suffix,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(R.md)),
       ),
     );

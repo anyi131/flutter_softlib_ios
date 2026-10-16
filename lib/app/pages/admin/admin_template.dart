@@ -133,7 +133,8 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
     );
   }
 
-  Widget _views() => TabBarView(controller: widget.tab, children: widget.children);
+  Widget _views() =>
+      TabBarView(controller: widget.tab, children: widget.children);
 
   Widget _headerLight(BuildContext context) => Padding(
     padding: EdgeInsets.fromLTRB(

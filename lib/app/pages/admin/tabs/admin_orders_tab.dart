@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../admin_ui_kit.dart';
+
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
@@ -40,8 +43,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
   void initState() {
     super.initState();
     _scroll.addListener(() {
-      if (_scroll.position.pixels >=
-          _scroll.position.maxScrollExtent - 200) {
+      if (_scroll.position.pixels >= _scroll.position.maxScrollExtent - 200) {
         _loadMore();
       }
     });
@@ -65,11 +67,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
     }
     try {
       final results = await Future.wait([
-        _svc.orders(
-          status: _status,
-          keyword: _kwCtrl.text.trim(),
-          page: _page,
-        ),
+        _svc.orders(status: _status, keyword: _kwCtrl.text.trim(), page: _page),
         if (reset) _svc.orderStats() else Future.value(_stats),
       ]);
       if (!mounted) return;
@@ -125,37 +123,43 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
           child: _loading
               ? const LoadingState(text: '加载订单…')
               : (_list.isEmpty
-                  ? const EmptyState(
-                      text: '暂无订单',
-                      hint: '用户购买会员或充值余额后订单会显示在这里',
-                      icon: Icons.receipt_long_rounded,
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.separated(
-                        controller: _scroll,
-                        padding: EdgeInsets.fromLTRB(
-                            context.pagePadding, 4, context.pagePadding, 24),
-                        itemCount: _list.length + (_loadingMore ? 1 : 0),
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
-                        itemBuilder: (_, i) {
-                          if (i >= _list.length) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16),
-                              child: Center(
-                                child: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2),
+                    ? const EmptyState(
+                        text: '暂无订单',
+                        hint: '用户购买会员或充值余额后订单会显示在这里',
+                        icon: Icons.receipt_long_rounded,
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _load,
+                        child: ListView.separated(
+                          controller: _scroll,
+                          padding: EdgeInsets.fromLTRB(
+                            context.pagePadding,
+                            4,
+                            context.pagePadding,
+                            24,
+                          ),
+                          itemCount: _list.length + (_loadingMore ? 1 : 0),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (_, i) {
+                            if (i >= _list.length) {
+                              return const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                child: Center(
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            );
-                          }
-                          return _orderCard(_list[i]);
-                        },
-                      ),
-                    )),
+                              );
+                            }
+                            return _orderCard(_list[i]);
+                          },
+                        ),
+                      )),
         ),
       ],
     );
@@ -171,8 +175,12 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
     ];
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          context.pagePadding, 10, context.pagePadding, 6),
-      child: GlassCard(
+        context.pagePadding,
+        10,
+        context.pagePadding,
+        6,
+      ),
+      child: AdCard(
         radius: R.lg,
         padding: const EdgeInsets.symmetric(vertical: 14),
         child: Row(
@@ -189,12 +197,15 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
               Expanded(
                 child: Column(
                   children: [
-                    Text(items[i].$2,
-                        style: Ty.h3.copyWith(
-                            fontSize: 15, color: items[i].$3)),
+                    Text(
+                      items[i].$2,
+                      style: Ty.h3.copyWith(fontSize: 15, color: items[i].$3),
+                    ),
                     const SizedBox(height: 3),
-                    Text(items[i].$1,
-                        style: Ty.tiny.copyWith(color: context.t3)),
+                    Text(
+                      items[i].$1,
+                      style: Ty.tiny.copyWith(color: context.t3),
+                    ),
                   ],
                 ),
               ),
@@ -209,7 +220,11 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
   Widget _searchRow() {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          context.pagePadding, 2, context.pagePadding, 4),
+        context.pagePadding,
+        2,
+        context.pagePadding,
+        4,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -236,7 +251,8 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                       : null,
                   contentPadding: const EdgeInsets.symmetric(vertical: 8),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(R.md)),
+                    borderRadius: BorderRadius.circular(R.md),
+                  ),
                 ),
               ),
             ),
@@ -257,7 +273,11 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
     const labels = ['全部', '待支付', '已支付'];
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          context.pagePadding, 6, context.pagePadding, 8),
+        context.pagePadding,
+        6,
+        context.pagePadding,
+        8,
+      ),
       child: Row(
         children: [
           for (var i = 0; i < labels.length; i++) ...[
@@ -267,8 +287,10 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                 _load();
               },
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 7,
+                ),
                 decoration: BoxDecoration(
                   color: (_status == (i == 0 ? null : i - 1))
                       ? C.brand
@@ -278,17 +300,19 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                     color: (_status == (i == 0 ? null : i - 1))
                         ? C.brand
                         : (context.isDark
-                            ? Colors.white.withAlpha(20)
-                            : Colors.black.withAlpha(8)),
+                              ? Colors.white.withAlpha(20)
+                              : Colors.black.withAlpha(8)),
                   ),
                 ),
-                child: Text(labels[i],
-                    style: Ty.tiny.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: (_status == (i == 0 ? null : i - 1))
-                          ? Colors.white
-                          : context.t2,
-                    )),
+                child: Text(
+                  labels[i],
+                  style: Ty.tiny.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: (_status == (i == 0 ? null : i - 1))
+                        ? Colors.white
+                        : context.t2,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -341,15 +365,15 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
     final buyer = _buyerName(o);
     final buyerSub = _buyerSub(o);
     final kind = _orderKind(o);
-    final payType = {'alipay': '支付宝', 'wxpay': '微信', 'qqpay': 'QQ'}[
-            (o['pay_type'] ?? '').toString()] ??
+    final payType =
+        {'alipay': '支付宝', 'wxpay': '微信', 'qqpay': 'QQ'}[(o['pay_type'] ?? '')
+            .toString()] ??
         (o['pay_type'] ?? '').toString();
-    final time = (paid
-            ? (o['paytime_text'] ?? '')
-            : (o['createtime_text'] ?? ''))
-        .toString();
+    final time =
+        (paid ? (o['paytime_text'] ?? '') : (o['createtime_text'] ?? ''))
+            .toString();
 
-    return KitCard(
+    return AdCard(
       radius: R.md,
       padding: const EdgeInsets.all(13),
       onTap: () => _showDetail(o),
@@ -359,21 +383,31 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
           Row(
             children: [
               Expanded(
-                child: Text(name,
-                    style: Ty.h3.copyWith(fontSize: 14.5, color: context.t1)),
+                child: Text(
+                  name,
+                  style: Ty.h3.copyWith(fontSize: 14.5, color: context.t1),
+                ),
               ),
-              Text('¥$money',
-                  style: Ty.h3.copyWith(fontSize: 16, color: C.gold)),
+              Text(
+                '¥$money',
+                style: Ty.h3.copyWith(fontSize: 16, color: C.gold),
+              ),
             ],
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              Pill(paid ? '已支付' : '待支付',
-                  color: paid ? C.success : C.warning, small: true),
+              Pill(
+                paid ? '已支付' : '待支付',
+                color: paid ? C.success : C.warning,
+                small: true,
+              ),
               const SizedBox(width: 6),
-              Pill(kind,
-                  color: kind == '余额充值' ? C.cyan : C.violet, small: true),
+              Pill(
+                kind,
+                color: kind == '余额充值' ? C.cyan : C.violet,
+                small: true,
+              ),
               if (payType.isNotEmpty) ...[
                 const SizedBox(width: 6),
                 Pill(payType, color: C.brand, small: true),
@@ -407,9 +441,10 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                   child: Text(
                     buyer.characters.first.toUpperCase(),
                     style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -417,30 +452,36 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('购买者：$buyer',
+                      Text(
+                        '购买者：$buyer',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Ty.small.copyWith(
+                          color: context.t1,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (buyerSub.isNotEmpty)
+                        Text(
+                          buyerSub,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: Ty.small.copyWith(
-                              color: context.t1,
-                              fontWeight: FontWeight.w700)),
-                      if (buyerSub.isNotEmpty)
-                        Text(buyerSub,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Ty.tiny.copyWith(color: context.t3)),
+                          style: Ty.tiny.copyWith(color: context.t3),
+                        ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded,
-                    size: 18, color: context.t3),
+                Icon(Icons.chevron_right_rounded, size: 18, color: context.t3),
               ],
             ),
           ),
           const SizedBox(height: 8),
-          Text('订单号 $no',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Ty.tiny.copyWith(color: context.t3)),
+          Text(
+            '订单号 $no',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Ty.tiny.copyWith(color: context.t3),
+          ),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -488,30 +529,41 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
     final paid = o['status'] == 1 || o['status'] == '1';
     final rows = <(String, String)>[
       ('订单号', '${o['out_trade_no'] ?? '-'}'),
-      ('网关流水号', '${(o['trade_no'] ?? '').toString().isEmpty ? '—' : o['trade_no']}'),
+      (
+        '网关流水号',
+        '${(o['trade_no'] ?? '').toString().isEmpty ? '—' : o['trade_no']}',
+      ),
       ('商品名称', '${o['name'] ?? '-'}'),
       ('订单类型', _orderKind(o)),
       ('金额', '¥${o['money'] ?? '0.00'}'),
       ('状态', paid ? '已支付' : '待支付'),
-      ('支付方式', {
-            'alipay': '支付宝',
-            'wxpay': '微信',
-            'qqpay': 'QQ',
-          }[(o['pay_type'] ?? '').toString()] ??
-          '${(o['pay_type'] ?? '').toString().isEmpty ? '—' : o['pay_type']}'),
-      ('会员天数', '${int.tryParse('${o['days'] ?? 0}') == 0 ? '—（充值单）' : '${o['days']} 天'}'),
+      (
+        '支付方式',
+        {'alipay': '支付宝', 'wxpay': '微信', 'qqpay': 'QQ'}[(o['pay_type'] ?? '')
+                .toString()] ??
+            '${(o['pay_type'] ?? '').toString().isEmpty ? '—' : o['pay_type']}',
+      ),
+      (
+        '会员天数',
+        '${int.tryParse('${o['days'] ?? 0}') == 0 ? '—（充值单）' : '${o['days']} 天'}',
+      ),
       ('购买者', _buyerName(o)),
-      ('买家邮箱', (o['email'] ?? '').toString().isEmpty
-          ? '—'
-          : '${o['email']}'),
-      ('用户 ID', '${int.tryParse('${o['user_id'] ?? 0}') == 0 ? '—' : o['user_id']}'),
+      ('买家邮箱', (o['email'] ?? '').toString().isEmpty ? '—' : '${o['email']}'),
+      (
+        '用户 ID',
+        '${int.tryParse('${o['user_id'] ?? 0}') == 0 ? '—' : o['user_id']}',
+      ),
       ('下单时间', '${o['createtime_text'] ?? '-'}'),
-      ('支付时间', '${(o['paytime_text'] ?? '').toString().isEmpty ? '—' : o['paytime_text']}'),
+      (
+        '支付时间',
+        '${(o['paytime_text'] ?? '').toString().isEmpty ? '—' : o['paytime_text']}',
+      ),
     ];
     Get.bottomSheet(
       Container(
         constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.78),
+          maxHeight: MediaQuery.of(context).size.height * 0.78,
+        ),
         decoration: BoxDecoration(
           color: context.isDark ? C.bg1 : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(R.xl)),
@@ -524,15 +576,20 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
             children: [
               Row(
                 children: [
-                  Icon(Icons.receipt_long_rounded,
-                      size: 20, color: C.brand),
+                  Icon(Icons.receipt_long_rounded, size: 20, color: C.brand),
                   const SizedBox(width: 8),
-                  Text('订单详情',
-                      style: Ty.h2.copyWith(fontSize: 17, color: context.t1)),
+                  Text(
+                    '订单详情',
+                    style: Ty.h2.copyWith(fontSize: 17, color: context.t1),
+                  ),
                   const Spacer(),
                   IconButton(
                     onPressed: () => Get.back(),
-                    icon: Icon(Icons.close_rounded, size: 20, color: context.t3),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 20,
+                      color: context.t3,
+                    ),
                   ),
                 ],
               ),
@@ -554,14 +611,19 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                       children: [
                         SizedBox(
                           width: 84,
-                          child: Text(rows[i].$1,
-                              style: Ty.small.copyWith(color: context.t3)),
+                          child: Text(
+                            rows[i].$1,
+                            style: Ty.small.copyWith(color: context.t3),
+                          ),
                         ),
                         Expanded(
-                          child: Text(rows[i].$2,
-                              style: Ty.small.copyWith(
-                                  color: context.t1,
-                                  fontWeight: FontWeight.w600)),
+                          child: Text(
+                            rows[i].$2,
+                            style: Ty.small.copyWith(
+                              color: context.t1,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -578,7 +640,8 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                       height: 44,
                       onPressed: () async {
                         await Clipboard.setData(
-                            ClipboardData(text: '${o['out_trade_no'] ?? ''}'));
+                          ClipboardData(text: '${o['out_trade_no'] ?? ''}'),
+                        );
                         ToastUtil.success('订单号已复制');
                       },
                     ),
@@ -614,9 +677,13 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
         content: Text('将把该订单标记为已支付，并给用户开通对应会员。\n订单号：$no'),
         actions: [
           TextButton(
-              onPressed: () => Get.back(result: false), child: const Text('取消')),
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
           FilledButton(
-              onPressed: () => Get.back(result: true), child: const Text('确认补单')),
+            onPressed: () => Get.back(result: true),
+            child: const Text('确认补单'),
+          ),
         ],
       ),
     );
@@ -637,7 +704,9 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
         content: const Text('仅删除记录，不会回收已开通的会员。确认删除？'),
         actions: [
           TextButton(
-              onPressed: () => Get.back(result: false), child: const Text('取消')),
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: C.danger),
             onPressed: () => Get.back(result: true),

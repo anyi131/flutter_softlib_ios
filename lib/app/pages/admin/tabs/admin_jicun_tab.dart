@@ -8,6 +8,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 import 'dart:convert';
 
+import '../admin_ui_kit.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -456,8 +458,8 @@ class _AdminJicunTabState extends State<AdminJicunTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SectionHeader(title: title),
-          KitCard(child: Column(children: children)),
+          AdSection(title: title),
+          AdCard(child: Column(children: children)),
         ],
       ),
     );

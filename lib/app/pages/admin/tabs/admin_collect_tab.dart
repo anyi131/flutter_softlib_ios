@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import '../admin_ui_kit.dart';
+
 import 'collect_ex_views.dart';
 import 'collect_ex_views2.dart';
 
@@ -357,7 +359,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
             onChanged: _init,
           ),
           const SizedBox(height: 12),
-          KitCard(
+          AdCard(
             padding: const EdgeInsets.all(14),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -611,7 +613,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
 
   /// 已登录时的账号入口条（收起状态，点开抽屉里的完整设置）
   Widget _accountEntry() {
-    return KitCard(
+    return AdCard(
       radius: R.md,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       onTap: _showAccountSheet,
@@ -700,7 +702,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     // 本地库版本比采集源新 / 可更新
     final libNewer = flag == 'lib_newer';
     final updatable = flag == 'updatable';
-    return KitCard(
+    return AdCard(
       radius: R.md,
       padding: const EdgeInsets.all(11),
       onTap: matched
@@ -1168,7 +1170,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         context.pagePadding,
         4,
       ),
-      child: KitCard(
+      child: AdCard(
         radius: R.md,
         padding: const EdgeInsets.all(13),
         child: Column(

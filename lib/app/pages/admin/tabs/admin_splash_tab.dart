@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import '../admin_ui_kit.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -471,15 +473,16 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         // ★★ 1016：保存后**逐字段核对**（治「存不上、回读是旧值」的老毛病）。
         //   把刚提交的值跟服务端现在真正存着的值比一遍，对不上就明确列出来。
         try {
-          final splashNow =
-              Map<String, dynamic>.from((await _svc.splash())['data'] ?? {});
+          final splashNow = Map<String, dynamic>.from(
+            (await _svc.splash())['data'] ?? {},
+          );
           final got = <String, dynamic>{...splashNow, ...cfg};
           final sent = <String, dynamic>{...splashPayload, ...cfgPayload};
           const secrets = ['pay_key', 'qq_app_key', 'qq_web_app_key'];
           final bad = <String>[];
           sent.forEach((k, v) {
-            if (secrets.contains(k)) return;      // 密钥不回显，不参与核对
-            if (!got.containsKey(k)) return;      // 由别的接口下发，这里判不了
+            if (secrets.contains(k)) return; // 密钥不回显，不参与核对
+            if (!got.containsKey(k)) return; // 由别的接口下发，这里判不了
             if ('${got[k]}'.trim() != '$v'.trim()) {
               bad.add('$k：提交「$v」→ 实际「${got[k]}」');
             }
@@ -488,16 +491,16 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
             // ★ 1016：保存后**总是**给出明确结论（不再只在出错时才提示）
             //   这样「生效没生效」一眼可见，不用猜。
             final sentCount = sent.keys
-                .where((k) => !const [
-                  'pay_key',
-                  'qq_app_key',
-                  'qq_web_app_key',
-                ].contains(k))
+                .where(
+                  (k) => !const [
+                    'pay_key',
+                    'qq_app_key',
+                    'qq_web_app_key',
+                  ].contains(k),
+                )
                 .length;
             if (bad.isEmpty) {
-              ToastUtil.success(
-                '已保存 $sentCount 项，回读核对全部一致 ✓（App 端约 10 秒后生效）',
-              );
+              ToastUtil.success('已保存 $sentCount 项，回读核对全部一致 ✓（App 端约 10 秒后生效）');
             }
           }
           if (bad.isNotEmpty && mounted) {
@@ -1204,12 +1207,12 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   }
 
   Widget _card({required String title, required List<Widget> children}) {
-    return KitCard(
+    return AdCard(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SectionHeader(title: title),
+          AdSection(title: title),
           ...children,
         ],
       ),
