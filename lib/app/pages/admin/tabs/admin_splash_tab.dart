@@ -484,6 +484,22 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
               bad.add('$k：提交「$v」→ 实际「${got[k]}」');
             }
           });
+          if (mounted) {
+            // ★ 1016：保存后**总是**给出明确结论（不再只在出错时才提示）
+            //   这样「生效没生效」一眼可见，不用猜。
+            final sentCount = sent.keys
+                .where((k) => !const [
+                  'pay_key',
+                  'qq_app_key',
+                  'qq_web_app_key',
+                ].contains(k))
+                .length;
+            if (bad.isEmpty) {
+              ToastUtil.success(
+                '已保存 $sentCount 项，回读核对全部一致 ✓（App 端约 10 秒后生效）',
+              );
+            }
+          }
           if (bad.isNotEmpty && mounted) {
             showDialog<void>(
               context: context,

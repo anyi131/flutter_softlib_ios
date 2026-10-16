@@ -49,9 +49,10 @@ class _CollectStatsViewState extends State<CollectStatsView> {
       setState(() => _loadingMore = true);
     }
     try {
+      // ★ 1016：一次抓 50 个（服务端内部翻 5 页），并用服务端返回的 nextPage 翻页
       final d = await _svc.collectEx('app_stats_all', {
         'page': _page,
-        'limit': 20,
+        'limit': 50,
       });
       final list = ((d['items'] as List?) ?? [])
           .whereType<Map>()
@@ -60,7 +61,9 @@ class _CollectStatsViewState extends State<CollectStatsView> {
       if (!mounted) return;
       setState(() {
         _items = reset ? list : [..._items, ...list];
-        _hasMore = list.length >= 20;
+        // ★ 1016：按服务端返回的 nextPage 翻页（写死 +1 会重复抓同一批 → 只显示十个）
+        _page = int.tryParse('${d['nextPage'] ?? ''}') ?? (_page + 5);
+        _hasMore = list.isNotEmpty;
         _loading = false;
         _loadingMore = false;
       });
