@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:get/get.dart';
@@ -143,6 +144,49 @@ class _UpdateCardState extends State<_UpdateCard> {
 
   /// 最近一次下载完成的文件路径（安装/重试用）
   String? _lastPath;
+
+  @override
+  void initState() {
+    super.initState();
+    // ★ 1016：「安装包」大小在下载前是未知的（_total 要等下载才有值），
+    //   所以这里用 HEAD 请求先把远端文件大小拿回来，弹窗一打开就能显示。
+    _fetchRemoteSize();
+  }
+
+  /// 取远端安装包大小（只对直链文件生效，页面链接忽略）
+  Future<void> _fetchRemoteSize() async {
+    final u = widget.url.trim();
+    if (u.isEmpty) return;
+    final lower = u.toLowerCase();
+    final looksFile = lower.endsWith('.apk') ||
+        lower.endsWith('.ipa') ||
+        lower.endsWith('.zip') ||
+        lower.contains('/uploads/');
+    if (!looksFile) return;
+    try {
+      final r = await SoftService.instance.dio.head(
+        u,
+        options: Options(
+          followRedirects: true,
+          validateStatus: (_) => true,
+          sendTimeout: const Duration(seconds: 8),
+          receiveTimeout: const Duration(seconds: 8),
+        ),
+      );
+      final len =
+          int.tryParse('${r.headers.value('content-length') ?? ''}') ?? 0;
+      final ct = '${r.headers.value('content-type') ?? ''}'.toLowerCase();
+      final isFile = ct.contains('android') ||
+          ct.contains('octet-stream') ||
+          ct.contains('zip') ||
+          ct.contains('ipa') ||
+          lower.endsWith('.apk') ||
+          lower.endsWith('.ipa');
+      if (len > 0 && isFile && mounted && _total == 0) {
+        setState(() => _total = len);
+      }
+    } catch (_) {}
+  }
 
   @override
   void dispose() {
