@@ -51,6 +51,9 @@ class AdCard extends StatelessWidget {
     this.radius = Ad.rCard,
     this.blur,
     this.alpha,
+
+    /// 兼容旧组件：是否画强调描边（选中态）
+    this.border = false,
   });
 
   final Widget child;
@@ -62,6 +65,7 @@ class AdCard extends StatelessWidget {
   final double radius;
   final double? blur;
   final double? alpha;
+  final bool border;
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +75,10 @@ class AdCard extends StatelessWidget {
         color: Ad.cardBg(context),
         borderRadius: BorderRadius.circular(radius),
         border: Border.all(
-          color: (accent ?? glow) != null
+          width: border ? 1.6 : 1,
+          color: border
+              ? C.brand.withAlpha(context.isDark ? 150 : 120)
+              : (accent ?? glow) != null
               ? (accent ?? glow)!.withAlpha(context.isDark ? 70 : 60)
               : Ad.stroke(context),
         ),

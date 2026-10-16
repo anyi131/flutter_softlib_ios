@@ -93,24 +93,6 @@ class QQLogin {
       await _ch.invokeMethod('logout');
     } catch (_) {}
   }
-}
-
-class QQAuthResult {
-  final String openid;
-  final String accessToken;
-
-  /// ★ 1016 真机计时：原生侧测得的耗时（毫秒，-1 表示未知）
-  ///   uiMs   = 「拉起 QQ → 用户点同意 → 回调」全程（含 QQ 冷启动）
-  ///   initMs = 原生初始化（建 Tencent 实例 + 权限声明）
-  final int uiMs;
-  final int initMs;
-
-  const QQAuthResult({
-    required this.openid,
-    required this.accessToken,
-    this.uiMs = -1,
-    this.initMs = -1,
-  });
 
   // ═══════════════════════════════════════════════════════════════
   // ★ 1016：本地缓存 QQ 授权（真机实测：每次走 QQ 授权页要 4~19 秒 ✗）
@@ -163,5 +145,22 @@ class QQAuthResult {
       await sp.remove(_kQqAt);
     } catch (_) {}
   }
+}
+class QQAuthResult {
+  final String openid;
+  final String accessToken;
+
+  /// ★ 1016 真机计时：原生侧测得的耗时（毫秒，-1 表示未知）
+  ///   uiMs   = 「拉起 QQ → 用户点同意 → 回调」全程（含 QQ 冷启动）
+  ///   initMs = 原生初始化（建 Tencent 实例 + 权限声明）
+  final int uiMs;
+  final int initMs;
+
+  const QQAuthResult({
+    required this.openid,
+    required this.accessToken,
+    this.uiMs = -1,
+    this.initMs = -1,
+  });
 
 }
