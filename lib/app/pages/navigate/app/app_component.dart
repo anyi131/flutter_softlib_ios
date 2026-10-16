@@ -591,11 +591,9 @@ class _AppComponentState extends State<AppComponent> {
               childAspectRatio: 0.82,
             ),
             itemCount: _apps.length,
-            // ★ 1016：列表项不再套入场动画 —— 动画层曾导致整片列表不可见，
-            //   列表这种高频内容不值得为它冒风险
             itemBuilder: (context, i) => RepaintBoundary(
               key: ValueKey('g_${_apps[i].id}'),
-              child: _gridCard(_apps[i]),
+              child: AppStaggerIn(index: i, child: _gridCard(_apps[i])),
             ),
           );
         }
@@ -613,12 +611,15 @@ class _AppComponentState extends State<AppComponent> {
             final a = _apps[i];
             return RepaintBoundary(
               key: ValueKey('l_${a.id}'),
-              child: switch (style) {
-                AppListStyle.compact => _compactCard(a),
-                AppListStyle.large => _largeCard(a),
-                AppListStyle.minimal => _minimalCard(a),
-                _ => _card(a),
-              },
+              child: AppStaggerIn(
+                index: i,
+                child: switch (style) {
+                  AppListStyle.compact => _compactCard(a),
+                  AppListStyle.large => _largeCard(a),
+                  AppListStyle.minimal => _minimalCard(a),
+                  _ => _card(a),
+                },
+              ),
             );
           },
         );
