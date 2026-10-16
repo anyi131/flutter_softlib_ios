@@ -1289,8 +1289,13 @@ class _UpdateCardState extends State<_UpdateCard> {
     //   parentData 类型不匹配，release 下布局会卡死/整块渲染不出来
     //   （Android/iOS 通杀，且 Dart 不报错，只能被系统判定 ANR 杀掉）。
     //   改用「限高 + 滚动」，与安全款模板一致。
+    // ★ 1016：正文高度**跟随屏幕自适应**（原来固定 300）——
+    //   小屏手机「头图 + 300 正文 + 按钮」会超出弹窗可用高度，
+    //   表现就是按钮/正文被裁掉（用户说的「有遮挡」）。
+    //   现在正文最多占屏幕 34%（120~320 之间），保证「标题+正文+按钮」永远放得下。
+    final maxH = (MediaQuery.of(context).size.height * 0.34).clamp(120.0, 320.0);
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxHeight: 300),
+      constraints: BoxConstraints(maxHeight: maxH),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(2, 8, 2, 4),
         child: _phase == 'idle'
