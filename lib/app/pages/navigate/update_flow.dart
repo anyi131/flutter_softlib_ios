@@ -12,7 +12,6 @@ import '../../utils/download_dir.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
 
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -211,23 +210,24 @@ class _UpdateCardState extends State<_UpdateCard> {
     JumpUtil.openUrl(u, allowDownload: true);
   }
 
-  /// ★ 1014：把后台填写的更新说明转成 HTML。
-  /// 后台常用「回车换行」分隔条目，但 HtmlWidget 按 HTML 解析，
-  /// 纯文本中的 \n 会被折叠成空格 → 显示成一大段。
-  /// 这里：未含 HTML 标签时，把换行转成 <br>；已是 HTML 则原样保留。
-  String _contentToHtml(String raw) {
+  /// ★ 1016：把后台说明转成**纯文本**。
+  ///   原来这里交给 HtmlWidget 渲染 —— 那是一个完整的 HTML 引擎，
+  ///   在「无界高度 + 弹窗」里做同步解析/布局，是**跨平台死循环（卡死）**的经典来源，
+  ///   而且卡住时 Dart 层不会有任何日志（只能看到系统 ANR/看门狗杀进程）。
+  ///   更新说明本来就是纯文字，用 Text 渲染 100% 安全、外观一样。
+  String _contentToText(String raw) {
     final t = raw.trim();
     if (t.isEmpty) return '';
-    final hasHtml = RegExp(r'<[a-zA-Z/][^>]*>').hasMatch(t);
-    if (hasHtml) return t; // 后台自己写了 HTML → 直接用
-    // 纯文本：转义后换行变 <br>
     return t
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('\r\n', '\n')
-        .replaceAll('\r', '\n')
-        .replaceAll('\n', '<br>');
+        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+        .replaceAll(RegExp(r'</p>', caseSensitive: false), '\n')
+        .replaceAll(RegExp(r'<[^>]+>'), '')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll(RegExp(r'[ \t]+\n'), '\n')
+        .replaceAll(RegExp(r'\n{3,}'), '\n\n');
   }
 
   String _sizeText(int bytes) {
@@ -1271,20 +1271,16 @@ class _UpdateCardState extends State<_UpdateCard> {
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(2, 8, 2, 4),
         child: _phase == 'idle'
-            ? HtmlWidget(
-                // ★ 1014：后台填写的更新说明常用「换行」分隔，
-                //   但 HtmlWidget 按 HTML 解析 —— 纯文本里的 \n 会被
-                //   当成空白折叠（不换行），必须转成 <br>。
-                _contentToHtml(widget.content),
-                textStyle: TextStyle(
+            // ★ 1016：改用纯 Text（原来用 HtmlWidget —— 跨平台卡死的高危点）
+            ? Text(
+                _contentToText(widget.content).isEmpty
+                    ? '请更新到最新版本'
+                    : _contentToText(widget.content),
+                style: TextStyle(
                   fontSize: 13.8,
                   height: 1.65,
                   color: isDark ? C.t2 : C.lt2,
                 ),
-                onTapUrl: (u) {
-                  JumpUtil.openUrl(u);
-                  return true;
-                },
               )
             : _progressBody(isDark),
       ),
