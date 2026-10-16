@@ -3,8 +3,6 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
-    // ★ 1016：Firebase（FCM 真推送）
-    id("com.google.gms.google-services")
 }
 
 android {
