@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../design/adaptive.dart';
-import '../../../design/ui.dart';
+import '../../design/adaptive.dart';
+import '../../design/ui.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// ★ 1016：管理后台 · 统一设计层（商业化仪表盘风）
