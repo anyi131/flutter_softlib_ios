@@ -1018,6 +1018,9 @@ class _AdminUiTabState extends State<AdminUiTab> {
   Widget _templatePicker() {
     // ★ 1016：整套重做为 6 款（旧模板名会自动映射到最接近的新模板，不会白屏）
     const opts = [
+      ('meta', '信息双列', '版本/大小/日期/类型 2×2 数据网格', Icons.grid_view_rounded),
+      ('triple', '三列数据条', '版本 | 大小 | 日期 横排三格', Icons.view_week_rounded),
+      ('timeline', '更新时间线', '左侧竖线 + 节点，逐条更新', Icons.timeline_rounded),
       ('classic', '经典卡', '居中图标 + 标题 + 正文', Icons.crop_square_rounded),
       ('banner', '通栏条', '顶部满宽渐变条 + 大留白正文', Icons.campaign_rounded),
       ('poster', '海报大字', '版本号当主角（34号字）', Icons.wallpaper_rounded),
@@ -1029,7 +1032,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '共 6 款，每款结构不同（不是换色）。当前：'
+          '共 9 款，每款结构不同（不是换色）。当前：'
           '${opts.firstWhere((e) => e.$1 == _updateTemplate, orElse: () => opts.first).$2}',
           style: Ty.tiny.copyWith(color: context.t3),
         ),

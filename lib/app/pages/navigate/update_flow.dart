@@ -140,6 +140,9 @@ class _UpdateCardState extends State<_UpdateCard> {
   int _total = 0;
   Timer? _poll;
 
+  /// 最近一次下载完成的文件路径（安装/重试用）
+  String? _lastPath;
+
   @override
   void dispose() {
     _poll?.cancel();
@@ -196,18 +199,102 @@ class _UpdateCardState extends State<_UpdateCard> {
       if (tk.status == DownloadTaskStatus.complete) {
         t.cancel();
         setState(() => _phase = 'done');
-        await Future.delayed(const Duration(milliseconds: 500));
-        final path = '${tk.savedDir}/${tk.filename}';
-        try {
-          await ApkInstaller.install(path);
-        } catch (_) {}
-        if (mounted && !widget.forced) Navigator.of(context).pop();
+        _lastPath = '${tk.savedDir}/${tk.filename}';
+        await Future.delayed(const Duration(milliseconds: 400));
+        await _install();
       } else if (tk.status == DownloadTaskStatus.failed ||
           tk.status == DownloadTaskStatus.canceled) {
         t.cancel();
         setState(() => _phase = 'failed');
       }
     });
+  }
+
+  /// ★ 1016：统一的「安装已下载的包」流程。
+  ///   原来只有 `try { install() } catch (_) {}` —— 异常被吞掉、
+  ///   也从没检查「安装未知应用」权限（Android 8+ 没这权限时调起安装器会
+  ///   **静默失败**），所以真机上「下载完成」之后什么都不发生。
+  Future<void> _install() async {
+    final reported = _lastPath;
+    if (reported == null || reported.isEmpty) {
+      ToastUtil.error('安装包路径丢失，请用「浏览器下载」重试');
+      return;
+    }
+    // ① 「安装未知应用」权限
+    var can = await ApkInstaller.canInstall();
+    if (!can && mounted) {
+      final go = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: const Text('需要「安装未知应用」权限'),
+          content: const Text(
+            '系统要求先允许本应用安装其他应用，才能自动完成更新。'
+            '点「去设置」打开开关，回来后会自动继续安装。',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: const Text('用浏览器下载'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(c, true),
+              child: const Text('去设置'),
+            ),
+          ],
+        ),
+      );
+      if (go == true) {
+        await ApkInstaller.openInstallSettings();
+        await Future.delayed(const Duration(seconds: 3));
+        can = await ApkInstaller.canInstall();
+      } else {
+        _openInBrowser();
+        return;
+      }
+    }
+    if (!can) {
+      ToastUtil.error('未获得安装权限，可用「浏览器下载」手动安装');
+      _report('未获得安装权限');
+      return;
+    }
+    // ② 文件兜底：saveInPublicStorage 时上报路径可能与实际落盘目录不一致
+    final file = await _resolveApk(reported);
+    if (file == null) {
+      ToastUtil.error('安装包未找到，请用「浏览器下载」');
+      _report('安装包未找到: ' + reported);
+      return;
+    }
+    // ③ 调起安装器（失败要说话，不能再吞）
+    final ok = await ApkInstaller.install(file.path);
+    if (!ok) {
+      ToastUtil.error('未能调起安装器，请用「浏览器下载」手动安装');
+      _report('调起安装器失败: ' + file.path);
+      return;
+    }
+    if (mounted && !widget.forced) Navigator.of(context).pop();
+  }
+
+  /// 在常见下载目录里兜底找安装包
+  Future<File?> _resolveApk(String reported) async {
+    try {
+      final f = File(reported);
+      if (f.existsSync()) return f;
+      final name = reported.split('/').last;
+      for (final d in await DownloadDir.fallbackDirs()) {
+        final c = File(d + '/' + name);
+        if (c.existsSync()) return c;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  void _report(String msg) {
+    try {
+      SoftService.reportLogStatic(
+        tag: 'update',
+        error: '[update-install] ' + msg,
+      ).catchError((_) {});
+    } catch (_) {}
   }
 
   void _fallbackBrowser() {
@@ -276,9 +363,13 @@ class _UpdateCardState extends State<_UpdateCard> {
       'list' => 'list',
       'split' => 'split',
       'sheet' => 'sheet',
+      'meta' => 'meta',
+      'triple' => 'triple',
+      'timeline' => 'timeline',
       // 旧模板名一律映射到最接近的新模板（后台存旧值也不会白屏）
       'aurora' || 'neon' || 'dark' => 'banner',
-      'meta' || 'compact' => 'split',
+      'compact' => 'triple',
+      'checklist' || 'steps' => 'timeline',
       'ticket' => 'list',
       'combo' || 'side' => 'sheet',
       'minimal' || 'simple' => 'classic',
@@ -290,6 +381,9 @@ class _UpdateCardState extends State<_UpdateCard> {
       'list' => _tplList(),
       'split' => _tplSplit(),
       'sheet' => _tplSheet(),
+      'meta' => _tplMeta(),
+      'triple' => _tplTriple(),
+      'timeline' => _tplTimeline(),
       _ => _tplClassic(),
     };
   }
@@ -374,9 +468,11 @@ class _UpdateCardState extends State<_UpdateCard> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppPressable(
-            onTap: _phase == 'failed'
-                ? () => setState(() => _phase = 'idle')
-                : _start,
+            onTap: _phase == 'done'
+                ? _install
+                : (_phase == 'failed'
+                      ? () => setState(() => _phase = 'idle')
+                      : _start),
             child: Container(
               height: 46,
               alignment: Alignment.center,
@@ -385,7 +481,9 @@ class _UpdateCardState extends State<_UpdateCard> {
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
-                _phase == 'failed' ? '重试' : '立即更新',
+                _phase == 'done'
+                    ? '立即安装'
+                    : (_phase == 'failed' ? '重试' : '立即更新'),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 15,
@@ -580,11 +678,7 @@ class _UpdateCardState extends State<_UpdateCard> {
                   color: C.brand.withAlpha(isDark ? 40 : 22),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  Icons.checklist_rounded,
-                  size: 19,
-                  color: C.brand,
-                ),
+                child: Icon(Icons.checklist_rounded, size: 19, color: C.brand),
               ),
               const SizedBox(width: 11),
               Expanded(
@@ -897,6 +991,327 @@ class _UpdateCardState extends State<_UpdateCard> {
                         fontSize: 13.4,
                         height: 1.55,
                         color: isDark ? C.t2 : C.lt2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────── 模板⑦ meta 信息双列（2×2 数据网格 —— 经典耐看款）───────────
+  Widget _tplMeta() {
+    final isDark = context.isDark;
+    final line = isDark ? Colors.white24 : Colors.black12;
+    return _shell(
+      radius: 20,
+      top: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: C.brandGradient,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.system_update_alt_rounded,
+                  color: Colors.white,
+                  size: 21,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.title.isEmpty ? '发现新版本' : widget.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? C.t1 : C.lt1,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '建议在 WiFi 环境下载',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: isDark ? C.t3 : C.lt3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        // 2×2 数据网格
+        Container(
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: line),
+              bottom: BorderSide(color: line),
+            ),
+          ),
+          child: Column(
+            children: [
+              _metaRow(isDark, [
+                ('版本号', 'v${widget.version}'),
+                ('安装包', _sizeText(_total).isEmpty ? '—' : _sizeText(_total)),
+              ]),
+              Divider(height: 1, color: line),
+              _metaRow(isDark, [
+                ('发布时间', _today()),
+                ('更新类型', widget.forced ? '强制' : '可选'),
+              ]),
+            ],
+          ),
+        ),
+      ],
+      bottom: [_actions()],
+    );
+  }
+
+  /// 双列数据行：两格 + 中间 1px 分隔
+  Widget _metaRow(bool isDark, List<(String, String)> cells) {
+    final line = isDark ? Colors.white24 : Colors.black12;
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (int i = 0; i < cells.length; i++) ...[
+            if (i > 0) VerticalDivider(width: 1, thickness: 1, color: line),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 11,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      cells[i].$1,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? C.t3 : C.lt3,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      cells[i].$2,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? C.t1 : C.lt1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ─────────── 模板⑧ triple 三列数据条（版本 | 大小 | 日期 横排三格）───────────
+  Widget _tplTriple() {
+    final isDark = context.isDark;
+    final line = isDark ? Colors.white24 : Colors.black12;
+    final items = [
+      ('当前版本', 'v${widget.version}'),
+      ('安装包', _sizeText(_total).isEmpty ? '—' : _sizeText(_total)),
+      ('日期', _today()),
+    ];
+    return _shell(
+      radius: 22,
+      top: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+          child: Text(
+            widget.title.isEmpty ? '发现新版本' : widget.title,
+            style: TextStyle(
+              fontSize: 15.5,
+              fontWeight: FontWeight.w900,
+              color: isDark ? C.t1 : C.lt1,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: line),
+              bottom: BorderSide(color: line),
+            ),
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (int i = 0; i < items.length; i++) ...[
+                  if (i > 0)
+                    VerticalDivider(width: 1, thickness: 1, color: line),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 13,
+                        horizontal: 6,
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            items[i].$2,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w900,
+                              color: isDark ? C.t1 : C.lt1,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            items[i].$1,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: isDark ? C.t3 : C.lt3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+      bottom: [_actions()],
+    );
+  }
+
+  // ─────────── 模板⑨ timeline 更新时间线（左侧竖线 + 节点，逐条）───────────
+  Widget _tplTimeline() {
+    final isDark = context.isDark;
+    return _shell(
+      radius: 20,
+      body: _timelineBody(),
+      top: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 6),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  gradient: C.brandGradient,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.timeline_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  widget.title.isEmpty ? '本次更新要点' : widget.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    color: isDark ? C.t1 : C.lt1,
+                  ),
+                ),
+              ),
+              Text(
+                'v${widget.version}',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                  color: C.brand,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      bottom: [_actions()],
+    );
+  }
+
+  /// timeline 模板正文：左侧竖线 + 圆点 + 右侧文字
+  Widget _timelineBody() {
+    if (_phase != 'idle') return _progressBody();
+    final isDark = context.isDark;
+    final lines = _contentToText(widget.content)
+        .split('\n')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    if (lines.isEmpty) return _currentBody();
+    final line = isDark ? Colors.white24 : Colors.black12;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 2, 18, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (int i = 0; i < lines.length; i++)
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(
+                    width: 22,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          margin: const EdgeInsets.only(top: 6),
+                          decoration: BoxDecoration(
+                            color: i == 0
+                                ? C.brand
+                                : (isDark ? Colors.white30 : Colors.black26),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        if (i != lines.length - 1)
+                          Expanded(child: Container(width: 1.4, color: line)),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Text(
+                        lines[i],
+                        style: TextStyle(
+                          fontSize: 13.4,
+                          height: 1.55,
+                          color: isDark ? C.t2 : C.lt2,
+                        ),
                       ),
                     ),
                   ),
