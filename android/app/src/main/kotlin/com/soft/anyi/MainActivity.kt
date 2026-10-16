@@ -93,12 +93,10 @@ class MainActivity : FlutterActivity() {
                             result.error("SIGN_FAIL", e.message, null)
                         }
                     }
-                    }
                     else -> result.notImplemented()
                 }
             }
     }
-
 
     /** 用系统安装器打开 APK */
     private fun installApk(path: String) {
