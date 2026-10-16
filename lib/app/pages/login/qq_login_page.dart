@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../api/api_host.dart';
@@ -30,21 +31,49 @@ class _QQLoginPageState extends State<QQLoginPage> {
     _c = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.white)
+      // ★★ 1016：改**桌面 UA**！
+      //   原来用手机 UA → QQ 授权页会尝试拉起 QQ 手机版（wtloginmqq://），
+      //   第三方 WebView 里拉不起来，就卡在「正在拉起QQ手机版…」，永远登不了。
+      //   桌面 UA 下 QQ 给的是「账号密码 + 扫码」网页登录，在 WebView 里能完整走完。
       ..setUserAgent(
-          'Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 '
-          '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36')
-      ..setNavigationDelegate(NavigationDelegate(
-        // ★ 1015：加载失败兜底
-        onWebResourceError: (e) {
-          if (mounted && e.isForMainFrame == true) {
-            setState(() => _loading = false);
-          }
-        },
-        onPageFinished: (_) async {
-          if (mounted) setState(() => _loading = false);
-          await _tryRead();
-        },
-      ))
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+        '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      )
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          // ★ 1015：加载失败兜底
+          onWebResourceError: (e) {
+            if (mounted && e.isForMainFrame == true) {
+              setState(() => _loading = false);
+            }
+          },
+          onPageFinished: (_) async {
+            if (mounted) setState(() => _loading = false);
+            await _tryRead();
+          },
+          // ★ 1016：QQ 授权过程中可能触发 wtloginmqq:// 等私有协议。
+          //   WebView 打不开会报 ERR_UNKNOWN_URL_SCHEME（页面「无法打开」），
+          //   而且这类跳转在加载期可能被批量触发 → 一律**静默拦截**，
+          //   只放行 tel:/mailto:，避免任何拉起风暴导致卡死。
+          onNavigationRequest: (req) {
+            final u = req.url;
+            if (u.startsWith('http://') ||
+                u.startsWith('https://') ||
+                u.startsWith('about:') ||
+                u.startsWith('javascript:')) {
+              return NavigationDecision.navigate;
+            }
+            final low = u.toLowerCase();
+            if (low.startsWith('tel:') || low.startsWith('mailto:')) {
+              launchUrlString(
+                u,
+                mode: LaunchMode.externalApplication,
+              ).catchError((_) => false);
+            }
+            return NavigationDecision.prevent;
+          },
+        ),
+      )
       ..loadRequest(Uri.parse('${ApiHost.base}/api/softlib/user/qq_authorize'));
   }
 
@@ -67,13 +96,13 @@ class _QQLoginPageState extends State<QQLoginPage> {
     }
   }
 
-
   @override
   void dispose() {
     // ★★★ 1015 致命修复：WebView 页面原来没有 dispose！
     //   控制器不释放 → 每次打开泄漏一个 WebView → 多次后 Native OOM → 闪退回桌面。
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     final topInset = MediaQuery.of(context).padding.top;
@@ -91,7 +120,11 @@ class _QQLoginPageState extends State<QQLoginPage> {
             right: 0,
             child: Container(
               padding: EdgeInsets.only(
-                  top: topInset + 6, bottom: 10, left: 12, right: 12),
+                top: topInset + 6,
+                bottom: 10,
+                left: 12,
+                right: 12,
+              ),
               color: Colors.white,
               child: Row(
                 children: [
@@ -104,13 +137,18 @@ class _QQLoginPageState extends State<QQLoginPage> {
                         color: Colors.black.withAlpha(6),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.close_rounded,
-                          size: 18, color: context.t1),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: context.t1,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Text('QQ 快捷登录',
-                      style: Ty.h3.copyWith(fontSize: 15, color: context.t1)),
+                  Text(
+                    'QQ 快捷登录',
+                    style: Ty.h3.copyWith(fontSize: 15, color: context.t1),
+                  ),
                   const Spacer(),
                   if (_loading)
                     const SizedBox(

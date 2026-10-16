@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
-import '../../api/api_host.dart';
 import '../../api/qq_login.dart';
+import '../../api/soft_service.dart';
 
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
@@ -115,37 +114,32 @@ class _LoginPageState extends State<LoginPage> {
       ToastUtil.success('QQ 登录成功');
       Navigator.of(context).pop(true);
     } catch (e) {
-      // ★ 1015：原生失败 → 改用**系统浏览器**打开授权页。
-      //   原来回退到 App 内 WebView，但 QQ 授权页会跳 wtloginmqq:// 私有协议，
-      //   WebView 打不开（ERR_UNKNOWN_URL_SCHEME）→ 用户看到「网页无法打开」。
-      //   系统浏览器能正确处理这个跳转（能拉起 QQ App 或给可用的登录页）。
+      // ★★ 1016：原生失败 → **改为 App 内网页授权**（不要再丢去系统浏览器！）
+      //   上一版把用户扔到系统浏览器，用户在浏览器里授权完只看到「登录成功，请返回 App」，
+      //   回到 App 什么都不会发生 —— 这就是「根本没适配好」的观感。
+      //   现在统一在本 App 内的 WebView 里完成整个授权闭环（页面已改桌面 UA，
+      //   QQ 会走「账号密码/扫码」网页登录，不再卡在「正在拉起QQ手机版」）。
       final msg = e.toString().replaceFirst('Exception: ', '');
-      final authUrl =
-          '${ApiHost.base}/api/softlib/user/qq_authorize';
-      ToastUtil.info('原生登录不可用（$msg），已改用浏览器登录');
-
+      // 把真实错误上报到服务器（后台 fa_softlib_crash_log，tag=qq），便于定位，
+      // 用户不用截图我们也能看到错误码。
       try {
-        // 用外部浏览器打开（能正确响应 wtloginmqq:// 协议）
-        await launchUrlString(
-          authUrl,
-          mode: LaunchMode.externalApplication,
+        SoftService.reportLogStatic(
+          tag: 'qq',
+          error: '[qq-native] $msg',
+        ).catchError((_) {});
+      } catch (_) {}
+      ToastUtil.info('原生登录不可用（$msg），改用网页授权');
+
+      final res = await Get.to(() => const QQLoginPage());
+      if (res is Map && (res['token'] ?? '').toString().isNotEmpty) {
+        await UserService.instance.loginByToken(
+          res['token'].toString(),
+          nickname: (res['nickname'] ?? '').toString(),
+          avatar: (res['avatar'] ?? '').toString(),
         );
         if (!mounted) return;
-        // 提示用户在浏览器里完成授权后回到 App
-        ToastUtil.info('请在浏览器中完成 QQ 授权，完成后回到 App 刷新');
-      } catch (_) {
-        // 浏览器也打不开 → 最后兜底用 App 内 WebView
-        final res = await Get.to(() => const QQLoginPage());
-        if (res is Map && (res['token'] ?? '').toString().isNotEmpty) {
-          await UserService.instance.loginByToken(
-            res['token'].toString(),
-            nickname: (res['nickname'] ?? '').toString(),
-            avatar: (res['avatar'] ?? '').toString(),
-          );
-          if (!mounted) return;
-          ToastUtil.success('QQ 登录成功');
-          Navigator.of(context).pop(true);
-        }
+        ToastUtil.success('QQ 登录成功');
+        Navigator.of(context).pop(true);
       }
     }
   }
@@ -221,16 +215,14 @@ class _LoginPageState extends State<LoginPage> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () => Get.toNamed(Routes.reset),
-                child: Text('忘记密码？',
-                    style: TextStyle(fontSize: 13, color: context.t3)),
+                child: Text(
+                  '忘记密码？',
+                  style: TextStyle(fontSize: 13, color: context.t3),
+                ),
               ),
             ),
             AuthError(message: _errServer),
-            AuthButton(
-              label: '登 录',
-              loading: _loading,
-              onPressed: _login,
-            ),
+            AuthButton(label: '登 录', loading: _loading, onPressed: _login),
             const SizedBox(height: 10),
           ],
         ),
@@ -239,14 +231,18 @@ class _LoginPageState extends State<LoginPage> {
           Row(
             children: [
               Expanded(
-                  child: Divider(color: context.t3.withAlpha(50), height: 1)),
+                child: Divider(color: context.t3.withAlpha(50), height: 1),
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text('其他方式登录',
-                    style: Ty.tiny.copyWith(color: context.t3)),
+                child: Text(
+                  '其他方式登录',
+                  style: Ty.tiny.copyWith(color: context.t3),
+                ),
               ),
               Expanded(
-                  child: Divider(color: context.t3.withAlpha(50), height: 1)),
+                child: Divider(color: context.t3.withAlpha(50), height: 1),
+              ),
             ],
           ),
           const SizedBox(height: 18),
@@ -262,16 +258,19 @@ class _LoginPageState extends State<LoginPage> {
                       color: const Color(0xFF12B7F5).withAlpha(26),
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: const Color(0xFF12B7F5).withAlpha(90),
-                          width: 1.2),
+                        color: const Color(0xFF12B7F5).withAlpha(90),
+                        width: 1.2,
+                      ),
                     ),
-                    child: const Icon(Icons.pets_rounded,
-                        color: Color(0xFF12B7F5), size: 26),
+                    child: const Icon(
+                      Icons.pets_rounded,
+                      color: Color(0xFF12B7F5),
+                      size: 26,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 7),
-                Text('QQ 快捷登录',
-                    style: Ty.tiny.copyWith(color: context.t3)),
+                Text('QQ 快捷登录', style: Ty.tiny.copyWith(color: context.t3)),
               ],
             ),
           ),
@@ -280,8 +279,7 @@ class _LoginPageState extends State<LoginPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('还没有账号？',
-                style: Ty.small.copyWith(color: context.t3)),
+            Text('还没有账号？', style: Ty.small.copyWith(color: context.t3)),
             TextButton(
               onPressed: () async {
                 // 注册成功会带回账号，自动回填到输入框
@@ -298,8 +296,10 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
         Center(
-          child: Text('注册即表示同意《用户协议》与《隐私政策》',
-              style: Ty.tiny.copyWith(fontSize: 11, color: context.t3)),
+          child: Text(
+            '注册即表示同意《用户协议》与《隐私政策》',
+            style: Ty.tiny.copyWith(fontSize: 11, color: context.t3),
+          ),
         ),
       ],
     );

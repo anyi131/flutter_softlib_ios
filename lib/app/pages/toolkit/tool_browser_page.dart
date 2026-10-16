@@ -9,6 +9,7 @@ import '../../design/app_anim.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
+import '../../api/soft_service.dart';
 import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
 
@@ -84,6 +85,14 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
                 _loading = false;
                 _err = e.description;
               });
+              // ★ 1016：外链工具打不开时上报（后台可查 fa_softlib_crash_log）
+              try {
+                SoftService.reportLogStatic(
+                  tag: 'tool',
+                  error:
+                      '[webview] ${widget.title} ${widget.url} -> ${e.errorCode} ${e.description}',
+                ).catchError((_) {});
+              } catch (_) {}
             }
           },
           // 站内跳转继续在 App 内打开；外部协议交给系统
@@ -123,14 +132,37 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
   ///   （每个资源请求、每次重定向都触发），于是弹了几十个 Toast → UI 卡死。
   ///   修复：① 用系统真正打开该协议（原来只是弹提示，没真跳转）
   ///        ② 去掉 Toast（避免风暴）
+  ///
+  /// ★★ 1016 加固：只放行**确实该交给系统**的协议白名单
+  ///   （快递100 这类站点会埋一堆 `kuaidi100://ilovegirl/...`「打开App」链接，
+  ///    没装 App 时每次都会失败；若在页面加载阶段被批量触发，仍会卡顿）。
+  ///   其余私有协议一律忽略，且同一地址 2 秒内只尝试一次。
+  static const _allowSchemes = [
+    'tel:',
+    'mailto:',
+    'sms:',
+    'geo:',
+    'weixin:',
+    'mqqwpa:',
+    'alipays:',
+  ];
+
+  String _lastExternal = '';
+  int _lastExternalAt = 0;
+
   Future<void> _openExternal(String u) async {
+    final ok = _allowSchemes.any((s) => u.toLowerCase().startsWith(s));
+    if (!ok) return; // 非白名单协议：静默忽略（不要弹提示、不要尝试拉起）
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (u == _lastExternal && now - _lastExternalAt < 2000) return; // 去抖
+    _lastExternal = u;
+    _lastExternalAt = now;
     try {
       await launchUrlString(u, mode: LaunchMode.externalApplication);
     } catch (_) {
       // 打不开就算了（不要弹 Toast，避免风暴）
     }
   }
-
 
   @override
   void dispose() {
@@ -157,10 +189,18 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
         backgroundColor: context.isDark ? C.bg2 : Colors.white,
         title: Text(
           widget.title.isEmpty ? '网页' : widget.title,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: context.t1),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: context.t1,
+          ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 19, color: context.t1),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 19,
+            color: context.t1,
+          ),
           onPressed: () async {
             if (await _c.canGoBack()) {
               _c.goBack();
@@ -178,7 +218,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
       ),
       body: Stack(
         children: [
-          Expanded(child: WebViewWidget(controller: _c)),
+          Positioned.fill(child: WebViewWidget(controller: _c)),
           if (_loading && _progress < 100)
             Positioned(
               top: 0,
@@ -211,13 +251,28 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
                     ),
                   ),
                   const SizedBox(height: 18),
-                  ToolButton(
-                    label: '重试',
-                    icon: Icons.refresh_rounded,
-                    onPressed: () {
-                      setState(() => _err = null);
-                      _c.reload();
-                    },
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ToolButton(
+                        label: '重试',
+                        icon: Icons.refresh_rounded,
+                        onPressed: () {
+                          setState(() => _err = null);
+                          _c.reload();
+                        },
+                      ),
+                      const SizedBox(width: 10),
+                      // ★ 1016：内置 WebView 打不开时，允许用系统浏览器打开（兜底可用）
+                      ToolButton(
+                        label: '用浏览器打开',
+                        icon: Icons.open_in_new_rounded,
+                        onPressed: () => launchUrlString(
+                          widget.url,
+                          mode: LaunchMode.externalApplication,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
