@@ -153,19 +153,75 @@ class _UpdateCardState extends State<_UpdateCard> {
     _fetchRemoteSize();
   }
 
-  /// 取远端安装包大小（只对直链文件生效，页面链接忽略）
+  /// 取远端安装包大小
+  ///   · 直链文件（.apk/.ipa/.zip 或本站 /uploads/）→ HEAD 取 content-length
+  ///   · 蓝奏云等分享页 → 先查文件信息接口拿 file_size（不用下载），
+  ///     拿不到再解析出直链后 HEAD（这两个都会慢一点，所以是兜底顺序）
   Future<void> _fetchRemoteSize() async {
     final u = widget.url.trim();
     if (u.isEmpty) return;
     final lower = u.toLowerCase();
+
+    // ── 蓝奏云 / 分享页 ──
+    final isShare = lower.contains('lanzou') ||
+        lower.contains('lzy') ||
+        lower.contains('lanzo') ||
+        lower.contains('/b0') ||
+        lower.contains('/i');
+    if (isShare && !lower.endsWith('.apk') && !lower.endsWith('.ipa')) {
+      // ① 文件信息（最快，直接给大小）
+      try {
+        final info = await SoftService.instance.lzyFileInfo(u);
+        // 服务端返回的键是 size（有的版本叫 file_size），两种都认
+        final bytes = _parseSizeText(
+          '${info?['size'] ?? info?['file_size'] ?? ''}',
+        );
+        if (bytes > 0 && mounted && _total == 0) {
+          setState(() => _total = bytes);
+          return;
+        }
+      } catch (_) {}
+      // ② 兜底：解析出直链再 HEAD
+      try {
+        final direct = await SoftService.instance.resolveLzy(u);
+        if (direct != null && direct.isNotEmpty) {
+          await _headSize(direct);
+        }
+      } catch (_) {}
+      return;
+    }
+
     final looksFile = lower.endsWith('.apk') ||
         lower.endsWith('.ipa') ||
         lower.endsWith('.zip') ||
         lower.contains('/uploads/');
     if (!looksFile) return;
+    await _headSize(u);
+  }
+
+  /// 把 "1.2 M" / "28.3MB" / "1024 K" 这类文本转成字节数
+  int _parseSizeText(String raw) {
+    final t = raw.trim();
+    if (t.isEmpty) return 0;
+    final m = RegExp(r'([0-9]+(?:\.[0-9]+)?)\s*([kKmMgG]?)').firstMatch(t);
+    if (m == null) return 0;
+    final v = double.tryParse(m.group(1) ?? '') ?? 0;
+    if (v <= 0) return 0;
+    final unit = (m.group(2) ?? '').toUpperCase();
+    final mul = switch (unit) {
+      'K' => 1024.0,
+      'M' => 1048576.0,
+      'G' => 1073741824.0,
+      _ => 1.0,
+    };
+    return (v * mul).round();
+  }
+
+  /// HEAD 取 content-length
+  Future<void> _headSize(String url) async {
     try {
       final r = await SoftService.instance.dio.head(
-        u,
+        url,
         options: Options(
           followRedirects: true,
           validateStatus: (_) => true,
@@ -176,6 +232,7 @@ class _UpdateCardState extends State<_UpdateCard> {
       final len =
           int.tryParse('${r.headers.value('content-length') ?? ''}') ?? 0;
       final ct = '${r.headers.value('content-type') ?? ''}'.toLowerCase();
+      final lower = url.toLowerCase();
       final isFile = ct.contains('android') ||
           ct.contains('octet-stream') ||
           ct.contains('zip') ||
