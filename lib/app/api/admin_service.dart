@@ -74,6 +74,17 @@ class AdminService {
         (await _post('sec_logs', {'page': page, 'size': size}))['data'] ?? {},
       );
 
+  /// ★ 1016：版权梦配置统一入口
+  ///   sub = banquan / banquan_save / quanju / quanju_save / auto / auto_save
+  ///       / send_code / apps_list / app_stats / app_stats_all
+  Future<Map<String, dynamic>> collectEx(
+    String sub, [
+    Map<String, dynamic> extra = const {},
+  ]) async {
+    final m = await _post('collect_ex', {...extra, 'sub': sub});
+    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+  }
+
   /// ★ 1016：下载记录（成功/失败 + 失败原因）
   Future<Map<String, dynamic>> downloadLogs({
     int page = 1,

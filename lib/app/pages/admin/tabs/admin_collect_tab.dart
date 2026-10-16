@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'collect_ex_views.dart';
+import 'collect_ex_views2.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -29,7 +32,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   final _svc = AdminService.instance;
   final _kwCtrl = TextEditingController();
-  late final TabController _sub = TabController(length: 4, vsync: this);
+  late final TabController _sub = TabController(length: 8, vsync: this);
 
   /// 子页：0=采集 1=目录 2=日志 3=蓝奏云账号
   int get _subIndex => _sub.index;
@@ -41,6 +44,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
   int _totalPages = 1;
   List<Map<String, dynamic>> _items = [];
   final Set<String> _selected = {};
+
   /// ★ 1014 需求4：本地库状态筛选 all/in/out/upd
   String _libFilter = 'all';
 
@@ -190,8 +194,8 @@ class _AdminCollectTabState extends State<AdminCollectTab>
       });
       // ★ 1014 需求4：列表接口已带回 in_lib/lib_version/lib_updatetime/update_flag，
       //   只有服务端没带时才需要额外调一次 collect_check 兜底。
-      final needCheck = items.isNotEmpty &&
-          !items.any((e) => e.containsKey('in_lib'));
+      final needCheck =
+          items.isNotEmpty && !items.any((e) => e.containsKey('in_lib'));
       if (needCheck) unawaited(_annotateLib(items));
     } catch (e) {
       if (!mounted) return;
@@ -208,12 +212,16 @@ class _AdminCollectTabState extends State<AdminCollectTab>
   Future<void> _annotateLib(List<Map<String, dynamic>> items) async {
     if (items.isEmpty) return;
     try {
-      final r = await _svc.collectCheck(items
-          .map((e) => {
+      final r = await _svc.collectCheck(
+        items
+            .map(
+              (e) => {
                 'name': '${e['name'] ?? ''}',
                 'version': '${e['version'] ?? ''}',
-              })
-          .toList());
+              },
+            )
+            .toList(),
+      );
       final list = (r['items'] as List?) ?? const [];
       if (!mounted) return;
       setState(() {
@@ -254,6 +262,19 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               const CollectDirsView(),
               const CollectLogsView(),
               const CollectLzyAccountView(),
+              // ★ 1016：版权梦功能（软件统计 / 自动采集 / 版权配置 / 全局配置）
+              const CollectStatsView(),
+              const CollectAutoView(),
+              const CollectConfigView(
+                sub: 'banquan',
+                title: '版权配置',
+                subtitle: '版权页开关 / 免责声明 / 按钮 / 分享设置',
+              ),
+              const CollectConfigView(
+                sub: 'quanju',
+                title: '全局配置',
+                subtitle: '退出软件 / 打开网址 / 启动复制文本等',
+              ),
             ],
           ),
         ),
@@ -263,7 +284,8 @@ class _AdminCollectTabState extends State<AdminCollectTab>
 
   /// 子页切换（分段控件）
   Widget _subBar() {
-    const items = ['采集', '目录', '日志', '蓝奏云'];
+    // ★ 1016：子页增加到 8 个 → 改横向可滚动（手机一行放不下 8 个）
+    const items = ['采集', '目录', '日志', '蓝奏云', '软件统计', '自动采集', '版权配置', '全局配置'];
     return Padding(
       padding: EdgeInsets.fromLTRB(
         context.pagePadding,
@@ -279,19 +301,21 @@ class _AdminCollectTabState extends State<AdminCollectTab>
           border: Border.all(color: C.stroke),
         ),
         padding: const EdgeInsets.all(3),
-        child: Row(
+        child: ListView(
+          scrollDirection: Axis.horizontal,
           children: List.generate(items.length, (i) {
             final sel = _subIndex == i;
-            return Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _sub.animateTo(i)),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    gradient: sel ? Deco.brandGradient : null,
-                    borderRadius: BorderRadius.circular(R.full),
-                  ),
+            return GestureDetector(
+              onTap: () => setState(() => _sub.animateTo(i)),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  gradient: sel ? Deco.brandGradient : null,
+                  borderRadius: BorderRadius.circular(R.full),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: Text(
                     items[i],
                     style: Ty.tiny.copyWith(
@@ -454,7 +478,9 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                     onTap: () => setState(() => _libFilter = f.$1),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: _libFilter == f.$1
                             ? C.brand
@@ -464,17 +490,17 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                           color: _libFilter == f.$1
                               ? C.brand
                               : (context.isDark
-                                  ? Colors.white.withAlpha(20)
-                                  : Colors.black.withAlpha(10)),
+                                    ? Colors.white.withAlpha(20)
+                                    : Colors.black.withAlpha(10)),
                         ),
                       ),
-                      child: Text(f.$2,
-                          style: Ty.tiny.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: _libFilter == f.$1
-                                ? Colors.white
-                                : context.t2,
-                          )),
+                      child: Text(
+                        f.$2,
+                        style: Ty.tiny.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: _libFilter == f.$1 ? Colors.white : context.t2,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -483,12 +509,15 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                 onTap: () => _annotateLib(_items),
                 child: Row(
                   children: [
-                    Icon(Icons.refresh_rounded,
-                        size: 13, color: C.brand),
+                    Icon(Icons.refresh_rounded, size: 13, color: C.brand),
                     const SizedBox(width: 3),
-                    Text('重新检测',
-                        style: Ty.tiny.copyWith(
-                            color: C.brand, fontWeight: FontWeight.w800)),
+                    Text(
+                      '重新检测',
+                      style: Ty.tiny.copyWith(
+                        color: C.brand,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -507,7 +536,9 @@ class _AdminCollectTabState extends State<AdminCollectTab>
       case 'out':
         return _items.where((e) => '${e['in_lib'] ?? 0}' != '1').toList();
       case 'upd':
-        return _items.where((e) => '${e['update_flag'] ?? ''}' == 'updatable').toList();
+        return _items
+            .where((e) => '${e['update_flag'] ?? ''}' == 'updatable')
+            .toList();
       default:
         return _items;
     }
@@ -561,8 +592,10 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 30),
                   child: Center(
-                    child: Text('当前筛选下没有软件',
-                        style: Ty.small.copyWith(color: context.t3)),
+                    child: Text(
+                      '当前筛选下没有软件',
+                      style: Ty.small.copyWith(color: context.t3),
+                    ),
                   ),
                 );
               }
@@ -720,14 +753,12 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                     Pill(
                       !inLib
                           ? '未入库'
-                          : (updatable
-                              ? '可更新'
-                              : (libNewer ? '库内已更新' : '已在库')),
+                          : (updatable ? '可更新' : (libNewer ? '库内已更新' : '已在库')),
                       color: !inLib
                           ? C.t3
                           : (updatable
-                              ? C.warning
-                              : (libNewer ? C.cyan : C.success)),
+                                ? C.warning
+                                : (libNewer ? C.cyan : C.success)),
                       small: true,
                     ),
                   ],
