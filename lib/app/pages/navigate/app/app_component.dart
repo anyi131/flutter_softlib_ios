@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
@@ -39,6 +40,10 @@ class _AppComponentState extends State<AppComponent> {
   int _cat = 0;
   bool _loading = true;
 
+  /// ★ 1016：加载失败时**把原因显示出来**（原来是无限转圈，什么都看不到）
+  String _err = '';
+  Timer? _watchdog;
+
   /// 列表正在加载更多（不遮全屏，只在底部转圈）
   bool _loadingMore = false;
   bool _hasMore = true;
@@ -54,29 +59,54 @@ class _AppComponentState extends State<AppComponent> {
   @override
   void initState() {
     super.initState();
+    // ★ 1016：兜底 —— 8 秒还没加载出来就不再干转圈，把状态交出来
+    _watchdog = Timer(const Duration(seconds: 8), () {
+      if (mounted && _loading) {
+        setState(() {
+          _loading = false;
+          if (_err.isEmpty) {
+            _err = '加载超时（网络慢或接口无响应），可下拉重试';
+          }
+        });
+      }
+    });
     _initSource();
     _loadCats();
   }
 
   Future<void> _initSource() async {
     // ★ 并发：配置与列表同时请求，不再串行等待（首屏快一倍）
-    final results = await Future.wait([
-      _svc.fetchConfig(),
-      _svc.fetchApps(
-        catId: _cat,
-        keyword: _kw,
-        provider: '', // 先用全部，配置回来后再决定是否重取
-        force: false,
-      ),
-    ]);
+    List<dynamic> results;
+    try {
+      results = await Future.wait([
+        _svc.fetchConfig(),
+        _svc.fetchApps(
+          catId: _cat,
+          keyword: _kw,
+          provider: '', // 先用全部，配置回来后再决定是否重取
+          force: false,
+        ),
+      ]).timeout(const Duration(seconds: 15));
+    } catch (e) {
+      // ★ 1016：原来这里出错会**静默**（页面永远转圈）。
+      //   现在把原因说出来，并把加载态解除。
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _err = '加载失败：${e.toString().replaceFirst('Exception: ', '')}';
+      });
+      return;
+    }
     if (!mounted) return;
     final cfg = results[0] as AppConfig?;
     final list = results[1] as List<AppItem>;
     final src = cfg?.appSource ?? 'all';
+    _watchdog?.cancel();
     setState(() {
       _source = src;
       _apps = list;
       _loading = false;
+      _err = '';
     });
     // ★ 应用后台下发的默认列表样式（用户本地选过则不覆盖）—— 需求 #9
     if (cfg != null) {
@@ -94,12 +124,18 @@ class _AppComponentState extends State<AppComponent> {
 
   @override
   void dispose() {
+    _watchdog?.cancel();
     _refreshCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _loadCats() async {
-    final c = await _svc.fetchCats();
+    List<AppCat> c = const [];
+    try {
+      c = await _svc.fetchCats().timeout(const Duration(seconds: 12));
+    } catch (_) {
+      return; // 分类拉不到就不显示分类条，但绝不影响主列表
+    }
     if (!mounted) return;
     setState(
       () => _cats = [
@@ -471,6 +507,13 @@ class _AppComponentState extends State<AppComponent> {
 
   // ───── 列表 ─────
   Widget _body() {
+    if (_err.isNotEmpty) {
+      return EmptyState(
+        text: _err,
+        hint: '下拉或点右侧按钮重试',
+        icon: Icons.error_outline_rounded,
+      );
+    }
     if (_loading) {
       // 文件夹解析时展示实时进度，其它情况用统一加载态
       return LoadingState(

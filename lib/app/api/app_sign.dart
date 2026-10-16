@@ -33,6 +33,11 @@ class AppSign {
     }
   }
 
+  /// ★ 1016：**同步**读取已缓存的签名（没预热好就返回 null）。
+  ///   请求拦截器只能用这个 —— 绝不能 await 通道调用，
+  ///   否则一旦原生没响应，整个 App 的网络请求都会卡住。
+  static String? get cached => _cache;
+
   /// 启动时预热一次，别让首个业务请求等它
   static Future<void> warmUp() async {
     await value();

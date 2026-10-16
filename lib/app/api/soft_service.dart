@@ -75,7 +75,12 @@ class SoftService {
     }
     // 并发去重：已有请求在飞就复用
     if (_configInflight != null) return _configInflight;
-    final fut = _fetchConfigInner();
+    // ★ 1016：加超时 —— 万一某次请求卡住，_configInflight 会一直被复用，
+    //   导致**全 App 所有等配置的地方一起卡死**（页面永远转圈）。
+    final fut = _fetchConfigInner().timeout(
+      const Duration(seconds: 15),
+      onTimeout: () => _configCache,
+    );
     _configInflight = fut;
     try {
       return await fut;
@@ -505,14 +510,20 @@ class _CacheEntry {
 /// ★ 1016：签名指纹拦截器 —— 给每个请求附上 X-App-Sign / X-App-Ts
 class _SignInterceptor extends Interceptor {
   @override
-  void onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) async {
-    try {
-      final h = await AppSign.headers();
-      if (h.isNotEmpty) options.headers.addAll(h);
-    } catch (_) {}
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    // ★★ 1016：这里**必须同步**，绝不 await 任何东西。
+    //   之前写成 async + await 通道调用 —— 只要原生签名接口没及时响应，
+    //   handler.next() 就永远不会被调用，**整个 App 的网络请求全部卡死**
+    //   （表现就是软件库一直转圈、分类不出来）。
+    //   现在：缓存里有就带上，没有就后台预热，本次请求直接放行。
+    final s = AppSign.cached;
+    if (s != null && s.isNotEmpty) {
+      options.headers['X-App-Sign'] = s;
+      options.headers['X-App-Ts'] =
+          '${DateTime.now().millisecondsSinceEpoch ~/ 1000}';
+    } else {
+      AppSign.warmUp(); // fire-and-forget，不阻塞本次请求
+    }
     handler.next(options);
   }
 }
