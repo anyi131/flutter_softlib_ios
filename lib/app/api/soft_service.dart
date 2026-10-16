@@ -150,6 +150,35 @@ class SoftService {
   /// 工具箱配置缓存（由文件末尾的 ToolboxService 扩展维护，这里给类一个同步入口）
   static Map<String, dynamic>? get toolboxCache => ToolboxService._jzsCache;
 
+  /// ★ 1016：上报下载结果（成功 / 失败 + 原因）
+  ///   后台「下载记录」里能看到，失败带具体原因，便于排查。
+  Future<void> reportDownloadResult({
+    required int appId,
+    String title = '',
+    String url = '',
+    bool ok = true,
+    String error = '',
+  }) async {
+    try {
+      await dio.post(
+        '/api/softlib/app/download_result',
+        data: {
+          'token': UserService.instance.token,
+          'app_id': appId,
+          'title': title,
+          'url': url,
+          'status': ok ? 'ok' : 'fail',
+          'error': error.length > 400 ? error.substring(0, 400) : error,
+          'device': SoftService.deviceModel,
+        },
+        options: Options(
+          sendTimeout: const Duration(seconds: 6),
+          receiveTimeout: const Duration(seconds: 6),
+        ),
+      );
+    } catch (_) {}
+  }
+
   /// 检查更新（兼容后端返回 List 或 Map）
   /// 返回：null=已是最新；Map=有新版本
   Future<Map<String, dynamic>?> checkVersion(String currentVersion) async {

@@ -390,9 +390,24 @@ class AppDetailsLogic extends GetxController {
       _explicitReset = true;
       update(['download']);
       ToastUtil.error('下载不完整（网络波动），请重新下载');
+      // ★ 1016：上报失败（后台「下载记录」可查）
+      SoftService.instance.reportDownloadResult(
+        appId: appIdInt,
+        title: appInfo?.title ?? '',
+        url: dowUrl,
+        ok: false,
+        error: '下载不完整：文件大小未达到预期（网络中断或源站限速）',
+      );
       return;
     }
     _askedInstall = true;
+    // ★ 1016：上报成功（后台「下载记录」可查）
+    SoftService.instance.reportDownloadResult(
+      appId: appIdInt,
+      title: appInfo?.title ?? '',
+      url: dowUrl,
+      ok: true,
+    );
     await Future.delayed(const Duration(milliseconds: 400));
     final ctx = Get.context;
     if (ctx == null) return;
@@ -698,6 +713,16 @@ class AppDetailsLogic extends GetxController {
       if (t0.status == DownloadTaskStatus.canceled ||
           t0.status == DownloadTaskStatus.failed) {
         t.cancel();
+        // ★ 1016：上报失败（后台「下载记录」可查）
+        SoftService.instance.reportDownloadResult(
+          appId: appIdInt,
+          title: appInfo?.title ?? '',
+          url: dowUrl,
+          ok: false,
+          error: t0.status == DownloadTaskStatus.canceled
+              ? '下载被取消'
+              : '下载失败（连接中断 / 源站不可用）',
+        );
       }
     });
   }

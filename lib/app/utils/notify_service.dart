@@ -35,6 +35,8 @@ class NotifyService with WidgetsBindingObserver {
   static const _kEnabled = 'notify_enabled';
 
   Timer? _timer;
+  /// 长轮询循环是否在跑（前台才跑）
+  bool _loopRunning = false;
   int _lastId = 0;
   bool _firstRun = true;
   bool _enabled = true;
@@ -67,15 +69,70 @@ class NotifyService with WidgetsBindingObserver {
       WidgetsBinding.instance.addObserver(this);
     } catch (_) {}
 
+    // 兜底轮询（长轮询不可用时也能收到，间隔放长不浪费）
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 45), (_) => tick());
-    // 稍等一下再首查，避免和启动时的其它请求挤在一起
-    Timer(const Duration(seconds: 6), tick);
+    _timer = Timer.periodic(const Duration(seconds: 60), (_) => tick());
+    // ★ 前台用长轮询：几乎秒级收到（服务端挂住请求，一有新消息立刻返回）
+    Timer(const Duration(seconds: 3), () {
+      tick();
+      _startLoop();
+    });
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) tick();
+    if (state == AppLifecycleState.resumed) {
+      // 回到前台：立即查一次 + 恢复长轮询
+      tick();
+      _startLoop();
+    } else {
+      // 退到后台：停掉长轮询（系统本来也会挂起 App，
+      // 继续挂着只会白占服务器 worker 和电量）
+      _stopLoop();
+    }
+  }
+
+  void _startLoop() {
+    if (_loopRunning) return;
+    _loopRunning = true;
+    _loop();
+  }
+
+  void _stopLoop() {
+    _loopRunning = false;
+  }
+
+  /// 长轮询循环：有新消息立刻弹，然后马上再发起下一次
+  Future<void> _loop() async {
+    while (_loopRunning) {
+      if (!_enabled || !UserService.instance.isLoggedIn) {
+        await Future.delayed(const Duration(seconds: 5));
+        continue;
+      }
+      final d = await MessageService.instance.wait(lastId: _lastId);
+      if (!_loopRunning) break;
+      final raw = (d['list'] as List?) ?? const [];
+      final list = raw
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+      if (list.isNotEmpty) {
+        if (_firstRun) {
+          // 首轮只记基线，不补弹历史
+          _firstRun = false;
+        } else {
+          for (final m in list) {
+            await _show(m);
+          }
+        }
+        for (final m in list) {
+          final id = (m['id'] as num?)?.toInt() ?? 0;
+          if (id > _lastId) _lastId = id;
+        }
+        await _save();
+      }
+      await Future.delayed(const Duration(milliseconds: 700));
+    }
   }
 
   /// 开关（消息页顶栏铃铛）

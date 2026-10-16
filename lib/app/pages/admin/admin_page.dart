@@ -340,6 +340,288 @@ class _OverviewTabState extends State<_OverviewTab> {
                 )
                 .toList(),
           ),
+          // ═════ 启动数据 ═════
+          const SizedBox(height: 20),
+          SectionHeader(
+            title: '启动数据',
+            subtitle: 'App 每次启动都会上报（tag=boot）',
+            accent: C.brandBright,
+          ),
+          GlassCard(
+            radius: R.lg,
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _miniStat('今日启动', '${_d['boot_today'] ?? 0}', C.brandBright),
+                    const SizedBox(width: 10),
+                    _miniStat(
+                      '今日设备',
+                      '${_d['boot_devices_today'] ?? 0}',
+                      C.mint,
+                    ),
+                    const SizedBox(width: 10),
+                    _miniStat(
+                      '昨日启动',
+                      '${
+                        (() {
+                          final bt = (_d['boot_trend'] as List?) ?? [];
+                          if (bt.length < 2) return 0;
+                          final y = bt[bt.length - 2];
+                          return y is Map ? (y['count'] ?? 0) : 0;
+                        })()
+                      }',
+                      C.accentOrange,
+                    ),
+                  ],
+                ),
+                if (((_d['boot_trend'] as List?) ?? []).isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  for (final b in (_d['boot_trend'] as List))
+                    if (b is Map)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 42,
+                              child: Text(
+                                '${b['date'] ?? ''}',
+                                style: Ty.tiny.copyWith(color: context.t3),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _trendBar(
+                                double.tryParse('${b['count'] ?? 0}') ?? 0,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            SizedBox(
+                              width: 42,
+                              child: Text(
+                                '${b['count'] ?? 0}次',
+                                textAlign: TextAlign.right,
+                                style: Ty.tiny.copyWith(color: C.brandBright),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                ],
+              ],
+            ),
+          ),
+          // ═════ 在线数据 ═════
+          const SizedBox(height: 20),
+          SectionHeader(
+            title: '在线数据',
+            subtitle: '按最后活跃时间统计（5 分钟内有请求算活跃）',
+            accent: C.mint,
+          ),
+          GlassCard(
+            radius: R.lg,
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    _miniStat('5 分钟', '${_d['online_5m'] ?? 0}', C.mint),
+                    const SizedBox(width: 10),
+                    _miniStat('15 分钟', '${_d['online_15m'] ?? 0}', C.cyan),
+                    const SizedBox(width: 10),
+                    _miniStat('60 分钟', '${_d['online_60m'] ?? 0}', C.brand),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _miniStat('24 小时', '${_d['online_24h'] ?? 0}', C.violet),
+                    const SizedBox(width: 10),
+                    _miniStat(
+                      '活跃会话',
+                      '${_d['active_tokens'] ?? 0}',
+                      C.amber,
+                    ),
+                    const SizedBox(width: 10),
+                    _miniStat(
+                      '今日登录用户',
+                      '${_d['today_active_users'] ?? 0}',
+                      C.pink,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // ═════ 下载数据 + 下载记录 ═════
+          const SizedBox(height: 20),
+          SectionHeader(
+            title: '下载数据',
+            subtitle: '今日下载 / 失败 / 累计 · 点记录看详情',
+            accent: C.cyan,
+          ),
+          GlassCard(
+            radius: R.lg,
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _miniStat('今日下载', '${_d['down_today'] ?? 0}', C.mint),
+                    const SizedBox(width: 10),
+                    _miniStat(
+                      '今日失败',
+                      '${_d['down_today_fail'] ?? 0}',
+                      C.rose,
+                    ),
+                    const SizedBox(width: 10),
+                    _miniStat('累计下载', '${_d['total_down'] ?? 0}', C.cyan),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (((_d['recent_downloads'] as List?) ?? []).isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Text(
+                      '暂无下载记录（App 下载成功/失败都会上报）',
+                      style: Ty.tiny.copyWith(color: context.t3),
+                    ),
+                  )
+                else
+                  for (final r in (_d['recent_downloads'] as List))
+                    if (r is Map)
+                      Builder(
+                        builder: (c) {
+                          final ok = '${r['status']}' == 'ok';
+                          return InkWell(
+                            onTap: () => _showDownloadDetail(r),
+                            borderRadius: BorderRadius.circular(R.sm),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 7),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 7,
+                                    height: 7,
+                                    decoration: BoxDecoration(
+                                      color: ok ? C.mint : C.rose,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 9),
+                                  SizedBox(
+                                    width: 62,
+                                    child: Text(
+                                      '${r['time_text'] ?? ''}',
+                                      style: Ty.tiny.copyWith(color: context.t3),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      '${r['app_title'] ?? ''}'
+                                      '${ok ? '' : ' · ${r['error'] ?? ''}'}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Ty.small.copyWith(
+                                        color: ok ? context.t1 : C.rose,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    ok ? '成功' : '失败',
+                                    style: Ty.tiny.copyWith(
+                                      color: ok ? C.mint : C.rose,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.chevron_right_rounded,
+                                    size: 16,
+                                    color: Colors.transparent,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ],
+            ),
+          ),
+          // ═════ 热门软件 ═════
+          if (((_d['top_apps'] as List?) ?? []).isNotEmpty) ...[
+            const SizedBox(height: 20),
+            SectionHeader(
+              title: '热门软件 Top5',
+              subtitle: '按下载量排序 · 累计下载 ${_d['total_down'] ?? 0} 次',
+              accent: C.rose,
+            ),
+            GlassCard(
+              radius: R.lg,
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                children: [
+                  for (int i = 0; i < (_d['top_apps'] as List).length; i++)
+                    Builder(
+                      builder: (c) {
+                        final a = (_d['top_apps'] as List)[i];
+                        final title = a is Map ? '${a['title'] ?? ''}' : '';
+                        final down = a is Map ? '${a['down_count'] ?? 0}' : '0';
+                        final views = a is Map ? '${a['views'] ?? 0}' : '0';
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 9),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 22,
+                                height: 22,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: i == 0
+                                      ? C.gold.withAlpha(40)
+                                      : C.brand.withAlpha(24),
+                                  borderRadius: BorderRadius.circular(7),
+                                ),
+                                child: Text(
+                                  '${i + 1}',
+                                  style: Ty.tiny.copyWith(
+                                    color: i == 0 ? C.gold : C.brand,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Ty.small.copyWith(color: context.t1),
+                                ),
+                              ),
+                              Text(
+                                '下载 $down',
+                                style: Ty.tiny.copyWith(color: C.mint),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '浏览 $views',
+                                style: Ty.tiny.copyWith(color: context.t3),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ],
           if (trend.isNotEmpty) ...[
             const SizedBox(height: 20),
             SectionHeader(
@@ -395,6 +677,94 @@ class _OverviewTabState extends State<_OverviewTab> {
       ),
     );
   }
+
+  /// 下载记录详情（含失败原因、IP、设备、用户）
+  void _showDownloadDetail(Map r) {
+    final ok = '${r['status']}' == 'ok';
+    showDialog<void>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(ok ? '下载成功' : '下载失败'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _dlRow('时间', '${r['time_text'] ?? ''}'),
+              _dlRow('软件', '${r['app_title'] ?? ''}'),
+              _dlRow('用户', '${r['nickname'] ?? ''}'
+                  '${(r['user_id'] ?? 0).toString() == '0' ? '（未登录）' : ' (ID ${r['user_id']})'}'),
+              _dlRow('状态', ok ? '成功' : '失败'),
+              _dlRow('IP', '${r['ip'] ?? '-'}'),
+              _dlRow('设备', '${r['device'] ?? '-'}'),
+              if (!ok) ...[
+                const SizedBox(height: 8),
+                const Text(
+                  '失败原因',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                SelectableText(
+                  '${r['error'] ?? ''}'.isEmpty ? '(未记录)' : '${r['error']}',
+                  style: const TextStyle(fontSize: 12.5, height: 1.5),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: const Text('关闭'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dlRow(String k, String v) => Padding(
+    padding: const EdgeInsets.only(bottom: 5),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 52,
+          child: Text(
+            k,
+            style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
+          ),
+        ),
+        Expanded(child: Text(v, style: const TextStyle(fontSize: 12.5))),
+      ],
+    ),
+  );
+
+  /// 迷你数据块（启动/在线用）
+  Widget _miniStat(String label, String value, Color color) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
+      decoration: BoxDecoration(
+        color: color.withAlpha(context.isDark ? 30 : 20),
+        borderRadius: BorderRadius.circular(R.md),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.w900,
+              height: 1.1,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(label, style: Ty.tiny.copyWith(color: context.t3)),
+        ],
+      ),
+    ),
+  );
 
   /// 趋势条（按 7 日内最大值归一化）
   Widget _trendBar(double value) {

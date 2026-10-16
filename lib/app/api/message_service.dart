@@ -26,6 +26,22 @@ class MessageService {
     return {'list': [], 'unread': 0};
   }
 
+  /// ★ 1016：长轮询 —— 有新消息立刻返回，没有则服务端挂住最多 ~15 秒。
+  ///   前台用它做「秒级」通知（原来只能 45 秒轮询一次，很慢）。
+  Future<Map<String, dynamic>> wait({int lastId = 0}) async {
+    try {
+      final r = await _dio.post(
+        '/api/softlib/message/wait',
+        data: {'token': UserService.instance.token, 'last_id': lastId},
+        options: Options(receiveTimeout: const Duration(seconds: 25)),
+      );
+      if (r.data is Map && r.data['code'] == 1 && r.data['data'] is Map) {
+        return Map<String, dynamic>.from(r.data['data']);
+      }
+    } catch (_) {}
+    return {'list': [], 'unread': 0};
+  }
+
   Future<int> unread() async {
     if (!UserService.instance.isLoggedIn) return 0;
     try {
