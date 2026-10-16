@@ -330,7 +330,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
 
   Future<void> _save() async {
     try {
-      await _svc.saveSplash({
+      final splashPayload = {
         'splash_enable': splashEnable ? 1 : 0,
         'splash_image': imgCtrl.text.trim(),
         'splash_seconds': int.tryParse(secondsCtrl.text) ?? 2,
@@ -347,9 +347,10 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         // 用户协议 / 隐私政策
         'agreement': agreementCtrl.text,
         'privacy': privacyCtrl.text,
-      });
+      };
+      await _svc.saveSplash(splashPayload);
       // 支付配置（pay_key 留空表示不修改）
-      await _svc.saveConfig({
+      final cfgPayload = {
         'pay_enabled': payEnable ? 1 : 0,
         'pay_apiurl': payApiCtrl.text.trim(),
         'pay_pid': payPidCtrl.text.trim(),
@@ -416,7 +417,8 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         'email_nonqq_on': emailNonQqOn ? 1 : 0,
         'app_ui_style': uiStyle,
         'theme_palette': themePalette,
-      });
+      };
+      await _svc.saveConfig(cfgPayload);
       if (mounted) {
         setState(() {
           if (payKeyCtrl.text.trim().isNotEmpty) {
@@ -465,6 +467,45 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
             '${cfg['qq_app_key_set']}' == 'true' ||
             '${cfg['qq_app_key_set'] ?? 1}' != '0';
         setState(() {});
+
+        // ★★ 1016：保存后**逐字段核对**（治「存不上、回读是旧值」的老毛病）。
+        //   把刚提交的值跟服务端现在真正存着的值比一遍，对不上就明确列出来。
+        try {
+          final splashNow =
+              Map<String, dynamic>.from((await _svc.splash())['data'] ?? {});
+          final got = <String, dynamic>{...splashNow, ...cfg};
+          final sent = <String, dynamic>{...splashPayload, ...cfgPayload};
+          const secrets = ['pay_key', 'qq_app_key', 'qq_web_app_key'];
+          final bad = <String>[];
+          sent.forEach((k, v) {
+            if (secrets.contains(k)) return;      // 密钥不回显，不参与核对
+            if (!got.containsKey(k)) return;      // 由别的接口下发，这里判不了
+            if ('${got[k]}'.trim() != '$v'.trim()) {
+              bad.add('$k：提交「$v」→ 实际「${got[k]}」');
+            }
+          });
+          if (bad.isNotEmpty && mounted) {
+            showDialog<void>(
+              context: context,
+              builder: (c) => AlertDialog(
+                title: const Text('有字段没保存成功'),
+                content: SingleChildScrollView(
+                  child: SelectableText(
+                    bad.join('\n\n'),
+                    style: const TextStyle(fontSize: 12.5, height: 1.5),
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(c),
+                    child: const Text('知道了'),
+                  ),
+                ],
+              ),
+            );
+          }
+        } catch (_) {}
+
         // ★ 1015：后台模板/主题等即时生效（与「界面」Tab 行为对齐）
         try {
           Get.find<NavigateLogic>().applyUiConfig(force: true);

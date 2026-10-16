@@ -42,6 +42,8 @@ class _LoginPageState extends State<LoginPage> {
 
   /// ★ 1016：点下去立刻有反馈（原来点完界面毫无反应，等 QQ 冷启动像卡死）
   bool _qqLoading = false;
+  /// 阶段文案：正在唤起 QQ… / 正在登录…
+  String _qqStage = '正在唤起 QQ…';
 
   String _errAccount = '';
   String _errServer = '';
@@ -109,7 +111,12 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
     QQLogin.appId = appId;
-    if (mounted) setState(() => _qqLoading = true);
+    if (mounted) {
+      setState(() {
+        _qqLoading = true;
+        _qqStage = '正在唤起 QQ…';
+      });
+    }
 
     String err = '';
     try {
@@ -118,8 +125,8 @@ class _LoginPageState extends State<LoginPage> {
         ToastUtil.info('已取消 QQ 登录');
         return;
       }
-      // 授权已经回来了，接下来是服务端换 token —— 先解除「唤起中」
-      if (mounted) setState(() => _qqLoading = false);
+      // 授权已回来，接下来是服务端换 token —— 转圈不停，只换文案
+      if (mounted) setState(() => _qqStage = '正在登录…');
 
       final res = await UserService.instance.qqAuthBySdk(
         openid: r.openid,
@@ -321,7 +328,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 7),
                 Text(
-                  _qqLoading ? '正在唤起 QQ…' : 'QQ 快捷登录',
+                  _qqLoading ? _qqStage : 'QQ 快捷登录',
                   style: Ty.tiny.copyWith(
                     color: _qqLoading ? const Color(0xFF12B7F5) : context.t3,
                   ),

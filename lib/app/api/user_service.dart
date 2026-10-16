@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'api_host.dart';
@@ -151,8 +152,10 @@ class UserService {
     BaseOptions(
       headers: DeviceInfo.headers,
       baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 12),
-      receiveTimeout: const Duration(seconds: 20),
+      // ★ 1016：登录/资料这类交互请求收紧超时（原来连 12s/收 20s，
+      //   弱网下会「转很久才失败」，体感极差）
+      connectTimeout: const Duration(seconds: 8),
+      receiveTimeout: const Duration(seconds: 15),
     ),
   );
 
@@ -185,7 +188,10 @@ class UserService {
       final r = await _dio.post(
         '/api/softlib/user/qq_sdk_login',
         data: {'openid': openid, 'access_token': accessToken},
-        options: Options(receiveTimeout: const Duration(seconds: 20)),
+        options: Options(
+          connectTimeout: const Duration(seconds: 8),
+          receiveTimeout: const Duration(seconds: 12),
+        ),
       );
       if (r.data is Map) {
         final d = Map<String, dynamic>.from(r.data as Map);
@@ -210,9 +216,11 @@ class UserService {
     //   更糟的是「我的」页 load() 会先 restore()，用空的 user_token
     //   把内存里的 _token 冲成 ''，于是界面立刻变回未登录。
     await sp.setString(_kToken, token);
-    // 拉一次资料（拿到昵称/头像/积分等）；**失败也不清 token** ——
-    // 刚下发的 token 一定是有效的，真正的失效由 _onTokenExpired() 统一处理。
-    await refreshProfile();
+    // ★ 1016 提速：这里**不再等资料请求**（调用方 QQ/密码登录成功后会立刻刷新「我的」，
+    //   那一次就够了）。少一个网络往返，授权回来到「登录成功」明显更快。
+    //   失败也不清 token —— 刚下发的 token 一定是有效的，
+    //   真正的失效由 _onTokenExpired() 统一处理。
+    unawaited(refreshProfile());
     return true;
   }
 
