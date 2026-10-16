@@ -81,6 +81,8 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   bool _isFullscreen = false; // 是否全屏（横屏）
   Offset? _dragStart;
   Duration? _dragPos;
+  Duration? _pendingSeek;  // ★ 1015：拖动待执行的 seek（松手才执行）
+  double? _dragProg;       // ★ 1015：进度条拖动中的预览值（0-1）
 
   List<(String, String)> get _list => widget.playlist ?? const [];
 
@@ -334,7 +336,9 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
     final dx = d.localPosition.dx - st.dx;
     final dy = d.localPosition.dy - st.dy;
 
-    // 水平位移明显 → 调进度
+    // ★★★ 1015 修复（滑动快进有问题）：
+    //   原来拖动过程中**每帧都 seekTo** —— 视频解码器来不及响应 → 卡顿/无反应。
+    //   正确做法：拖动时**只更新预览时间**（不 seek），松手时一次性 seek。
     if (dx.abs() > 14 && dx.abs() > dy.abs()) {
       final v = _c?.value;
       if (v == null || !v.isInitialized) return;
@@ -342,14 +346,14 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
       if (total <= 0) return;
       final base = _dragPos ?? v.position;
       final delta = (dx / size.width) * total * 0.5;
-      final t = Duration(milliseconds: (base.inMilliseconds + delta).round().clamp(0, total));
+      final t =
+          Duration(milliseconds: (base.inMilliseconds + delta).round().clamp(0, total));
       setState(() {
         _gesture = 3;
         _gestureValue = total == 0 ? 0 : t.inMilliseconds / total;
+        _seekHint = '${_fmt(t)} / ${_fmt(v.duration)}';   // 实时预览时间
+        _pendingSeek = t;                                  // 记下来，松手才执行
       });
-      try {
-        _c?.seekTo(t);
-      } catch (_) {}
       return;
     }
 
@@ -376,6 +380,14 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
 
   /// 手势结束
   void _onDragEnd(DragEndDetails d) {
+    // ★ 1015：松手 → 一次性 seek 到目标位置（拖动过程中只预览）
+    final t = _pendingSeek;
+    if (t != null && _gesture == 3) {
+      try {
+        _c?.seekTo(t);
+      } catch (_) {}
+    }
+    _pendingSeek = null;
     _dragStart = null;
     _dragPos = null;
     Future.delayed(const Duration(milliseconds: 700), () {
@@ -665,9 +677,10 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
       builder: (ctx, box) => GestureDetector(
         // ★ 1015：单击显隐控制栏，拖动调亮度/音量/进度
         onTap: _toggleCtrl,
-        onHorizontalDragStart: (d) => _onDragStart(d, box.biggest),
-        onHorizontalDragUpdate: (d) => _onDragUpdate(d, box.biggest),
-        onHorizontalDragEnd: _onDragEnd,
+        // ★★★ 1015 修复（滑动快进/进度条都有问题）：
+        //   原来视频区同时接管「水平拖拽」——会和底部进度条的手势打架，
+        //   导致两个都用不了。现在视频区只处理**垂直**（亮度/音量），
+        //   水平调进度统一交给底部进度条。
         onVerticalDragStart: (d) => _onDragStart(d, box.biggest),
         onVerticalDragUpdate: (d) => _onDragUpdate(d, box.biggest),
         onVerticalDragEnd: _onDragEnd,
@@ -893,23 +906,54 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
   Widget _progressBar(VideoPlayerValue v) {
     final total = v.duration.inMilliseconds;
     final cur = v.position.inMilliseconds;
-    final prog = total <= 0 ? 0.0 : (cur / total).clamp(0.0, 1.0);
+    // ★ 1015 修复：拖动中优先显示「手指位置」，松手才用真实进度
+    final prog = _dragProg ?? (total <= 0 ? 0.0 : (cur / total).clamp(0.0, 1.0));
+
     return LayoutBuilder(
       builder: (ctx, box) {
-        void seek(double dx) {
-          if (total <= 0) return;
-          final p2 = (dx / box.maxWidth).clamp(0.0, 1.0);
-          _c?.seekTo(Duration(milliseconds: (total * p2).round()));
-        }
+        final w = box.maxWidth;
+        double ratio(double dx) => (dx / w).clamp(0.0, 1.0);
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTapDown: (d) => seek(d.localPosition.dx),
-          onHorizontalDragUpdate: (d) => seek(d.localPosition.dx),
+          // ★ 点击定位：立即 seek
+          onTapDown: (d) {
+            if (total <= 0) return;
+            final r = ratio(d.localPosition.dx);
+            try {
+              _c?.seekTo(Duration(milliseconds: (total * r).round()));
+            } catch (_) {}
+          },
+          // ★ 拖动开始：记住起始（不再每帧 seek）
+          onHorizontalDragStart: (d) {
+            setState(() => _dragProg = ratio(d.localPosition.dx));
+          },
+          // ★ 拖动中：只更新视觉（圆点跟手），**不 seek**
+          onHorizontalDragUpdate: (d) {
+            setState(() => _dragProg = ratio(d.localPosition.dx));
+            final t = Duration(milliseconds: (total * ratio(d.localPosition.dx)).round());
+            setState(() => _seekHint = _fmt(t));
+          },
+          // ★ 拖动结束：一次性 seek
+          onHorizontalDragEnd: (_) {
+            final r = _dragProg;
+            if (r != null && total > 0) {
+              try {
+                _c?.seekTo(Duration(milliseconds: (total * r).round()));
+              } catch (_) {}
+            }
+            setState(() {
+              _dragProg = null;
+              _seekHint = '';
+            });
+          },
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            // 加大可触摸区域（4px 高很难点中）
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Stack(
+              clipBehavior: Clip.none,
               children: [
+                // 轨道
                 Container(
                   height: 4,
                   decoration: BoxDecoration(
@@ -917,6 +961,7 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
+                // 已播部分
                 FractionallySizedBox(
                   widthFactor: prog,
                   child: Container(
@@ -927,13 +972,20 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
                     ),
                   ),
                 ),
+                // 圆点（拖动时变大，视觉跟手）
                 Positioned(
-                  left: (box.maxWidth * prog - 6).clamp(0.0, (box.maxWidth - 12).clamp(0.0, 9999)),
-                  top: -4,
+                  left: (w * prog - (_dragProg != null ? 8 : 6)).clamp(0.0, w - 16),
+                  top: _dragProg != null ? -6 : -4,
                   child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                    width: _dragProg != null ? 16 : 12,
+                    height: _dragProg != null ? 16 : 12,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: _dragProg != null
+                          ? [BoxShadow(color: C.brand.withAlpha(160), blurRadius: 8)]
+                          : null,
+                    ),
                   ),
                 ),
               ],

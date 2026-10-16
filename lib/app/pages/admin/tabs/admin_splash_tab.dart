@@ -175,10 +175,10 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
       } catch (_) {}
       if (!mounted) return;
       setState(() {
-        splashEnable = '${d['splash_enable']}' == '1';
-        noticeEnable = '${d['notice_enable']}' == '1';
-        noticeForce = '${d['notice_force']}' == '1';
-        maintainEnable = '${d['maintain_enable']}' == '1';
+        splashEnable = '${d['splash_enable'] ?? 0}' == '1';
+        noticeEnable = '${d['notice_enable'] ?? 1}' != '0';
+        noticeForce = '${d['notice_force'] ?? 0}' == '1';
+        maintainEnable = '${d['maintain_enable'] ?? 0}' == '1';
         _maintainTemplate = '${d['maintain_template'] ?? 'engineer'}';
         imgCtrl.text = '${d['splash_image'] ?? ''}';
         secondsCtrl.text = '${d['splash_seconds'] ?? 2}';
@@ -189,11 +189,11 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         noticeContentCtrl.text = '${d['notice_content'] ?? ''}';
         maintainCtrl.text = '${d['maintain_text'] ?? ''}';
         // 支付
-        payEnable = '${cfg['pay_enabled']}' == '1';
-        qqOn = '${cfg['qq_login_on']}' == '1';
+        payEnable = '${cfg['pay_enabled'] ?? 1}' != '0';
+        qqOn = '${cfg['qq_login_on'] ?? 1}' != '0';
         qqKeySet =
             '${cfg['qq_app_key_set']}' == 'true' ||
-            '${cfg['qq_app_key_set']}' == '1';
+            '${cfg['qq_app_key_set'] ?? 1}' != '0';
         qqAppIdCtrl.text = '${cfg['qq_app_id'] ?? ''}';
         qqRedirectCtrl.text = '${cfg['qq_redirect'] ?? ''}';
         rechargeOn = '${cfg['recharge_on']}' != '0';
@@ -201,10 +201,10 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         recharge2Ctrl.text = '${cfg['recharge_money2'] ?? '30'}';
         recharge3Ctrl.text = '${cfg['recharge_money3'] ?? '100'}';
         registerOn = '${cfg['register_on']}' != '0';
-        payAlipay = '${cfg['pay_alipay']}' == '1';
-        payWxpay = '${cfg['pay_wxpay']}' == '1';
-        payQqpay = '${cfg['pay_qqpay']}' == '1';
-        payKeySet = '${cfg['pay_key_set']}' == '1';
+        payAlipay = '${cfg['pay_alipay'] ?? 1}' != '0';
+        payWxpay = '${cfg['pay_wxpay'] ?? 1}' != '0';
+        payQqpay = '${cfg['pay_qqpay'] ?? 1}' != '0';
+        payKeySet = '${cfg['pay_key_set'] ?? 1}' != '0';
         payApiCtrl.text = '${cfg['pay_apiurl'] ?? ''}';
         payPidCtrl.text = '${cfg['pay_pid'] ?? ''}';
         payPlan1NameCtrl.text = '${cfg['pay_plan1_name'] ?? '一周会员'}';
@@ -217,7 +217,11 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         payPlan3MoneyCtrl.text = '${cfg['pay_plan3_money'] ?? '45.99'}';
         payPlan3DaysCtrl.text = '${cfg['pay_plan3_days'] ?? 0}';
         // ★ 支付成功通知
-        payNotifyOn = '${cfg['pay_notify_on']}' == '1';
+        // ★★★ 1015 修复（支付通知"自己变成关的"）：
+        //   原来写成 '${cfg['pay_notify_on'] ?? 1}' != '0'
+        //   若接口未返回该字段 → '${null}' = "null" ≠ '1' → 静默变 false → 保存后真被关掉。
+        //   统一改成与其他开关一致的 "!= '0'" 写法（缺省即开启）。
+        payNotifyOn = '${cfg['pay_notify_on'] ?? 1}' != '0';
         payNotifyEmailCtrl.text = '${cfg['pay_notify_email'] ?? ''}';
         // ★ 1015 购买成功通知买家本人（默认开）
         payNotifyBuyerOn = '${cfg['pay_notify_buyer_on'] ?? 1}' != '0';
@@ -258,7 +262,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         aboutNameCtrl.text = '${cfg['about_name'] ?? '安逸软件汇'}';
         // 注册邮箱限制 + UI 风格（需求 #1 / #9）
         emailDomainsCtrl.text = '${cfg['email_allow_domains'] ?? ''}';
-        emailNonQqOn = '${cfg['email_nonqq_on']}' == '1';
+        emailNonQqOn = '${cfg['email_nonqq_on'] ?? 1}' != '0';
         uiStyle = '${cfg['app_ui_style'] ?? 'glass'}';
         themePalette = '${cfg['theme_palette'] ?? 'aurora'}';
         aboutVersionCtrl.text = '${cfg['about_version'] ?? '1.0.0'}';
@@ -394,18 +398,18 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         final fresh = await _svc.config();
         final cfg = Map<String, dynamic>.from((fresh['data'] ?? {}) as Map);
         // 直接复用 _load 的赋值段太重，这里只回填关键开关/输入框
-        payNotifyOn = '${cfg['pay_notify_on'] ?? 0}' == '1';
+        payNotifyOn = '${cfg['pay_notify_on'] ?? 1}' != '0';
         payNotifyEmailCtrl.text = '${cfg['pay_notify_email'] ?? ''}';
         payNotifyBuyerOn = '${cfg['pay_notify_buyer_on'] ?? 1}' != '0';
         feedGroupCtrl.text = '${cfg['feedback_group'] ?? ''}';
         feedGroupOn = '${cfg['feedback_group_on'] ?? 0}' != '0';
         // ★ 1015：QQ 登录相关也回读，避免「填了又变空」的错觉
-        qqOn = '${cfg['qq_login_on'] ?? 0}' == '1';
+        qqOn = '${cfg['qq_login_on'] ?? 1}' != '0';
         qqAppIdCtrl.text = '${cfg['qq_app_id'] ?? ''}';
         qqRedirectCtrl.text = '${cfg['qq_redirect'] ?? ''}';
         qqKeySet =
             '${cfg['qq_app_key_set']}' == 'true' ||
-            '${cfg['qq_app_key_set']}' == '1';
+            '${cfg['qq_app_key_set'] ?? 1}' != '0';
         setState(() {});
         // ★ 1015：后台模板/主题等即时生效（与「界面」Tab 行为对齐）
         try {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../api/qq_login.dart';
+
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
@@ -69,16 +71,66 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _qqLogin() async {
-    final res = await Get.to(() => const QQLoginPage());
-    if (res is Map && (res['token'] ?? '').toString().isNotEmpty) {
+    // ★★★ 1015：改为**优先使用 QQ 原生 SDK**（直接调起 QQ App 一键登录）。
+    //   原来只能走 WebView —— 但 QQ 授权页在第三方 WebView 里检测不到 QQ App，
+    //   会提示「请安装 QQ 手机版」并卡在「正在拉起QQ手机版…」，根本登录不了。
+    try {
+      // 取 AppID（服务端下发）
+      final cfg = await UserService.instance.fetchConfig();
+      final appId = '${cfg['qq_app_id'] ?? ''}';
+      if (appId.isEmpty) {
+        ToastUtil.error('QQ 登录未配置（后台缺少 AppID）');
+        return;
+      }
+      QQLogin.appId = appId;
+
+      // 先看装没装 QQ
+      final installed = await QQLogin.isQQInstalled();
+      if (!installed) {
+        ToastUtil.info('未检测到 QQ，请安装后再试（或改用邮箱登录）');
+        return;
+      }
+
+      // 拉起 QQ App 授权
+      final r = await QQLogin.login();
+      if (r == null) {
+        ToastUtil.info('已取消 QQ 登录');
+        return;
+      }
+
+      // 把 openid + access_token 交给服务端换本站 token
+      final res = await UserService.instance.qqAuthBySdk(
+        openid: r.openid,
+        accessToken: r.accessToken,
+      );
+      final token = '${res['token'] ?? ''}';
+      if (token.isEmpty) {
+        ToastUtil.error('QQ 登录失败：${res['msg'] ?? '服务端未返回 token'}');
+        return;
+      }
       await UserService.instance.loginByToken(
-        res['token'].toString(),
-        nickname: (res['nickname'] ?? '').toString(),
-        avatar: (res['avatar'] ?? '').toString(),
+        token,
+        nickname: '${res['nickname'] ?? ''}',
+        avatar: '${res['avatar'] ?? ''}',
       );
       if (!mounted) return;
       ToastUtil.success('QQ 登录成功');
       Navigator.of(context).pop(true);
+    } catch (e) {
+      // 原生失败 → 回退 WebView（至少给个兜底）
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      ToastUtil.info('原生登录不可用（$msg），改用网页登录');
+      final res = await Get.to(() => const QQLoginPage());
+      if (res is Map && (res['token'] ?? '').toString().isNotEmpty) {
+        await UserService.instance.loginByToken(
+          res['token'].toString(),
+          nickname: (res['nickname'] ?? '').toString(),
+          avatar: (res['avatar'] ?? '').toString(),
+        );
+        if (!mounted) return;
+        ToastUtil.success('QQ 登录成功');
+        Navigator.of(context).pop(true);
+      }
     }
   }
 

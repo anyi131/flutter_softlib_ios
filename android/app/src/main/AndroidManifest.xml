@@ -89,6 +89,26 @@
                 android:value="2"/>
 
 
+
+        <!-- ★ 1015：QQ SDK 回调 Activity（原生一键登录必需）-->
+        <activity
+                android:name="com.tencent.tauth.AuthActivity"
+                android:launchMode="singleTask"
+                android:noHistory="true"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="tencent1905800958"/>
+            </intent-filter>
+        </activity>
+        <activity
+                android:name="com.tencent.connect.common.AssistActivity"
+                android:screenOrientation="portrait"
+                android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                android:exported="true"/>
+
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

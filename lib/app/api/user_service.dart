@@ -173,6 +173,28 @@ class UserService {
   }
 
   /// 用已有 token 直接登录（QQ 快捷登录回调后调用）
+  /// ★ 1015：QQ 原生 SDK 登录 —— 用 SDK 拿到的 openid + access_token 换本站 token
+  /// 服务端会向 QQ 校验 access_token 的有效性，再查/建账号。
+  Future<Map<String, dynamic>> qqAuthBySdk({
+    required String openid,
+    required String accessToken,
+  }) async {
+    try {
+      final r = await _dio.post(
+        '/api/softlib/user/qq_sdk_login',
+        data: {'openid': openid, 'access_token': accessToken},
+        options: Options(receiveTimeout: const Duration(seconds: 20)),
+      );
+      if (r.data is Map) {
+        final d = Map<String, dynamic>.from(r.data as Map);
+        return Map<String, dynamic>.from((d['data'] as Map?) ?? d);
+      }
+      return {};
+    } catch (e) {
+      return {'msg': e.toString()};
+    }
+  }
+
   Future<bool> loginByToken(
     String token, {
     String nickname = '',

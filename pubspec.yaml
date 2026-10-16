@@ -47,6 +47,8 @@ dependencies:
   package_info_plus: ^9.0.0
   shared_preferences: ^2.5.4
   url_launcher: ^6.3.2
+  # ★ 1015：QQ 原生 SDK（直接调起 QQ App 一键登录，替代 WebView 方式）
+  tencent_kit: ^6.2.0
   webview_flutter: ^4.10.0
   video_player: ^2.9.2
   volume_controller: ^2.0.7
