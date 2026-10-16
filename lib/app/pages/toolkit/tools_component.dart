@@ -630,6 +630,19 @@ class _ToolsComponentState extends State<ToolsComponent>
 
   // ═══════════ 打开工具 ═══════════
 
+
+  /// ★ 1015：判断这个 URL 更像「数据接口」还是「网页」
+  ///   数据接口特征：含 /api/、返回 json、是已知 API 域
+  static bool _looksLikePage(String url) {
+    final u = url.toLowerCase();
+    // 明显是 API 的
+    if (u.contains('/api/') || u.contains('api.') || u.endsWith('.json')) return false;
+    // 明显是网页的
+    if (u.endsWith('.html') || u.endsWith('.htm') || u.endsWith('/')) return true;
+    // 其他：当作网页（保守）
+    return true;
+  }
+
   void openTool(Map<String, dynamic> t) {
     final id = int.tryParse('${t['id']}') ?? 0;
     if (id > 0) _svc.addHistory(id);
@@ -645,11 +658,17 @@ class _ToolsComponentState extends State<ToolsComponent>
       return;
     }
     // ★ 1015：三类兜底，优先级从高到低
-    //   ① 配了 api_url + api_path → 通用接口工具（后台配参数就能出工具）
-    //   ② 配了外部链接 → App 内 WebView 打开（不跳浏览器，自带广告清理）
+    //   ① 配了 api_url（不论 api_path 是否为空）→ 通用接口工具
+    //   ② 配了外部链接 target → App 内 WebView 打开
     //   ③ 都没配 → 给可操作的提示
+    //
+    // ★★★ 1015 致命修复：原来要求 apiPath 非空才走接口页。
+    //   但「毒鸡汤/彩虹屁/今日诗词/北京天气」这些单条工具后台没填 api_path，
+    //   于是掉进第②条 → **用 WebView 打开一个 JSON API 地址** → 卡死闪退！
+    //   api_path 为空时应走「单条模式」（ApiToolPage 内部已支持自动识别）。
     final apiPath = '${t['api_path'] ?? ''}';
-    if (apiUrl.startsWith('http') && apiPath.isNotEmpty) {
+    final isApiTool = kind == 'apitool' || (apiUrl.startsWith('http') && !_looksLikePage(apiUrl));
+    if (apiUrl.startsWith('http') && (apiPath.isNotEmpty || isApiTool)) {
       Get.to(() => ApiToolPage(
         title: title,
         apiUrl: apiUrl,
