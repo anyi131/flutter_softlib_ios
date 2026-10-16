@@ -72,7 +72,12 @@ class QQLogin {
       final openid = '${r['openid'] ?? ''}';
       final token = '${r['access_token'] ?? ''}';
       if (openid.isEmpty || token.isEmpty) return null;
-      return QQAuthResult(openid: openid, accessToken: token);
+      return QQAuthResult(
+        openid: openid,
+        accessToken: token,
+        uiMs: int.tryParse('${r['uiMs'] ?? -1}') ?? -1,
+        initMs: int.tryParse('${r['initMs'] ?? -1}') ?? -1,
+      );
     } on PlatformException catch (e) {
       throw Exception(e.message ?? 'QQ 登录失败（${e.code}）');
     } on MissingPluginException {
@@ -92,5 +97,17 @@ class QQLogin {
 class QQAuthResult {
   final String openid;
   final String accessToken;
-  const QQAuthResult({required this.openid, required this.accessToken});
+
+  /// ★ 1016 真机计时：原生侧测得的耗时（毫秒，-1 表示未知）
+  ///   uiMs   = 「拉起 QQ → 用户点同意 → 回调」全程（含 QQ 冷启动）
+  ///   initMs = 原生初始化（建 Tencent 实例 + 权限声明）
+  final int uiMs;
+  final int initMs;
+
+  const QQAuthResult({
+    required this.openid,
+    required this.accessToken,
+    this.uiMs = -1,
+    this.initMs = -1,
+  });
 }

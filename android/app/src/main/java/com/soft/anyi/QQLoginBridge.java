@@ -115,6 +115,7 @@ public class QQLoginBridge implements MethodChannel.MethodCallHandler {
         }
         pendingResult = result;
         try {
+            initStartAt = System.currentTimeMillis();
             tencent = Tencent.createInstance(appId, activity.getApplicationContext());
 
             // ★★★ 1016 关键修复（-6「用户未授权」的真因）：
@@ -127,7 +128,9 @@ public class QQLoginBridge implements MethodChannel.MethodCallHandler {
             //   用反射调用：不同 SDK 小版本签名可能是 (Z) 或 (Z,String)，
             //   且静态/实例不确定，反射可全部兼容，调不到也不会崩。
             grantPermission();
+            initCostMs = System.currentTimeMillis() - initStartAt;
 
+            loginStartAt = System.currentTimeMillis();
             tencent.login(activity, "get_user_info", listener);
         } catch (Throwable e) {
             pendingResult = null;
@@ -183,6 +186,11 @@ public class QQLoginBridge implements MethodChannel.MethodCallHandler {
     }
 
     /** QQ 授权回调 */
+    // ★ 1016 真机计时：登录各阶段耗时（上报服务器，用于定位「为什么慢」）
+    private static long initStartAt = 0;   // 原生初始化开始
+    private static long initCostMs = -1;   // 原生初始化耗时（建实例+权限声明）
+    private static long loginStartAt = 0;  // 拉起 QQ 的时刻
+
     private static final IUiListener listener = new IUiListener() {
         @Override
         public void onComplete(Object response) {
@@ -197,6 +205,11 @@ public class QQLoginBridge implements MethodChannel.MethodCallHandler {
                     Map<String, Object> map = new HashMap<>();
                     map.put("openid", openid);
                     map.put("access_token", token);
+                    // ★ 1016：真机计时 ——「拉起 QQ → 用户点同意 → 回调」全程
+                    map.put("uiMs", loginStartAt > 0
+                            ? (System.currentTimeMillis() - loginStartAt) : -1);
+                    map.put("initMs", initCostMs);
+                    map.put("qqFirstAuth", "");
                     pendingResult.success(map);
                 }
             } catch (Throwable e) {
