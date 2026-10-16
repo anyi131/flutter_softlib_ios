@@ -91,9 +91,14 @@
 
 
         <!-- ★ 1015：QQ SDK 回调 Activity（原生一键登录必需）-->
+        <!-- ★ 1016 修正：按 QQ SDK 官方文档补回 noHistory
+             （之前以「回调时 Activity 已销毁」为由删掉，那个判断是错的：
+               缺 noHistory 会让 SDK 的原生授权流程异常 → 退化成 H5 网页授权
+               → 表现就是慢（4~19 秒）+ 每次都弹授权页 + 耗时不稳定）-->
         <activity
                 android:name="com.tencent.tauth.AuthActivity"
                 android:launchMode="singleTask"
+                android:noHistory="true"
                 android:exported="true"
                 android:taskAffinity=""
                 android:excludeFromRecents="true">
@@ -104,9 +109,11 @@
                 <data android:scheme="tencent1905800958"/>
             </intent-filter>
         </activity>
+        <!-- ★ 1016：官方要求的 configChanges（避免旋转/键盘变化导致 Activity 重建）-->
         <activity
                 android:name="com.tencent.connect.common.AssistActivity"
                 android:screenOrientation="portrait"
+                android:configChanges="orientation|keyboardHidden|screenSize"
                 android:theme="@android:style/Theme.Translucent.NoTitleBar"
                 android:exported="true"/>
 
