@@ -519,12 +519,7 @@ class MineComponent extends StatelessWidget {
                     const SizedBox(height: 10),
                     _sideStat(context, logic, '积分', '${logic.points}'),
                     const SizedBox(height: 10),
-                    _sideStat(
-                      context,
-                      logic,
-                      '状态',
-                      logic.isVip ? 'VIP' : '普通',
-                    ),
+                    _sideStat(context, logic, '状态', logic.isVip ? 'VIP' : '普通'),
                     const SizedBox(height: 16),
                     _actionButton(context, logic),
                   ],
@@ -536,10 +531,7 @@ class MineComponent extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '我的服务',
-                      style: Ty.h3.copyWith(color: context.t1),
-                    ),
+                    Text('我的服务', style: Ty.h3.copyWith(color: context.t1)),
                     const SizedBox(height: 10),
                     _sideServiceList(context, logic),
                   ],
@@ -783,10 +775,7 @@ class MineComponent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: Ty.tiny.copyWith(fontSize: 10, color: context.t3),
-          ),
+          Text(label, style: Ty.tiny.copyWith(fontSize: 10, color: context.t3)),
           const SizedBox(height: 3),
           Text(
             value,
@@ -921,15 +910,17 @@ class MineComponent extends StatelessWidget {
                       color: C.brand.withAlpha(30),
                       borderRadius: BorderRadius.circular(R.xs),
                     ),
-                    child: Obx(() => Text(
-                      // ★ 1015 修复：原来写死 'v3.3'，永远不跟随真实版本
-                      MineComponent.verTag.value,
-                      style: TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w800,
-                        color: C.brandBright,
+                    child: Obx(
+                      () => Text(
+                        // ★ 1015 修复：原来写死 'v3.3'，永远不跟随真实版本
+                        MineComponent.verTag.value,
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: C.brandBright,
+                        ),
                       ),
-                    )),
+                    ),
                   ),
                 ],
               ),
@@ -1334,6 +1325,9 @@ class MineComponent extends StatelessWidget {
         C.mint,
         () => logic.recharge(),
       ),
+      // ★ 1016：绑定 QQ —— 老用户用它把 QQ 绑到自己原有的账号上
+      if (logic.isLoggedIn)
+        _S('绑定QQ', Icons.link_rounded, C.brand, () => logic.bindQQ()),
       if (_uiCfg.featureDonateRank)
         _S(
           '赞助排行',
@@ -1366,12 +1360,7 @@ class MineComponent extends StatelessWidget {
         _S('QQ通知群', Icons.forum_rounded, C.cyan, () => logic.joinGroup()),
       // ★ 1014 需求3：分享本软件（分享文案后台可配）
       if (_uiCfg.featureShareApp)
-        _S(
-          '分享软件',
-          Icons.share_rounded,
-          C.brandBright,
-          () => logic.shareApp(),
-        ),
+        _S('分享软件', Icons.share_rounded, C.brandBright, () => logic.shareApp()),
       if (_uiCfg.featureExchange)
         _S(
           '积分兑换',

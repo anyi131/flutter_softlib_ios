@@ -72,14 +72,16 @@ class UserInfo {
       // ★ 1014 修复：会员判断必须兼容数字 1 / 字符串 "1" / 布尔 true，
       //   否则服务端返回 1 时会被误判成「非会员」，
       //   导致「我的」页显示 VIP 但下载却要求付费（用户反馈的严重逻辑矛盾）。
-      isVip: json['is_vip'] == true ||
+      isVip:
+          json['is_vip'] == true ||
           json['is_vip'] == 1 ||
           s('is_vip') == 'true' ||
           s('is_vip') == '1',
       vipExpire: s('vip_expire'),
       inviteCode: s('invite_code'),
       jointime: s('jointime'),
-      isAdmin: json['is_admin'] == true ||
+      isAdmin:
+          json['is_admin'] == true ||
           json['is_admin'] == 1 ||
           s('is_admin') == 'true' ||
           s('is_admin') == '1',
@@ -202,21 +204,42 @@ class UserService {
   }) async {
     _token = token;
     final sp = await SharedPreferences.getInstance();
-    await sp.setString('token', token);
-    // 拉一次资料，确认 token 有效并拿到完整用户信息
-    final u = await refreshProfile();
-    if (u == null) {
-      _token = '';
-      await sp.remove('token');
-      return false;
-    }
+    // ★★★ 1016 关键修复（「提示登录成功，我的页还是未登录」的真因 #1）：
+    //   这里原来写的是 sp.setString('token', token)，
+    //   而全项目读的都是 _kToken（'user_token'）—— 键名不一致，登录态根本没落盘。
+    //   更糟的是「我的」页 load() 会先 restore()，用空的 user_token
+    //   把内存里的 _token 冲成 ''，于是界面立刻变回未登录。
+    await sp.setString(_kToken, token);
+    // 拉一次资料（拿到昵称/头像/积分等）；**失败也不清 token** ——
+    // 刚下发的 token 一定是有效的，真正的失效由 _onTokenExpired() 统一处理。
+    await refreshProfile();
     return true;
+  }
+
+  /// ★ 1016：把 QQ 绑定到**当前已登录账号**
+  ///   场景：老用户先用自己的邮箱账号登录 → 绑定 QQ →
+  ///        以后 QQ 一键登录直接进这个号（不会再自动开一个新号）。
+  Future<Map<String, dynamic>> bindQQ({
+    required String openid,
+    required String accessToken,
+  }) async {
+    final r = await _dio.post(
+      '/api/softlib/user/bind_qq',
+      data: {'token': _token, 'openid': openid, 'access_token': accessToken},
+    );
+    if (r.data is! Map) throw Exception('绑定失败：返回格式异常');
+    final d = Map<String, dynamic>.from(r.data as Map);
+    if (d['code'] != 1) throw Exception('${d['msg'] ?? '绑定失败'}');
+    return Map<String, dynamic>.from((d['data'] as Map?) ?? {});
   }
 
   /// 启动时恢复登录态
   Future<void> restore() async {
     final sp = await SharedPreferences.getInstance();
-    _token = sp.getString(_kToken) ?? '';
+    final t = sp.getString(_kToken) ?? '';
+    // ★ 1016：prefs 里没值的时候不要清掉内存里刚写入的 token
+    //   （否则「刚登录 → load() → restore()」这一拍就会把登录态抹掉）
+    if (t.isNotEmpty) _token = t;
     final raw = sp.getString(_kUser);
     if (raw != null && raw.isNotEmpty) {
       try {
@@ -278,7 +301,10 @@ class UserService {
   Future<Map<String, dynamic>> inviteStats() async {
     if (_token.isEmpty) throw Exception('请先登录');
     final r = _unwrap(
-      await _dio.post('/api/softlib/user/invite_stats', data: {'token': _token}),
+      await _dio.post(
+        '/api/softlib/user/invite_stats',
+        data: {'token': _token},
+      ),
     );
     if (r['code'] == 1 && r['data'] is Map) {
       return Map<String, dynamic>.from(r['data']);
@@ -471,10 +497,7 @@ class UserService {
   /// 卡密商城：商品列表 + 我的余额
   Future<Map<String, dynamic>> cardShop() async {
     final r = _unwrap(
-      await _dio.post(
-        '/api/softlib/user/card_shop',
-        data: {'token': _token},
-      ),
+      await _dio.post('/api/softlib/user/card_shop', data: {'token': _token}),
     );
     if (r['code'] != 1) throw Exception(r['msg'] ?? '获取卡密商城失败');
     final d = r['data'];
@@ -500,10 +523,7 @@ class UserService {
   Future<List<Map<String, dynamic>>> myCards() async {
     if (_token.isEmpty) throw Exception('请先登录');
     final r = _unwrap(
-      await _dio.post(
-        '/api/softlib/user/my_cards',
-        data: {'token': _token},
-      ),
+      await _dio.post('/api/softlib/user/my_cards', data: {'token': _token}),
     );
     if (r['code'] != 1) throw Exception(r['msg'] ?? '获取我的卡密失败');
     final d = r['data'];

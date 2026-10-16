@@ -68,6 +68,9 @@ class AppConfig {
   /// 是否允许非 QQ 邮箱注册（false = 仅 QQ 邮箱）
   final bool emailNonQqOn;
 
+  /// ★ 1016：注册是否需要邮箱验证码（后台开关，默认 true）
+  final bool regCodeOn;
+
   /// 后台下发的主题配色方案（管理员控制，用户不可改）
   final String themePalette;
 
@@ -125,6 +128,7 @@ class AppConfig {
     this.shareImage = '',
     this.emailAllowDomains = '',
     this.emailNonQqOn = false,
+    this.regCodeOn = true,
     this.appUiStyle = 'glass',
     this.themePalette = 'aurora',
     this.toolHomeStyle = 'group',
@@ -213,6 +217,7 @@ class AppConfig {
     shareImage: _s(json['share_image']),
     emailAllowDomains: _s(json['email_allow_domains']),
     emailNonQqOn: _b(json['email_nonqq_on']),
+    regCodeOn: json['reg_code_on'] == null ? true : _b(json['reg_code_on']),
     themePalette: _s(json['theme_palette']).isEmpty
         ? 'aurora'
         : _s(json['theme_palette']),

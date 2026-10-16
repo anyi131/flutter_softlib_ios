@@ -52,6 +52,9 @@ class _RegisterPageState extends State<RegisterPage> {
   /// 是否允许非 QQ 邮箱注册
   bool _allowNonQq = false;
 
+  /// ★ 1016：注册是否需要邮箱验证码（后台开关，默认需要）
+  bool _needCode = true;
+
   /// 常用邮箱后缀（默认只给 QQ；后台开启「其他邮箱」后才给更多）
   List<String> get _emailSuffixes {
     if (_allowDomains.isNotEmpty) {
@@ -82,6 +85,7 @@ class _RegisterPageState extends State<RegisterPage> {
       if (!mounted) return;
       setState(() {
         _allowNonQq = cfg?.emailNonQqOn ?? false;
+        _needCode = cfg?.regCodeOn ?? true;
         _allowDomains = raw
             .split(RegExp(r'[,，\s]+'))
             .map((e) => e.trim().replaceAll('@', ''))
@@ -186,7 +190,7 @@ class _RegisterPageState extends State<RegisterPage> {
               '${_allowDomains.map((d) => '@$d').join(' / ')}';
         }
       }
-      if (code.isEmpty) _errCode = '请输入验证码';
+      if (_needCode && code.isEmpty) _errCode = '请输入验证码';
       if (pwd.length < 6)
         _errPwd = '密码至少 6 位';
       else if (pwd != _pwd2.text)
@@ -407,38 +411,47 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             const SizedBox(height: 14),
 
-            // ── 验证码 ──
-            AuthField(
-              controller: _code,
-              label: '邮箱验证码',
-              icon: Icons.verified_outlined,
-              keyboard: TextInputType.number,
-              maxLength: 6,
-              error: _errCode.isEmpty ? null : _errCode,
-              suffix: Padding(
-                padding: const EdgeInsets.only(left: 6),
-                child: _sending
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : TextButton(
-                        onPressed: _countdown > 0 ? null : _sendCode,
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          minimumSize: const Size(0, 32),
-                        ),
-                        child: Text(
-                          _countdown > 0 ? '${_countdown}s' : '获取验证码',
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
+            // ── 验证码（后台可关闭）──
+            if (!_needCode)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                  '本站无需邮箱验证码，填完直接注册',
+                  style: Ty.tiny.copyWith(color: context.t3),
+                ),
+              ),
+            if (_needCode)
+              AuthField(
+                controller: _code,
+                label: '邮箱验证码',
+                icon: Icons.verified_outlined,
+                keyboard: TextInputType.number,
+                maxLength: 6,
+                error: _errCode.isEmpty ? null : _errCode,
+                suffix: Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: _sending
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : TextButton(
+                          onPressed: _countdown > 0 ? null : _sendCode,
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            minimumSize: const Size(0, 32),
+                          ),
+                          child: Text(
+                            _countdown > 0 ? '${_countdown}s' : '获取验证码',
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
-                      ),
+                ),
               ),
-            ),
 
             // ── 昵称 ──
             AuthField(

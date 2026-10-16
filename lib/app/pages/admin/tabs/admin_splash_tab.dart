@@ -57,6 +57,9 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   bool qqWebKeySet = false;
   bool rechargeOn = true;
   bool registerOn = true;
+
+  /// ★ 1016：注册是否需要邮箱验证码（默认需要）
+  bool regCodeOn = true;
   bool payAlipay = true;
   bool payWxpay = true;
   bool payQqpay = true;
@@ -208,6 +211,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         recharge2Ctrl.text = '${cfg['recharge_money2'] ?? '30'}';
         recharge3Ctrl.text = '${cfg['recharge_money3'] ?? '100'}';
         registerOn = '${cfg['register_on']}' != '0';
+        regCodeOn = '${cfg['reg_code_on'] ?? 1}' != '0';
         payAlipay = '${cfg['pay_alipay'] ?? 1}' != '0';
         payWxpay = '${cfg['pay_wxpay'] ?? 1}' != '0';
         payQqpay = '${cfg['pay_qqpay'] ?? 1}' != '0';
@@ -385,6 +389,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         'recharge_money3': recharge3Ctrl.text.trim(),
         // 功能开关
         'register_on': registerOn ? 1 : 0,
+        'reg_code_on': regCodeOn ? 1 : 0,
         // 主页右上角两个按钮（对应需求 #14）
         'feedback_group_on': feedGroupOn ? 1 : 0,
         'feedback_user_on': feedUserOn ? 1 : 0,
@@ -960,6 +965,24 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
           title: '功能开关',
           children: [
             _switch('开放注册', registerOn, (v) => setState(() => registerOn = v)),
+            Row(
+              children: [
+                Expanded(
+                  child: _switch(
+                    '注册需要邮箱验证码',
+                    regCodeOn,
+                    (v) => setState(() => regCodeOn = v),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                regCodeOn ? '开启：注册必须填邮箱收到的验证码（更安全）' : '关闭：注册只需邮箱+密码，不用发验证码',
+                style: Ty.tiny.copyWith(color: context.t3, height: 1.6),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 16),

@@ -20,6 +20,7 @@ import '../../../api/soft_service.dart';
 import '../../../api/post_service.dart';
 import '../../../api/message_service.dart';
 import '../../../api/user_service.dart';
+import '../../../api/qq_login.dart';
 import '../../../utils/jump_util.dart';
 import '../../../utils/local_splash.dart';
 import '../../../routes/app_pages.dart';
@@ -57,6 +58,31 @@ class MineLogic extends GetxController {
       signedDate = '';
       update();
     });
+  }
+
+  /// ★ 1016：绑定 QQ 到当前账号 —— 以后 QQ 一键登录直接进这个号，
+  ///   不会再被自动开一个新号。
+  Future<void> bindQQ() async {
+    if (!_userService.isLoggedIn) {
+      ToastUtil.info('请先登录你自己的账号，再绑定 QQ');
+      return;
+    }
+    try {
+      final cfg = await UserService.instance.fetchConfig();
+      final appId = '${cfg['qq_app_id'] ?? ''}';
+      if (appId.isEmpty) {
+        ToastUtil.error('后台还没配置 QQ 互联 AppID');
+        return;
+      }
+      QQLogin.appId = appId;
+      final r = await QQLogin.login();
+      if (r == null) return; // 用户取消
+      await _userService.bindQQ(openid: r.openid, accessToken: r.accessToken);
+      ToastUtil.success('绑定成功，以后 QQ 一键登录直接进本账号');
+      await load();
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
   }
 
   bool get isLoggedIn => _userService.isLoggedIn;
@@ -343,8 +369,7 @@ class MineLogic extends GetxController {
       return;
     }
     // 1) 已是 QQ 协议 → 直接跳
-    if (groupUrl.startsWith('mqqapi://') ||
-        groupUrl.startsWith('tencent://')) {
+    if (groupUrl.startsWith('mqqapi://') || groupUrl.startsWith('tencent://')) {
       JumpUtil.openUrl(groupUrl);
       return;
     }
@@ -805,11 +830,16 @@ class MineLogic extends GetxController {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
-            Icon(Icons.monetization_on_rounded,
-                color: Color(0xFFFB923C), size: 21),
+            Icon(
+              Icons.monetization_on_rounded,
+              color: Color(0xFFFB923C),
+              size: 21,
+            ),
             SizedBox(width: 9),
-            Text('积分兑换',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+            Text(
+              '积分兑换',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+            ),
           ],
         ),
         content: Builder(
@@ -823,32 +853,42 @@ class MineLogic extends GetxController {
                 // 当前积分：大号醒目卡片，一眼看清
                 Container(
                   width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFB923C).withAlpha(dark ? 36 : 22),
                     borderRadius: BorderRadius.circular(12),
-                    border:
-                        Border.all(color: const Color(0xFFFB923C).withAlpha(70)),
+                    border: Border.all(
+                      color: const Color(0xFFFB923C).withAlpha(70),
+                    ),
                   ),
                   child: Row(
                     children: [
                       Icon(Icons.savings_rounded, size: 16, color: sub),
                       const SizedBox(width: 6),
-                      Text('当前积分', style: TextStyle(fontSize: 12.5, color: sub)),
+                      Text(
+                        '当前积分',
+                        style: TextStyle(fontSize: 12.5, color: sub),
+                      ),
                       const Spacer(),
-                      Text('$points',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFFFB923C),
-                          )),
+                      Text(
+                        '$points',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFFFB923C),
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text('签到、邀请好友都能获得积分',
-                    style: TextStyle(fontSize: 11, color: sub)),
+                Text(
+                  '签到、邀请好友都能获得积分',
+                  style: TextStyle(fontSize: 11, color: sub),
+                ),
                 const SizedBox(height: 12),
                 for (final g in goodsList)
                   _exchangeItem(
@@ -890,20 +930,25 @@ class MineLogic extends GetxController {
           decoration: BoxDecoration(
             color: enough
                 ? warn.withAlpha(dark ? 30 : 22)
-                : (dark ? Colors.white.withAlpha(8) : Colors.black.withAlpha(6)),
+                : (dark
+                      ? Colors.white.withAlpha(8)
+                      : Colors.black.withAlpha(6)),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: enough
                   ? warn.withAlpha(110)
                   : (dark
-                      ? Colors.white.withAlpha(20)
-                      : Colors.black.withAlpha(14)),
+                        ? Colors.white.withAlpha(20)
+                        : Colors.black.withAlpha(14)),
             ),
           ),
           child: Row(
             children: [
-              Icon(Icons.card_giftcard_rounded,
-                  size: 18, color: enough ? warn : sub),
+              Icon(
+                Icons.card_giftcard_rounded,
+                size: 18,
+                color: enough ? warn : sub,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -1052,7 +1097,8 @@ class MineLogic extends GetxController {
   /// ★ 1014 需求3：分享本软件（文案后台可配，没配则用关于信息兜底）
   Future<void> shareApp() async {
     try {
-      final cfg = SoftService.instance.cachedConfig ??
+      final cfg =
+          SoftService.instance.cachedConfig ??
           await SoftService.instance.fetchConfig();
       final name = (cfg?.shareTitle.isNotEmpty == true)
           ? cfg!.shareTitle
