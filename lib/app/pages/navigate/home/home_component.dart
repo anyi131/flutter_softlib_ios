@@ -92,8 +92,8 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _quickGrid()),
             SliverToBoxAdapter(child: _banner()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralTitle()),
-            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralGrid()),
+            if (uiCfg.featureReferral) _referralTitle(),
+            if (uiCfg.featureReferral) _referralGrid(),
             tail,
           ],
         );
@@ -106,8 +106,8 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _magazineHero()),
             SliverToBoxAdapter(child: _search()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _magazineTitle()),
-            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _magazineList()),
+            if (uiCfg.featureReferral) _magazineTitle(),
+            if (uiCfg.featureReferral) _magazineList(),
             tail,
           ],
         );
@@ -121,7 +121,7 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _search()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             SliverToBoxAdapter(child: _gridWallTabs()),
-            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _gridWall()),
+            if (uiCfg.featureReferral) _gridWall(),
             tail,
           ],
         );
@@ -132,8 +132,8 @@ class _HomeComponentState extends State<HomeComponent> {
           physics: const BouncingScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(child: _immersiveTop()),
-            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralTitle()),
-            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralGrid()),
+            if (uiCfg.featureReferral) _referralTitle(),
+            if (uiCfg.featureReferral) _referralGrid(),
             tail,
           ],
         );
@@ -147,8 +147,8 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _search()),
             SliverToBoxAdapter(child: _drawerGroups()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralTitle()),
-            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralGrid()),
+            if (uiCfg.featureReferral) _referralTitle(),
+            if (uiCfg.featureReferral) _referralGrid(),
             tail,
           ],
         );
@@ -176,7 +176,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _minimalHeader()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _minimalList()),
+            if (uiCfg.featureReferral) _minimalList(),
             tail,
           ],
         );
@@ -190,7 +190,7 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _storeTopBar()),
             SliverToBoxAdapter(child: _storeCats()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _storeGrid()),
+            if (uiCfg.featureReferral) _storeGrid(),
             tail,
           ],
         );
@@ -209,8 +209,8 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _quickGrid()),
             SliverToBoxAdapter(child: _banner()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
-            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralTitle()),
-            if (uiCfg.featureReferral) SliverToBoxAdapter(child: _referralGrid()),
+            if (uiCfg.featureReferral) _referralTitle(),
+            if (uiCfg.featureReferral) _referralGrid(),
             tail,
           ],
         );
@@ -351,7 +351,13 @@ class _HomeComponentState extends State<HomeComponent> {
   }
 
   Widget _magazineTitle() {
-    return Padding(
+    // ★★ 1016 真凶修复：这个函数原来返回的是 Padding（普通 widget），
+    //   却被直接放进 magazine 模板的 slivers 列表 →
+    //   往 Viewport 插入非 sliver 子节点 → 类型错误 → 首页整块挂掉
+    //   （真机堆栈: _ViewportElement.insertRenderObjectChild → child as RenderSliver 失败）
+    //   这就是「后台一切换首页模板就卡死」的原因。
+    return SliverToBoxAdapter(
+      child: Padding(
       padding: EdgeInsets.fromLTRB(
         context.pagePadding,
         20,
@@ -369,8 +375,9 @@ class _HomeComponentState extends State<HomeComponent> {
             ),
           ),
           const SizedBox(width: 9),
-          Text('最新推荐', style: Ty.h3.copyWith(color: context.t1)),
-        ],
+            Text('最新推荐', style: Ty.h3.copyWith(color: context.t1)),
+          ],
+        ),
       ),
     );
   }
