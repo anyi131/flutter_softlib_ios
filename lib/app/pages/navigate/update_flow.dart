@@ -54,7 +54,7 @@ class UpdateFlow {
     // 模板：后台 ui_config.update_template 下发
     // ★ 1015 修复：必须用 force 拉最新配置。原来走缓存（10 分钟 TTL），
     //   后台刚改完模板时弹窗读到的还是旧值 → 用户以为「切换没生效」。
-    String template = 'aurora';
+    String template = 'classic';
     try {
       final cfg = await SoftService.instance.fetchConfig(force: true);
       final t = cfg?.uiConfig.updateTemplate ?? '';
@@ -580,7 +580,7 @@ class _UpdateCardState extends State<_UpdateCard> {
                   color: C.brand.withAlpha(isDark ? 40 : 22),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.checklist_rounded,
                   size: 19,
                   color: C.brand,
