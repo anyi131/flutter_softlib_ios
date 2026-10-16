@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -55,11 +56,19 @@ class AppStaggerIn extends StatefulWidget {
   final int index;
   final Widget child;
   final int intervalMs;
+
+  /// ★ 1016：只对**前 maxStagger 条**做错峰动画。
+  ///   几十条的大列表做入场动画本来就没意义（用户根本看不到），
+  ///   而且一旦 Ticker 被 mute（弹窗/路由过渡/切 Tab），
+  ///   所有条目会永远停在 opacity 0 → 整页看起来「一片空白」。
+  final int maxStagger;
+
   const AppStaggerIn({
     super.key,
     required this.index,
     required this.child,
     this.intervalMs = 36,
+    this.maxStagger = 8,
   });
 
   @override
@@ -77,17 +86,42 @@ class _AppStaggerInState extends State<AppStaggerIn>
     curve: AppAnim.emphasized,
   );
 
+  Timer? _startTimer;
+  Timer? _guardTimer;
+
   @override
   void initState() {
     super.initState();
+    // 后面的条目直接显示，不参与动画
+    if (widget.index >= widget.maxStagger) {
+      _c.value = 1;
+      return;
+    }
     final delay = math.min(widget.index * widget.intervalMs, 420);
-    Future.delayed(Duration(milliseconds: delay), () {
+    _startTimer = Timer(Duration(milliseconds: delay), () {
       if (mounted) _c.forward();
+    });
+    // ★★ 兜底（关键）：动画没跑起来也必须让它可见。
+    //   否则条目停在 opacity 0，用户看到的就是「软件库一片空白」。
+    _guardTimer = Timer(Duration(milliseconds: delay + 800), () {
+      if (mounted && _c.value < 1) _c.value = 1;
     });
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // ★★ 另一种「卡住」的场景：列表在不可见时被构建（TickerMode=false），
+    //   动画不会走 → 直接置为完全可见，绝不留给用户一片空白。
+    if (_c.value < 1 && !TickerMode.of(context)) {
+      _c.value = 1;
+    }
+  }
+
+  @override
   void dispose() {
+    _startTimer?.cancel();
+    _guardTimer?.cancel();
     _c.dispose();
     super.dispose();
   }
@@ -115,6 +149,7 @@ class _AppStaggerInState extends State<AppStaggerIn>
 class AppPressable extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
+
   /// ★ 1015：长按（图片保存等场景）
   final VoidCallback? onLongPress;
   final double scale;
@@ -173,14 +208,27 @@ class _AppScaleInState extends State<AppScaleIn>
     duration: widget.duration,
   );
 
+  Timer? _guard;
+
   @override
   void initState() {
     super.initState();
     _c.forward();
+    // ★ 1016：兜底 —— 动画没走完也必须可见（Ticker 被 mute 时否则永远透明）
+    _guard = Timer(widget.duration + const Duration(milliseconds: 700), () {
+      if (mounted && _c.value < 1) _c.value = 1;
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_c.value < 1 && !TickerMode.of(context)) _c.value = 1;
   }
 
   @override
   void dispose() {
+    _guard?.cancel();
     _c.dispose();
     super.dispose();
   }
@@ -228,6 +276,13 @@ class _AppCountUpState extends State<AppCountUp>
   void initState() {
     super.initState();
     _c.forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // ★ 1016：Ticker 被 mute 时直接跳到目标值，别显示一个卡住的 0
+    if (_c.value < 1 && !TickerMode.of(context)) _c.value = 1;
   }
 
   @override
