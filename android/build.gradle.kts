@@ -22,26 +22,29 @@ tasks.register<Delete>("clean") {
 
 // ══════════════════════════════════════════════════════════════
 // ★ 1015：兼容老插件（tencent_kit）
-//   tencent_kit 6.2.0 的 build.gradle 里写死 compileSdkVersion 31，
-//   而 AGP 8.x 要求 compileSdk >= 34，否则构建直接失败。
-//   这里在主工程统一覆盖所有子工程的 compileSdk / minSdk。
+//   tencent_kit 写死 compileSdkVersion 31，AGP 8.x 要求 >= 34。
+//   注意：不能用 afterEvaluate —— 本工程已有 evaluationDependsOn(":app")，
+//   子工程在配置阶段就已求值，再注册 afterEvaluate 会报
+//   「Cannot run Project.afterEvaluate(Action) when the project is already evaluated」。
+//   所以这里直接遍历子工程、在配置阶段立即改。
 // ══════════════════════════════════════════════════════════════
 subprojects {
-    afterEvaluate {
-        // 用反射设置 compileSdk，避免依赖 AGP 类型（kts 下类型不可见）
-        try {
-            val ext = extensions.findByName("android")
-            if (ext != null) {
-                val m = ext.javaClass.methods.firstOrNull {
-                    it.name == "compileSdkVersion" && it.parameterTypes.size == 1
-                }
-                m?.invoke(ext, 34)
+    // 立即（配置阶段）修改，不用 afterEvaluate
+    try {
+        val ext = extensions.findByName("android")
+        if (ext != null) {
+            val m = ext.javaClass.methods.firstOrNull {
+                it.name == "compileSdkVersion" && it.parameterTypes.size == 1
             }
-        } catch (_: Throwable) {}
-        // 强制 JDK 17（AGP 8.x 要求）
-        tasks.withType<JavaCompile>().configureEach {
-            sourceCompatibility = JavaVersion.VERSION_17.toString()
-            targetCompatibility = JavaVersion.VERSION_17.toString()
+            m?.invoke(ext, 34)
         }
+    } catch (_: Throwable) {}
+}
+
+// JDK 17 强制（AGP 8.x 要求）—— 这个可以在配置阶段直接挂
+allprojects {
+    tasks.withType<JavaCompile>().configureEach {
+        sourceCompatibility = JavaVersion.VERSION_17.toString()
+        targetCompatibility = JavaVersion.VERSION_17.toString()
     }
 }
