@@ -103,3 +103,8 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // ★ 1015：QQ 登录 SDK（本地 jar，来自腾讯官方）
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+}

@@ -25,6 +25,13 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
+        // ★ 1015：注册 QQ 登录原生桥接（自己实现，不依赖第三方插件）
+        try {
+            QQLoginBridge.register(this, flutterEngine.dartExecutor.binaryMessenger)
+        } catch (e: Throwable) {
+            android.util.Log.w("QQLoginBridge", "注册失败: ${e.message}")
+        }
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
