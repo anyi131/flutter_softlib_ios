@@ -84,14 +84,10 @@ class _LoginPageState extends State<LoginPage> {
       }
       QQLogin.appId = appId;
 
-      // 先看装没装 QQ
-      final installed = await QQLogin.isQQInstalled();
-      if (!installed) {
-        ToastUtil.info('未检测到 QQ，请安装后再试（或改用邮箱登录）');
-        return;
-      }
-
-      // 拉起 QQ App 授权
+      // ★★★ 1015 修复：不再「先探测再登录」。
+      //   原来先调 isQQInstalled()，但 Android 11+ 包可见性限制下
+      //   这个方法可能误报 false → 直接回退 WebView → 用户看到「网页无法打开」。
+      //   正确做法：直接调原生登录，SDK 自己会判断并抛明确异常。
       final r = await QQLogin.login();
       if (r == null) {
         ToastUtil.info('已取消 QQ 登录');

@@ -120,5 +120,13 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- ★ 1015：Android 11+ 必须声明才能探测/唤起 QQ（否则 isQQInstalled 永远 false） -->
+        <package android:name="com.tencent.mobileqq"/>
+        <package android:name="com.tencent.mobileqqi"/>
+        <package android:name="com.tencent.tim"/>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="tencent1905800958"/>
+        </intent>
     </queries>
 </manifest>
