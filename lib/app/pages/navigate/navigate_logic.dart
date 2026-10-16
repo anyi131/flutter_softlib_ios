@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../services/notify_service.dart';
+import '../../utils/notify_service.dart';
 
 import '../../utils/apk_installer.dart';
 

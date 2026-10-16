@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../services/notify_service.dart';
+import '../../utils/notify_service.dart';
 import 'package:get/get.dart';
 
 import '../../design/adaptive.dart';
