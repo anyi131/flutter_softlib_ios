@@ -65,6 +65,14 @@ class UpdateFlow {
     //   卡死的真因不是模板本身，而是模板里 30~40 的大范围阴影 ——
     //   已把阴影统一调轻（见各模板），观感几乎不变但开销小很多。
     if (url.isEmpty) return;
+    // ★ 1016 路标：卡死时 Dart 层不会有任何日志，所以这里提前上报一条，
+    //   配合下面「已显示」那条，就能判断卡死是否发生在弹窗构建阶段。
+    try {
+      SoftService.reportLogStatic(
+        tag: 'update',
+        error: '[update] 准备弹窗 tpl=$template ver=$ver',
+      ).catchError((_) {});
+    } catch (_) {}
     showDialog(
       context: Get.context!,
       barrierDismissible: !forced,
@@ -88,6 +96,13 @@ class UpdateFlow {
         ),
       ),
     );
+    // ★ 1016 路标：能走到这里说明弹窗已经进入渲染队列
+    try {
+      SoftService.reportLogStatic(
+        tag: 'update',
+        error: '[update] 弹窗已显示 tpl=$template',
+      ).catchError((_) {});
+    } catch (_) {}
   }
 }
 
@@ -1267,7 +1282,15 @@ class _UpdateCardState extends State<_UpdateCard> {
   }
   /// 正文区（更新日志 / 进度态）——各模板共用
   Widget _tplBody(bool isDark) {
-    return Flexible(
+    // ★★ 1016 关键修复（跨平台卡死真因）：
+    //   这里原来是 `Flexible(child: SingleChildScrollView(...))`，
+    //   而它被调用方包在 `Padding` 里 ——
+    //   **Flexible 必须是 Column/Row 的直接子级**，中间夹了 Padding 之后
+    //   parentData 类型不匹配，release 下布局会卡死/整块渲染不出来
+    //   （Android/iOS 通杀，且 Dart 不报错，只能被系统判定 ANR 杀掉）。
+    //   改用「限高 + 滚动」，与安全款模板一致。
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 300),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(2, 8, 2, 4),
         child: _phase == 'idle'
