@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// QQ 原生登录（1015 自实现桥接）
@@ -110,4 +111,57 @@ class QQAuthResult {
     this.uiMs = -1,
     this.initMs = -1,
   });
+
+  // ═══════════════════════════════════════════════════════════════
+  // ★ 1016：本地缓存 QQ 授权（真机实测：每次走 QQ 授权页要 4~19 秒 ✗）
+  //   QQ 的 access_token 有效期约 90 天 → 第一次授权后存下来，
+  //   以后再点「QQ 快捷登录」直接复用，**完全跳过 QQ 界面** → 秒进。
+  //   服务端会向 QQ 校验 token 有效性（/me），所以不影响安全。
+  // ═══════════════════════════════════════════════════════════════
+  static const _kQqOpenid = 'qq_cache_openid';
+  static const _kQqToken = 'qq_cache_token';
+  static const _kQqAt = 'qq_cache_at';
+
+  /// 缓存有效期（保守取 30 天；QQ 实际约 90 天）
+  static const _cacheDays = 30;
+
+  /// 保存一次成功授权（供下次秒登）
+  static Future<void> saveAuth(String openid, String accessToken) async {
+    if (openid.isEmpty || accessToken.isEmpty) return;
+    try {
+      final sp = await SharedPreferences.getInstance();
+      await sp.setString(_kQqOpenid, openid);
+      await sp.setString(_kQqToken, accessToken);
+      await sp.setInt(_kQqAt, DateTime.now().millisecondsSinceEpoch);
+    } catch (_) {}
+  }
+
+  /// 读缓存的授权（没有/过期/换账号后失效 → 返回 null）
+  static Future<QQAuthResult?> cachedAuth() async {
+    try {
+      final sp = await SharedPreferences.getInstance();
+      final openid = sp.getString(_kQqOpenid) ?? '';
+      final token = sp.getString(_kQqToken) ?? '';
+      final at = sp.getInt(_kQqAt) ?? 0;
+      if (openid.isEmpty || token.isEmpty || at <= 0) return null;
+      final days = DateTime.now()
+          .difference(DateTime.fromMillisecondsSinceEpoch(at))
+          .inDays;
+      if (days >= _cacheDays) return null;
+      return QQAuthResult(openid: openid, accessToken: token);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 清掉缓存（服务端判定 token 失效时调用 → 下次重新走 QQ 授权）
+  static Future<void> clearAuth() async {
+    try {
+      final sp = await SharedPreferences.getInstance();
+      await sp.remove(_kQqOpenid);
+      await sp.remove(_kQqToken);
+      await sp.remove(_kQqAt);
+    } catch (_) {}
+  }
+
 }

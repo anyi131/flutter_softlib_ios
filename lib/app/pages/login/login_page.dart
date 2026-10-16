@@ -122,24 +122,59 @@ class _LoginPageState extends State<LoginPage> {
     final sw = Stopwatch()..start();
     String err = '';
     try {
-      final r = await QQLogin.login();
-      final msNative = sw.elapsedMilliseconds; // 点击 → 授权回调
+      // ═══════════════════════════════════════════════════════════
+      // ★★ 1016 提速关键：**优先复用本地缓存的 QQ 授权**
+      //   真机实测：每次走 QQ 授权页要 4~19 秒（98% 时间都在 QQ 那边）。
+      //   而 QQ 的 access_token 有效期约 90 天 → 第一次授权后存下来，
+      //   之后再点就是「直接拿 token 换本站登录」→ 秒进。
+      //   服务端仍会向 QQ 校验 token（/me），安全不受影响。
+      // ═══════════════════════════════════════════════════════════
+      var r = await QQLogin.cachedAuth();
+      final fromCache = r != null;
+      var msNative = 0;
+      var uiMs = -1;
+      var initMs = -1;
       if (r == null) {
-        _reportQqTime('取消/失败 | 点击→回调=${msNative}ms');
-        ToastUtil.info('已取消 QQ 登录');
-        return;
+        r = await QQLogin.login();
+        msNative = sw.elapsedMilliseconds; // 点击 → 授权回调
+        if (r == null) {
+          _reportQqTime('取消/失败 | 点击→回调=${msNative}ms');
+          ToastUtil.info('已取消 QQ 登录');
+          return;
+        }
+        uiMs = r.uiMs; // 原生测得的「拉起QQ→用户确认→回调」全程
+        initMs = r.initMs; // 原生初始化耗时
       }
-      final uiMs = r.uiMs;   // 原生测得的「拉起QQ→用户确认→回调」全程
-      final initMs = r.initMs; // 原生初始化耗时
-      // 授权已回来，接下来是服务端换 token —— 转圈不停，只换文案
+      // 授权已就绪，接下来是服务端换 token —— 转圈不停，只换文案
       if (mounted) setState(() => _qqStage = '正在登录…');
 
       final beforeAuth = sw.elapsedMilliseconds;
-      final res = await UserService.instance.qqAuthBySdk(
+      var res = await UserService.instance.qqAuthBySdk(
         openid: r.openid,
         accessToken: r.accessToken,
       );
+      // ★ 缓存里的 token 已被服务端判定无效（过期/被回收）
+      //   → 清掉缓存，老老实实走一次 QQ 授权
+      if (fromCache && '${res['token'] ?? ''}'.isEmpty && '${res['need_register'] ?? ''}' != '1') {
+        await QQLogin.clearAuth();
+        final r2 = await QQLogin.login();
+        msNative = sw.elapsedMilliseconds;
+        if (r2 == null) {
+          _reportQqTime('缓存失效+取消 | 点击→回调=${msNative}ms');
+          ToastUtil.info('已取消 QQ 登录');
+          return;
+        }
+        uiMs = r2.uiMs;
+        initMs = r2.initMs;
+        res = await UserService.instance.qqAuthBySdk(
+          openid: r2.openid,
+          accessToken: r2.accessToken,
+        );
+        r = r2;
+      }
       final msServer = sw.elapsedMilliseconds - beforeAuth; // 服务端换 token
+      // 授权有效 → 存下来供下次秒登
+      await QQLogin.saveAuth(r.openid, r.accessToken);
 
       // ★ 1016：这个 QQ 还没有绑定账号 —— 不再自动建号，引导去注册
       //   （带着 openid/token 过去，注册成功即完成绑定，下次直接一键登录）
@@ -169,7 +204,8 @@ class _LoginPageState extends State<LoginPage> {
       // ★ 1016：把真机各阶段耗时上报服务器（后台直接可读）
       final total = sw.elapsedMilliseconds;
       _reportQqTime(
-        '成功 | 点击→回调=${msNative}ms（原生初始化=${initMs}ms '
+        '成功 | ${fromCache ? '复用本地授权(未走QQ界面)' : '走了QQ授权'} '
+        '| 点击→回调=${msNative}ms（原生初始化=${initMs}ms '
         '授权页全程=${uiMs}ms）| 服务端换token=${msServer}ms '
         '| 其余=${total - msNative - msServer}ms | 总计=${total}ms',
       );
