@@ -44,6 +44,10 @@ class _AppComponentState extends State<AppComponent> {
   String _err = '';
   Timer? _watchdog;
 
+  /// ★ 1016：渲染状态上报 —— 每次渲染状态变化时打一条到服务器，
+  ///   用于定位「数据明明拿到了却画不出来」这类只在真机出现的问题。
+  String _lastSig = '';
+
   /// 列表正在加载更多（不遮全屏，只在底部转圈）
   bool _loadingMore = false;
   bool _hasMore = true;
@@ -359,7 +363,9 @@ class _AppComponentState extends State<AppComponent> {
                 Text('软件库', style: Ty.display.copyWith(color: context.t1)),
                 const SizedBox(height: 5),
                 Text(
-                  _kw.isEmpty ? '为你精选 · 综合软件合集' : '搜索「$_kw」',
+                  _kw.isEmpty
+                      ? '为你精选 · 综合软件合集 · 共 ${_apps.length} 个'
+                      : '搜索「$_kw」· 共 ${_apps.length} 个',
                   style: Ty.small.copyWith(color: context.t3),
                 ),
               ],
@@ -506,7 +512,24 @@ class _AppComponentState extends State<AppComponent> {
   }
 
   // ───── 列表 ─────
+  /// 把当前渲染状态上报一次（状态不变不重复报）
+  void _reportRender() {
+    try {
+      final sig = 'apps=${_apps.length} cats=${_cats.length} '
+          'loading=$_loading parsing=$_folderParsing err=$_err '
+          'style=${AppStyleController.instance.listStyle.value.name} '
+          'cat=$_cat kw=$_kw src=$_source';
+      if (sig == _lastSig) return;
+      _lastSig = sig;
+      SoftService.reportLogStatic(
+        tag: 'applist',
+        error: '[applist] $sig',
+      ).catchError((_) {});
+    } catch (_) {}
+  }
+
   Widget _body() {
+    _reportRender();
     if (_err.isNotEmpty) {
       return EmptyState(
         text: _err,
@@ -568,9 +591,11 @@ class _AppComponentState extends State<AppComponent> {
               childAspectRatio: 0.82,
             ),
             itemCount: _apps.length,
+            // ★ 1016：列表项不再套入场动画 —— 动画层曾导致整片列表不可见，
+            //   列表这种高频内容不值得为它冒风险
             itemBuilder: (context, i) => RepaintBoundary(
               key: ValueKey('g_${_apps[i].id}'),
-              child: AppStaggerIn(index: i, child: _gridCard(_apps[i])),
+              child: _gridCard(_apps[i]),
             ),
           );
         }
@@ -588,15 +613,12 @@ class _AppComponentState extends State<AppComponent> {
             final a = _apps[i];
             return RepaintBoundary(
               key: ValueKey('l_${a.id}'),
-              child: AppStaggerIn(
-                index: i,
-                child: switch (style) {
-                  AppListStyle.compact => _compactCard(a),
-                  AppListStyle.large => _largeCard(a),
-                  AppListStyle.minimal => _minimalCard(a),
-                  _ => _card(a),
-                },
-              ),
+              child: switch (style) {
+                AppListStyle.compact => _compactCard(a),
+                AppListStyle.large => _largeCard(a),
+                AppListStyle.minimal => _minimalCard(a),
+                _ => _card(a),
+              },
             );
           },
         );
