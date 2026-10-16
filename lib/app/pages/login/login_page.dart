@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../api/qq_login.dart';
 
@@ -113,19 +114,37 @@ class _LoginPageState extends State<LoginPage> {
       ToastUtil.success('QQ 登录成功');
       Navigator.of(context).pop(true);
     } catch (e) {
-      // 原生失败 → 回退 WebView（至少给个兜底）
+      // ★ 1015：原生失败 → 改用**系统浏览器**打开授权页。
+      //   原来回退到 App 内 WebView，但 QQ 授权页会跳 wtloginmqq:// 私有协议，
+      //   WebView 打不开（ERR_UNKNOWN_URL_SCHEME）→ 用户看到「网页无法打开」。
+      //   系统浏览器能正确处理这个跳转（能拉起 QQ App 或给可用的登录页）。
       final msg = e.toString().replaceFirst('Exception: ', '');
-      ToastUtil.info('原生登录不可用（$msg），改用网页登录');
-      final res = await Get.to(() => const QQLoginPage());
-      if (res is Map && (res['token'] ?? '').toString().isNotEmpty) {
-        await UserService.instance.loginByToken(
-          res['token'].toString(),
-          nickname: (res['nickname'] ?? '').toString(),
-          avatar: (res['avatar'] ?? '').toString(),
+      final authUrl =
+          '${ApiHost.base}/api/softlib/user/qq_authorize';
+      ToastUtil.info('原生登录不可用（$msg），已改用浏览器登录');
+
+      try {
+        // 用外部浏览器打开（能正确响应 wtloginmqq:// 协议）
+        await launchUrlString(
+          authUrl,
+          mode: LaunchMode.externalApplication,
         );
         if (!mounted) return;
-        ToastUtil.success('QQ 登录成功');
-        Navigator.of(context).pop(true);
+        // 提示用户在浏览器里完成授权后回到 App
+        ToastUtil.info('请在浏览器中完成 QQ 授权，完成后回到 App 刷新');
+      } catch (_) {
+        // 浏览器也打不开 → 最后兜底用 App 内 WebView
+        final res = await Get.to(() => const QQLoginPage());
+        if (res is Map && (res['token'] ?? '').toString().isNotEmpty) {
+          await UserService.instance.loginByToken(
+            res['token'].toString(),
+            nickname: (res['nickname'] ?? '').toString(),
+            avatar: (res['avatar'] ?? '').toString(),
+          );
+          if (!mounted) return;
+          ToastUtil.success('QQ 登录成功');
+          Navigator.of(context).pop(true);
+        }
       }
     }
   }
