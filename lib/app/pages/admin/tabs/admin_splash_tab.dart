@@ -53,6 +53,8 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   bool payEnable = false;
   bool qqOn = false;
   bool qqKeySet = false;
+  // ★ 1016：QQ 网页登录（网站应用）——移动应用 AppID 不能走网页授权（100008）
+  bool qqWebKeySet = false;
   bool rechargeOn = true;
   bool registerOn = true;
   bool payAlipay = true;
@@ -66,6 +68,8 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   final payKeyCtrl = TextEditingController();
   final qqAppIdCtrl = TextEditingController();
   final qqAppKeyCtrl = TextEditingController();
+  final qqWebAppIdCtrl = TextEditingController();
+  final qqWebAppKeyCtrl = TextEditingController();
   final qqRedirectCtrl = TextEditingController();
   final recharge1Ctrl = TextEditingController();
   final recharge2Ctrl = TextEditingController();
@@ -94,6 +98,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   final shareDescCtrl = TextEditingController();
   final shareUrlCtrl = TextEditingController();
   bool cardShopOn = true;
+
   /// ★ 1014：卡密商城商品列表（可增删改）
   /// 每项：{key,name,type(vip|score),value,price,stock,desc}
   List<Map<String, dynamic>> _cardGoods = [];
@@ -196,6 +201,8 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
             '${cfg['qq_app_key_set'] ?? 1}' != '0';
         qqAppIdCtrl.text = '${cfg['qq_app_id'] ?? ''}';
         qqRedirectCtrl.text = '${cfg['qq_redirect'] ?? ''}';
+        qqWebAppIdCtrl.text = '${cfg['qq_web_app_id'] ?? ''}';
+        qqWebKeySet = '${cfg['qq_web_app_key_set'] ?? 0}' != '0';
         rechargeOn = '${cfg['recharge_on']}' != '0';
         recharge1Ctrl.text = '${cfg['recharge_money1'] ?? '10'}';
         recharge2Ctrl.text = '${cfg['recharge_money2'] ?? '30'}';
@@ -253,10 +260,42 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         // 没配过 → 给一份默认商品，方便直接改价
         if (_cardGoods.isEmpty) {
           _cardGoods = [
-            {'key': 'vip7', 'name': '7天会员卡', 'type': 'vip', 'value': 7, 'price': '5.00', 'stock': -1, 'desc': '兑换后会员 +7 天'},
-            {'key': 'vip30', 'name': '30天会员卡', 'type': 'vip', 'value': 30, 'price': '15.00', 'stock': -1, 'desc': '兑换后会员 +30 天'},
-            {'key': 'vip90', 'name': '90天会员卡', 'type': 'vip', 'value': 90, 'price': '38.00', 'stock': -1, 'desc': '兑换后会员 +90 天'},
-            {'key': 'score100', 'name': '100积分卡', 'type': 'score', 'value': 100, 'price': '5.00', 'stock': -1, 'desc': '兑换后积分 +100'},
+            {
+              'key': 'vip7',
+              'name': '7天会员卡',
+              'type': 'vip',
+              'value': 7,
+              'price': '5.00',
+              'stock': -1,
+              'desc': '兑换后会员 +7 天',
+            },
+            {
+              'key': 'vip30',
+              'name': '30天会员卡',
+              'type': 'vip',
+              'value': 30,
+              'price': '15.00',
+              'stock': -1,
+              'desc': '兑换后会员 +30 天',
+            },
+            {
+              'key': 'vip90',
+              'name': '90天会员卡',
+              'type': 'vip',
+              'value': 90,
+              'price': '38.00',
+              'stock': -1,
+              'desc': '兑换后会员 +90 天',
+            },
+            {
+              'key': 'score100',
+              'name': '100积分卡',
+              'type': 'score',
+              'value': 100,
+              'price': '5.00',
+              'stock': -1,
+              'desc': '兑换后积分 +100',
+            },
           ];
         }
         aboutNameCtrl.text = '${cfg['about_name'] ?? '安逸软件汇'}';
@@ -335,6 +374,10 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         if (qqAppKeyCtrl.text.trim().isNotEmpty)
           'qq_app_key': qqAppKeyCtrl.text.trim(),
         'qq_redirect': qqRedirectCtrl.text.trim(),
+        // ★ 1016：网页登录（网站应用）——AppKey 留空表示不修改
+        'qq_web_app_id': qqWebAppIdCtrl.text.trim(),
+        if (qqWebAppKeyCtrl.text.trim().isNotEmpty)
+          'qq_web_app_key': qqWebAppKeyCtrl.text.trim(),
         // 余额充值档位
         'recharge_on': rechargeOn ? 1 : 0,
         'recharge_money1': recharge1Ctrl.text.trim(),
@@ -379,6 +422,10 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
             qqKeySet = true;
             qqAppKeyCtrl.clear();
           }
+          if (qqWebAppKeyCtrl.text.trim().isNotEmpty) {
+            qqWebKeySet = true;
+            qqWebAppKeyCtrl.clear();
+          }
           // ★ 1015：AppKey 不回显是安全设计，但要让用户确认「确实存住了」
           final justSavedQqKey = qqKeySet;
           if (justSavedQqKey) {
@@ -407,6 +454,8 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         qqOn = '${cfg['qq_login_on'] ?? 1}' != '0';
         qqAppIdCtrl.text = '${cfg['qq_app_id'] ?? ''}';
         qqRedirectCtrl.text = '${cfg['qq_redirect'] ?? ''}';
+        qqWebAppIdCtrl.text = '${cfg['qq_web_app_id'] ?? ''}';
+        qqWebKeySet = '${cfg['qq_web_app_key_set'] ?? 0}' != '0';
         qqKeySet =
             '${cfg['qq_app_key_set']}' == 'true' ||
             '${cfg['qq_app_key_set'] ?? 1}' != '0';
@@ -526,9 +575,13 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
             const SizedBox(height: 14),
             Row(
               children: [
-                Text('卡密商品与售价',
-                    style: Ty.small.copyWith(
-                        color: context.t1, fontWeight: FontWeight.w800)),
+                Text(
+                  '卡密商品与售价',
+                  style: Ty.small.copyWith(
+                    color: context.t1,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 const Spacer(),
                 SoftButton(
                   label: '添加商品',
@@ -540,11 +593,12 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
             ),
             const SizedBox(height: 8),
             if (_cardGoods.isEmpty)
-              Text('暂无商品，点「添加商品」配置（用户可用余额购买）',
-                  style: Ty.tiny.copyWith(color: context.t3))
+              Text(
+                '暂无商品，点「添加商品」配置（用户可用余额购买）',
+                style: Ty.tiny.copyWith(color: context.t3),
+              )
             else
-              for (int i = 0; i < _cardGoods.length; i++)
-                _cardGoodsRow(i),
+              for (int i = 0; i < _cardGoods.length; i++) _cardGoodsRow(i),
           ],
         ),
         const SizedBox(height: 12),
@@ -832,12 +886,46 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
             Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: Text(
-                '在 QQ 互联（connect.qq.com）创建网站应用后，把 AppID/AppKey 填这里。\n'
+                '在 QQ 互联（connect.qq.com）创建应用后，把 AppID/AppKey 填这里。\n'
                 '回调地址需在 QQ 互联后台登记为：\n'
                 'https://你的域名/api/softlib/user/qq_callback',
                 style: Ty.tiny.copyWith(color: context.t3, height: 1.6),
               ),
             ),
+            // ★ 1016：网页登录必须用「网站应用」的 AppID
+            const Divider(height: 24),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'QQ 网页登录（网站应用）',
+                style: Ty.h3.copyWith(color: context.t1),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                '① 上面那个 AppID 是「移动应用」的，只能用于 App 内一键登录；'
+                'QQ 互联规定移动应用「不能走网页登录」（会报错误码 100008）。\n'
+                '② 如果 App 内一键登录不可用，可以再建一个「网站应用」，'
+                '把它的 AppID / AppKey 填在下面，App 内的网页授权就能正常走完。\n'
+                '③ 网站应用的回调地址同样填：https://你的域名/api/softlib/user/qq_callback',
+                style: Ty.tiny.copyWith(color: context.t3, height: 1.7),
+              ),
+            ),
+            _field('网站应用 AppID（留空=不用网页登录）', qqWebAppIdCtrl),
+            _field(
+              qqWebKeySet ? '网站应用 AppKey（已设置 ✓ 留空=不修改，要换才填）' : '网站应用 AppKey',
+              qqWebAppKeyCtrl,
+            ),
+            if (qqWebKeySet)
+              Padding(
+                padding: const EdgeInsets.only(top: 2, bottom: 4),
+                child: Text(
+                  '✓ 网站应用 AppKey 已保存在服务器（密钥不回显）',
+                  style: Ty.tiny.copyWith(color: C.success),
+                ),
+              ),
           ],
         ),
         const SizedBox(height: 12),
@@ -885,7 +973,6 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
     );
   }
 
-
   /// ★ 1014：单条卡密商品编辑行（名称 / 面值 / 售价 / 类型）
   Widget _cardGoodsRow(int i) {
     final g = _cardGoods[i];
@@ -894,7 +981,9 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
-        color: context.isDark ? Colors.white.withAlpha(8) : const Color(0xFFF7F8FA),
+        color: context.isDark
+            ? Colors.white.withAlpha(8)
+            : const Color(0xFFF7F8FA),
         borderRadius: BorderRadius.circular(R.md),
         border: Border.all(
           color: context.isDark
@@ -907,17 +996,27 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
           Row(
             children: [
               Expanded(
-                child: Text('${g['name'] ?? ''}',
-                    style: Ty.small.copyWith(
-                        color: context.t1, fontWeight: FontWeight.w800)),
+                child: Text(
+                  '${g['name'] ?? ''}',
+                  style: Ty.small.copyWith(
+                    color: context.t1,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
-              Pill(isVip ? '会员卡' : '积分卡',
-                  color: isVip ? C.gold : C.mint, small: true),
+              Pill(
+                isVip ? '会员卡' : '积分卡',
+                color: isVip ? C.gold : C.mint,
+                small: true,
+              ),
               const SizedBox(width: 6),
               GestureDetector(
                 onTap: () => setState(() => _cardGoods.removeAt(i)),
-                child: const Icon(Icons.close_rounded,
-                    size: 17, color: C.danger),
+                child: const Icon(
+                  Icons.close_rounded,
+                  size: 17,
+                  color: C.danger,
+                ),
               ),
             ],
           ),
@@ -932,8 +1031,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
               const SizedBox(width: 8),
               Expanded(
                 child: _miniField('面值(天/分)', '${g['value'] ?? 0}', (v) {
-                  setState(() =>
-                      _cardGoods[i]['value'] = int.tryParse(v) ?? 0);
+                  setState(() => _cardGoods[i]['value'] = int.tryParse(v) ?? 0);
                 }, number: true),
               ),
             ],
@@ -942,9 +1040,15 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
           Row(
             children: [
               Expanded(
-                child: _miniField('售价(元)', '${g['price'] ?? ''}', (v) {
-                  setState(() => _cardGoods[i]['price'] = v);
-                }, number: true, decimal: true),
+                child: _miniField(
+                  '售价(元)',
+                  '${g['price'] ?? ''}',
+                  (v) {
+                    setState(() => _cardGoods[i]['price'] = v);
+                  },
+                  number: true,
+                  decimal: true,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -959,9 +1063,13 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
                       borderRadius: BorderRadius.circular(R.sm),
                       border: Border.all(color: C.brand.withAlpha(120)),
                     ),
-                    child: Text(isVip ? '类型：会员卡' : '类型：积分卡',
-                        style: Ty.tiny.copyWith(
-                            color: C.brand, fontWeight: FontWeight.w800)),
+                    child: Text(
+                      isVip ? '类型：会员卡' : '类型：积分卡',
+                      style: Ty.tiny.copyWith(
+                        color: C.brand,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -989,8 +1097,10 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
       decoration: InputDecoration(
         labelText: label,
         isDense: true,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 11,
+        ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(R.sm)),
       ),
       onChanged: onChanged,
