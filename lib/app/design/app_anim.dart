@@ -75,75 +75,12 @@ class AppStaggerIn extends StatefulWidget {
   State<AppStaggerIn> createState() => _AppStaggerInState();
 }
 
-class _AppStaggerInState extends State<AppStaggerIn>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: AppAnim.slow,
-  );
-  late final Animation<double> _a = CurvedAnimation(
-    parent: _c,
-    curve: AppAnim.emphasized,
-  );
-
-  Timer? _startTimer;
-  Timer? _guardTimer;
-
+class _AppStaggerInState extends State<AppStaggerIn> {
+  // ★ 1016：不再做「逐条淡入」——
+  //   这套动画在做不到的时候会让整列表停在透明，
+  //   用户看到的就是「一片空白」。列表内容不值得为动画冒这个险。
   @override
-  void initState() {
-    super.initState();
-    // 后面的条目直接显示，不参与动画
-    if (widget.index >= widget.maxStagger) {
-      _c.value = 1;
-      return;
-    }
-    final delay = math.min(widget.index * widget.intervalMs, 420);
-    _startTimer = Timer(Duration(milliseconds: delay), () {
-      if (mounted) _c.forward();
-    });
-    // ★★ 兜底（关键）：动画没跑起来也必须让它可见。
-    //   否则条目停在 opacity 0，用户看到的就是「软件库一片空白」。
-    _guardTimer = Timer(Duration(milliseconds: delay + 800), () {
-      if (mounted && _c.value < 1) _c.value = 1;
-    });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // ★★ 另一种「卡住」的场景：列表在不可见时被构建（TickerMode=false），
-    //   动画不会走 → 直接置为完全可见，绝不留给用户一片空白。
-    if (_c.value < 1 && !TickerMode.of(context)) {
-      _c.value = 1;
-    }
-  }
-
-  @override
-  void dispose() {
-    _startTimer?.cancel();
-    _guardTimer?.cancel();
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _a,
-      builder: (context, child) {
-        final v = _a.value;
-        return Opacity(
-          // ★ 1016：最低 25% 不透明 —— 任何情况下都不会「完全看不见」
-          opacity: v < 0.25 ? 0.25 : v,
-          child: Transform.translate(
-            offset: Offset(0, (1 - v) * 22),
-            child: Transform.scale(scale: 0.985 + 0.015 * v, child: child),
-          ),
-        );
-      },
-      child: widget.child,
-    );
-  }
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// ── 按压反馈（统一触感）──
@@ -202,53 +139,10 @@ class AppScaleIn extends StatefulWidget {
   State<AppScaleIn> createState() => _AppScaleInState();
 }
 
-class _AppScaleInState extends State<AppScaleIn>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: widget.duration,
-  );
-
-  Timer? _guard;
-
+class _AppScaleInState extends State<AppScaleIn> {
+  // ★ 1016：不再持有任何动画控制器 —— 内容永远直接可见。
   @override
-  void initState() {
-    super.initState();
-    _c.forward();
-    // ★ 1016：兜底 —— 动画没走完也必须可见（Ticker 被 mute 时否则永远透明）
-    _guard = Timer(widget.duration + const Duration(milliseconds: 700), () {
-      if (mounted && _c.value < 1) _c.value = 1;
-    });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_c.value < 1 && !TickerMode.of(context)) _c.value = 1;
-  }
-
-  @override
-  void dispose() {
-    _guard?.cancel();
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // ★★ 1016 关键修复：**去掉外层 FadeTransition（透明度 0→1）**。
-    //   原来只要这个动画没跑起来（启动时序 / Ticker 被 mute），
-    //   内容就永远停在「全透明」—— 更新弹窗的 8 款模板最外层都包着它，
-    //   于是弹窗看着像「根本没渲染出来」：只剩一层遮罩，整页发白。
-    //   现在只做缩放，动画即使完全不跑，内容也**始终可见**。
-    return ScaleTransition(
-      scale: Tween(
-        begin: 0.94,
-        end: 1.0,
-      ).animate(CurvedAnimation(parent: _c, curve: AppAnim.spring)),
-      child: widget.child,
-    );
-  }
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// ── 数值补间（进度/积分跳动）──
