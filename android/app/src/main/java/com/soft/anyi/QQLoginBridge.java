@@ -64,6 +64,23 @@ public class QQLoginBridge implements MethodChannel.MethodCallHandler {
             case "isQQInstalled":
                 result.success(isQQInstalled());
                 break;
+            // ★ 1016：预热 —— 进登录页就先建好 Tencent 实例并声明授权，
+            //   点「QQ 快捷登录」时直接 login()，省掉实例初始化那一段（体感更快）
+            case "preheat":
+                try {
+                    String id = call.argument("appId");
+                    if (id != null && !id.isEmpty()) {
+                        Activity a = activityRef != null ? activityRef.get() : null;
+                        if (a != null) {
+                            tencent = Tencent.createInstance(id, a.getApplicationContext());
+                            grantPermission();
+                        }
+                    }
+                    result.success(true);
+                } catch (Throwable e) {
+                    result.success(false);
+                }
+                break;
             case "logout":
                 try {
                     if (tencent != null) {

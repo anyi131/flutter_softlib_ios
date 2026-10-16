@@ -22,81 +22,83 @@ import 'app/api/user_service.dart';
 import 'app/utils/device_info_util.dart';
 import 'app/design/app_style_controller.dart';
 import 'app/api/soft_service.dart';
+import 'app/api/app_sign.dart';
 
 /// 应用程序主入口
 Future<void> main() async {
   // ★ 全局错误捕获：任何未捕获异常都不应导致白屏/闪退
-  runZonedGuarded(
-    () async {
-      WidgetsFlutterBinding.ensureInitialized();
-      // Flutter 框架层异常（构建/布局/绘制）
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    // Flutter 框架层异常（构建/布局/绘制）
+    FlutterError.onError = (FlutterErrorDetails details) {
+      FlutterError.presentError(details);
+      _logError('FlutterError', details.exception, details.stack);
+    };
+    // 未捕获的异步错误
+    PlatformDispatcher.instance.onError = (error, stack) {
+      _logError('PlatformDispatcher', error, stack);
+      return true; // 已处理，避免崩溃
+    };
+
+    // ★ 1016：启动就把本机签名指纹读出来缓存（防重打包上报用），
+    //   不 await —— 别让它拖慢冷启动
+    unawaited(AppSign.warmUp());
+
+    // ★ 兜底：任何页面/模板构建异常都不允许变成「整屏白屏」
+    //   （release 下 Flutter 默认给空白占位，看起来就是白屏）
+    ErrorWidget.builder = (FlutterErrorDetails details) {
+      _logError('ErrorWidget', details.exception, details.stack);
+      // ★ 1015：兜底页带上错误摘要，方便用户反馈 / 自己排查
+      return _UiFallback(detail: details.exception.toString());
+    };
+
+    // ★★★ 1015：图片加载全局兜底
+    //   很多页面用 CachedNetworkImage 但没写 errorWidget，
+    //   网络图 403/404 时会抛异常 → 触发 ErrorWidget → 整块渲染失败。
+    //   这里给所有图片流加全局兜底（拿不到图就静默忽略，不报错）。
+    try {
+      final prevHandler = FlutterError.onError;
       FlutterError.onError = (FlutterErrorDetails details) {
-        FlutterError.presentError(details);
-        _logError('FlutterError', details.exception, details.stack);
+        final ex = details.exception.toString();
+        // 图片加载类异常：只记录，不上报、不渲染错误页
+        if (ex.contains('statusCode') ||
+            ex.contains('HttpException') ||
+            ex.contains('NetworkImage') ||
+            ex.contains('CachedNetworkImage') ||
+            ex.contains('Image provider')) {
+          debugPrint('[Softlib][img] 图片加载失败: $ex');
+          return;
+        }
+        if (prevHandler != null) {
+          prevHandler(details);
+        } else {
+          FlutterError.presentError(details);
+          _logError('FlutterError', details.exception, details.stack);
+        }
       };
-      // 未捕获的异步错误
-      PlatformDispatcher.instance.onError = (error, stack) {
-        _logError('PlatformDispatcher', error, stack);
-        return true; // 已处理，避免崩溃
-      };
+    } catch (_) {}
 
-      // ★ 兜底：任何页面/模板构建异常都不允许变成「整屏白屏」
-      //   （release 下 Flutter 默认给空白占位，看起来就是白屏）
-      ErrorWidget.builder = (FlutterErrorDetails details) {
-        _logError('ErrorWidget', details.exception, details.stack);
-        // ★ 1015：兜底页带上错误摘要，方便用户反馈 / 自己排查
-        return _UiFallback(detail: details.exception.toString());
-      };
-
-      // ★★★ 1015：图片加载全局兜底
-      //   很多页面用 CachedNetworkImage 但没写 errorWidget，
-      //   网络图 403/404 时会抛异常 → 触发 ErrorWidget → 整块渲染失败。
-      //   这里给所有图片流加全局兜底（拿不到图就静默忽略，不报错）。
+    try {
       try {
-        final prevHandler = FlutterError.onError;
-        FlutterError.onError = (FlutterErrorDetails details) {
-          final ex = details.exception.toString();
-          // 图片加载类异常：只记录，不上报、不渲染错误页
-          if (ex.contains('statusCode') ||
-              ex.contains('HttpException') ||
-              ex.contains('NetworkImage') ||
-              ex.contains('CachedNetworkImage') ||
-              ex.contains('Image provider')) {
-            debugPrint('[Softlib][img] 图片加载失败: $ex');
-            return;
-          }
-          if (prevHandler != null) {
-            prevHandler(details);
-          } else {
-            FlutterError.presentError(details);
-            _logError('FlutterError', details.exception, details.stack);
-          }
-        };
+        final info = await PackageInfo.fromPlatform();
+        _appVersion = '${info.version}+${info.buildNumber}';
       } catch (_) {}
-
+      await _initializeServices();
+      // ★ 1015：启动心跳上报 —— 每次冷启动都记一条，
+      //   便于确认「用户到底装的是哪个版本」，排查「日志版本对不上」。
       try {
-        try {
-          final info = await PackageInfo.fromPlatform();
-          _appVersion = '${info.version}+${info.buildNumber}';
-        } catch (_) {}
-        await _initializeServices();
-        // ★ 1015：启动心跳上报 —— 每次冷启动都记一条，
-        //   便于确认「用户到底装的是哪个版本」，排查「日志版本对不上」。
-        try {
-          SoftService.reportLogStatic(
-            tag: 'boot',
-            error: '[v=$_appVersion] App 启动',
-            version: _appVersion.isEmpty ? 'unknown' : _appVersion,
-          ).catchError((_) {});
-        } catch (_) {}
-        runApp(const SoftLibApp());
-      } catch (error, stackTrace) {
-        _logError('startup', error, stackTrace);
-        runApp(_buildErrorApp(error.toString()));
-      }
-    },
-    (error, stackTrace) => _logError('zone', error, stackTrace),
-  );
+        SoftService.reportLogStatic(
+          tag: 'boot',
+          error: '[v=$_appVersion] App 启动',
+          version: _appVersion.isEmpty ? 'unknown' : _appVersion,
+        ).catchError((_) {});
+      } catch (_) {}
+      runApp(const SoftLibApp());
+    } catch (error, stackTrace) {
+      _logError('startup', error, stackTrace);
+      runApp(_buildErrorApp(error.toString()));
+    }
+  }, (error, stackTrace) => _logError('zone', error, stackTrace));
 }
 
 /// 统一错误日志（不弹窗、不中断用户操作）
@@ -117,7 +119,7 @@ void _logError(String tag, Object error, StackTrace? stack) {
   //      改为同步入队 + 立即发起，并用 unawaited 兜住异常。
   final key = '$tag|${error.toString().split("\n").first}';
   final n = _reportSeen[key] ?? 0;
-  if (n >= 3) return;             // 同一错误最多报 3 次，防刷屏
+  if (n >= 3) return; // 同一错误最多报 3 次，防刷屏
   _reportSeen[key] = n + 1;
   _reportCount++;
   try {
@@ -216,14 +218,16 @@ void _configureEasyLoading() {
     ..dismissOnTap = false;
 }
 
-
 // ============ SonPro 风格设计系统 ============
 /// 品牌主色（蓝紫）
 const Color kBrandPrimary = Color(0xFF4B5EF5);
+
 /// 强调色（橙红，用于按钮/徽标）
 const Color kBrandAccent = Color(0xFFFF6B35);
+
 /// 浅灰分块背景（亮色模式卡片底）
 const Color kBrandBgLight = Color(0xFFF4F5F9);
+
 /// 暗色卡片底
 const Color kBrandCardDark = Color(0xFF1A1D23);
 
@@ -242,10 +246,12 @@ void _syncSystemBars(bool isDark) {
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
-      systemNavigationBarColor:
-          isDark ? const Color(0xFF0E1016) : const Color(0xFFF6F7FB),
-      systemNavigationBarIconBrightness:
-          isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarColor: isDark
+          ? const Color(0xFF0E1016)
+          : const Color(0xFFF6F7FB),
+      systemNavigationBarIconBrightness: isDark
+          ? Brightness.light
+          : Brightness.dark,
     ),
   );
 }
@@ -260,43 +266,42 @@ class SoftLibApp extends StatelessWidget {
       final mode = ThemeController.instance.mode.value;
       // ★ 依赖 rebuildTick：切换全局配色方案时全 App 重建，实现「全局生效」
       final _ = ThemeController.instance.rebuildTick.value;
-      final isDark = mode == ThemeMode.dark ||
+      final isDark =
+          mode == ThemeMode.dark ||
           (mode == ThemeMode.system &&
               MediaQuery.of(Get.context ?? context).platformBrightness ==
                   Brightness.dark);
       _syncSystemBars(isDark);
       return GetMaterialApp(
-      title: '安逸软件汇',
-      debugShowCheckedModeBanner: false,
-      initialRoute: Routes.splash,
-      getPages: AppPages.routes,
-      builder: (context, child) {
-        // 全局高刷：常驻 Ticker 请求设备最高刷新率
-        return HighRefreshScope(
-          child: EasyLoading.init()(context, child),
-        );
-      },
-      // 统一使用 iOS 风格右滑过渡（GetX 路由）
-      // ★ 关键：opaqueRoute 必须为 false！
-      //   cupertino 是「平移」转场 —— 动画期间新旧两页同时可见。
-      //   若 opaque 为 true，Flutter 会认为新页已完全盖住旧页，从动画一开始
-      //   就跳过绘制旧页 → 露出底层黑/白 → 表现为「闪屏」。
-      defaultTransition: Transition.cupertino,
-      // ★ 1015 优化：260ms → 180ms。
-      //   点击一个功能实际要经历「按压动画 140ms + 转场 260ms + 内容入场 220ms」，
-      //   叠加后超过 600ms，用户明显感觉「点了半天才出来」。
-      //   转场压到 180ms 更跟手（iOS 原生返回手势也是这个量级）。
-      transitionDuration: const Duration(milliseconds: 180),
-      theme: buildLightTheme(),
-      darkTheme: buildDarkTheme(),
-      themeMode: ThemeController.instance.mode.value,
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ],
-      supportedLocales: const [Locale("zh", "CN"), Locale("en", "US")],
-      locale: const Locale("zh", "CN"),
+        title: '安逸软件汇',
+        debugShowCheckedModeBanner: false,
+        initialRoute: Routes.splash,
+        getPages: AppPages.routes,
+        builder: (context, child) {
+          // 全局高刷：常驻 Ticker 请求设备最高刷新率
+          return HighRefreshScope(child: EasyLoading.init()(context, child));
+        },
+        // 统一使用 iOS 风格右滑过渡（GetX 路由）
+        // ★ 关键：opaqueRoute 必须为 false！
+        //   cupertino 是「平移」转场 —— 动画期间新旧两页同时可见。
+        //   若 opaque 为 true，Flutter 会认为新页已完全盖住旧页，从动画一开始
+        //   就跳过绘制旧页 → 露出底层黑/白 → 表现为「闪屏」。
+        defaultTransition: Transition.cupertino,
+        // ★ 1015 优化：260ms → 180ms。
+        //   点击一个功能实际要经历「按压动画 140ms + 转场 260ms + 内容入场 220ms」，
+        //   叠加后超过 600ms，用户明显感觉「点了半天才出来」。
+        //   转场压到 180ms 更跟手（iOS 原生返回手势也是这个量级）。
+        transitionDuration: const Duration(milliseconds: 180),
+        theme: buildLightTheme(),
+        darkTheme: buildDarkTheme(),
+        themeMode: ThemeController.instance.mode.value,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale("zh", "CN"), Locale("en", "US")],
+        locale: const Locale("zh", "CN"),
       );
     });
   }
@@ -372,11 +377,19 @@ class _UiFallbackState extends State<_UiFallback> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline_rounded, size: 34, color: Color(0xFFB0B5BD)),
+              const Icon(
+                Icons.error_outline_rounded,
+                size: 34,
+                color: Color(0xFFB0B5BD),
+              ),
               const SizedBox(height: 10),
               const Text(
                 '内容加载异常',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF6B7280)),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF6B7280),
+                ),
               ),
               const SizedBox(height: 6),
               const Text(
@@ -413,7 +426,10 @@ class _UiFallbackState extends State<_UiFallback> {
                     maxLines: _showDetail ? 8 : 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 10, color: Color(0xFFB0B5BD)),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Color(0xFFB0B5BD),
+                    ),
                   ),
                 ),
               ],

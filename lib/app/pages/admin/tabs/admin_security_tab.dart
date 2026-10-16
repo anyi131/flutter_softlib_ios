@@ -37,6 +37,12 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
   bool _reportLoading = false;
   bool _signChecking = false;
   String? _signCheckResult; // null=未查, 其他=结果文案
+
+  /// ★ 1016：签名守卫模式（0=观察 1=拦截）+ 命中次数
+  int _signGuardMode = 0;
+  int _signGuardHits = 0;
+  String _signRegistered = '';
+  bool _signGuardSaving = false;
   bool? _signCheckOk;
 
   static const _channel = MethodChannel('softlib/installer');
@@ -204,6 +210,11 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
     setState(() => _reportLoading = true);
     try {
       final r = await _svc.secReport();
+      _signGuardMode = (int.tryParse('${r['sign_guard_mode'] ?? 0}') ?? 0) == 1
+          ? 1
+          : 0;
+      _signGuardHits = int.tryParse('${r['sign_guard_hits'] ?? 0}') ?? 0;
+      _signRegistered = '${r['sign_registered'] ?? ''}';
       if (!mounted) return;
       setState(() {
         _report = r;
@@ -245,6 +256,24 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
       });
     }
     if (mounted) setState(() => _signChecking = false);
+  }
+
+  /// ★ 1016：切换签名守卫模式
+  Future<void> _saveSignGuard(int mode) async {
+    if (_signGuardSaving) return;
+    setState(() => _signGuardSaving = true);
+    try {
+      await _svc.secSignGuardSave(mode);
+      if (!mounted) return;
+      setState(() => _signGuardMode = mode);
+      ToastUtil.success(mode == 1 ? '已开启拦截' : '已切换为观察模式');
+      _loadReport();
+    } catch (e) {
+      if (!mounted) return;
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _signGuardSaving = false);
+    }
   }
 
   Future<void> _banDialog() async {
@@ -741,6 +770,61 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
             const SizedBox(width: 10),
             btn('签名远程比对', Icons.fingerprint_rounded, C.brand, _remoteSignCheck),
           ],
+        ),
+        const SizedBox(height: 12),
+        // ★ 1016：签名守卫（防重打包）—— App 每个请求带签名指纹，
+        //   服务端与「已登记签名」比对；观察模式只记录，拦截模式直接拒绝。
+        Deco.glass(
+          context,
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      '签名守卫（防重打包）',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  _signGuardSaving
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Switch(
+                          value: _signGuardMode == 1,
+                          onChanged: (v) => _saveSignGuard(v ? 1 : 0),
+                        ),
+                ],
+              ),
+              Text(
+                _signGuardMode == 1
+                    ? '拦截模式：签名与登记不一致的请求会被直接拒绝'
+                    : '观察模式：只记录，不拦截（建议先跑几天确认无误判）',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  color: Theme.of(context).hintColor,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '已登记签名：${_signRegistered.isEmpty ? '（未登记，请先“签名远程比对”里登记）' : _signRegistered}\n'
+                '已命中异常请求：$_signGuardHits 次（详见下方审计日志的 sign_guard 记录）',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).hintColor,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 10),
         Row(

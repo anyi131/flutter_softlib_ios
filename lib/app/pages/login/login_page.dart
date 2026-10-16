@@ -37,6 +37,12 @@ class _LoginPageState extends State<LoginPage> {
   bool _loading = false;
   bool _qqOn = false;
 
+  /// 进页面时拉到的配置（appId 等），点击登录时直接复用，省一次往返
+  Map<String, dynamic>? _qqCfg;
+
+  /// ★ 1016：点下去立刻有反馈（原来点完界面毫无反应，等 QQ 冷启动像卡死）
+  bool _qqLoading = false;
+
   String _errAccount = '';
   String _errServer = '';
 
@@ -67,35 +73,54 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final r = await UserService.instance.fetchConfig();
       if (!mounted) return;
-      setState(() => _qqOn = r['qq_login_on'] == true || r['qq_login_on'] == 1);
+      // ★ 1016：进页面时就拉一次配置并留用 —— 原来点「QQ 登录」时又拉了一遍，
+      //   白白多等一个网络往返（体感就是「点了半天没反应」）。
+      _qqCfg = r;
+      final on = r['qq_login_on'] == true || r['qq_login_on'] == 1;
+      final aid = '${r['qq_app_id'] ?? ''}';
+      if (on && aid.isNotEmpty) {
+        // ★ 1016：进页面就**预热**原生 SDK（建 Tencent 实例 + 声明授权），
+        //   点登录时直接 login()，省掉初始化那段时间。不 await，别拖慢进页面。
+        QQLogin.appId = aid;
+        QQLogin.preheat();
+      }
+      setState(() => _qqOn = on);
+    } catch (_) {}
+  }
+
+  /// ★ 1016：登录成功后同步刷新「我的」页 —— 原来只有密码登录做了这件事，
+  ///   QQ 登录不做 → 明明登录成功，「我的」还是未登录的样子。
+  Future<void> _notifyMine() async {
+    try {
+      final mine = Get.find<MineLogic>(tag: 'mine');
+      await mine.load();
     } catch (_) {}
   }
 
   Future<void> _qqLogin() async {
-    // ★★★ 1015：改为**优先使用 QQ 原生 SDK**（直接调起 QQ App 一键登录）。
-    //   原来只能走 WebView —— 但 QQ 授权页在第三方 WebView 里检测不到 QQ App，
-    //   会提示「请安装 QQ 手机版」并卡在「正在拉起QQ手机版…」，根本登录不了。
-    try {
-      // 取 AppID（服务端下发）
-      final cfg = await UserService.instance.fetchConfig();
-      final appId = '${cfg['qq_app_id'] ?? ''}';
-      if (appId.isEmpty) {
-        ToastUtil.error('QQ 登录未配置（后台缺少 AppID）');
-        return;
-      }
-      QQLogin.appId = appId;
+    // ★★★ 1015：优先 QQ 原生 SDK（直接调起 QQ App 一键登录）
+    // ★★ 1016：① 点下去立刻给反馈  ② 进页面已预热 SDK  ③ 不再多拉一次配置
+    if (_qqLoading) return;
+    final cfg = _qqCfg ?? await UserService.instance.fetchConfig();
+    _qqCfg = cfg;
+    final appId = '${cfg['qq_app_id'] ?? ''}';
+    if (appId.isEmpty) {
+      ToastUtil.error('QQ 登录未配置（后台缺少 AppID）');
+      return;
+    }
+    QQLogin.appId = appId;
+    if (mounted) setState(() => _qqLoading = true);
 
-      // ★★★ 1015 修复：不再「先探测再登录」。
-      //   原来先调 isQQInstalled()，但 Android 11+ 包可见性限制下
-      //   这个方法可能误报 false → 直接回退 WebView → 用户看到「网页无法打开」。
-      //   正确做法：直接调原生登录，SDK 自己会判断并抛明确异常。
+    String err = '';
+    try {
       final r = await QQLogin.login();
       if (r == null) {
         ToastUtil.info('已取消 QQ 登录');
         return;
       }
+      // 授权已经回来了，接下来是服务端换 token —— 先解除「唤起中」
+      if (mounted) setState(() => _qqLoading = false);
 
-      // 把 openid + access_token 交给服务端换本站 token
       final res = await UserService.instance.qqAuthBySdk(
         openid: r.openid,
         accessToken: r.accessToken,
@@ -110,37 +135,37 @@ class _LoginPageState extends State<LoginPage> {
         nickname: '${res['nickname'] ?? ''}',
         avatar: '${res['avatar'] ?? ''}',
       );
+      await _notifyMine();
       if (!mounted) return;
       ToastUtil.success('QQ 登录成功');
       Navigator.of(context).pop(true);
+      return;
     } catch (e) {
-      // ★★ 1016：原生失败 → **改为 App 内网页授权**（不要再丢去系统浏览器！）
-      //   上一版把用户扔到系统浏览器，用户在浏览器里授权完只看到「登录成功，请返回 App」，
-      //   回到 App 什么都不会发生 —— 这就是「根本没适配好」的观感。
-      //   现在统一在本 App 内的 WebView 里完成整个授权闭环（页面已改桌面 UA，
-      //   QQ 会走「账号密码/扫码」网页登录，不再卡在「正在拉起QQ手机版」）。
-      final msg = e.toString().replaceFirst('Exception: ', '');
-      // 把真实错误上报到服务器（后台 fa_softlib_crash_log，tag=qq），便于定位，
-      // 用户不用截图我们也能看到错误码。
-      try {
-        SoftService.reportLogStatic(
-          tag: 'qq',
-          error: '[qq-native] $msg',
-        ).catchError((_) {});
-      } catch (_) {}
-      ToastUtil.info('原生登录不可用（$msg），改用网页授权');
+      err = e.toString().replaceFirst('Exception: ', '');
+    } finally {
+      if (mounted && _qqLoading) setState(() => _qqLoading = false);
+    }
 
-      final res = await Get.to(() => const QQLoginPage());
-      if (res is Map && (res['token'] ?? '').toString().isNotEmpty) {
-        await UserService.instance.loginByToken(
-          res['token'].toString(),
-          nickname: (res['nickname'] ?? '').toString(),
-          avatar: (res['avatar'] ?? '').toString(),
-        );
-        if (!mounted) return;
-        ToastUtil.success('QQ 登录成功');
-        Navigator.of(context).pop(true);
-      }
+    // ── 原生不可用 → App 内网页授权兜底（不丢去系统浏览器）──
+    try {
+      SoftService.reportLogStatic(
+        tag: 'qq',
+        error: '[qq-native] $err',
+      ).catchError((_) {});
+    } catch (_) {}
+    ToastUtil.info('原生登录不可用（$err），改用网页授权');
+
+    final res = await Get.to(() => const QQLoginPage());
+    if (res is Map && (res['token'] ?? '').toString().isNotEmpty) {
+      await UserService.instance.loginByToken(
+        res['token'].toString(),
+        nickname: (res['nickname'] ?? '').toString(),
+        avatar: (res['avatar'] ?? '').toString(),
+      );
+      await _notifyMine();
+      if (!mounted) return;
+      ToastUtil.success('QQ 登录成功');
+      Navigator.of(context).pop(true);
     }
   }
 
@@ -250,7 +275,9 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               children: [
                 GestureDetector(
-                  onTap: _qqLogin,
+                  // ★ 1016：点击后立即给反馈（转圈 + 文案变化），
+                  //   避免「点了没反应，等 QQ 冷启动」的假死感
+                  onTap: _qqLoading ? null : _qqLogin,
                   child: Container(
                     width: 54,
                     height: 54,
@@ -262,15 +289,28 @@ class _LoginPageState extends State<LoginPage> {
                         width: 1.2,
                       ),
                     ),
-                    child: const Icon(
-                      Icons.pets_rounded,
-                      color: Color(0xFF12B7F5),
-                      size: 26,
-                    ),
+                    child: _qqLoading
+                        ? const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: Color(0xFF12B7F5),
+                            ),
+                          )
+                        : const Icon(
+                            Icons.pets_rounded,
+                            color: Color(0xFF12B7F5),
+                            size: 26,
+                          ),
                   ),
                 ),
                 const SizedBox(height: 7),
-                Text('QQ 快捷登录', style: Ty.tiny.copyWith(color: context.t3)),
+                Text(
+                  _qqLoading ? '正在唤起 QQ…' : 'QQ 快捷登录',
+                  style: Ty.tiny.copyWith(
+                    color: _qqLoading ? const Color(0xFF12B7F5) : context.t3,
+                  ),
+                ),
               ],
             ),
           ),

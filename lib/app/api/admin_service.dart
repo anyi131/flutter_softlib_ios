@@ -74,6 +74,12 @@ class AdminService {
         (await _post('sec_logs', {'page': page, 'size': size}))['data'] ?? {},
       );
 
+  /// ★ 1016：切换签名守卫模式（0=观察 1=拦截）
+  Future<Map<String, dynamic>> secSignGuardSave(int mode) async =>
+      Map<String, dynamic>.from(
+        (await _post('sec_sign_guard_save', {'mode': mode}))['data'] ?? {},
+      );
+
   /// 被限 IP 列表（登录保护）
   Future<List<Map<String, dynamic>>> secLoginfails() async {
     final d = (await _post('sec_loginfails'))['data'];
@@ -374,11 +380,12 @@ class AdminService {
     String? expireDate,
   }) async => Map<String, dynamic>.from(
     (await _post('user_vip', {
-      'id': id,
-      'days': days,
-      'mode': mode,
-      if (expireDate != null && expireDate.isNotEmpty) 'expire_date': expireDate,
-    }))['data'] ??
+          'id': id,
+          'days': days,
+          'mode': mode,
+          if (expireDate != null && expireDate.isNotEmpty)
+            'expire_date': expireDate,
+        }))['data'] ??
         {},
   );
 
@@ -741,7 +748,9 @@ class AdminService {
   Future<Map<String, dynamic>> toolboxStats() async {
     final d = (await _post('jzs_tools', {'limit': 1000}))['data'];
     final list = (d is Map && d['list'] is List)
-        ? (d['list'] as List).map((e) => Map<String, dynamic>.from(e as Map)).toList()
+        ? (d['list'] as List)
+              .map((e) => Map<String, dynamic>.from(e as Map))
+              .toList()
         : <Map<String, dynamic>>[];
     final cats = await jzsCats();
     final enabled = list.where((t) => _on(t['enable_switch'])).length;

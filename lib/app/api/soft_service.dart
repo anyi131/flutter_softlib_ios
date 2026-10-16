@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 
 import 'api_host.dart';
+import 'app_sign.dart';
 
 import '../models/app_cat.dart';
 import '../models/app_config.dart';
@@ -16,15 +17,19 @@ class SoftService {
 
   static const String baseUrl = ApiHost.base;
 
-  final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 6),
-      receiveTimeout: const Duration(seconds: 12),
-      // 连接复用（加快连续请求）
-      persistentConnection: true,
-    ),
-  )..interceptors.add(_RetryInterceptor());
+  final Dio _dio =
+      Dio(
+          BaseOptions(
+            baseUrl: baseUrl,
+            connectTimeout: const Duration(seconds: 6),
+            receiveTimeout: const Duration(seconds: 12),
+            // 连接复用（加快连续请求）
+            persistentConnection: true,
+          ),
+        )
+        ..interceptors.add(_RetryInterceptor())
+        // ★ 1016：每个请求带上本机签名指纹（服务端做防重打包校验）
+        ..interceptors.add(_SignInterceptor());
 
   /// 供工具模块复用同一个 Dio（连接复用 + 重试策略一致）
   Dio get dio => _dio;
@@ -377,10 +382,7 @@ class SoftService {
       //   鉴权已由主站 /lzy/auth 完成，票据一次性有效。
       final resp = await dio.post(
         kLzyProxy,
-        data: {
-          'url': lzyUrl,
-          if (ticket != null) 'ticket': ticket,
-        },
+        data: {'url': lzyUrl, if (ticket != null) 'ticket': ticket},
         options: Options(
           receiveTimeout: const Duration(seconds: 30),
           // 兼容只读 $_POST/$_REQUEST 的简单脚本
@@ -466,6 +468,7 @@ class SoftService {
     if (item.url.isNotEmpty) return resolveLzy(item.url);
     return null;
   }
+
   static String proxyImage(String url) {
     if (url.isEmpty || !url.startsWith('http')) return url;
     // 只代理已知会 403 的域名，其他直连（省服务器带宽）
@@ -485,8 +488,11 @@ class SoftService {
     String stack = '',
     String version = '',
   }) => SoftService.instance.reportLog(
-        tag: tag, error: error, stack: stack, version: version);
-
+    tag: tag,
+    error: error,
+    stack: stack,
+    version: version,
+  );
 }
 
 class _CacheEntry {
@@ -496,6 +502,21 @@ class _CacheEntry {
   bool get expired => DateTime.now().difference(at) > SoftService._cacheTtl;
 }
 
+/// ★ 1016：签名指纹拦截器 —— 给每个请求附上 X-App-Sign / X-App-Ts
+class _SignInterceptor extends Interceptor {
+  @override
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    try {
+      final h = await AppSign.headers();
+      if (h.isNotEmpty) options.headers.addAll(h);
+    } catch (_) {}
+    handler.next(options);
+  }
+}
+
 /// 自动重试拦截器
 // ═══════════════════════════════════════════════════════════════
 //  工具体系（v56 恢复 + 做扎实）—— 简助手 / 工具箱 系列接口
@@ -503,7 +524,6 @@ class _CacheEntry {
 // ═══════════════════════════════════════════════════════════════
 
 extension ToolboxService on SoftService {
-
   // ─────────── 工具页配置（分类 + 工具 + 横幅） ───────────
 
   /// ⚠ 历史方法名保留，内部同 fetchJzsConfig，避免旧调用点报错
@@ -573,7 +593,10 @@ extension ToolboxService on SoftService {
 
   /// ★ 1015：通用接口代理 —— 后台配好地址就能出工具
   /// （走服务端中转，避免第三方 UA/CORS 拦截；服务端带 5 分钟缓存）
-  Future<Map<String, dynamic>> toolboxProxy(String url, {bool fresh = false}) async {
+  Future<Map<String, dynamic>> toolboxProxy(
+    String url, {
+    bool fresh = false,
+  }) async {
     final r = await dio.get(
       '/api/softlib/toolbox/proxy',
       queryParameters: {'url': url, if (fresh) 'fresh': 1},
@@ -582,7 +605,9 @@ extension ToolboxService on SoftService {
     if (r.data is Map && r.data['code'] == 1) {
       return Map<String, dynamic>.from(r.data as Map);
     }
-    throw Exception((r.data is Map ? r.data['msg'] : null)?.toString() ?? '接口请求失败');
+    throw Exception(
+      (r.data is Map ? r.data['msg'] : null)?.toString() ?? '接口请求失败',
+    );
   }
 
   /// 工具搜索
@@ -611,9 +636,7 @@ extension ToolboxService on SoftService {
     if (r.data is Map && r.data['code'] == 1) {
       return r.data['data']?['fav'] == true;
     }
-    throw Exception(
-      r.data is Map ? (r.data['msg'] ?? '操作失败') : '操作失败',
-    );
+    throw Exception(r.data is Map ? (r.data['msg'] ?? '操作失败') : '操作失败');
   }
 
   /// 我的收藏

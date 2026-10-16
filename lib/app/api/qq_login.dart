@@ -33,6 +33,15 @@ class QQLogin {
     }
   }
 
+  /// ★ 1016：预热（进登录页时调用）—— 原生侧先建好 Tencent 实例，
+  ///   点登录时省掉初始化耗时，体感更快。失败静默。
+  static Future<void> preheat() async {
+    if (!Platform.isAndroid || appId.isEmpty) return;
+    try {
+      await _ch.invokeMethod<bool>('preheat', {'appId': appId});
+    } catch (_) {}
+  }
+
   /// 发起 QQ 登录
   /// - 返回 QQAuthResult：成功
   /// - 返回 null：用户取消
