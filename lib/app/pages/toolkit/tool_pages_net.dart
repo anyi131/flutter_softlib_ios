@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../api/soft_service.dart' show SoftService;
 import '../../api/toolbox_service.dart';
 import '../../design/ad.dart';
 import '../../design/adaptive.dart';
