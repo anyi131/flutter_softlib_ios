@@ -276,6 +276,63 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
     }
   }
 
+  /// ★ 1016：点某条记录看**完整详情**（列表里 detail 只有 2 行，看不全）
+  void _showLogDetail(Map<String, dynamic> l) {
+    final when = '${l['createtime_text'] ?? l['time_text'] ?? ''}';
+    showDialog<void>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(_secLogActionLabel('${l['action'] ?? ''}')),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _detailRow('记录 ID', '${l['id'] ?? ''}'),
+              _detailRow('时间', when.isEmpty ? '-' : when),
+              _detailRow('操作人', 'UID ${l['uid'] ?? l['user_id'] ?? 0}'),
+              _detailRow('IP', '${l['ip'] ?? '-'}'),
+              _detailRow('动作', '${l['action'] ?? ''}'),
+              const SizedBox(height: 6),
+              const Text(
+                '详情',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              SelectableText(
+                '${l['detail'] ?? ''}'.isEmpty ? '(无)' : '${l['detail']}',
+                style: const TextStyle(fontSize: 12.5, height: 1.5),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: const Text('关闭'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(String k, String v) => Padding(
+    padding: const EdgeInsets.only(bottom: 4),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 64,
+          child: Text(
+            k,
+            style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
+          ),
+        ),
+        Expanded(child: Text(v, style: const TextStyle(fontSize: 12.5))),
+      ],
+    ),
+  );
+
   Future<void> _banDialog() async {
     final ctrl = TextEditingController();
     final reason = TextEditingController(text: '管理员手动封禁');
@@ -1128,52 +1185,59 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
             )
           else ...[
             for (final l in _secLogs)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
+              InkWell(
+                onTap: () => _showLogDetail(l),
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: C.brand.withAlpha(24),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          _secLogActionLabel('${l['action'] ?? ''}'),
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: C.brand,
+                          ),
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        color: C.brand.withAlpha(24),
-                        borderRadius: BorderRadius.circular(6),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${l['detail'] ?? ''}'.replaceAll(
+                            RegExp(r'\s+'),
+                            ' ',
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).hintColor,
+                          ),
+                        ),
                       ),
-                      child: Text(
-                        _secLogActionLabel('${l['action'] ?? ''}'),
+                      const SizedBox(width: 6),
+                      Text(
+                        'UID ${l['uid'] ?? 0}\n${l['ip'] ?? ''} ${l['createtime_text'] ?? ''}',
+                        textAlign: TextAlign.end,
                         style: TextStyle(
                           fontSize: 10.5,
-                          fontWeight: FontWeight.w700,
-                          color: C.brand,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '${l['detail'] ?? ''}'.replaceAll(RegExp(r'\s+'), ' '),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
                           color: Theme.of(context).hintColor,
+                          height: 1.3,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'UID ${l['uid'] ?? 0}\n${l['ip'] ?? ''} ${l['createtime_text'] ?? ''}',
-                      textAlign: TextAlign.end,
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        color: Theme.of(context).hintColor,
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             if (pages > 1)

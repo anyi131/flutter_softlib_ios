@@ -125,6 +125,21 @@ class _LoginPageState extends State<LoginPage> {
         openid: r.openid,
         accessToken: r.accessToken,
       );
+
+      // ★ 1016：这个 QQ 还没有绑定账号 —— 不再自动建号，引导去注册
+      //   （带着 openid/token 过去，注册成功即完成绑定，下次直接一键登录）
+      if ('${res['need_register'] ?? ''}' == '1') {
+        QQLogin.pendingOpenid = r.openid;
+        QQLogin.pendingAccessToken = r.accessToken;
+        ToastUtil.info('这个 QQ 还没绑定账号，请先注册（会自动绑定）');
+        if (!mounted) return;
+        await Get.toNamed(Routes.register);
+        await _notifyMine();
+        if (!mounted) return;
+        Navigator.of(context).pop(true);
+        return;
+      }
+
       final token = '${res['token'] ?? ''}';
       if (token.isEmpty) {
         ToastUtil.error('QQ 登录失败：${res['msg'] ?? '服务端未返回 token'}');
@@ -324,6 +339,15 @@ class _LoginPageState extends State<LoginPage> {
               onPressed: () async {
                 // 注册成功会带回账号，自动回填到输入框
                 final acc = await Get.toNamed(Routes.register);
+                if (!mounted) return;
+                // ★ 1016：注册接口本身就会下发 token（等于已登录），
+                //   这时不该再让用户「输入密码登录」，直接关掉登录页回去。
+                if (UserService.instance.isLoggedIn) {
+                  await _notifyMine();
+                  if (!mounted) return;
+                  Navigator.of(context).pop(true);
+                  return;
+                }
                 if (acc is String && acc.isNotEmpty && mounted) {
                   setState(() => _account.text = acc);
                   WidgetsBinding.instance.addPostFrameCallback((_) {

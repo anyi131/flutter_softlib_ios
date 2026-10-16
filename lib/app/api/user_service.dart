@@ -361,6 +361,8 @@ class UserService {
     String nickname = '',
     String qq = '',
     String invite = '',
+    String bindOpenid = '',
+    String bindToken = '',
   }) async {
     final r = _unwrap(
       await _dio.post(
@@ -372,6 +374,10 @@ class UserService {
           'password': password,
           'nickname': nickname,
           'qq': qq,
+          if (bindOpenid.isNotEmpty && bindToken.isNotEmpty) ...{
+            'bind_openid': bindOpenid,
+            'bind_token': bindToken,
+          },
         },
       ),
     );

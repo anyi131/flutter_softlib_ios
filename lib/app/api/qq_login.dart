@@ -22,6 +22,19 @@ class QQLogin {
   /// AppID（由服务端下发后注入）
   static String appId = '';
 
+  /// ★ 1016：QQ 还没绑定账号时，先暂存凭据 ——
+  ///   引导用户去注册，注册请求里带上它，注册成功即完成绑定。
+  static String pendingOpenid = '';
+  static String pendingAccessToken = '';
+
+  static bool get hasPendingBind =>
+      pendingOpenid.isNotEmpty && pendingAccessToken.isNotEmpty;
+
+  static void clearPendingBind() {
+    pendingOpenid = '';
+    pendingAccessToken = '';
+  }
+
   /// 检查是否安装了 QQ
   static Future<bool> isQQInstalled() async {
     if (!Platform.isAndroid) return false;

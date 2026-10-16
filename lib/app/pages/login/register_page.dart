@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../../api/qq_login.dart';
 import '../../api/soft_service.dart';
 import '../../api/user_service.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
+import '../navigate/mine/mine_logic.dart';
 import 'widgets/auth_widgets.dart';
 
 /// 注册页（v40 重构）
@@ -202,6 +204,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
     setState(() => _loading = true);
     try {
+      // ★ 1016：如果是从「QQ 快捷登录 → 还没绑定 → 去注册」过来的，
+      //   注册的同时把 QQ 绑上，之后 QQ 一键登录直接进这个号。
+      final bindingQq = QQLogin.hasPendingBind;
       await UserService.instance.register(
         email: email,
         code: code,
@@ -209,9 +214,17 @@ class _RegisterPageState extends State<RegisterPage> {
         nickname: nick,
         qq: qq,
         invite: _invite.text.trim(),
+        bindOpenid: bindingQq ? QQLogin.pendingOpenid : '',
+        bindToken: bindingQq ? QQLogin.pendingAccessToken : '',
       );
+      QQLogin.clearPendingBind();
       if (!mounted) return;
-      ToastUtil.success('注册成功，请登录');
+      // 注册接口本身会下发登录态，顺手刷新「我的」
+      try {
+        await Get.find<MineLogic>(tag: 'mine').load();
+      } catch (_) {}
+      if (!mounted) return;
+      ToastUtil.success(bindingQq ? '注册成功，已绑定 QQ' : '注册成功，请登录');
       // ★ 回传账号给登录页，自动填充（需求 #5）
       Navigator.of(context).pop(email);
     } catch (e) {
