@@ -112,6 +112,7 @@ class _AdminPageState extends State<AdminPage>
     //   功能不变：仍是同样的 12 个子页
     return AdminShellV2(
       tab: _tab,
+      templateName: adminTemplateCurrent, // ★ 1016：传入模板名 → 5 套真实架构
       onRefresh: () => setState(() {}),
       children: const [
         AdminOverviewV2(), // ★ 1016 阶段2：概览彻底重写为商业化仪表盘
