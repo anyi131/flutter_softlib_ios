@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -116,8 +117,18 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
     });
   }
 
+  /// ★★★ 1015 致命修复（164 个外链工具全部卡死的真因）：
+  ///   原来这里弹 Toast「已交给系统处理：$u」。
+  ///   但 onNavigationRequest 在页面加载期间会被**调用几十上百次**
+  ///   （每个资源请求、每次重定向都触发），于是弹了几十个 Toast → UI 卡死。
+  ///   修复：① 用系统真正打开该协议（原来只是弹提示，没真跳转）
+  ///        ② 去掉 Toast（避免风暴）
   Future<void> _openExternal(String u) async {
-    ToastUtil.info('已交给系统处理：$u');
+    try {
+      await launchUrlString(u, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // 打不开就算了（不要弹 Toast，避免风暴）
+    }
   }
 
 
