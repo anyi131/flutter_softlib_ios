@@ -669,7 +669,6 @@ class _ToolsComponentState extends State<ToolsComponent>
       Get.to(() => ToolBrowserPage(
         title: title,
         url: link,
-        blockAds: '${t['block_ads'] ?? 1}' != '0',
       ));
       return;
     }
@@ -874,7 +873,6 @@ class _ToolSearchPageState extends State<ToolSearchPage> {
       Get.to(() => ToolBrowserPage(
         title: '${t['title'] ?? ''}',
         url: link,
-        blockAds: '${t['block_ads'] ?? 1}' != '0',
       ));
       return;
     }

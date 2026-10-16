@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -21,14 +23,12 @@ class ToolBrowserPage extends StatefulWidget {
   final bool allowArbitraryNav;
 
   /// 是否开启广告清理（默认开）
-  final bool blockAds;
 
   const ToolBrowserPage({
     super.key,
     required this.title,
     required this.url,
     this.allowArbitraryNav = true,
-    this.blockAds = true,
   });
 
   @override
@@ -40,9 +40,9 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
   int _progress = 0;
   bool _loading = true;
   String? _err;
-  late bool _adBlock = widget.blockAds;
 
   bool _disposed = false;
+  Timer? _loadTimer; // ★ 1015：加载超时保护
 
   @override
   void initState() {
@@ -58,7 +58,13 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (p) {
-            if (!_disposed) setState(() => _progress = p);
+            // ★ 1015 修复：原先进度每变 1% 就 setState → 重建风暴 → 卡顿。
+            //   改为「整 10% 才更新」+ 100% 时更新。
+            if (_disposed) return;
+            final v = p.round();
+            if (v == _progress) return;
+            if (v % 10 != 0 && v != 100) return;
+            setState(() => _progress = v);
           },
           onPageStarted: (_) {
             if (mounted) {
@@ -70,7 +76,6 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
           },
           onPageFinished: (_) {
             if (!_disposed) setState(() => _loading = false);
-            if (_adBlock) _cleanAds();
           },
           onWebResourceError: (e) {
             if (mounted && e.isForMainFrame == true) {
@@ -98,102 +103,23 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
       // ★★★ 1015 关键修复：原来只建了 WebView 却从没加载 URL！
       //   所以所有用内置浏览器打开的工具都是「全白界面」。
       ..loadRequest(Uri.parse(widget.url));
+
+    // ★ 1015：加载超时保护（原来没有超时 → 页面卡住就永远白屏）
+    _loadTimer = Timer(const Duration(seconds: 20), () {
+      if (_disposed || !mounted) return;
+      if (_loading && _progress < 100) {
+        setState(() {
+          _loading = false;
+          _err = '加载超时，请检查网络后重试';
+        });
+      }
+    });
   }
 
   Future<void> _openExternal(String u) async {
     ToastUtil.info('已交给系统处理：$u');
   }
 
-  /// ★ 1015：页面内广告清理
-  ///   思路：注入一段 JS，做三件事
-  ///     ① CSS 隐藏常见广告位（class/id 含 ad/banner/popup/promo 等）
-  ///     ② 干掉全屏浮层广告 + 自动播放的弹窗
-  ///     ③ 定时重复执行（有些广告是懒加载，加载完才插进来）
-  ///   注意：不做任何「拦截网络请求」的事，只隐藏页面元素 —— 更稳，也不影响正常内容。
-  Future<void> _cleanAds() async {
-    const js = r'''
-(function () {
-  if (window.__anyiAdClean) return;
-  window.__anyiAdClean = true;
-
-  var CSS = `
-    /* 常见广告容器 */
-    [class*="ad-"], [class*="ads-"], [class*="advert"], [class*="banner-ad"],
-    [id*="ad-"], [id*="ads-"], [id*="advert"],
-    .ad, .ads, .adsbygoogle, .advertisement, .ad-container, .ad-wrapper,
-    [class*="popup-ad"], [class*="pop-ad"], [class*="float-ad"],
-    [class*="gg-"], [class*="guanggao"], [class*="tuiguang"],
-    iframe[src*="doubleclick"], iframe[src*="googlesyndication"],
-    iframe[src*="cpro.baidu"], iframe[src*="pos.baidu"],
-    [class*="download-app"], [class*="openapp"], [class*="app-guide"],
-    [class*="float-layer"], [class*="mask-ad"] {
-      display: none !important;
-      visibility: hidden !important;
-      height: 0 !important;
-      overflow: hidden !important;
-    }
-    /* 底部悬浮广告条 / 全屏遮罩 */
-    body > div[style*="position: fixed"][style*="bottom"],
-    body > div[style*="position:fixed"][style*="bottom"] {
-      display: none !important;
-    }
-  `;
-  var st = document.createElement('style');
-  st.type = 'text/css';
-  st.appendChild(document.createTextNode(CSS));
-  (document.head || document.documentElement).appendChild(st);
-
-  // ② 干掉看起来像广告的浮层：固定定位 + 覆盖大半屏幕 + 层级很高
-  function killOverlays() {
-    var all = document.body ? document.body.children : [];
-    for (var i = 0; i < all.length; i++) {
-      var el = all[i];
-      try {
-        var s = getComputedStyle(el);
-        if (s.position !== 'fixed' && s.position !== 'absolute') continue;
-        var z = parseInt(s.zIndex || '0', 10);
-        var r = el.getBoundingClientRect();
-        if (z > 100 && r.width > window.innerWidth * 0.7 && r.height > window.innerHeight * 0.5) {
-          var txt = (el.innerText || '').slice(0, 60);
-          // 含这些关键词才判定为广告浮层，避免误伤正常弹窗（登录/提示）
-          if (/广告|下载APP|打开APP|立即下载|打开软件|点击下载|打开应用/.test(txt)) {
-            el.style.display = 'none';
-          }
-        }
-      } catch (e) {}
-    }
-  }
-
-  // ③ 兜底：清掉 body 的滚动锁（有些广告会给 body 加 overflow:hidden）
-  function unlockScroll() {
-    try {
-      if (document.body && getComputedStyle(document.body).overflow === 'hidden') {
-        var hasBigFixed = false;
-        var ch = document.body.children;
-        for (var i = 0; i < ch.length; i++) {
-          var s = getComputedStyle(ch[i]);
-          if (s.position === 'fixed' && ch[i].getBoundingClientRect().height > window.innerHeight * 0.8) {
-            hasBigFixed = true; break;
-          }
-        }
-        if (!hasBigFixed) document.body.style.overflow = 'auto';
-      }
-    } catch (e) {}
-  }
-
-  var n = 0;
-  var t = setInterval(function () {
-    killOverlays();
-    unlockScroll();
-    if (++n > 10) clearInterval(t);   // 最多跑 10 轮（约 10 秒）就停，避免耗电
-  }, 1000);
-  killOverlays();
-})();
-''';
-    try {
-      await _c.runJavaScript(js);
-    } catch (_) {}
-  }
 
   @override
   void dispose() {
@@ -201,6 +127,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
     //   WebView 控制器不会被释放 → 每开一次外链工具就泄漏一个 WebView 实例
     //   → 开几个后 Native 层 OOM → **直接闪退回桌面**（Dart 层捕获不到）。
     _disposed = true;
+    _loadTimer?.cancel();
     try {
       _c.loadRequest(Uri.parse('about:blank')); // 先卸载页面，释放网页资源
     } catch (_) {}
@@ -235,23 +162,6 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
           },
         ),
         actions: [
-          IconButton(
-            icon: Icon(
-              _adBlock ? Icons.shield_rounded : Icons.shield_outlined,
-              size: 20,
-              color: _adBlock ? C.brand : context.t3,
-            ),
-            tooltip: _adBlock ? '广告清理已开' : '广告清理已关',
-            onPressed: () {
-              setState(() => _adBlock = !_adBlock);
-              if (_adBlock) {
-                _cleanAds();
-              } else {
-                _c.reload(); // 关掉就重载，恢复原始页面
-              }
-              ToastUtil.info(_adBlock ? '已开启广告清理' : '已关闭广告清理');
-            },
-          ),
           IconButton(
             icon: Icon(Icons.refresh_rounded, size: 20, color: context.t1),
             onPressed: () => _c.reload(),

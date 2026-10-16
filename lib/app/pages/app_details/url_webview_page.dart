@@ -46,7 +46,10 @@ class _UrlWebviewPageState extends State<UrlWebviewPage> {
           if (mounted) setState(() => _loading = false);
         },
         onProgress: (p) {
-          if (mounted) setState(() => _progress = p);
+          // ★ 1015 性能：进度的每 1% 都 setState 会引发重建风暴 → 卡顿
+            if (mounted && (p.round() % 10 == 0 || p.round() == 100) && _progress != p.round()) {
+              setState(() => _progress = p.round());
+            }
         },
       ))
       ..loadRequest(Uri.parse(_url));

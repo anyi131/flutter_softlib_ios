@@ -63,7 +63,10 @@ class _PayWebPageState extends State<PayWebPage> {
           }
         },
         onProgress: (p) {
-          if (mounted) setState(() => _progress = p);
+          // ★ 1015 性能：进度的每 1% 都 setState 会引发重建风暴 → 卡顿
+            if (mounted && (p.round() % 10 == 0 || p.round() == 100) && _progress != p.round()) {
+              setState(() => _progress = p.round());
+            }
         },
         onNavigationRequest: (req) {
           // 拦截支付完成后的同步跳转，避免加载到我们自己的结果页
