@@ -73,8 +73,13 @@ class UpdateFlow {
         error: '[update] 准备弹窗 tpl=$template ver=$ver',
       ).catchError((_) {});
     } catch (_) {}
+    // ★ 1016：安全取 context（启动阶段可能为 null，绝不能崩）
+    final ctx = Get.context ?? Get.key.currentContext;
+    if (ctx == null) return;
     showDialog(
-      context: Get.context!,
+      // ★ 1016：原来是 Get.context! —— 启动阶段 / 页面切换时 Get.context 可能为 null，
+      //   会直接抛「Null check operator used on a null value」（已在真机日志里抓到）。
+      context: ctx,
       barrierDismissible: !forced,
       barrierColor: Colors.black.withAlpha(120),
       builder: (context) => PopScope(
@@ -1289,13 +1294,8 @@ class _UpdateCardState extends State<_UpdateCard> {
     //   parentData 类型不匹配，release 下布局会卡死/整块渲染不出来
     //   （Android/iOS 通杀，且 Dart 不报错，只能被系统判定 ANR 杀掉）。
     //   改用「限高 + 滚动」，与安全款模板一致。
-    // ★ 1016：正文高度**跟随屏幕自适应**（原来固定 300）——
-    //   小屏手机「头图 + 300 正文 + 按钮」会超出弹窗可用高度，
-    //   表现就是按钮/正文被裁掉（用户说的「有遮挡」）。
-    //   现在正文最多占屏幕 34%（120~320 之间），保证「标题+正文+按钮」永远放得下。
-    final maxH = (MediaQuery.of(context).size.height * 0.34).clamp(120.0, 320.0);
     return ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: maxH),
+      constraints: const BoxConstraints(maxHeight: 300),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(2, 8, 2, 4),
         child: _phase == 'idle'
@@ -1507,97 +1507,66 @@ class _UpdateCardState extends State<_UpdateCard> {
         ],
       );
     }
-    return Row(
+    // ★ 1016：**主按钮独占一行，次要操作放下面一行小字**。
+    //   原来「稍后再说 / 浏览器下载 / 立即更新」三个按钮挤在一行（flex 1:2:2），
+    //   弹窗宽度有限 → 「稍后再说」被压成两行（用户反馈的「遮挡」）。
+    final minorStyle = TextStyle(
+      fontSize: 13,
+      fontWeight: FontWeight.w700,
+      color: isDark ? C.t3 : C.lt3,
+    );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (!widget.forced) ...[
-          Expanded(
-            child: OutlinedButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                side: BorderSide(
-                  color: isDark ? C.t3.withAlpha(80) : C.lt3.withAlpha(70),
+        AppPressable(
+          onTap: _start,
+          child: Container(
+            height: 48,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              gradient: C.brandGradient,
+              borderRadius: BorderRadius.circular(999),
+              boxShadow: [
+                BoxShadow(
+                  color: C.brand.withAlpha(60),
+                  blurRadius: 12,
+                  offset: const Offset(0, 5),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-              child: Text(
-                '稍后再说',
-                style: TextStyle(
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? C.t2 : C.lt2,
-                ),
-              ),
+              ],
             ),
-          ),
-          const SizedBox(width: 12),
-        ],
-        // ★ 1014 新增：浏览器下载（用原链接）
-        //   App 内解析失败或想用外部浏览器时，直接打开原始下载链接。
-        Expanded(
-          flex: 2,
-          child: AppPressable(
-            onTap: _openInBrowser,
-            child: Container(
-              height: 46,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: isDark ? C.bg2 : const Color(0xFFF1F3F9),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: isDark ? C.t3.withAlpha(80) : C.lt3.withAlpha(70),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.open_in_browser_rounded,
-                      size: 17, color: isDark ? C.t2 : C.lt2),
-                  const SizedBox(width: 6),
-                  Text(
-                    '浏览器下载',
-                    style: TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? C.t2 : C.lt2,
-                    ),
-                  ),
-                ],
+            child: const Text(
+              '立即更新',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15.5,
+                fontWeight: FontWeight.w900,
               ),
             ),
           ),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          flex: 2,
-          child: AppPressable(
-            onTap: _start,
-            child: Container(
-              height: 46,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                gradient: C.brandGradient,
-                borderRadius: BorderRadius.circular(999),
-                boxShadow: [
-                  BoxShadow(
-                    color: C.brand.withAlpha(70),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton(
+              onPressed: _openInBrowser,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                minimumSize: const Size(0, 36),
               ),
-              child: const Text(
-                '立即更新',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
+              child: Text('浏览器下载', style: minorStyle),
             ),
-          ),
+            if (!widget.forced)
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  minimumSize: const Size(0, 36),
+                ),
+                child: Text('稍后再说', style: minorStyle),
+              ),
+          ],
         ),
       ],
     );
