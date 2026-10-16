@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'admin_shell_v2.dart';
+import 'admin_overview_v2.dart';
 
 import 'tabs/collect_stats_card.dart';
 
@@ -113,7 +114,7 @@ class _AdminPageState extends State<AdminPage>
       tab: _tab,
       onRefresh: () => setState(() {}),
       children: const [
-        _OverviewTab(),
+        AdminOverviewV2(), // ★ 1016 阶段2：概览彻底重写为商业化仪表盘
         AdminAppsTab(),
         AdminUsersTab(),
         AdminOrdersTab(),
