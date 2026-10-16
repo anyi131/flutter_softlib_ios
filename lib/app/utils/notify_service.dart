@@ -53,7 +53,7 @@ class NotifyService with WidgetsBindingObserver {
       _firstRun = _lastId <= 0;
     } catch (_) {}
 
-    if (Platform.isAndroid) {
+    if (Platform.isAndroid || Platform.isIOS) {
       try {
         // 通知权限（Android 13+）
         if (await Permission.notification.isDenied) {
@@ -176,7 +176,7 @@ class NotifyService with WidgetsBindingObserver {
     required String title,
     required String body,
   }) async {
-    if (!Platform.isAndroid) return;
+    if (!Platform.isAndroid && !Platform.isIOS) return;
     try {
       await _ch.invokeMethod('showNotify', {
         'id': math.max(1, id),
