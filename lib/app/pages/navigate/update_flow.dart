@@ -61,6 +61,13 @@ class UpdateFlow {
       final t = cfg?.uiConfig.updateTemplate ?? '';
       if (t.isNotEmpty) template = t;
     } catch (_) {}
+
+    // ★★ 1016：暂时**强制使用「安全款」模板**。
+    //   原因：8 款花式模板里有 blurRadius 30~40 的大阴影 + 整卡裁剪，
+    //   在「整屏遮罩 + 弹窗」这种场景下会把主线程/GPU 拖死 ——
+    //   表现就是「弹窗出不来 → 界面卡死 → 系统杀进程闪退」。
+    //   排查期间先用零阴影、零动画、不做裁剪的安全款；稳定后再逐款放回。
+    template = 'simple';
     if (url.isEmpty) return;
     showDialog(
       context: Get.context!,
@@ -253,6 +260,7 @@ class _UpdateCardState extends State<_UpdateCard> {
       final v => v,
     };
     return switch (tpl) {
+      'simple' => _tplSimple(),
       'minimal' => _tplMinimal(),
       'neon' => _tplNeon(),
       'poster' => _tplPoster(),
@@ -280,6 +288,78 @@ class _UpdateCardState extends State<_UpdateCard> {
   //    ⑦ banner  通告条    顶部通栏 + 大留白正文
   //    ⑧ combo   图标双钮  拖拽手柄 + 大图标 + 三键行
   // ═══════════════════════════════════════════════════════════════
+
+  /// 模板⓪ simple —— **安全款**：零阴影 / 零动画 / 不做裁剪 / 内容超高可滚动。
+  ///   专门用于「其它模板导致卡死」期间的兜底展示。
+  Widget _tplSimple() {
+    final isDark = context.isDark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? C.bg2 : Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDark ? Colors.white24 : Colors.black12,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            child: Text(
+              widget.title.isEmpty ? '发现新版本' : widget.title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: context.t1,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
+            child: Text(
+              '最新版本 v${widget.version}',
+              style: TextStyle(fontSize: 13, color: context.t3),
+            ),
+          ),
+          const SizedBox(height: 12),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 300),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                widget.content.isEmpty ? '请更新到最新版本' : widget.content,
+                style: TextStyle(fontSize: 13.5, height: 1.7, color: context.t2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+            child: Row(
+              children: [
+                if (!widget.forced)
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('稍后再说'),
+                    ),
+                  ),
+                if (!widget.forced) const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _start,
+                    child: const Text('立即更新'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   /// 模板① aurora —— 流光玻璃：渐变 Hero 头 + 上浮玻璃日志卡
   Widget _tplAurora() {
