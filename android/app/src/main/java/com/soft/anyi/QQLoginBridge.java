@@ -150,8 +150,12 @@ public class QQLoginBridge implements MethodChannel.MethodCallHandler {
         @Override
         public void onError(UiError e) {
             if (pendingResult != null) {
-                pendingResult.error("QQ_ERROR",
-                        (e != null && e.errorMessage != null) ? e.errorMessage : "unknown", null);
+                // ★ 1015：带上完整错误码（便于定位）
+                String msg = (e != null && e.errorMessage != null) ? e.errorMessage : "unknown";
+                String detail = e != null ? (e.errorDetail != null ? e.errorDetail : "") : "";
+                int code = e != null ? e.errorCode : -1;
+                android.util.Log.e("QQLoginBridge", "授权失败 code=" + code + " msg=" + msg + " detail=" + detail);
+                pendingResult.error("QQ_ERROR", "code=" + code + " " + msg + " | " + detail, null);
                 pendingResult = null;
             }
         }
