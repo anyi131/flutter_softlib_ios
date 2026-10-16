@@ -133,7 +133,8 @@ class _AppStaggerInState extends State<AppStaggerIn>
       builder: (context, child) {
         final v = _a.value;
         return Opacity(
-          opacity: v,
+          // ★ 1016：最低 25% 不透明 —— 任何情况下都不会「完全看不见」
+          opacity: v < 0.25 ? 0.25 : v,
           child: Transform.translate(
             offset: Offset(0, (1 - v) * 22),
             child: Transform.scale(scale: 0.985 + 0.015 * v, child: child),
@@ -235,15 +236,17 @@ class _AppScaleInState extends State<AppScaleIn>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: CurvedAnimation(parent: _c, curve: AppAnim.emphasized),
-      child: ScaleTransition(
-        scale: Tween(
-          begin: 0.92,
-          end: 1.0,
-        ).animate(CurvedAnimation(parent: _c, curve: AppAnim.spring)),
-        child: widget.child,
-      ),
+    // ★★ 1016 关键修复：**去掉外层 FadeTransition（透明度 0→1）**。
+    //   原来只要这个动画没跑起来（启动时序 / Ticker 被 mute），
+    //   内容就永远停在「全透明」—— 更新弹窗的 8 款模板最外层都包着它，
+    //   于是弹窗看着像「根本没渲染出来」：只剩一层遮罩，整页发白。
+    //   现在只做缩放，动画即使完全不跑，内容也**始终可见**。
+    return ScaleTransition(
+      scale: Tween(
+        begin: 0.94,
+        end: 1.0,
+      ).animate(CurvedAnimation(parent: _c, curve: AppAnim.spring)),
+      child: widget.child,
     );
   }
 }

@@ -33,6 +33,9 @@ class UpdateFlow {
       final version = packageInfo.version;
       final data = await SoftService.instance.checkVersion(version);
       if (data != null) {
+        // ★ 1016：稍微延后，等首页真正渲染完再弹（避免启动时序导致弹窗异常）
+        await Future.delayed(const Duration(milliseconds: 700));
+        if (Get.context == null) return;
         await show(data);
       } else if (showLatestTip) {
         ToastUtil.success('已是最新版本（v$version）');
