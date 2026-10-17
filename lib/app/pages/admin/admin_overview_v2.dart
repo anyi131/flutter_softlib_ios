@@ -62,10 +62,13 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
     }
   }
 
-  Future<void> _loadAppStats() async {
+  Future<void> _loadAppStats({bool force = false}) async {
     setState(() => _statsLoading = true);
     try {
-      final d = await _svc.collectEx('app_stats_summary', {'limit': 12});
+      final d = await _svc.collectEx('app_stats_summary', {
+        'limit': 12,
+        if (force) 'force': 1,
+      });
       if (!mounted) return;
       setState(() {
         _appStats = d;
@@ -83,6 +86,13 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
     if (v == null) return '0';
     if (v is num) return v.toStringAsFixed(v == v.roundToDouble() ? 0 : 1);
     return '$v';
+  }
+
+  /// 评价等指标：主数值 + 孤儿残留提示（如「2（残留16）」）
+  String _orphanHint(String mainKey, String orphanKey) {
+    final v = _i(mainKey);
+    final o = _i(orphanKey);
+    return o > 0 ? '$v' : '$v';
   }
 
   int _i(String k) => int.tryParse('${_d[k] ?? 0}') ?? 0;
@@ -142,6 +152,47 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
           const SizedBox(height: Ad.gapL),
 
           // ② 核心指标
+          AdSection(
+            title: '待处理',
+            subtitle: '需要你尽快处理的事项',
+            accent: C.warning,
+          ),
+          AdCard(
+            child: Row(
+              children: [
+                Expanded(
+                  child: AdMetric(
+                    label: '待发货订单',
+                    value: '${_i('pending_orders')}',
+                    color: C.warning,
+                    icon: Icons.local_shipping_outlined,
+                    compact: true,
+                  ),
+                ),
+                const SizedBox(width: Ad.gapS),
+                Expanded(
+                  child: AdMetric(
+                    label: '待审评价',
+                    value: '${_i('reviewsPending')}',
+                    color: C.rose,
+                    icon: Icons.rate_review_outlined,
+                    compact: true,
+                  ),
+                ),
+                const SizedBox(width: Ad.gapS),
+                Expanded(
+                  child: AdMetric(
+                    label: '未处理举报',
+                    value: '${_i('open_reports')}',
+                    color: C.violet,
+                    icon: Icons.flag_outlined,
+                    compact: true,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
           AdSection(title: '核心指标', accent: C.brand),
           _coreGrid(),
           const SizedBox(height: Ad.gapL),
@@ -149,10 +200,10 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
           // ③ 软件行为数据（版权梦）
           AdSection(
             title: '软件行为数据',
-            subtitle: '启动 / 加群 / 联系作者 / 分享（版权梦统计）',
+            subtitle: '启动 / 加群 / 联系作者 / 分享（版权梦统计，缓存 10 分钟）',
             accent: C.violet,
             trailing: GestureDetector(
-              onTap: _loadAppStats,
+              onTap: () => _loadAppStats(force: true),
               child: Icon(Icons.refresh_rounded, size: 16, color: context.t3),
             ),
           ),
@@ -370,6 +421,45 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
             ),
           ),
 
+          // ═════ ★ 累计规模 ═════
+          const SizedBox(height: 20),
+          AdSection(title: '累计规模', accent: C.cyan),
+          AdCard(
+            child: Row(
+              children: [
+                Expanded(
+                  child: AdMetric(
+                    label: '总浏览',
+                    value: '${_i('total_views')}',
+                    color: C.brand,
+                    icon: Icons.visibility_outlined,
+                    compact: true,
+                  ),
+                ),
+                const SizedBox(width: Ad.gapS),
+                Expanded(
+                  child: AdMetric(
+                    label: '总下载',
+                    value: '${_i('total_down_all')}',
+                    color: C.mint,
+                    icon: Icons.download_outlined,
+                    compact: true,
+                  ),
+                ),
+                const SizedBox(width: Ad.gapS),
+                Expanded(
+                  child: AdMetric(
+                    label: '总评论',
+                    value: '${_i('total_comments')}',
+                    color: C.violet,
+                    icon: Icons.chat_bubble_outline_rounded,
+                    compact: true,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
           // ⑧ 热门软件
           if (((_d['top_apps'] as List?) ?? []).isNotEmpty) ...[
             const SizedBox(height: Ad.gapL),
@@ -466,7 +556,8 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
       ),
       ('会员数', '${_i('vip_users')}', C.amber, Icons.workspace_premium_rounded),
       ('动态数', '${_i('posts')}', C.violet, Icons.forum_rounded),
-      ('评价数', '${_i('reviews')}', C.pink, Icons.rate_review_rounded),
+      ('评价数', _orphanHint('reviews', 'reviewsOrphan'), C.pink,
+          Icons.rate_review_rounded),
     ];
     return AdCard(
       padding: const EdgeInsets.all(11),
