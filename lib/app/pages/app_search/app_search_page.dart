@@ -181,7 +181,7 @@ class _AppSearchPageState extends State<AppSearchPage> {
                   style: TextStyle(fontSize: 12.5, height: 1.6, color: context.t3)),
               const SizedBox(height: 22),
               FilledButton.icon(
-                onPressed: () => Get.toNamed(Routes.tips),
+                onPressed: () => Get.toNamed(Routes.message),
                 icon: const Icon(Icons.add_comment_rounded, size: 17),
                 label: const Text('求这个软件'),
                 style: FilledButton.styleFrom(

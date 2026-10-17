@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import '../../api/task_service.dart';
 import '../../utils/err_text.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -1717,6 +1718,13 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       return;
     }
 
+    // ★ 1016：任务通道是否开启（后台 task_pwd.enable）
+    var taskEnabled = false;
+    try {
+      final cfg = await TaskService.instance.config();
+      taskEnabled = '${cfg?['enable'] ?? 0}' == '1';
+    } catch (_) {}
+
     // 需要购买
     final price = st.price;
     // ★ 服务端说价格是 0 且已判定可下载 → 上面 canDownload 已处理；
@@ -1735,6 +1743,15 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           ),
           actions: [
             TextButton(onPressed: () => Get.back(), child: const Text('取消')),
+            // ★ 1016：给普通用户一条「白嫖」通道 —— 做任务免费领会员
+            if (taskEnabled)
+              TextButton(
+                onPressed: () {
+                  Get.back();
+                  Get.toNamed(Routes.task);
+                },
+                child: const Text('做任务免费领'),
+              ),
             FilledButton(
               onPressed: () {
                 Get.back();
@@ -1794,6 +1811,23 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               '会员用户可直接免费下载。',
               style: TextStyle(fontSize: 11.5, color: Colors.grey),
             ),
+            if (taskEnabled) ...[
+              const SizedBox(height: 6),
+              GestureDetector(
+                onTap: () {
+                  Get.back();
+                  Get.toNamed(Routes.task);
+                },
+                child: Text(
+                  '不想充值？完成简单任务可免费领会员 →',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: C.brand,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
         actions: [

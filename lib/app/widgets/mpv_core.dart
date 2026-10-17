@@ -126,13 +126,6 @@ class MpvController {
         aspectRatio: (ww > 0 && hh > 0) ? ww / hh : 16 / 9,
       ));
     }));
-    _subs.add(_player.stream.buffered.listen((ranges) {
-      _set(value.copyWith(
-        buffered: ranges
-            .map((r) => DurationRange(r.start, r.end))
-            .toList(growable: false),
-      ));
-    }));
     _subs.add(_player.stream.error.listen((e) {
       if (e.isNotEmpty) {
         _set(value.copyWith(hasError: true, errorDescription: e));
