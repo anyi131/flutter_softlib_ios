@@ -348,8 +348,9 @@ class AppDetailsLogic extends GetxController {
       //   后的降级路径，显式允许直链。
       JumpUtil.openUrl(originUrl, allowDownload: true);
     } else if (go == false) {
-      // 用户选「重试」——★ 1014：必须重新鉴权，不能复用上一次的放行标志
-      unlockVerified = false;
+      // 用户选「重试」——★ 1016：令牌现在只在「真正发起下载」时消费，
+      //   解析失败时并未消耗，所以这里**不能清零**（清零必然触发
+      //   「该资源尚未通过服务端校验」）。
       addDownload(appInfo?.fileName ?? '未知文件名');
     }
   }
@@ -574,8 +575,10 @@ class AppDetailsLogic extends GetxController {
       ToastUtil.error('该资源尚未通过服务端校验，已停止下载');
       return;
     }
-    // ★ 一次性令牌：消费即失效，杜绝复用
-    _unlockToken = false;
+    // ★★ 1016：令牌**不再一进来就消费** —— 原来先置 false，一旦解析失败
+    //   （蓝奏云文件被取消分享等），用户点「重试」就会被判「尚未通过服务端校验」。
+    //   改为「真正要发起下载任务前」再消费（见下方 enqueue 之前），
+    //   既保持一次性、杜绝复用，又不影响失败重试。
     // v52 #3：解析阶段显示加载浮层，任务创建成功/失败后关闭
     ResolveOverlay.show(stage: ResolveStages.resolving);
     if (await Permission.notification.isDenied) {
@@ -622,6 +625,8 @@ class AppDetailsLogic extends GetxController {
           rawUrl: originUrl,
           ok: false,
           error: '[解析失效] ${SoftService.lastParseError.isEmpty ? '解析接口无返回' : SoftService.lastParseError}',
+          reqParams: 'url=$originUrl',
+          respSnippet: SoftService.lastParseResp,
         );
         await _showParseFailedDialog(originUrl);
         return;
@@ -632,6 +637,8 @@ class AppDetailsLogic extends GetxController {
         title: (item?.title ?? '').isNotEmpty ? item!.title : (appInfo?.fileName ?? ''),
         rawUrl: originUrl,
         ok: true,
+        reqParams: 'url=$originUrl',
+        respSnippet: SoftService.lastParseResp,
       );
     }
 
@@ -667,6 +674,13 @@ class AppDetailsLogic extends GetxController {
       } catch (_) {}
     }
 
+    // ★ 一次性令牌：**在这里**消费（解析已成功，即将真正下载）
+    if (!_unlockToken) {
+      ResolveOverlay.dismiss();
+      ToastUtil.error('该资源尚未通过服务端校验，已停止下载');
+      return;
+    }
+    _unlockToken = false;
     final newTaskId = await FlutterDownloader.enqueue(
       url: parseUrl,
       fileName: fileName,

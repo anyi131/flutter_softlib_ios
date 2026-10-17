@@ -276,6 +276,10 @@ class _CollectParseLogViewState extends State<CollectParseLogView> {
                   ('IP', '${r['ip'] ?? '-'}'),
                   if (!ok) ('失败原因', '${r['error'] ?? '未记录'}'),
                   ('原始链接', '${r['raw_url'] ?? '-'}'),
+                  if ('${r['req_params'] ?? ''}'.isNotEmpty)
+                    ('请求参数', '${r['req_params']}'),
+                  if ('${r['resp_snippet'] ?? ''}'.isNotEmpty)
+                    ('接口返回', '${r['resp_snippet']}'),
                 ],
               ),
             ],

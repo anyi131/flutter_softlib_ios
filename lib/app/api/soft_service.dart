@@ -258,6 +258,9 @@ class SoftService {
   /// 供调用方 toast/弹窗展示，避免用户只看到笼统的「解析失败」
   static String lastParseError = '';
 
+  /// ★ 1016：解析接口的原始返回片段（便于后台排查）
+  static String lastParseResp = '';
+
   /// 后端解析兜底（★ 1014：带 token + 票据，服务端强制校验）
   /// 支持两种地址：
   ///   ① 单文件分享页（形如 /iXXXX）→ 走 lzy_file_parse
@@ -371,6 +374,7 @@ class SoftService {
   ///   鉴权由服务端 /api/softlib/lzy/auth 统一裁决，客户端无法跳过。
   Future<String?> resolveLzy(String lzyUrl) async {
     lastParseError = '';
+    lastParseResp = '';
     // ① 先向服务端申请「本次解析放行票据」
     final ticket = await _applyParseTicket(lzyUrl);
     if (ticket == null) return null; // 未登录 / 无权限 / 网络异常 → 一律不解析
@@ -378,8 +382,28 @@ class SoftService {
     // ② 自建 API 优先（运维可随时更新，无需发版）
     final a = await resolveLzyByApi(lzyUrl, ticket: ticket);
     if (a != null && a.isNotEmpty) return a;
-    // ③ 后端解析兜底
-    return resolveLzyByServer(lzyUrl, ticket: ticket);
+
+    // ★ 记住自建 API 给出的**具体原因**（如「文件取消分享了」），
+    //   若兜底也失败，用它覆盖兜底层的「票据/网络」笼统错误 ——
+    //   否则用户看到的是「解析凭证无效」，而真实原因是「分享被取消」。
+    final apiErr = lastParseError;
+
+    // ③ 后端解析兜底 —— ★★ 必须**重新申请票据**！
+    //   票据是一次性的（服务端校验通过即置 used=1），
+    //   上面第②步已经把 ticket 用掉了，再拿同一张必然报
+    //   「解析凭证无效或已过期，请重新从详情页下载」（真机复现过）。
+    final ticket2 = await _applyParseTicket(lzyUrl);
+    if (ticket2 == null) {
+      lastParseError = lastParseError.isEmpty
+          ? '重新申请解析凭证失败'
+          : lastParseError;
+      return null;
+    }
+    final sv = await resolveLzyByServer(lzyUrl, ticket: ticket2);
+    if ((sv == null || sv.isEmpty) && apiErr.isNotEmpty) {
+      lastParseError = apiErr; // 恢复更具体的失败原因
+    }
+    return sv;
   }
 
   /// ★ 1014：向服务端申请解析放行票据。
@@ -426,6 +450,11 @@ class SoftService {
         ),
       );
       final d = resp.data;
+      // ★ 记录原始返回（截断），后台「解析记录」可见
+      try {
+        final raw = d is String ? d : '$d';
+        lastParseResp = raw.length > 500 ? raw.substring(0, 500) : raw;
+      } catch (_) {}
       if (d is Map) {
         final okCode = d['code'] == 200 || d['code'] == 1 || d['code'] == '200';
         if (!okCode && d['msg'] is String && (d['msg'] as String).isNotEmpty) {
@@ -504,6 +533,8 @@ class SoftService {
     required bool ok,
     String error = '',
     int costMs = 0,
+    String reqParams = '',
+    String respSnippet = '',
   }) async {
     try {
       await instance.dio.post(
@@ -515,6 +546,8 @@ class SoftService {
           'ok': ok ? 1 : 0,
           'error': error,
           'cost_ms': costMs,
+          'req_params': reqParams,
+          'resp_snippet': respSnippet,
         },
         options: Options(
           sendTimeout: const Duration(seconds: 6),
