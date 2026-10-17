@@ -199,7 +199,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
 
           // ③ 软件行为数据（版权梦）
           // ★ 1016：版权梦 VIP 到期 → 明确提示，而不是只显示一排 0
-          if ('${(_appStats['vip_expired'] ?? false)}' == 'true')
+          if ('${(_appStats?['vip_expired'] ?? false)}' == 'true')
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: AdCard(
@@ -210,7 +210,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '${_appStats['vip_msg'] ?? '版权梦 VIP 已到期，统计数据暂停'}',
+                        '${_appStats?['vip_msg'] ?? '版权梦 VIP 已到期，统计数据暂停'}',
                         style: TextStyle(fontSize: 12.5, color: context.t2, height: 1.4),
                       ),
                     ),
