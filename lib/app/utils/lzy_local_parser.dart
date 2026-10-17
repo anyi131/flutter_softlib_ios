@@ -131,8 +131,8 @@ class LzyLocalParser {
           'signs': ajaxdata,
           'sign': wpSign ?? '',
           'websign': '',
-          'kd': 1,
-          'ves': 1,
+          'kd': '1',
+          'ves': '1',
         },
         referer: shareUrl,
         origin: base,
@@ -172,13 +172,11 @@ class LzyLocalParser {
     final c = await _client();
     try {
       final req = await c.getUrl(Uri.parse(url));
-      req.headers.addAll({
-        'User-Agent': _ua,
-        'Referer': base,
-        'Accept':
-            'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'zh-CN,zh;q=0.9',
-      });
+      req.headers.set('User-Agent', _ua);
+      req.headers.set('Referer', base);
+      req.headers.set('Accept',
+          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8');
+      req.headers.set('Accept-Language', 'zh-CN,zh;q=0.9');
       final res = await req.close().timeout(const Duration(seconds: 20));
       final body = await res.transform(utf8.decoder).join();
       return body;
@@ -198,14 +196,12 @@ class LzyLocalParser {
     final c = await _client();
     try {
       final req = await c.postUrl(Uri.parse(url));
-      req.headers.addAll({
-        'User-Agent': _ua,
-        'Referer': referer,
-        'Origin': origin,
-        'X-Requested-With': 'XMLHttpRequest',
-        'Accept': 'application/json, text/javascript, */*; q=0.01',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      });
+      req.headers.set('User-Agent', _ua);
+      req.headers.set('Referer', referer);
+      req.headers.set('Origin', origin);
+      req.headers.set('X-Requested-With', 'XMLHttpRequest');
+      req.headers.set('Accept', 'application/json, text/javascript, */*; q=0.01');
+      req.headers.set('Content-Type', 'application/x-www-form-urlencoded');
       req.write(data.entries
           .map((e) =>
               '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value)}')
@@ -225,12 +221,10 @@ class LzyLocalParser {
     try {
       final req = await c.openUrl('GET', Uri.parse(url));
       req.followRedirects = false;
-      req.headers.addAll({
-        'User-Agent': _ua,
-        'Referer': referer,
-        'Accept': 'text/html,*/*;q=0.8',
-        'Cookie': 'down_ip=1',
-      });
+      req.headers.set('User-Agent', _ua);
+      req.headers.set('Referer', referer);
+      req.headers.set('Accept', 'text/html,*/*;q=0.8');
+      req.headers.set('Cookie', 'down_ip=1');
       final res = await req.close().timeout(const Duration(seconds: 20));
       final loc = res.headers.value('location');
       if (loc != null && loc.isNotEmpty) return loc;
