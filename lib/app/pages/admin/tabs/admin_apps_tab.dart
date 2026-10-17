@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -48,7 +49,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
         });
     } catch (e) {
       if (mounted) setState(() => _loading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -115,7 +116,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
       await _load();
     } catch (e) {
       if (mounted) {
-        ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+        ToastUtil.error(ErrText.of(e));
       }
     }
   }
@@ -164,7 +165,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
       await _load();
     } catch (e) {
       if (mounted) {
-        ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+        ToastUtil.error(ErrText.of(e));
       }
     }
   }
@@ -215,7 +216,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
       await _load();
     } catch (e) {
       if (mounted) setState(() => _filling = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -330,7 +331,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
     try {
       cats = await _svc.appCats();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
       return;
     }
     await showModalBottomSheet(
@@ -505,7 +506,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
       await _load();
     } catch (e) {
       if (mounted) {
-        ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+        ToastUtil.error(ErrText.of(e));
       }
     }
   }
@@ -965,7 +966,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
     try {
       cats = await _svc.appCats();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
       return;
     }
     await showModalBottomSheet(
@@ -1026,7 +1027,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                         await reload();
                       } catch (e) {
                         ToastUtil.error(
-                          e.toString().replaceFirst('Exception: ', ''),
+                          ErrText.of(e),
                         );
                       }
                     },
@@ -1060,7 +1061,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
               ToastUtil.success('已删除');
               await reload();
             } catch (e) {
-              ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+              ToastUtil.error(ErrText.of(e));
             }
           }
 
@@ -1188,7 +1189,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
       ToastUtil.success('已删除');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1265,7 +1266,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
             } catch (e) {
               setS(() {
                 parsing = false;
-                err = e.toString().replaceFirst('Exception: ', '');
+                err = ErrText.of(e);
               });
             }
           }

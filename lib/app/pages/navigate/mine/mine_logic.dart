@@ -1,4 +1,6 @@
 import 'dart:convert';
+import '../../../utils/sound_util.dart';
+import '../../../utils/err_text.dart';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -81,7 +83,7 @@ class MineLogic extends GetxController {
       ToastUtil.success('绑定成功，以后 QQ 一键登录直接进本账号');
       await load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -282,7 +284,7 @@ class MineLogic extends GetxController {
       await load();
       ToastUtil.success('资料已更新');
     } catch (e) {
-      toast(e.toString().replaceFirst('Exception: ', ''));
+      toast(ErrText.of(e));
     }
   }
 
@@ -322,9 +324,10 @@ class MineLogic extends GetxController {
       final sp = await SharedPreferences.getInstance();
       await sp.setString(_kSignDate, signedDate);
       update();
+      SoundUtil.playSign(); // ★ 音效：签到成功
       ToastUtil.success('签到成功 +5 积分');
     } catch (e) {
-      toast(e.toString().replaceFirst('Exception: ', ''));
+      toast(ErrText.of(e));
     }
   }
 
@@ -358,7 +361,7 @@ class MineLogic extends GetxController {
       await load();
       ToastUtil.success(msg);
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -456,7 +459,7 @@ class MineLogic extends GetxController {
     try {
       list = await _userService.donateRank();
     } catch (e) {
-      err = e.toString().replaceFirst('Exception: ', '');
+      err = ErrText.of(e);
     }
     loading = false;
 
@@ -920,7 +923,7 @@ class MineLogic extends GetxController {
       await load();
       ToastUtil.success(msg);
     } catch (e) {
-      toast(e.toString().replaceFirst('Exception: ', ''));
+      toast(ErrText.of(e));
     }
   }
 
@@ -1031,7 +1034,7 @@ class MineLogic extends GetxController {
       await load();
       ToastUtil.success(v.isEmpty ? '已清除称号' : '称号已更新');
     } catch (e) {
-      toast(e.toString().replaceFirst('Exception: ', ''));
+      toast(ErrText.of(e));
     }
   }
 
@@ -1074,7 +1077,7 @@ class MineLogic extends GetxController {
         await load();
         ToastUtil.success('已恢复默认开屏');
       } catch (e) {
-        ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+        ToastUtil.error(ErrText.of(e));
       }
       return;
     }
@@ -1100,7 +1103,7 @@ class MineLogic extends GetxController {
       await load();
       ToastUtil.success('开屏图已更新，下次启动生效');
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1128,7 +1131,7 @@ class MineLogic extends GetxController {
       if (myCode.isNotEmpty) buf.writeln('邀请码：$myCode');
       await Share.share(buf.toString().trim(), subject: name);
     } catch (e) {
-      ToastUtil.error('分享失败：${e.toString().replaceFirst('Exception: ', '')}');
+      ToastUtil.error('分享失败：${ErrText.of(e)}');
     }
   }
 }

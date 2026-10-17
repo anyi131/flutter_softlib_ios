@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -73,7 +74,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -429,7 +430,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                       ToastUtil.success(v ? '已启用' : '已停用');
                     } catch (e) {
                       ToastUtil.error(
-                        e.toString().replaceFirst('Exception: ', ''),
+                        ErrText.of(e),
                       );
                     }
                   },
@@ -599,7 +600,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                       ToastUtil.success(v ? '已启用' : '已停用');
                     } catch (e) {
                       ToastUtil.error(
-                        e.toString().replaceFirst('Exception: ', ''),
+                        ErrText.of(e),
                       );
                     }
                   },
@@ -804,7 +805,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                   ToastUtil.success('已保存');
                   _load();
                 } catch (e) {
-                  ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+                  ToastUtil.error(ErrText.of(e));
                 }
               },
               child: const Text('保存'),
@@ -869,7 +870,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                   ToastUtil.success('已保存');
                   _load();
                 } catch (e) {
-                  ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+                  ToastUtil.error(ErrText.of(e));
                 }
               },
               child: const Text('保存'),

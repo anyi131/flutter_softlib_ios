@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../utils/sound_util.dart';
 import '../../utils/lzy_local_parser.dart';
 import 'dart:io';
 
@@ -35,6 +36,7 @@ class UpdateFlow {
       final version = packageInfo.version;
       final data = await SoftService.instance.checkVersion(version);
       if (data != null) {
+        SoundUtil.playUpdate(); // ★ 音效：检测到新版本
         // ★ 1016：稍微延后，等首页真正渲染完再弹（避免启动时序导致弹窗异常）
         await Future.delayed(const Duration(milliseconds: 700));
         if (Get.context == null) return;

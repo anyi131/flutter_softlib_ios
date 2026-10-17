@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/err_text.dart';
 
 import '../../../api/admin_service.dart';
 import '../../../design/adaptive.dart';
@@ -47,7 +48,7 @@ class _CollectSelftestViewState extends State<CollectSelftestView> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
         _loading = false;
         _costMs = sw.elapsedMilliseconds;
       });
@@ -252,7 +253,7 @@ class _CollectParseLogViewState extends State<CollectParseLogView> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
         _loading = false;
       });
     }

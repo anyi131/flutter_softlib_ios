@@ -1,4 +1,6 @@
 import 'dart:async';
+import '../../utils/net_guard.dart';
+import '../../utils/sound_util.dart';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
@@ -403,6 +405,7 @@ class AppDetailsLogic extends GetxController {
       return;
     }
     _askedInstall = true;
+    SoundUtil.playDownload(); // ★ 音效：下载完成
     // ★ 1016：上报成功（后台「下载记录」可查）
     SoftService.instance.reportDownloadResult(
       appId: appIdInt,
@@ -576,6 +579,37 @@ class AppDetailsLogic extends GetxController {
       ToastUtil.error('该资源尚未通过服务端校验，已停止下载');
       return;
     }
+    // ★ 1016：流量提醒 —— 移动网络下载大安装包前先确认
+    try {
+      final expect = double.tryParse(
+            (appInfo?.fileSize ?? '').replaceAll(RegExp(r'[^0-9.]'), ''),
+          ) ??
+          0;
+      final msg = await NetGuard.confirmMessage((expect * 1024 * 1024).round());
+      if (msg != null) {
+        final ctx0 = Get.context;
+        if (ctx0 != null) {
+          final ok = await showDialog<bool>(
+            context: ctx0,
+            builder: (c) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Text('流量提醒', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              content: Text(msg, style: const TextStyle(fontSize: 13, height: 1.6)),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+                FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('继续下载')),
+              ],
+            ),
+          );
+          if (ok != true) {
+            _unlockToken = true; // 取消后保留令牌，用户可再点
+            return;
+          }
+          NetGuard.allowMobileThisSession = true;
+        }
+      }
+    } catch (_) {}
+
     // ★★ 1016：令牌**不再一进来就消费** —— 原来先置 false，一旦解析失败
     //   （蓝奏云文件被取消分享等），用户点「重试」就会被判「尚未通过服务端校验」。
     //   改为「真正要发起下载任务前」再消费（见下方 enqueue 之前），

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -61,7 +62,7 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -80,7 +81,7 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
       ToastUtil.success('已提交，采集平台正在获取 Cookie');
       await _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -111,7 +112,7 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
       ToastUtil.success('已请求清空');
       await _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

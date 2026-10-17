@@ -7,6 +7,7 @@
 // 版权与许可遵循上游 MIT License,见仓库 LICENSE。
 ////////////////////////////////////////////////////////////////////////////////
 import 'dart:convert';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -175,7 +176,7 @@ class _AdminJicunTabState extends State<AdminJicunTab> {
       if (mounted) {
         setState(() {
           _loading = false;
-          _loadErr = e.toString().replaceFirst('Exception: ', '');
+          _loadErr = ErrText.of(e);
         });
         ToastUtil.error(_loadErr);
       }
@@ -249,7 +250,7 @@ class _AdminJicunTabState extends State<AdminJicunTab> {
       if (mounted) ToastUtil.success('已保存并即时生效');
     } catch (e) {
       if (mounted) {
-        ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+        ToastUtil.error(ErrText.of(e));
       }
     } finally {
       if (mounted) setState(() => _saving = false);

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../utils/err_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -135,7 +136,7 @@ class _HotPageState extends State<HotPage> {
       if (!mounted || seq != _reqSeq) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -324,7 +325,7 @@ class _Daily60PageState extends State<Daily60Page> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -476,7 +477,7 @@ class _EpicPageState extends State<EpicPage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -668,7 +669,7 @@ class _EarthquakePageState extends State<EarthquakePage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -987,7 +988,7 @@ class _TranslatePageState extends State<TranslatePage> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1148,7 +1149,7 @@ class _ExchangePageState extends State<ExchangePage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -1429,7 +1430,7 @@ class _IpPageState extends State<IpPage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -1565,7 +1566,7 @@ class _WeatherPageState extends State<WeatherPage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -1790,7 +1791,7 @@ class _MoviePageState extends State<MoviePage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -1824,7 +1825,7 @@ class _MoviePageState extends State<MoviePage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -2080,7 +2081,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -2356,7 +2357,7 @@ class _MusicPageState extends State<MusicPage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -2408,7 +2409,7 @@ class _MusicPageState extends State<MusicPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _busyId = null);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -2603,7 +2604,7 @@ class _HeroGalleryPageState extends State<HeroGalleryPage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -2808,7 +2809,7 @@ class _ComicPageState extends State<ComicPage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -2968,7 +2969,7 @@ class _ComicReadPageState extends State<ComicReadPage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }

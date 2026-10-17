@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/err_text.dart';
 import 'package:get/get.dart';
 
 import '../../design/adaptive.dart';
@@ -52,7 +53,7 @@ class _MessagePageState extends State<MessagePage> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -67,7 +68,7 @@ class _MessagePageState extends State<MessagePage> {
       });
       ToastUtil.success('已全部标记为已读');
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -78,7 +79,7 @@ class _MessagePageState extends State<MessagePage> {
       setState(() => _list.remove(m));
       ToastUtil.success('已删除');
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/err_text.dart';
 
 import 'package:get/get.dart';
 
@@ -574,7 +575,7 @@ class _VipPageState extends State<VipPage> {
       if (mounted) setState(() => _submitting = false);
       return;
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     } finally {
       if (mounted && _submitting) setState(() => _submitting = false);
     }

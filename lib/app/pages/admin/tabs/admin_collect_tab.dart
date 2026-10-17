@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -97,7 +98,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
 
   /// 把原始异常翻成人话（500 这类要给出可操作的建议）
   String _friendly(Object e) {
-    final s = e.toString().replaceFirst('Exception: ', '');
+    final s = ErrText.of(e);
     if (s.contains('500')) {
       return '服务器处理出错。可尝试：①点击「重新检测」②退出后重新登录采集账号';
     }
@@ -953,7 +954,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
       });
       _startPoll();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1497,7 +1498,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         _logs = [];
       });
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 

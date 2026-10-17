@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -85,7 +86,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
         _loading = false;
         _loadingMore = false;
       });
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -693,7 +694,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
       ToastUtil.success('补单成功，会员已到账');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -721,7 +722,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
       ToastUtil.success('已删除');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 }

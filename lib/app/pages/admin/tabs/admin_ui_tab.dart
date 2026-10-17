@@ -1,4 +1,6 @@
 import 'dart:convert';
+import '../../../utils/sound_util.dart';
+import '../../../utils/err_text.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -185,7 +187,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+        ToastUtil.error(ErrText.of(e));
       }
     }
   }
@@ -316,7 +318,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         ToastUtil.success('已保存并即时生效');
       }
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -365,6 +367,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
             _card('明暗模式', _modePicker()),
             _card('底部导航开关', _tabSwitches()),
             _card('功能开关', _featureSwitches()),
+            _card('音效开关', _soundSwitches()),
             _card('软件列表默认样式', _listStylePicker()),
             _card('更新弹窗模板', _templatePicker()),
             _card('首页布局模板', _homeTemplatePicker()),
@@ -580,6 +583,61 @@ class _AdminUiTabState extends State<AdminUiTab> {
       children: [
         for (final it in items)
           _chipToggle(it.$1, it.$2, (v) => setState(() => it.$3(v))),
+      ],
+    );
+  }
+
+  Widget _soundSwitches() {
+    Widget row(String t, String sub, bool on, ValueChanged<bool> cb, {bool disabled = false}) {
+      return Opacity(
+        opacity: disabled ? 0.45 : 1,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(t, style: Ty.body.copyWith(fontSize: 13.5, color: context.t1)),
+                    if (sub.isNotEmpty)
+                      Text(sub, style: Ty.tiny.copyWith(fontSize: 11, color: context.t3)),
+                  ],
+                ),
+              ),
+              Switch.adaptive(value: on, onChanged: disabled ? null : cb),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        row('总开关', '关闭后所有音效都不播放', SoundUtil.master, (v) {
+          SoundUtil.save(masterOn: v);
+          setState(() {});
+        }),
+        row('下载完成', '下载成功时轻提示', SoundUtil.download, (v) {
+          SoundUtil.save(downloadOn: v);
+          setState(() {});
+        }, disabled: !SoundUtil.master),
+        row('签到成功', '签到成功时提示', SoundUtil.sign, (v) {
+          SoundUtil.save(signOn: v);
+          setState(() {});
+        }, disabled: !SoundUtil.master),
+        row('来消息', '收到新通知时提示', SoundUtil.message, (v) {
+          SoundUtil.save(messageOn: v);
+          setState(() {});
+        }, disabled: !SoundUtil.master),
+        row('版本更新', '检测到新版本时提示', SoundUtil.update, (v) {
+          SoundUtil.save(updateOn: v);
+          setState(() {});
+        }, disabled: !SoundUtil.master),
+        const SizedBox(height: 4),
+        Text('提示：音效跟随系统静音设置，静音后自动不响',
+            style: Ty.tiny.copyWith(fontSize: 11, color: context.t3)),
       ],
     );
   }

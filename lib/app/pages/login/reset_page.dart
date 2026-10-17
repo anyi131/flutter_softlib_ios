@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../utils/err_text.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -74,7 +75,7 @@ class _ResetPageState extends State<ResetPage> {
     } catch (e) {
       if (!mounted) return;
       setState(
-          () => _errServer = e.toString().replaceFirst('Exception: ', ''));
+          () => _errServer = ErrText.of(e));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -110,7 +111,7 @@ class _ResetPageState extends State<ResetPage> {
     } catch (e) {
       if (!mounted) return;
       setState(
-          () => _errServer = e.toString().replaceFirst('Exception: ', ''));
+          () => _errServer = ErrText.of(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }

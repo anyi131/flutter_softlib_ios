@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../utils/err_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
@@ -97,7 +98,7 @@ class _AppComponentState extends State<AppComponent> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = '加载失败：${e.toString().replaceFirst('Exception: ', '')}';
+        _err = '加载失败：${ErrText.of(e)}';
       });
       return;
     }

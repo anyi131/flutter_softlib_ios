@@ -1,4 +1,6 @@
 import '../../../api/soft_service.dart';
+import 'invite_poster_page.dart';
+import '../../../utils/err_text.dart';
 import '../../../api/user_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/adaptive.dart';
@@ -48,7 +50,7 @@ class _InvitePageState extends State<InvitePage> {
       final r = await UserService.instance.inviteStats();
       if (mounted) setState(() => _stats = r);
     } catch (e) {
-      if (mounted) _err = e.toString().replaceFirst('Exception: ', '');
+      if (mounted) _err = ErrText.of(e);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -82,6 +84,17 @@ class _InvitePageState extends State<InvitePage> {
 
   Future<void> _share() async {
     await Share.share(_shareText, subject: '安逸软件汇邀请');
+  }
+
+  /// ★ 1016：生成邀请海报（图片，带二维码）
+  Future<void> _openPoster() async {
+    if (_code.isEmpty) {
+      ToastUtil.info('请先登录后再生成海报');
+      return;
+    }
+    Get.to(() => InvitePosterPage(
+          code: _code,
+        ));
   }
 
   @override
@@ -666,6 +679,34 @@ class _InvitePageState extends State<InvitePage> {
                           fontSize: 13.5,
                           fontWeight: FontWeight.w800,
                         ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // ★ 1016：生成邀请海报（带二维码，可保存/分享）
+                  AppPressable(
+                    onTap: _openPoster,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(28),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: Colors.white.withAlpha(60)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.image_rounded, size: 15, color: Colors.white),
+                          SizedBox(width: 6),
+                          Text(
+                            '生成邀请海报',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

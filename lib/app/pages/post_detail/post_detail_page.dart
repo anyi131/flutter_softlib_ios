@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../utils/err_text.dart';
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -405,7 +406,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     // ★ P0：失败必须有反馈（原来完全静默）
                     if (mounted) {
                       ToastUtil.error(
-                        e.toString().replaceFirst('Exception: ', ''),
+                        ErrText.of(e),
                       );
                     }
                   } finally {
@@ -798,7 +799,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
             } catch (e) {
               setSheet(() {
                 sending = false;
-                err = e.toString().replaceFirst('Exception: ', '');
+                err = ErrText.of(e);
               });
             }
           }

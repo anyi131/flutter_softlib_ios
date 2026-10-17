@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/err_text.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
@@ -66,7 +67,7 @@ class _CardShopPageState extends State<CardShopPage>
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -476,7 +477,7 @@ class _CardShopPageState extends State<CardShopPage>
       );
       await _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -501,7 +502,7 @@ class _CardShopPageState extends State<CardShopPage>
       ToastUtil.success(msg);
       await _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 }

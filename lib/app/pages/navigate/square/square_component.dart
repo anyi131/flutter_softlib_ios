@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../../utils/err_text.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
@@ -540,7 +541,7 @@ class _SquareComponentState extends State<SquareComponent> {
                             // ★ 1014 P0：失败必须有反馈（原来完全静默）
                             if (mounted) {
                               _toast(
-                                e.toString().replaceFirst('Exception: ', ''),
+                                ErrText.of(e),
                               );
                             }
                           } finally {

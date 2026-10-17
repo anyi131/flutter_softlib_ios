@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -60,7 +61,7 @@ class _CollectStatsCardState extends State<CollectStatsCard> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }

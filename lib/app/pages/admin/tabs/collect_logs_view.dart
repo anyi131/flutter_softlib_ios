@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -52,7 +53,7 @@ class _CollectLogsViewState extends State<CollectLogsView>
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -248,7 +249,7 @@ class _CollectLogsViewState extends State<CollectLogsView>
       ]);
       ToastUtil.success('已导入 ${r['added']} 条，跳过重复 ${r['skipped']} 条');
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 }

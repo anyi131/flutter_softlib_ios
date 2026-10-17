@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -79,7 +80,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       });
     } catch (e) {
       if (mounted) setState(() => _loading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -447,7 +448,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       setState(_selected.clear);
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -494,7 +495,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
         ),
       );
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1000,7 +1001,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       });
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1069,7 +1070,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       ToastUtil.success('自定义IP显示已保存');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1186,7 +1187,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       await _svc.resetUserPassword(id, c1.text.trim());
       ToastUtil.success('密码已重置为新密码');
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1318,7 +1319,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       ToastUtil.success('余额已更新为 ¥${target.toStringAsFixed(2)}');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1359,7 +1360,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     try {
       data = await _svc.userLogs(id);
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
     loading = false;
     if (!mounted) return;
@@ -2040,7 +2041,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       ToastUtil.success('保存成功');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 

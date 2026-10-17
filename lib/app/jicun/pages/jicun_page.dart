@@ -6,6 +6,7 @@
 // 版权与许可遵循上游 MIT License,见仓库 LICENSE。
 ////////////////////////////////////////////////////////////////////////////////
 import 'dart:io';
+import '../../utils/err_text.dart';
 
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -119,7 +120,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
       ToastUtil.error('${e.message}');
     } catch (e) {
       // v331w：显示真实原因（超时/断网/接口异常各不同），不再笼统
-      final m = e.toString().replaceFirst('Exception: ', '');
+      final m = ErrText.of(e);
       ToastUtil.error(m.length > 40 ? '解析失败:$m'.substring(0, 40) : '解析失败:$m');
     } finally {
       if (mounted) setState(() => _parsing = false);

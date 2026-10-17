@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -47,7 +48,7 @@ class _CollectDirsViewState extends State<CollectDirsView>
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -222,7 +223,7 @@ class _CollectDirsViewState extends State<CollectDirsView>
       ToastUtil.success(v ? '已启用' : '已禁用');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -254,7 +255,7 @@ class _CollectDirsViewState extends State<CollectDirsView>
       ToastUtil.success('已删除');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -424,7 +425,7 @@ class _CollectDirsViewState extends State<CollectDirsView>
       ToastUtil.success(d == null ? '目录已添加' : '目录已更新');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 

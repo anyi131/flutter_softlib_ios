@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../../utils/err_text.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -223,7 +224,7 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _reportLoading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -252,7 +253,7 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
       if (!mounted) return;
       setState(() {
         _signCheckOk = false;
-        _signCheckResult = e.toString().replaceFirst('Exception: ', '');
+        _signCheckResult = ErrText.of(e);
       });
     }
     if (mounted) setState(() => _signChecking = false);
@@ -270,7 +271,7 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
       _loadReport();
     } catch (e) {
       if (!mounted) return;
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     } finally {
       if (mounted) setState(() => _signGuardSaving = false);
     }
@@ -380,7 +381,7 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
       ToastUtil.success('已封禁 $ip');
       _loadReport();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -408,7 +409,7 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
       ToastUtil.success('已解封 $ip');
       _loadReport();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -437,7 +438,7 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
       final r = await _svc.secKillall();
       ToastUtil.success(r['msg']?.toString() ?? '已强制全员下线');
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -472,7 +473,7 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
       ToastUtil.success(target == 1 ? '维护模式已开启' : '维护模式已关闭');
       _loadReport();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -502,7 +503,7 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
       ToastUtil.success(r['msg']?.toString() ?? '已清理过期 token');
       _loadReport();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -555,7 +556,7 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
       ToastUtil.success(rate == 0 ? '已关闭限流' : '限流阈值已设为 $rate 次/分钟');
       _loadReport();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -576,7 +577,7 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _loginfailLoading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -586,7 +587,7 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
       ToastUtil.success('已解封 $ip，该网络可重新尝试登录');
       _loadLoginfails();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -612,7 +613,7 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _secLogLoading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 

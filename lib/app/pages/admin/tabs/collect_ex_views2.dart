@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -80,7 +81,7 @@ class _CollectAutoViewState extends State<CollectAutoView> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -104,7 +105,7 @@ class _CollectAutoViewState extends State<CollectAutoView> {
       await _load();
     } catch (e) {
       if (!mounted) return;
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -359,7 +360,7 @@ class _CollectConfigViewState extends State<CollectConfigView> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }
@@ -379,7 +380,7 @@ class _CollectConfigViewState extends State<CollectConfigView> {
       });
     } catch (e) {
       if (!mounted) return;
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -417,7 +418,7 @@ class _CollectConfigViewState extends State<CollectConfigView> {
       await _load();
     } catch (e) {
       if (!mounted) return;
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

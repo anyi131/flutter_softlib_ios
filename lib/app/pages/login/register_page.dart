@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../utils/err_text.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -160,7 +161,7 @@ class _RegisterPageState extends State<RegisterPage> {
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _errServer = e.toString().replaceFirst('Exception: ', ''));
+      setState(() => _errServer = ErrText.of(e));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -229,7 +230,7 @@ class _RegisterPageState extends State<RegisterPage> {
       Navigator.of(context).pop(email);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _errServer = e.toString().replaceFirst('Exception: ', ''));
+      setState(() => _errServer = ErrText.of(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }

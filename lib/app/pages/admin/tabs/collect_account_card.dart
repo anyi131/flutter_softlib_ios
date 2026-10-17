@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -103,7 +104,7 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
 
   /// 把后端/网络的原始异常翻成人话
   String _friendly(Object e) {
-    final s = e.toString().replaceFirst('Exception: ', '');
+    final s = ErrText.of(e);
     if (s.contains('500')) return '服务器处理出错，请稍后重试或改用 Cookie 方式';
     if (s.contains('超时') || s.contains('timeout')) return '网络异常，请检查连接后重试';
     return s;

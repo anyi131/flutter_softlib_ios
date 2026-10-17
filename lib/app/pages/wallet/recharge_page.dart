@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/err_text.dart';
 import 'package:get/get.dart';
 
 import '../../design/adaptive.dart';
@@ -64,7 +65,7 @@ class _RechargePageState extends State<RechargePage> {
       });
     } catch (e) {
       if (mounted) setState(() => _loading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -118,7 +119,7 @@ class _RechargePageState extends State<RechargePage> {
       if (mounted) setState(() {});
     } catch (e) {
       if (mounted) setState(() => _busy = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 

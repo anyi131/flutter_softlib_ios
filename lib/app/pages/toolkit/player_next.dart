@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../design/ui.dart';
-import 'mpv_core.dart';
+import '../../widgets/mpv_core.dart';
 
 /// ★ 1016：影视播放页（UI 完全重做）
 ///

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/err_text.dart';
 
 import 'admin_ui_kit.dart';
 
@@ -162,7 +163,7 @@ class _OverviewTabState extends State<_OverviewTab> {
       }
     } catch (e) {
       if (mounted) setState(() => _loading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 

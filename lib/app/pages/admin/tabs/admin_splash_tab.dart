@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -326,7 +327,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
       });
     } catch (e) {
       if (mounted) setState(() => _loading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -534,7 +535,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         ToastUtil.success('保存成功，App 下次启动生效');
       }
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 

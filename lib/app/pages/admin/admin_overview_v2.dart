@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/err_text.dart';
 
 import '../../api/admin_service.dart';
 import '../../design/adaptive.dart';
@@ -57,7 +58,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }

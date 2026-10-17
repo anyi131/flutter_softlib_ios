@@ -119,9 +119,11 @@ class MpvController {
     _subs.add(_player.stream.buffering.listen((v) => _set(value.copyWith(isBuffering: v))));
     _subs.add(_player.stream.width.listen((w) {
       final h = _player.state.height;
+      final ww = (w ?? 0).toDouble();
+      final hh = (h ?? 0).toDouble();
       _set(value.copyWith(
-        size: Size(w.toDouble(), h.toDouble()),
-        aspectRatio: (w > 0 && h > 0) ? w / h : 16 / 9,
+        size: Size(ww, hh),
+        aspectRatio: (ww > 0 && hh > 0) ? ww / hh : 16 / 9,
       ));
     }));
     _subs.add(_player.stream.buffered.listen((ranges) {

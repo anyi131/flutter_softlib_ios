@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../utils/err_text.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 
@@ -578,7 +579,7 @@ class SoftService {
         lastParseError = '${d['msg']}';
       }
     } catch (e) {
-      lastParseError = e.toString().replaceFirst('Exception: ', '');
+      lastParseError = ErrText.of(e);
     }
     return null;
   }

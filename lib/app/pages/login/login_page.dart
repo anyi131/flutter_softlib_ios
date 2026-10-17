@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/err_text.dart';
 import 'package:get/get.dart';
 
 import '../../api/qq_login.dart';
@@ -242,7 +243,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.of(context).pop(true);
       return;
     } catch (e) {
-      err = e.toString().replaceFirst('Exception: ', '');
+      err = ErrText.of(e);
     } finally {
       if (mounted && _qqLoading) setState(() => _qqLoading = false);
     }
@@ -309,7 +310,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _errServer = e.toString().replaceFirst('Exception: ', ''));
+      setState(() => _errServer = ErrText.of(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }

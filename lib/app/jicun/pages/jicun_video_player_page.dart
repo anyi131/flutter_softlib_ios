@@ -52,6 +52,8 @@ class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage> {
         if (_ctrl != ctrl) await ctrl.dispose();
         return;
       }
+      // ★ 1016：内核换成 media_kit 后需要手动监听才能刷新进度/播放状态
+      ctrl.addListener(_onTick);
       setState(() => _initialized = true);
       await ctrl.play();
     } catch (e) {
@@ -63,6 +65,10 @@ class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage> {
         _error = _friendly(e);
       });
     }
+  }
+
+  void _onTick() {
+    if (mounted) setState(() {});
   }
 
   /// 把原始异常翻成人话
@@ -80,6 +86,7 @@ class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage> {
 
   @override
   void dispose() {
+    _ctrl?.removeListener(_onTick);
     _ctrl?.dispose();
     _ctrl = null;
     super.dispose();
@@ -245,9 +252,9 @@ class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage> {
               colors: [Colors.transparent, Colors.black.withAlpha(150)],
             ),
           ),
-          child: ValueListenableBuilder<MpvValue>(
-            valueListenable: c,
-            builder: (context, v, _) {
+          child: Builder(
+            builder: (context) {
+              final v = c.value;
               final pos = v.position;
               final dur = v.duration;
               final maxMs = dur.inMilliseconds.toDouble();

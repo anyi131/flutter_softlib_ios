@@ -21,7 +21,7 @@ import 'package:flutter_softlib/app/pages/appinfo/about_page.dart';
 import 'package:flutter_softlib/app/pages/appinfo/agreement_page.dart';
 import 'package:flutter_softlib/app/pages/navigate/mine/invite_page.dart';
 import 'package:flutter_softlib/app/pages/message/message_page.dart';
-import 'package:flutter_softlib/app/pages/task/task_page.dart';
+import 'package:flutter_softlib/app/pages/taskcenter/task_page.dart';
 import 'package:get/get.dart';
 
 import '../pages/navigate/navigate_binding.dart';

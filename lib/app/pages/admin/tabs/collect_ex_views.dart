@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -74,7 +75,7 @@ class _CollectStatsViewState extends State<CollectStatsView> {
       setState(() {
         _loading = false;
         _loadingMore = false;
-        _err = e.toString().replaceFirst('Exception: ', '');
+        _err = ErrText.of(e);
       });
     }
   }

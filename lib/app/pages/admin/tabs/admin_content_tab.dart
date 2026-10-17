@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
 
@@ -101,7 +102,7 @@ class _AdminContentTabState extends State<AdminContentTab>
         });
     } catch (e) {
       if (mounted) setState(() => _loading = false);
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -208,7 +209,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                   } catch (e) {
                     setState(() => _reviewOn = !v);
                     ToastUtil.error(
-                      e.toString().replaceFirst('Exception: ', ''),
+                      ErrText.of(e),
                     );
                   }
                 },
@@ -431,7 +432,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       ToastUtil.success(action == 'pass' ? '已通过' : '已驳回');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -557,7 +558,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                     _load();
                   } catch (e) {
                     ToastUtil.error(
-                      e.toString().replaceFirst('Exception: ', ''),
+                      ErrText.of(e),
                     );
                   }
                 },
@@ -743,7 +744,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       ToastUtil.success('保存成功');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -956,7 +957,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       ToastUtil.success('保存成功');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1150,7 +1151,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       ToastUtil.success('已保存');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1437,7 +1438,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       ToastUtil.success('保存成功');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1515,7 +1516,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       }
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1712,7 +1713,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       ToastUtil.success('保存成功');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -1894,7 +1895,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       ToastUtil.success('保存成功');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -2031,7 +2032,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       ToastUtil.success('卡密已生成');
       _load();
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
@@ -2070,7 +2071,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                   });
                   ToastUtil.success('保存成功');
                 } catch (e) {
-                  ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+                  ToastUtil.error(ErrText.of(e));
                 }
               },
             ),

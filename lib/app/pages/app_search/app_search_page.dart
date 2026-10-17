@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../design/adaptive.dart';
+import '../../routes/app_pages.dart';
+import '../../design/ui.dart';
+import '../../routes/app_pages.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
@@ -133,6 +137,7 @@ class _AppSearchPageState extends State<AppSearchPage> {
 
   Widget _buildBody() {
     if (_loading) {
+      return const SkeletonList(count: 7);
       return const Center(child: CircularProgressIndicator(strokeWidth: 3));
     }
     if (!_searched) {
@@ -150,19 +155,49 @@ class _AppSearchPageState extends State<AppSearchPage> {
       );
     }
     if (_results.isEmpty) {
+      // ★ 1016 待办：搜索无结果 → 引导「求软件」，不再只给一行灰字
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.sentiment_dissatisfied,
-                size: 56, color: Colors.grey.withAlpha(90)),
-            const SizedBox(height: 12),
-            Text('没有找到「$_keyword」相关软件',
-                style: TextStyle(color: Colors.grey[500], fontSize: 14)),
-            const SizedBox(height: 6),
-            Text('换个关键词试试',
-                style: TextStyle(color: Colors.grey[400], fontSize: 12.5)),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 88,
+                height: 88,
+                decoration: BoxDecoration(
+                  color: C.brand.withAlpha(context.isDark ? 30 : 18),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.travel_explore_rounded, size: 42, color: C.brand.withAlpha(170)),
+              ),
+              const SizedBox(height: 18),
+              Text('没找到「$_keyword」',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: context.t1)),
+              const SizedBox(height: 8),
+              Text('换个关键词试试，或者告诉我们你想要什么',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12.5, height: 1.6, color: context.t3)),
+              const SizedBox(height: 22),
+              FilledButton.icon(
+                onPressed: () => Get.toNamed(Routes.tips),
+                icon: const Icon(Icons.add_comment_rounded, size: 17),
+                label: const Text('求这个软件'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: C.brand,
+                  minimumSize: const Size(160, 44),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () => Navigator.maybePop(context),
+                child: Text('返回软件库浏览', style: TextStyle(fontSize: 12.5, color: context.t3)),
+              ),
+            ],
+          ),
         ),
       );
     }

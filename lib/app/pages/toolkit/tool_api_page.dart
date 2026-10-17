@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/err_text.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
@@ -141,7 +142,7 @@ class _ApiToolPageState extends State<ApiToolPage> {
       if (!mounted) return;
       setState(() {
         loading = false;
-        err = e.toString().replaceFirst('Exception: ', '');
+        err = ErrText.of(e);
       });
     }
   }

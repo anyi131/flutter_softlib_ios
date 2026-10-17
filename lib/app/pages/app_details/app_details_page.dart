@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import '../../utils/err_text.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
@@ -1694,7 +1695,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       st = await UnlockService.instance.status(appId);
     } catch (e) {
       // 兜底分支：服务端不可达时保守拒绝（已判定为付费资源，不能放行）
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
       return;
     }
     if (!mounted) return;
@@ -1850,7 +1851,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       logic.unlockVerified = true; // 已支付
       runDownloadWithOverlay(() => logic.addDownload(fileName));
     } catch (e) {
-      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+      ToastUtil.error(ErrText.of(e));
     }
   }
 
