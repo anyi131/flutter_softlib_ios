@@ -359,6 +359,29 @@ class AppDetailsLogic extends GetxController {
   }
 
   /// 下载完成：弹窗确认是否安装
+  /// ★ 1016：把 "34.1 M" / "512K" / "1.2GB" 正确转成字节
+  /// （旧代码只按 MB 换算，"512K" 会被当成 512MB）
+  int _sizeToBytes(String raw) {
+    final t = raw.trim().toUpperCase().replaceAll(' ', '');
+    if (t.isEmpty) return 0;
+    final m = RegExp(r'^([0-9.]+)([KMGT]?)B?$').firstMatch(t);
+    if (m == null) return 0;
+    final n = double.tryParse(m.group(1) ?? '') ?? 0;
+    const k = 1024;
+    switch (m.group(2) ?? '') {
+      case 'K':
+        return (n * k).round();
+      case 'M':
+        return (n * k * k).round();
+      case 'G':
+        return (n * k * k * k).round();
+      case 'T':
+        return (n * k * k * k * k).round();
+      default:
+        return n.round();
+    }
+  }
+
   bool _askedInstall = false;
   Future<void> _onDownloadComplete() async {
     if (_askedInstall) return;
