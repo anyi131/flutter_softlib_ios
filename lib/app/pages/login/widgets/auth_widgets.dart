@@ -213,9 +213,10 @@ class AuthScaffold extends StatelessWidget {
     );
   }
 
-  /// ② split —— **左右分栏**：左 38% 渐变品牌栏 / 右 62% 表单
+  /// ② split —— **左右分栏**：左 38% 渐变品牌栏（宽屏）/ 26% 窄栏（手机）+ 右侧表单
   Widget _buildSplit(BuildContext context) {
-    final wide = MediaQuery.of(context).size.width >= 600;
+    final w = MediaQuery.of(context).size.width;
+    final leftW = w >= 600 ? w * 0.34 : w * 0.30;
     return Scaffold(
       backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: true,
@@ -224,40 +225,52 @@ class AuthScaffold extends StatelessWidget {
         behavior: HitTestBehavior.translucent,
         child: Row(
           children: [
-            // 左侧品牌栏（渐变，纵向铺满）
+            // 左侧品牌栏：渐变铺满，内容垂直居中偏下
             Container(
-              width: wide ? MediaQuery.of(context).size.width * 0.34 : 128,
-              decoration: BoxDecoration(gradient: Deco.brandGradient),
+              width: leftW,
+              decoration: const BoxDecoration(gradient: Deco.brandGradient),
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  padding: const EdgeInsets.fromLTRB(14, 10, 14, 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 8),
                       _backBtn(context, fg: Colors.white),
                       const Spacer(),
-                      _iconBox(onGradient: true, size: 46),
-                      const SizedBox(height: 14),
-                      _titleBlock(
-                        context,
-                        onGradient: true,
-                        size: wide ? 26 : 21,
+                      _iconBox(onGradient: true, size: 44),
+                      const SizedBox(height: 16),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 21,
+                          height: 1.3,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 8),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: Colors.white.withAlpha(210),
+                          fontSize: 11.5,
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
               ),
             ),
-            // 右侧表单（白底，独立滚动）
+            // 右侧表单：白底，独立滚动，左右留白 20
             Expanded(
               child: Container(
                 color: context.isDark ? C.bg0 : Colors.white,
                 child: SafeArea(
                   child: ListView(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+                    padding: const EdgeInsets.fromLTRB(20, 26, 20, 40),
                     children: [_formArea(card: false, hPad: 0)],
                   ),
                 ),

@@ -77,6 +77,14 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
     }
   }
 
+  /// 取数值（保留 1 位小数，用于失败率等）
+  String _dbl(String k) {
+    final v = _d[k];
+    if (v == null) return '0';
+    if (v is num) return v.toStringAsFixed(v == v.roundToDouble() ? 0 : 1);
+    return '$v';
+  }
+
   int _i(String k) => int.tryParse('${_d[k] ?? 0}') ?? 0;
   String _s(String k) => '${_d[k] ?? ''}';
 
@@ -275,7 +283,12 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
           const SizedBox(height: Ad.gapL),
 
           // ⑥ 下载数据
-          AdSection(title: '下载数据', subtitle: '点记录可看详情与失败原因', accent: C.cyan),
+          AdSection(
+            title: '下载数据',
+            subtitle:
+                '失败率 ${_dbl('down_fail_rate')}% · 点记录可看详情',
+            accent: C.cyan,
+          ),
           AdCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
