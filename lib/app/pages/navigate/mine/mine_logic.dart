@@ -114,9 +114,19 @@ class MineLogic extends GetxController {
         SharedPreferences.getInstance(),
         MessageService.instance.unread(),
       ]);
-      final info = results[0] as dynamic;
+      var info = results[0] as dynamic;
       final sp = results[1] as SharedPreferences;
       final unreadN = results[2] as int;
+      // ★ 1016：刚登录（QQ 快捷登录/注册回跳）时，refreshProfile 偶发拿不到
+      //   用户资料（token 刚签发、服务端缓存未就绪）→ 会走到「清空为游客」，
+      //   表现为「登录成功但我的页还是未登录，需要手动下拉」。
+      //   这里补一次重试，仍失败再清空。
+      if (info == null && _userService.isLoggedIn) {
+        await Future.delayed(const Duration(milliseconds: 400));
+        try {
+          info = await _userService.refreshProfile();
+        } catch (_) {}
+      }
       final u = (info ?? _userService.user) as dynamic;
       if (u != null) {
         nickname = u.nickname;

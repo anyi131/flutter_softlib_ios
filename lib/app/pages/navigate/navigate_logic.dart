@@ -25,6 +25,7 @@ import '../../design/theme_controller.dart';
 import 'update_flow.dart';
 
 import '../../api/soft_service.dart';
+import '../../api/user_service.dart';
 import '../../utils/permission_utils.dart';
 import '../../widgets/icon_font.dart';
 
@@ -173,6 +174,17 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
     _requestPermissionsOnStartup();
     // 应用后台「全局界面配置」
     applyUiConfig();
+    // ★ 1016：启动时 tag=boot 上报早于登录态恢复 → user_id=0（显示"未登录"）。
+    //   这里在应用启动完成后补一次归属上报，后台「启动数据」才能看到具体用户。
+    Future.delayed(const Duration(seconds: 3), () async {
+      try {
+        if (!UserService.instance.isLoggedIn) return;
+        await SoftService.reportLogStatic(
+          tag: 'boot_auth',
+          error: '[boot_auth] 已登录用户启动',
+        );
+      } catch (_) {}
+    });
     //检查更新（v52：独立 UpdateFlow，带进度条）
     UpdateFlow.check();
   }

@@ -4,6 +4,7 @@ import '../../design/adaptive.dart';
 import '../../design/ui.dart';
 import '../../design/app_anim.dart';
 import 'admin_ui_kit.dart';
+import 'admin_preview.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// ★ 1016：管理后台外壳 · 5 套**真实架构差异**模板（不是换色）
@@ -98,13 +99,48 @@ class _AdminShellV2State extends State<AdminShellV2> {
     final body = IndexedStack(index: _i, children: widget.children);
 
     // ── 按模板切换**骨架结构** ──
-    return switch (_tpl) {
+    final shell = switch (_tpl) {
       'dark_console' => _darkConsole(body, cur),
       'minimal' => _minimal(body, cur),
       'brand' => _brand(body, cur),
       'desk' => _desk(body, cur),
       _ => _lightCard(body, cur),
     };
+    // ★ 1016：链接预览入口（悬浮按钮，5 套模板都可用）
+    return Stack(
+      children: [
+        shell,
+        Positioned(
+          right: 14,
+          bottom: 90,
+          child: GestureDetector(
+            onTap: () => showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (_) => const AdminLinkPreviewSheet(),
+            ),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: C.brand,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: C.brand.withAlpha(90),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.visibility_rounded,
+                  size: 20, color: Colors.white),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   // ═══════════════════════════════════════════════════════════

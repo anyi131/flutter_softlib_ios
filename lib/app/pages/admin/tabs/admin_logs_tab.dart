@@ -248,6 +248,61 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
     );
   }
 
+  /// ★ 1016：日志详情（完整字段：UA / 设备 / 归属地 / 时间）
+  void _showLogDetail(Map<String, dynamic> r) {
+    final action = '${r['action'] ?? ''}';
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (c) => Container(
+        margin: const EdgeInsets.all(12),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
+        decoration: BoxDecoration(
+          color: context.isDark ? C.bg2 : Colors.white,
+          borderRadius: BorderRadius.circular(R.lg),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('日志详情',
+                        style: Ty.h3.copyWith(fontSize: 15, color: context.t1)),
+                  ),
+                  Pill(_actions[action] ?? action, small: true),
+                ],
+              ),
+              const SizedBox(height: 12),
+              AdKvList(rows: [
+                ('用户', '${r['nickname'] ?? '游客'}（ID ${r['user_id'] ?? 0}）'),
+                ('行为', _actions[action] ?? action),
+                ('详情', '${r['detail'] ?? '-'}'),
+                ('时间', '${r['createtime_text'] ?? r['time_text'] ?? '-'}'),
+                ('IP', '${r['ip'] ?? '-'}'),
+                ('归属地', '${r['address'] ?? '-'}'),
+                ('设备', '${r['device'] ?? '-'}'),
+                ('系统', '${r['os'] ?? '-'}'),
+                if ('${r['ua'] ?? ''}'.isNotEmpty) ('UA', '${r['ua']}'),
+              ]),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: SoftButton(
+                  label: '关闭',
+                  onPressed: () => Navigator.pop(c),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _logCard(Map<String, dynamic> r) {
     final action = '${r['action'] ?? ''}';
     final label = _actions[action] ?? action;
@@ -265,6 +320,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
     return AdCard(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
+      onTap: () => _showLogDetail(r), // ★ 1016：点开看完整信息
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

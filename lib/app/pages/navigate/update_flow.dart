@@ -361,7 +361,7 @@ class _UpdateCardState extends State<_UpdateCard> {
       fileName: 'softlib_update_${DateTime.now().millisecondsSinceEpoch}.apk',
       savedDir: await DownloadDir.path(),
       showNotification: true,
-      saveInPublicStorage: true,
+      saveInPublicStorage: false,
       openFileFromNotification: true,
     );
     if (taskId == null) {

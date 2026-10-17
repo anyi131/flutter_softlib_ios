@@ -719,7 +719,7 @@ class AppDetailsLogic extends GetxController {
       fileName: fileName,
       savedDir: await DownloadDir.path(),
       showNotification: true,
-      saveInPublicStorage: true,
+      saveInPublicStorage: false,
       openFileFromNotification: true,
     );
     if (newTaskId == null) {

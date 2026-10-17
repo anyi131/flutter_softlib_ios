@@ -198,6 +198,26 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
           const SizedBox(height: Ad.gapL),
 
           // ③ 软件行为数据（版权梦）
+          // ★ 1016：版权梦 VIP 到期 → 明确提示，而不是只显示一排 0
+          if ('${(_appStats['vip_expired'] ?? false)}' == 'true')
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: AdCard(
+                accent: C.warning,
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline_rounded, size: 16, color: C.warning),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${_appStats['vip_msg'] ?? '版权梦 VIP 已到期，统计数据暂停'}',
+                        style: TextStyle(fontSize: 12.5, color: context.t2, height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           AdSection(
             title: '软件行为数据',
             subtitle: '启动 / 加群 / 联系作者 / 分享（版权梦统计，缓存 10 分钟）',
@@ -420,6 +440,61 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
               ],
             ),
           ),
+
+          // ═════ ★ 今日启动用户（具体是谁）═════
+          if ((_d['boot_users'] as List?)?.isNotEmpty ?? false) ...[
+            const SizedBox(height: 10),
+            AdCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.people_outline_rounded,
+                          size: 15, color: C.brand),
+                      const SizedBox(width: 6),
+                      Text('今日启动用户',
+                          style: Ty.small.copyWith(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: context.t1)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  for (final u in (_d['boot_users'] as List).take(8))
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '${u is Map ? u['nickname'] ?? '未登录' : ''}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Ty.tiny.copyWith(
+                                  fontSize: 12, color: context.t2),
+                            ),
+                          ),
+                          Text(
+                            '${u is Map ? u['count'] ?? 0 : 0} 次',
+                            style: Ty.tiny.copyWith(
+                                fontSize: 11.5,
+                                color: C.brand,
+                                fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${u is Map ? u['last'] ?? '' : ''}',
+                            style: Ty.tiny.copyWith(
+                                fontSize: 11, color: context.t3),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
 
           // ═════ ★ 累计规模 ═════
           const SizedBox(height: 20),
