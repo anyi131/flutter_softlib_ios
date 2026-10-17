@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../utils/lzy_local_parser.dart';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -257,20 +258,37 @@ class _UpdateCardState extends State<_UpdateCard> {
     if (await Permission.notification.isDenied) {
       await Permission.notification.request();
     }
-    // 解析直链
+    // ═══ 解析直链：三级降级（本地 → 服务端 → 浏览器）═══
+    //   ★ 1016：原来只有「服务端解析」一跳，未登录/票据失败就直接跳浏览器，
+    //   用户看到的是「没解析就跳浏览器」。现在更新包也走完整降级链。
     String? direct = widget.url;
-    if (widget.url.contains('lanzou') || widget.url.contains('lzy')) {
+    final needParse =
+        widget.url.contains('lanzou') || widget.url.contains('lzy');
+    if (needParse) {
+      // ① 本地解析（更新包属免费资源，可本地）
       try {
-        direct = await SoftService.instance.resolveLzy(widget.url);
+        direct = await LzyLocalParser.parse(widget.url);
       } catch (_) {
         direct = null;
       }
+      // ② 服务端解析（服务端对更新包已免登录发票据）
+      if (direct == null || direct.isEmpty) {
+        try {
+          direct = await SoftService.instance.resolveLzy(widget.url);
+        } catch (_) {
+          direct = null;
+        }
+      }
     }
     if (direct == null || direct.isEmpty) {
-      // ★ 1014：解析失败（未登录/无票据/接口异常）时，提示可改用浏览器下载，
-      //   而不是静默失败。App 自身更新包属可信来源，允许直接打开。
+      // ③ 浏览器兜底 —— 带上真实原因，不再静默跳转
+      final why = SoftService.lastParseError.isNotEmpty
+          ? SoftService.lastParseError
+          : LzyLocalParser.lastError;
       if (mounted) {
-        ToastUtil.info('将用浏览器打开下载页（也可在软件详情页下载）');
+        ToastUtil.info(
+          why.isEmpty ? '解析失败，改用浏览器下载' : '解析失败（$why），改用浏览器',
+        );
       }
       _fallbackBrowser();
       return;
