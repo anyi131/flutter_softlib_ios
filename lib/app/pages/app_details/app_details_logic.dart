@@ -393,7 +393,7 @@ class AppDetailsLogic extends GetxController {
       // ★ 1016：上报失败（后台「下载记录」可查）
       SoftService.instance.reportDownloadResult(
         appId: appIdInt,
-        title: appInfo?.fileName ?? '',
+        title: (item?.title ?? '').isNotEmpty ? item!.title : (appInfo?.fileName ?? ''),
         url: dowUrl,
         ok: false,
         error: '下载不完整：文件大小未达到预期（网络中断或源站限速）',
@@ -404,7 +404,7 @@ class AppDetailsLogic extends GetxController {
     // ★ 1016：上报成功（后台「下载记录」可查）
     SoftService.instance.reportDownloadResult(
       appId: appIdInt,
-      title: appInfo?.fileName ?? '',
+      title: (item?.title ?? '').isNotEmpty ? item!.title : (appInfo?.fileName ?? ''),
       url: dowUrl,
       ok: true,
     );
@@ -617,8 +617,8 @@ class AppDetailsLogic extends GetxController {
         ResolveOverlay.dismiss();
         // ★ 1016：上报解析失败（后台「解析记录」可查原因与耗时）
         SoftService.reportParseResult(
-          appId: int.tryParse('${appInfo?.appId ?? 0}') ?? 0,
-          title: appInfo?.fileName ?? '',
+          appId: appIdInt,
+          title: (item?.title ?? '').isNotEmpty ? item!.title : (appInfo?.fileName ?? ''),
           rawUrl: originUrl,
           ok: false,
           error: '[解析失效] ${SoftService.lastParseError.isEmpty ? '解析接口无返回' : SoftService.lastParseError}',
@@ -628,8 +628,8 @@ class AppDetailsLogic extends GetxController {
       }
       // ★ 1016：解析成功也记一笔（便于对比成功率）
       SoftService.reportParseResult(
-        appId: int.tryParse('${appInfo?.appId ?? 0}') ?? 0,
-        title: appInfo?.fileName ?? '',
+        appId: appIdInt,
+        title: (item?.title ?? '').isNotEmpty ? item!.title : (appInfo?.fileName ?? ''),
         rawUrl: originUrl,
         ok: true,
       );
@@ -731,7 +731,7 @@ class AppDetailsLogic extends GetxController {
         // ★ 1016：上报失败（后台「下载记录」可查）
         SoftService.instance.reportDownloadResult(
           appId: appIdInt,
-          title: appInfo?.fileName ?? '',
+          title: (item?.title ?? '').isNotEmpty ? item!.title : (appInfo?.fileName ?? ''),
           url: dowUrl,
           ok: false,
           // ★ 1016：失败原因细分 —— 后台一眼能判断是「解析问题」还是「网络问题」
