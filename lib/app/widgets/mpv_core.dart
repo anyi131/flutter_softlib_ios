@@ -1,15 +1,17 @@
 import 'dart:async';
+import 'dart:io';
 
-import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
-/// ★ 1016：媒体内核适配层（better_player / ExoPlayer · AVPlayer）
+/// ★ 1016：媒体内核适配层（video_player / ExoPlayer · AVPlayer）
 ///
-/// 为什么不用 media_kit：libmpv 单架构就 +40MB，包体 27MB → 66MB。
-/// better_player 直接复用系统播放器（Android ExoPlayer / iOS AVPlayer），
-/// 体积几乎不增加，同时支持 HLS、字幕、倍速、Referer/UA 透传。
+/// 历史：先试过 media_kit（libmpv，+40MB 体积）与 better_player（要求 Dart 3.12+），
+/// 两者在本项目环境里都不合适，最终回到 **video_player**：
+///   · 零额外原生库 → 包体稳定在 ~27MB
+///   · 支持 mp4 / m3u8(HLS) / 主流编码（影视源基本够用）
 ///
-/// 对外保持与 video_player 相同的写法：
+/// 对外保持统一写法（播放页 UI 完全不用改）：
 ///   c.value.isPlaying / position / duration / size / aspectRatio
 ///   c.play() / pause() / seekTo() / setVolume() / setPlaybackSpeed()
 ///   MpvView(c)  ← 画面
@@ -87,7 +89,7 @@ class MpvController {
   final bool _loop;
   final bool _autoPlay;
 
-  BetterPlayerController? _bc;
+  VideoPlayerController? _vc;
   MpvValue value = const MpvValue();
   final List<VoidCallback> _listeners = [];
   bool _disposed = false;
@@ -95,86 +97,50 @@ class MpvController {
   double _volume = 1.0;
   double _speed = 1.0;
 
-  BetterPlayerController? get better => _bc;
+  VideoPlayerController? get video => _vc;
 
   Future<void> initialize() async {
     if (_inited) return;
     _inited = true;
 
-    final dataSource = BetterPlayerDataSource(
-      BetterPlayerDataSourceType.network,
-      _url,
-      headers: _headers.isEmpty ? null : _headers,
-      useAsmsSubtitles: false,
-      videoFormatHint: null,
-    );
+    final isLocal = !_url.startsWith('http');
+    final c = isLocal
+        ? VideoPlayerController.file(File(_url))
+        : VideoPlayerController.networkUrl(
+            Uri.parse(_url),
+            httpHeaders: _headers,
+          );
+    _vc = c;
 
-    _bc = BetterPlayerController(
-      BetterPlayerConfiguration(
-        autoPlay: _autoPlay,
-        looping: _loop,
-        fit: BoxFit.contain,
-        aspectRatio: null,
-        allowedScreenSleep: false,
-        handleLifecycle: true,
-        controlsConfiguration: const BetterPlayerControlsConfiguration(
-          showControls: false,
-          enableSkips: false,
-          enableFullscreen: false,
-          enablePlayPause: false,
-        ),
-      ),
-      betterPlayerDataSource: dataSource,
-    );
-
-    _bc!.addEventsListener((event, data) {
-      _sync();
-      if (event == BetterPlayerEventType.exception) {
-        _set(value.copyWith(hasError: true, errorDescription: '$data'));
-      }
-      if (event == BetterPlayerEventType.initialized) {
-        sizeIfNeeded(_bc?.videoPlayerController?.value);
-      }
-    });
-
-    // 首帧后标记就绪
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (!_disposed) _set(value.copyWith(isInitialized: true));
-    });
-    _set(value.copyWith(isInitialized: true));
-    unawaited(setVolume(_volume));
-    unawaited(setPlaybackSpeed(_speed));
-  }
-
-  /// 尺寸同步（better_player 暴露 videoPlayerController）
-  void sizeIfNeeded(dynamic v) {
+    c.addListener(_sync);
     try {
-      final w = (v?.size?.width ?? 0).toDouble();
-      final h = (v?.size?.height ?? 0).toDouble();
-      if (w > 0 && h > 0) {
-        _set(value.copyWith(
-          size: Size(w, h),
-          aspectRatio: w / h,
-          duration: v.duration ?? value.duration,
-        ));
-      }
-    } catch (_) {}
+      await c.initialize();
+      await c.setVolume(_volume);
+      await c.setLooping(_loop);
+      if (_speed != 1.0) await c.setPlaybackSpeed(_speed);
+      if (_autoPlay) await c.play();
+      _sync();
+    } catch (e) {
+      _set(value.copyWith(hasError: true, errorDescription: '$e'));
+      rethrow;
+    }
   }
 
   void _sync() {
+    final c = _vc;
+    if (c == null || _disposed) return;
     try {
-      final v = _bc?.videoPlayerController?.value;
-      if (v == null) return;
-      final w = (v.size?.width ?? 0).toDouble();
-      final h = (v.size?.height ?? 0).toDouble();
+      final v = c.value;
       _set(value.copyWith(
-        position: v.position ?? Duration.zero,
-        duration: v.duration ?? Duration.zero,
-        isPlaying: v.isPlaying ?? false,
-        isBuffering: v.isBuffering ?? false,
-        isInitialized: true,
-        size: (w > 0 && h > 0) ? Size(w, h) : value.size,
-        aspectRatio: (w > 0 && h > 0) ? w / h : value.aspectRatio,
+        position: v.position,
+        duration: v.duration,
+        isPlaying: v.isPlaying,
+        isBuffering: v.isBuffering,
+        isInitialized: v.isInitialized,
+        size: v.size,
+        aspectRatio: (v.aspectRatio == 0 || v.aspectRatio.isNaN) ? 16 / 9 : v.aspectRatio,
+        hasError: v.hasError,
+        errorDescription: v.errorDescription ?? '',
       ));
     } catch (_) {}
   }
@@ -194,16 +160,16 @@ class MpvController {
 
   bool get isInitialized => value.isInitialized && !_disposed;
 
-  Future<void> play() async => _bc?.play();
-  Future<void> pause() async => _bc?.pause();
+  Future<void> play() async => _vc?.play();
+  Future<void> pause() async => _vc?.pause();
   Future<void> playOrPause() async =>
-      (value.isPlaying ? _bc?.pause() : _bc?.play());
-  Future<void> seekTo(Duration d) async => _bc?.seekTo(d);
+      (value.isPlaying ? _vc?.pause() : _vc?.play());
+  Future<void> seekTo(Duration d) async => _vc?.seekTo(d);
 
   Future<void> setVolume(double v) async {
     _volume = v.clamp(0.0, 1.0);
     try {
-      await _bc?.setVolume(_volume);
+      await _vc?.setVolume(_volume);
     } catch (_) {}
     _set(value.copyWith(volume: _volume));
   }
@@ -211,24 +177,26 @@ class MpvController {
   Future<void> setPlaybackSpeed(double s) async {
     _speed = s;
     try {
-      await _bc?.setSpeed(s);
+      await _vc?.setPlaybackSpeed(s);
     } catch (_) {}
     _set(value.copyWith(playbackSpeed: s));
   }
 
   Future<void> setLooping(bool v) async {
     try {
-      _bc?.setLooping(v);
+      await _vc?.setLooping(v);
     } catch (_) {}
   }
 
   Future<void> dispose() async {
     _disposed = true;
     _listeners.clear();
+    final c = _vc;
+    _vc = null;
     try {
-      await _bc?.dispose();
+      c?.removeListener(_sync);
+      await c?.dispose();
     } catch (_) {}
-    _bc = null;
   }
 }
 
@@ -241,15 +209,22 @@ class MpvView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bc = controller.better;
-    if (bc == null) {
+    final vc = controller.video;
+    if (vc == null || !vc.value.isInitialized) {
       return const ColoredBox(color: Colors.black);
     }
-    return BetterPlayer(controller: bc);
+    return FittedBox(
+      fit: fit,
+      child: SizedBox(
+        width: vc.value.size.width,
+        height: vc.value.size.height,
+        child: VideoPlayer(vc),
+      ),
+    );
   }
 }
 
-/// 兼容旧的进度条组件名
+/// 兼容旧的进度条组件
 class VideoProgressColors {
   const VideoProgressColors({
     this.playedColor = const Color(0xFF4B5EF5),

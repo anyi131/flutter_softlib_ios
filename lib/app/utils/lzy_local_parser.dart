@@ -60,12 +60,37 @@ class LzyLocalParser {
         return null;
       }
 
-      // ── ★ 新版页面（2024+）：/tp/ 跳转 + 多层 JS 挑战，本地不硬刚 ──
-      //   实测新版结构：分享页 → link.href='/tp/xxx?webtp=…' → 中间页 vkjxld+hyggid
-      //   → 最终页还需 POST ajax.php（带交互参数）→ 至少 3~4 跳，且随时改版。
-      //   这类页面**快速降级**给服务端解析（改服务器即可，不用发新版）。
-      if (html.contains('/tp/') && html.contains('webtp=')) {
-        lastError = '新版页面（交由服务端解析）';
+      // ── ★ 新版页面（蓝奏云已全面改版）：/tp/ 跳转 → vkjxld + hyggid ──
+      //   实测链路：
+      //     ① 分享页里有 link.href = '/tp/xxx?webtp=…'
+      //     ② 请求该地址 → 中间页里 var vkjxld='https://xxx/file/'; var hyggid='?…'
+      //     ③ 直链 = vkjxld + hyggid
+      if (html.contains('/tp/') || html.contains('webtp=')) {
+        final m = RegExp(r'''link\.href\s*=\s*['"]([^'"]+)['"]''').firstMatch(html);
+        if (m == null) {
+          lastError = '未找到下载跳转（页面结构变化）';
+          return null;
+        }
+        final tp = m.group(1)!;
+        final u0 = Uri.tryParse(url);
+        final origin = u0 == null ? '' : '${u0.scheme}://${u0.host}';
+        final full = tp.startsWith('http') ? tp : '$origin$tp';
+        final mid = await _get(full, base: url);
+        if (mid == null || mid.isEmpty) {
+          lastError = '中间页请求失败';
+          return null;
+        }
+        // 中间页可能是 302 直接给直链
+        final direct = RegExp(r'''(https?://[^\s"']+\.(?:apk|zip|rar|7z))''')
+            .firstMatch(mid);
+        final host = RegExp(r'''var\s+vkjxld\s*=\s*['"]([^'"]+)['"]''').firstMatch(mid);
+        final token = RegExp(r'''var\s+hyggid\s*=\s*['"]([^'"]+)['"]''').firstMatch(mid);
+        if (host != null && token != null) {
+          final link = '${host.group(1)}${token.group(1)}';
+          return link;
+        }
+        if (direct != null) return direct.group(1);
+        lastError = '新版解析未拿到地址';
         return null;
       }
 
