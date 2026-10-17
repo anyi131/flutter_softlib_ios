@@ -133,10 +133,6 @@ class MpvController {
     }));
 
     try {
-      if (_headers.isNotEmpty) {
-        final hs = _headers.entries.map((e) => '${e.key}: ${e.value}').join(',');
-        await _player.setProperty('http-header-fields', hs);
-      }
       await _player.setVolume(_volume * 100);
       await _player.open(Media(_url), play: true);
       await _player.setPlaylistMode(_loop ? PlaylistMode.loop : PlaylistMode.none);

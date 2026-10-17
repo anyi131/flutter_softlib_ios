@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../design/kit.dart';
 import '../../design/adaptive.dart';
 import '../../routes/app_pages.dart';
 import '../../design/ui.dart';
-import '../../routes/app_pages.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../models/app_item.dart';
-import '../../routes/app_pages.dart';
 import '../../api/soft_service.dart';
 import '../../utils/toast_util.dart';
 import '../../widgets/app_card.dart';
