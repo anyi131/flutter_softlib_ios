@@ -307,6 +307,7 @@ class _UpdateCardState extends State<_UpdateCard> {
     //   用户看到的是「没解析就跳浏览器」。现在更新包也走完整降级链。
     // ★ widget.url 是 final（不能赋值）→ 用局部变量承载「最终要解析的地址」
     var target = widget.url;
+    String? direct = widget.url; // 直链则无需解析，直接用
     final needParse = target.contains('lanzou') || target.contains('lzy');
     if (needParse) {
       // ★ 1016：文件夹链接（/bXXXX）解析不了 → 先列出内容挑出 APK 再解析
