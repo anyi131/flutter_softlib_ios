@@ -26,6 +26,7 @@ import '../../api/soft_service.dart';
 import '../../api/user_service.dart';
 import '../../utils/apk_installer.dart';
 import '../../utils/download_dir.dart';
+import '../../utils/lzy_local_parser.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
 import '../../widgets/posters/posters_widget.dart';
@@ -600,9 +601,41 @@ class AppDetailsLogic extends GetxController {
         ToastUtil.error('下载地址为空');
         return;
       }
-      // 解析真实直链（先自建 API，再后端解析）
+      // ═══ 三级降级：① 本地解析 → ② 外置接口 → ③ 原链接浏览器 ═══
+      //   本地解析只用于**免费资源**：客户端算法可被反编译，
+      //   付费/会员资源必须走服务端票据，否则付费墙失效。
+      final isFree = item == null || (!item!.isVipItem && !item!.hasPrice);
+      if (isFree && LzyLocalParser.isLzyUrl(target)) {
+        ResolveOverlay.stage('本地解析中…');
+        try {
+          parseUrl = await LzyLocalParser.parse(target);
+        } catch (e) {
+          logger.e('[local-parse] $e');
+        }
+        if (parseUrl != null && parseUrl.isNotEmpty) {
+          ResolveOverlay.dismiss();
+          SoftService.reportParseResult(
+            appId: appIdInt,
+            title: (item?.title ?? '').isNotEmpty
+                ? item!.title
+                : (appInfo?.fileName ?? ''),
+            rawUrl: target,
+            ok: true,
+            reqParams: 'url=$target | source=local',
+            respSnippet: '本地解析成功',
+          );
+        } else {
+          // 本地失败 → 记录原因，继续走外置接口
+          if (LzyLocalParser.lastError.isNotEmpty) {
+            SoftService.lastParseError = LzyLocalParser.lastError;
+          }
+          ResolveOverlay.stage('切换到备用解析…');
+        }
+      }
+
+      // ② 外置/服务端解析（含票据、自建 API、后端兜底）
       // ★ 重试一次：解析偶发失败多半是临时网络抖动
-      for (var attempt = 0; attempt < 2; attempt++) {
+      for (var attempt = 0; attempt < 2 && (parseUrl == null || parseUrl.isEmpty); attempt++) {
         try {
           parseUrl = await service.resolveLzy(target);
         } catch (e) {
