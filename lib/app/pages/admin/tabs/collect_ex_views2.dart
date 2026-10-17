@@ -55,7 +55,8 @@ class _CollectAutoViewState extends State<CollectAutoView> {
           .map((e) => Map<String, dynamic>.from(e))
           .toList();
       for (final f in fields) {
-        final name = '${f['name']}';
+        // ★ 1016：优先显示中文标签（服务端下发 label），没有才退回字段名
+        final name = '${f['label'] ?? f['name']}';
         if (name == 'auto_count') _countCtrl.text = '${f['value'] ?? ''}';
         if (name == 'block_keywords') _blockCtrl.text = '${f['value'] ?? ''}';
         if (name == 'config_id') _configId = '${f['value'] ?? '0'}';
@@ -329,7 +330,8 @@ class _CollectConfigViewState extends State<CollectConfigView> {
       }
       _edits.clear();
       for (final f in list) {
-        final name = '${f['name']}';
+        // ★ 1016：优先显示中文标签（服务端下发 label），没有才退回字段名
+        final name = '${f['label'] ?? f['name']}';
         final val = '${f['value'] ?? ''}';
         _values[name] = val;
         final type = '${f['type']}';
@@ -344,7 +346,7 @@ class _CollectConfigViewState extends State<CollectConfigView> {
       if (!mounted) return;
       setState(() {
         _fields = list.where((f) {
-          final n = '${f['name']}';
+          final n = '${f['label'] ?? f['name']}';
           // 隐藏字段与验证码字段不渲染（验证码用专用输入框）
           return '${f['type']}' != 'hidden' &&
               n != 'email_code' &&
@@ -392,7 +394,8 @@ class _CollectConfigViewState extends State<CollectConfigView> {
     try {
       final payload = <String, dynamic>{};
       for (final f in _fields) {
-        final name = '${f['name']}';
+        // ★ 1016：优先显示中文标签（服务端下发 label），没有才退回字段名
+        final name = '${f['label'] ?? f['name']}';
         final type = '${f['type']}';
         if (type == 'text' ||
             type == 'textarea' ||
@@ -571,7 +574,8 @@ class _CollectConfigViewState extends State<CollectConfigView> {
   }
 
   Widget _fieldCard(Map<String, dynamic> f) {
-    final name = '${f['name']}';
+    // ★ 1016：优先显示中文标签（服务端下发 label），没有才退回字段名
+        final name = '${f['label'] ?? f['name']}';
     final type = '${f['type']}';
     final opts = ((f['options'] as List?) ?? [])
         .whereType<Map>()

@@ -361,22 +361,6 @@ class _AdminUiTabState extends State<AdminUiTab> {
           // ★ 1014：底部留白加大到 130，避免固定保存按钮遮挡最后一张卡片内容
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 130),
           children: [
-            Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                gradient: C.brandGradient,
-                borderRadius: BorderRadius.circular(R.lg),
-              ),
-              child: const Text(
-                '后台版本 v3.3 · 顶部无此横幅=装的旧包',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
             _card('主题配色', _palettePicker()),
             _card('明暗模式', _modePicker()),
             _card('底部导航开关', _tabSwitches()),

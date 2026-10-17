@@ -89,6 +89,81 @@ class AuthScaffold extends StatelessWidget {
   }
 
   /// ① 经典居中：图标 + 渐变标题 + 玻璃表单卡
+  // ═══════════════════════════════════════════════════════════
+  // ★ 1016 认证页模板重做：6 套**布局骨架**彻底不同（不是换色）
+  //   classic  居中   —— 无头图，白底居中标题 + 玻璃卡
+  //   split    左右   —— 左 38% 渐变品牌栏 + 右 62% 表单（横排）
+  //   sheet    抽屉   —— 全屏渐变 + 底部白色圆角面板 + 拖拽手柄
+  //   banner   细带   —— 顶部 56px 细色带 + 全白正文（无头图）
+  //   minimal  极简   —— 纯白、无卡片、无渐变、大标题 + 下划线输入
+  //   floating 悬浮   —— 全屏渐变底 + 居中悬浮白卡（四周留白）
+  // ═══════════════════════════════════════════════════════════
+
+  /// 表单区（card=true 用玻璃卡；false 用裸列表）
+  Widget _formArea({bool card = true, double hPad = 18}) {
+    if (card) return AuthCard(children: children);
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: hPad),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
+      ),
+    );
+  }
+
+  /// 标题块（onGradient=true 时用白字）
+  Widget _titleBlock(
+    BuildContext context, {
+    bool onGradient = false,
+    bool center = false,
+    double size = 27,
+  }) {
+    final fg = onGradient ? Colors.white : context.t1;
+    final sub = onGradient ? Colors.white.withAlpha(215) : context.t3;
+    return Column(
+      crossAxisAlignment: center
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          title,
+          textAlign: center ? TextAlign.center : TextAlign.left,
+          style: TextStyle(
+            fontSize: size,
+            fontWeight: FontWeight.w900,
+            color: fg,
+            height: 1.2,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          subtitle,
+          textAlign: center ? TextAlign.center : TextAlign.left,
+          style: TextStyle(fontSize: 12.5, color: sub, height: 1.55),
+        ),
+      ],
+    );
+  }
+
+  Widget _iconBox({bool onGradient = false, double size = 52}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: onGradient ? Colors.white.withAlpha(46) : C.brand.withAlpha(24),
+        borderRadius: BorderRadius.circular(size * 0.32),
+      ),
+      child: Icon(
+        icon,
+        size: size * 0.48,
+        color: onGradient ? Colors.white : C.brand,
+      ),
+    );
+  }
+
+  /// ① classic —— 白底居中：返回 + 图标 + 标题 + 玻璃卡
   Widget _buildClassic(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -116,43 +191,16 @@ class AuthScaffold extends StatelessWidget {
                       physics: const BouncingScrollPhysics(),
                       padding: EdgeInsets.fromLTRB(
                         context.pagePadding,
-                        12,
+                        14,
                         context.pagePadding,
-                        30,
+                        40,
                       ),
                       children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            gradient: Deco.brandGradient,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: C.brand.withAlpha(80),
-                                blurRadius: 22,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Icon(icon, color: Colors.white, size: 32),
-                        ),
-                        const SizedBox(height: 18),
-                        ShaderMask(
-                          shaderCallback: (r) =>
-                              Deco.aurora().createShader(r),
-                          child: Text(
-                            title,
-                            style: Ty.display.copyWith(color: Colors.white),
-                          ),
-                        ),
-                        const SizedBox(height: 7),
-                        Text(
-                          subtitle,
-                          style: Ty.small.copyWith(color: context.t3),
-                        ),
-                        const SizedBox(height: 26),
-                        ...children,
+                        Center(child: _iconBox()),
+                        const SizedBox(height: 16),
+                        _titleBlock(context, center: true),
+                        const SizedBox(height: 22),
+                        _formArea(),
                       ],
                     ),
                   ),
@@ -165,76 +213,54 @@ class AuthScaffold extends StatelessWidget {
     );
   }
 
-  /// ② 上下分栏：上半固定渐变区（不滚动），表单在下方独立滚动
+  /// ② split —— **左右分栏**：左 38% 渐变品牌栏 / 右 62% 表单
   Widget _buildSplit(BuildContext context) {
+    final wide = MediaQuery.of(context).size.width >= 600;
     return Scaffold(
       backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: true,
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.translucent,
-        child: Column(
+        child: Row(
           children: [
-            // 上半：渐变区（含状态栏padding，出血到顶）
+            // 左侧品牌栏（渐变，纵向铺满）
             Container(
-              width: double.infinity,
-              padding: EdgeInsets.fromLTRB(
-                context.pagePadding,
-                MediaQuery.of(context).padding.top + 8,
-                context.pagePadding,
-                30,
-              ),
-              decoration: BoxDecoration(
-                gradient: Deco.brandGradient,
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(30),
+              width: wide ? MediaQuery.of(context).size.width * 0.34 : 128,
+              decoration: BoxDecoration(gradient: Deco.brandGradient),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
+                      _backBtn(context, fg: Colors.white),
+                      const Spacer(),
+                      _iconBox(onGradient: true, size: 46),
+                      const SizedBox(height: 14),
+                      _titleBlock(
+                        context,
+                        onGradient: true,
+                        size: wide ? 26 : 21,
+                      ),
+                      const SizedBox(height: 28),
+                    ],
+                  ),
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [_backBtn(context, fg: Colors.white)]),
-                  const SizedBox(height: 18),
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(46),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Icon(icon, color: Colors.white, size: 26),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: Colors.white.withAlpha(210),
-                      fontSize: 12.5,
-                    ),
-                  ),
-                ],
               ),
             ),
-            // 下半：表单独立滚动（无整体卡，直接排在白底上）
+            // 右侧表单（白底，独立滚动）
             Expanded(
-              child: ListView(
-                physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.fromLTRB(
-                  context.pagePadding,
-                  22,
-                  context.pagePadding,
-                  30,
+              child: Container(
+                color: context.isDark ? C.bg0 : Colors.white,
+                child: SafeArea(
+                  child: ListView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+                    children: [_formArea(card: false, hPad: 0)],
+                  ),
                 ),
-                children: children,
               ),
             ),
           ],
@@ -243,7 +269,7 @@ class AuthScaffold extends StatelessWidget {
     );
   }
 
-  /// ③ 底部抽屉：渐变铺满全屏，表单作为底部白色大圆角 sheet
+  /// ③ sheet —— 全屏渐变 + **底部白色圆角面板 + 拖拽手柄**
   Widget _buildSheet(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -251,56 +277,35 @@ class AuthScaffold extends StatelessWidget {
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.translucent,
-        child: Stack(
+        child: Column(
           children: [
-            // 渐变铺满
+            // 上半：渐变 + 标题（约占 1/3）
             Container(
+              width: double.infinity,
+              padding: EdgeInsets.fromLTRB(
+                context.pagePadding,
+                MediaQuery.of(context).padding.top + 10,
+                context.pagePadding,
+                34,
+              ),
               decoration: BoxDecoration(gradient: Deco.brandGradient),
-            ),
-            // 顶部标题与返回
-            SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  context.pagePadding,
-                  8,
-                  context.pagePadding,
-                  0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(children: [_backBtn(context, fg: Colors.white)]),
-                    const SizedBox(height: 20),
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 7),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: Colors.white.withAlpha(215),
-                        fontSize: 12.5,
-                      ),
-                    ),
-                  ],
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [_backBtn(context, fg: Colors.white)]),
+                  const SizedBox(height: 18),
+                  _titleBlock(context, onGradient: true),
+                ],
               ),
             ),
-            // 底部 sheet：占屏幕下半，内部可滚动
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: FractionallySizedBox(
-                heightFactor: 0.62,
+            // 下半：白色圆角面板（上移覆盖 = 抽屉感）
+            Expanded(
+              child: Transform.translate(
+                offset: const Offset(0, -22),
                 child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: context.isDark ? C.bg1 : Colors.white,
+                    color: context.isDark ? C.bg0 : Colors.white,
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(28),
                     ),
@@ -308,29 +313,20 @@ class AuthScaffold extends StatelessWidget {
                   child: Column(
                     children: [
                       // 拖拽手柄
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: Container(
-                          width: 38,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: context.isDark
-                                ? Colors.white.withAlpha(30)
-                                : Colors.black.withAlpha(18),
-                            borderRadius: BorderRadius.circular(R.full),
-                          ),
+                      Container(
+                        width: 42,
+                        height: 4.5,
+                        margin: const EdgeInsets.only(top: 10, bottom: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha(28),
+                          borderRadius: BorderRadius.circular(99),
                         ),
                       ),
                       Expanded(
                         child: ListView(
                           physics: const BouncingScrollPhysics(),
-                          padding: EdgeInsets.fromLTRB(
-                            context.pagePadding,
-                            16,
-                            context.pagePadding,
-                            24,
-                          ),
-                          children: children,
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+                          children: [_formArea(card: false, hPad: 4)],
                         ),
                       ),
                     ],
@@ -344,7 +340,7 @@ class AuthScaffold extends StatelessWidget {
     );
   }
 
-  /// ④ 通栏顶栏：全宽渐变通栏顶到状态栏，表单无卡直接排下方
+  /// ④ banner —— **顶部 56px 细色带**（很矮，无头图）+ 全白正文
   Widget _buildBanner(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -354,61 +350,46 @@ class AuthScaffold extends StatelessWidget {
         behavior: HitTestBehavior.translucent,
         child: Column(
           children: [
-            // 通栏：顶到状态栏，无圆角
             Container(
               width: double.infinity,
-              padding: EdgeInsets.fromLTRB(
-                context.pagePadding,
-                MediaQuery.of(context).padding.top + 8,
-                context.pagePadding,
-                22,
-              ),
+              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
               decoration: BoxDecoration(gradient: Deco.brandGradient),
-              child: Row(
-                children: [
-                  _backBtn(context, fg: Colors.white),
-                  const SizedBox(width: 12),
-                  Icon(icon, color: Colors.white, size: 26),
-                  const SizedBox(width: 11),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 19,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          subtitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.white.withAlpha(200),
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
+              child: SizedBox(
+                height: 56,
+                child: Row(
+                  children: [
+                    const SizedBox(width: 12),
+                    _backBtn(context, fg: Colors.white),
+                    const SizedBox(width: 12),
+                    Icon(icon, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             Expanded(
-              child: ListView(
-                physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.fromLTRB(
-                  context.pagePadding,
-                  20,
-                  context.pagePadding,
-                  30,
+              child: Container(
+                color: context.isDark ? C.bg0 : Colors.white,
+                child: ListView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(18, 20, 18, 30),
+                  children: [
+                    Text(
+                      subtitle,
+                      style: TextStyle(fontSize: 12.5, color: context.t3),
+                    ),
+                    const SizedBox(height: 18),
+                    _formArea(card: false, hPad: 0),
+                  ],
                 ),
-                children: children,
               ),
             ),
           ],
@@ -417,157 +398,120 @@ class AuthScaffold extends StatelessWidget {
     );
   }
 
-  /// ⑤ 极简线性：无卡无图标，标题 + 分割线 + 表单
+  /// ⑤ minimal —— **纯白极简**：无渐变、无卡片、大标题 + 下划线输入
   Widget _buildMinimal(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: context.isDark ? C.bg0 : Colors.white,
       resizeToAvoidBottomInset: true,
-      body: Stack(
-        children: [
-          Deco.pageBackground(context),
-          SafeArea(
-            child: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              behavior: HitTestBehavior.translucent,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      context.pagePadding,
-                      8,
-                      context.pagePadding,
-                      0,
-                    ),
-                    child: Row(children: [_backBtn(context), const Spacer()]),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: EdgeInsets.fromLTRB(
-                        context.pagePadding,
-                        24,
-                        context.pagePadding,
-                        30,
-                      ),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                child: _backBtn(context),
+              ),
+              Expanded(
+                child: ListView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(26, 34, 26, 30),
+                  children: [
+                    // 大标题（36 号）+ 左侧竖线
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          title,
-                          style: Ty.display.copyWith(color: context.t1),
-                        ),
-                        const SizedBox(height: 12),
                         Container(
-                          width: 34,
-                          height: 4,
+                          width: 4,
+                          height: 38,
+                          margin: const EdgeInsets.only(top: 4, right: 12),
                           decoration: BoxDecoration(
                             gradient: Deco.brandGradient,
-                            borderRadius: BorderRadius.circular(2),
+                            borderRadius: BorderRadius.circular(3),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          subtitle,
-                          style: Ty.small.copyWith(color: context.t3),
-                        ),
-                        const SizedBox(height: 28),
-                        ...children,
+                        Expanded(child: _titleBlock(context, size: 30)),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 30),
+                    _formArea(card: false, hPad: 0),
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  /// ⑥ 悬浮胶囊：每个输入项各自独立成胶囊（无整体卡）
+  /// ⑥ floating —— **全屏渐变底 + 居中悬浮白卡**（四周留白，卡片浮起来）
   Widget _buildFloating(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: true,
-      body: Stack(
-        children: [
-          Deco.pageBackground(context),
-          SafeArea(
-            child: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              behavior: HitTestBehavior.translucent,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: Stack(
+          children: [
+            // 全屏渐变
+            Container(decoration: BoxDecoration(gradient: Deco.brandGradient)),
+            SafeArea(
               child: Column(
                 children: [
                   Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      context.pagePadding,
-                      8,
-                      context.pagePadding,
-                      0,
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                    child: Row(
+                      children: [
+                        _backBtn(context, fg: Colors.white),
+                        const Spacer(),
+                      ],
                     ),
-                    child: Row(children: [_backBtn(context), const Spacer()]),
                   ),
                   Expanded(
                     child: ListView(
                       physics: const BouncingScrollPhysics(),
-                      padding: EdgeInsets.fromLTRB(
-                        context.pagePadding,
-                        30,
-                        context.pagePadding,
-                        30,
-                      ),
+                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
                       children: [
-                        Center(
-                          child: Container(
-                            width: 58,
-                            height: 58,
-                            decoration: BoxDecoration(
-                              gradient: Deco.brandGradient,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: C.brand.withAlpha(70),
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 9),
-                                ),
-                              ],
-                            ),
-                            child: Icon(icon, color: Colors.white, size: 27),
+                        const SizedBox(height: 4),
+                        Center(child: _iconBox(onGradient: true, size: 56)),
+                        const SizedBox(height: 14),
+                        _titleBlock(context, onGradient: true, center: true),
+                        const SizedBox(height: 22),
+                        // 悬浮白卡
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(6, 8, 6, 8),
+                          decoration: BoxDecoration(
+                            color: context.isDark ? C.bg2 : Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(40),
+                                blurRadius: 24,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
                           ),
+                          child: _formArea(card: false, hPad: 10),
                         ),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: Text(
-                            title,
-                            style: TextStyle(
-                              fontSize: 21,
-                              fontWeight: FontWeight.w900,
-                              color: context.t1,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Center(
-                          child: Text(
-                            subtitle,
-                            textAlign: TextAlign.center,
-                            style: Ty.small.copyWith(color: context.t3),
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        ...children,
                       ],
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+
+  /// 统一风格的输入框（玻璃质感 + 圆角 + 内联错误）
 }
 
-/// 统一风格的输入框（玻璃质感 + 圆角 + 内联错误）
 /// 当前认证页模板是否为「胶囊输入项」
 bool _authFieldPill(BuildContext context) =>
     (SoftService.instance.cachedConfig?.uiConfig.authTemplate ?? '') ==
@@ -638,9 +582,7 @@ class AuthField extends StatelessWidget {
             boxShadow: _authFieldPill(context)
                 ? [
                     BoxShadow(
-                      color: Colors.black.withAlpha(
-                        context.isDark ? 60 : 14,
-                      ),
+                      color: Colors.black.withAlpha(context.isDark ? 60 : 14),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
@@ -662,7 +604,9 @@ class AuthField extends StatelessWidget {
                   maxLength: maxLength,
                   inputFormatters: formatters,
                   onChanged: onChanged,
-                  onSubmitted: onSubmitted == null ? null : (_) => onSubmitted!(),
+                  onSubmitted: onSubmitted == null
+                      ? null
+                      : (_) => onSubmitted!(),
                   style: TextStyle(fontSize: 14.5, color: context.t1),
                   decoration: InputDecoration(
                     labelText: label,
@@ -670,13 +614,13 @@ class AuthField extends StatelessWidget {
                     counterText: '',
                     border: InputBorder.none,
                     isDense: true,
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 15),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 15),
                     labelStyle: TextStyle(fontSize: 13.5, color: context.t3),
                     floatingLabelStyle: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                        color: C.brand),
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: C.brand,
+                    ),
                   ),
                 ),
               ),
@@ -684,11 +628,12 @@ class AuthField extends StatelessWidget {
                 GestureDetector(
                   onTap: onToggleObscure,
                   child: Icon(
-                      obscure
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      size: 19,
-                      color: context.t3),
+                    obscure
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 19,
+                    color: context.t3,
+                  ),
                 ),
               if (suffix != null) suffix!,
             ],
@@ -699,13 +644,17 @@ class AuthField extends StatelessWidget {
             padding: const EdgeInsets.only(left: 6, top: 6),
             child: Row(
               children: [
-                const Icon(Icons.error_outline_rounded,
-                    size: 13, color: C.danger),
+                const Icon(
+                  Icons.error_outline_rounded,
+                  size: 13,
+                  color: C.danger,
+                ),
                 const SizedBox(width: 5),
                 Flexible(
-                  child: Text(error!,
-                      style: const TextStyle(
-                          fontSize: 12, color: C.danger)),
+                  child: Text(
+                    error!,
+                    style: const TextStyle(fontSize: 12, color: C.danger),
+                  ),
                 ),
               ],
             ),
@@ -737,9 +686,14 @@ class AuthError extends StatelessWidget {
           const Icon(Icons.error_outline_rounded, size: 17, color: C.danger),
           const SizedBox(width: 9),
           Expanded(
-            child: Text(message,
-                style: const TextStyle(
-                    fontSize: 13, color: C.danger, height: 1.4)),
+            child: Text(
+              message,
+              style: const TextStyle(
+                fontSize: 13,
+                color: C.danger,
+                height: 1.4,
+              ),
+            ),
           ),
         ],
       ),
@@ -793,7 +747,9 @@ class AuthButton extends StatelessWidget {
                       width: 21,
                       height: 21,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2.2, color: Colors.white),
+                        strokeWidth: 2.2,
+                        color: Colors.white,
+                      ),
                     )
                   : Row(
                       mainAxisSize: MainAxisSize.min,
@@ -802,12 +758,15 @@ class AuthButton extends StatelessWidget {
                           Icon(icon, size: 18, color: Colors.white),
                           const SizedBox(width: 7),
                         ],
-                        Text(label,
-                            style: const TextStyle(
-                                fontSize: 15.5,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
-                                color: Colors.white)),
+                        Text(
+                          label,
+                          style: const TextStyle(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                            color: Colors.white,
+                          ),
+                        ),
                       ],
                     ),
             ),
@@ -830,7 +789,8 @@ class AuthCard extends StatelessWidget {
     //   否则「换了骨架但表单还是那张卡」，看起来仍像同款。
     final tpl =
         SoftService.instance.cachedConfig?.uiConfig.authTemplate ?? 'classic';
-    final noCard = tpl == 'split' ||
+    final noCard =
+        tpl == 'split' ||
         tpl == 'banner' ||
         tpl == 'banner_top' ||
         tpl == 'minimal';
