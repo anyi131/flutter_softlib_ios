@@ -544,6 +544,7 @@ class SoftService {
     int costMs = 0,
     String reqParams = '',
     String respSnippet = '',
+    String channel = '',
   }) async {
     try {
       await instance.dio.post(
@@ -557,6 +558,7 @@ class SoftService {
           'cost_ms': costMs,
           'req_params': reqParams,
           'resp_snippet': respSnippet,
+          'channel': channel.isEmpty ? lastParseChannel : channel,
         },
         options: Options(
           sendTimeout: const Duration(seconds: 6),

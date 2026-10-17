@@ -65,6 +65,14 @@ class LzyLocalParser {
       //     ① 分享页里有 link.href = '/tp/xxx?webtp=…'
       //     ② 请求该地址 → 中间页里 var vkjxld='https://xxx/file/'; var hyggid='?…'
       //     ③ 直链 = vkjxld + hyggid
+      // ★ 蓝奏云风控页识别：出现这些字样说明被判定为异常网络，必须放弃本地解析
+      if (html.contains('需要验证后下载') ||
+          html.contains('验证并下载') ||
+          html.contains('发现您的网络异常')) {
+        lastError = '蓝奏云要求人机验证（服务器/网络被风控）';
+        return null;
+      }
+
       if (html.contains('/tp/') || html.contains('webtp=')) {
         final m = RegExp(r'''link\.href\s*=\s*['"]([^'"]+)['"]''').firstMatch(html);
         if (m == null) {
@@ -85,9 +93,21 @@ class LzyLocalParser {
             .firstMatch(mid);
         final host = RegExp(r'''var\s+vkjxld\s*=\s*['"]([^'"]+)['"]''').firstMatch(mid);
         final token = RegExp(r'''var\s+hyggid\s*=\s*['"]([^'"]+)['"]''').firstMatch(mid);
+        // 中间页本身可能就是风控页
+        if (mid.contains('需要验证后下载') ||
+            mid.contains('验证并下载') ||
+            mid.contains('发现您的网络异常')) {
+          lastError = '蓝奏云要求人机验证（网络被风控）';
+          return null;
+        }
         if (host != null && token != null) {
           final link = '${host.group(1)}${token.group(1)}';
-          return link;
+          // ★ 关键：拼出来的是 stage2 的「验证页」而不是文件时，必须判失败，
+          //   否则会把 HTML 当 APK 去下载（表现为 0% 失败），且不再降级。
+          final ok = await _verifyFileUrl(link, referer: shareUrl);
+          if (ok) return link;
+          lastError = '蓝奏云直链需要人机验证（未拿到真实文件）';
+          return null;
         }
         if (direct != null) return direct.group(1);
         lastError = '新版解析未拿到地址';
@@ -189,6 +209,47 @@ class LzyLocalParser {
     } catch (e) {
       lastError = '本地解析异常：$e';
       return null;
+    }
+  }
+
+  // ─────────────── 地址校验 ───────────────
+
+  /// ★ 1016：确认拿到的地址**真的是文件**（不是 HTML 验证页）
+  ///   · 带 .apk/.zip/.rar/.7z 后缀 → 直接通过
+  ///   · 否则发一次 GET 只读前 512 字节，看 Content-Type / 首字节
+  static Future<bool> _verifyFileUrl(String url, {String referer = ''}) async {
+    final low = url.toLowerCase();
+    if (RegExp(r'\.(apk|zip|rar|7z|apks|xapk)(\?|$)').hasMatch(low)) {
+      return true;
+    }
+    final c = await _client();
+    try {
+      final req = await c.getUrl(Uri.parse(url));
+      req.headers.set('User-Agent', _ua);
+      if (referer.isNotEmpty) req.headers.set('Referer', referer);
+      req.headers.set('Range', 'bytes=0-511');
+      final res = await req.close().timeout(const Duration(seconds: 12));
+      final ct = (res.headers.contentType?.mimeType ?? '').toLowerCase();
+      if (ct.contains('html') || ct.contains('json') || ct.contains('text/')) {
+        await res.drain<void>();
+        return false;
+      }
+      if (ct.contains('application') || ct.contains('octet-stream')) {
+        await res.drain<void>();
+        return true;
+      }
+      // 类型不确定：看前 8 字节是不是 ZIP 头（APK 即 ZIP）
+      final buf = <int>[];
+      await for (final chunk in res) {
+        buf.addAll(chunk);
+        if (buf.length >= 8) break;
+      }
+      if (buf.length >= 2 && buf[0] == 0x50 && buf[1] == 0x4B) return true; // PK
+      return false;
+    } catch (_) {
+      return false;
+    } finally {
+      c.close();
     }
   }
 

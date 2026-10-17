@@ -722,8 +722,9 @@ class AppDetailsLogic extends GetxController {
                 : (appInfo?.fileName ?? ''),
             rawUrl: target,
             ok: true,
-            reqParams: 'url=$target | source=local',
+            reqParams: 'url=$target',
             respSnippet: '本地解析成功',
+            channel: 'local',
           );
         } else {
           // 本地失败 → 记录原因，继续走外置接口
@@ -761,6 +762,9 @@ class AppDetailsLogic extends GetxController {
           error: '[解析失效] ${SoftService.lastParseError.isEmpty ? '解析接口无返回' : SoftService.lastParseError}',
           reqParams: 'url=$originUrl',
           respSnippet: SoftService.lastParseResp,
+          channel: SoftService.lastParseChannel.isEmpty
+              ? 'failed'
+              : SoftService.lastParseChannel,
         );
         await _showParseFailedDialog(originUrl);
         return;
@@ -773,6 +777,9 @@ class AppDetailsLogic extends GetxController {
         ok: true,
         reqParams: 'url=$originUrl',
         respSnippet: SoftService.lastParseResp,
+        channel: SoftService.lastParseChannel.isEmpty
+            ? 'server'
+            : SoftService.lastParseChannel,
       );
     }
 

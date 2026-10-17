@@ -273,6 +273,19 @@ class _CollectParseLogViewState extends State<CollectParseLogView> {
                 rows: [
                   ('时间', '${r['time_text'] ?? ''}'),
                   ('软件', '${r['app_title'] ?? '-'}'),
+                  (
+                    '解析方式',
+                    switch ('${r['channel'] ?? ''}') {
+                      'local' => '本地解析（客户端）',
+                      'api' => '自建解析接口',
+                      'server' => '服务端兜底',
+                      'direct' => '服务器直链',
+                      'update' => '更新包解析',
+                      'cache' => '缓存命中（已校验）',
+                      '' => '未记录（旧版本上报）',
+                      _ => '${r['channel']}',
+                    },
+                  ),
                   ('耗时', '${r['cost_ms'] ?? 0} ms'),
                   ('IP', '${r['ip'] ?? '-'}'),
                   if (!ok) ('失败原因', '${r['error'] ?? '未记录'}'),
