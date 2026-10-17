@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 
 import 'api_host.dart';
+import '../utils/device_info_util.dart';
 import 'app_sign.dart';
 
 import '../models/app_cat.dart';
@@ -169,7 +170,8 @@ class SoftService {
           'url': url,
           'status': ok ? 'ok' : 'fail',
           'error': error.length > 400 ? error.substring(0, 400) : error,
-          'device': SoftService.deviceModel,
+          // ★ 1016：deviceModel 一直是空串（从没赋值）→ 后台显示「设备 -」
+          'device': DeviceInfo.model,
         },
         options: Options(
           sendTimeout: const Duration(seconds: 6),
@@ -617,7 +619,8 @@ extension ToolboxService on SoftService {
           'tag': tag,
           'error': error.length > 1800 ? error.substring(0, 1800) : error,
           'stack': stack.length > 5000 ? stack.substring(0, 5000) : stack,
-          'device': SoftService.deviceModel,
+          // ★ 1016：deviceModel 一直是空串（从没赋值）→ 后台显示「设备 -」
+          'device': DeviceInfo.model,
           'version': version,
         },
         options: Options(receiveTimeout: const Duration(seconds: 8)),

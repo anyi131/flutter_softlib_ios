@@ -93,10 +93,38 @@ class _LoginPageState extends State<LoginPage> {
   /// ★ 1016：登录成功后同步刷新「我的」页 —— 原来只有密码登录做了这件事，
   ///   QQ 登录不做 → 明明登录成功，「我的」还是未登录的样子。
   Future<void> _notifyMine() async {
+    // ★ 1016：原来只 try{Get.find(tag:'mine')}catch(_){} —— 一旦找不到实例
+    //   就被静默吞掉，「我的」页永远停在「点击登录」（用户反馈的现象）。
+    //   现在：① 带 tag / 不带 tag 都试 ② 失败上报服务器，便于定位
+    MineLogic? mine;
     try {
-      final mine = Get.find<MineLogic>(tag: 'mine');
-      await mine.load();
-    } catch (_) {}
+      mine = Get.find<MineLogic>(tag: 'mine');
+    } catch (_) {
+      try {
+        mine = Get.find<MineLogic>();
+      } catch (_) {
+        mine = null;
+      }
+    }
+    if (mine == null) {
+      try {
+        SoftService.reportLogStatic(
+          tag: 'mine_refresh',
+          error: '[mine] 未找到 MineLogic 实例，无法刷新「我的」',
+        ).catchError((_) {});
+      } catch (_) {}
+      return;
+    }
+    try {
+      await mine.load(); // load() 内部会 update() 触发 GetBuilder 重建
+    } catch (e) {
+      try {
+        SoftService.reportLogStatic(
+          tag: 'mine_refresh',
+          error: '[mine] load() 失败: $e',
+        ).catchError((_) {});
+      } catch (_) {}
+    }
   }
 
   Future<void> _qqLogin() async {
