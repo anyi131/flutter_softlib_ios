@@ -442,7 +442,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
           ),
 
           // ═════ ★ 今日启动用户（具体是谁）═════
-          if ((_d['boot_users'] as List?)?.isNotEmpty ?? false) ...[
+          if ((_d?['boot_users'] as List?)?.isNotEmpty ?? false) ...[
             const SizedBox(height: 10),
             AdCard(
               child: Column(
@@ -461,7 +461,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  for (final u in (_d['boot_users'] as List).take(8))
+                  for (final u in ((_d?['boot_users'] as List?) ?? const []).take(8))
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6),
                       child: Row(
