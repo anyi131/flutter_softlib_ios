@@ -170,6 +170,16 @@ class _UpdateCardState extends State<_UpdateCard> {
         lower.contains('/b0') ||
         lower.contains('/i');
     if (isShare && !lower.endsWith('.apk') && !lower.endsWith('.ipa')) {
+      // ★ 1016：蓝奏云**文件夹**（/bXXXX）没有单一文件大小 → 先列出文件夹，
+      //   自动挑出里面的 APK 再取它的大小。
+      final apkInFolder = await _pickApkInFolder(u);
+      if (apkInFolder != null) {
+        final bytes = _parseSizeText('${apkInFolder['size'] ?? ''}');
+        if (bytes > 0 && mounted && _total == 0) {
+          setState(() => _total = bytes);
+          return;
+        }
+      }
       // ① 文件信息（最快，直接给大小）
       try {
         final info = await SoftService.instance.lzyFileInfo(u);
@@ -198,6 +208,40 @@ class _UpdateCardState extends State<_UpdateCard> {
         lower.contains('/uploads/');
     if (!looksFile) return;
     await _headSize(u);
+  }
+
+  /// ★ 1016：从蓝奏云**文件夹**里挑出 APK
+  ///   返回 {title, url, size}；不是文件夹 / 没有 apk → null
+  Future<Map<String, dynamic>?> _pickApkInFolder(String url) async {
+    final lower = url.toLowerCase();
+    final looksFolder = lower.contains('/b0') ||
+        lower.contains('/b1') ||
+        (lower.contains('lanzou') && !lower.contains('/i'));
+    if (!looksFolder) return null;
+    try {
+      final list = await SoftService.instance.fetchFolder(url);
+      if (list.isEmpty) return null;
+      // 优先 .apk；否则取体积最大的（更新包一定是最大的那个）
+      final apks = list.where((e) {
+        final t = e.title.toLowerCase();
+        final u = e.url.toLowerCase();
+        return t.endsWith('.apk') ||
+            t.contains('.apk') ||
+            u.contains('.apk');
+      }).toList();
+      final pool = apks.isNotEmpty ? apks : list;
+      // 按大小挑最大
+      pool.sort((a, b) => _parseSizeText(b.size)
+          .compareTo(_parseSizeText(a.size)));
+      final pick = pool.first;
+      return {
+        'title': pick.title,
+        'url': pick.url,
+        'size': pick.size,
+      };
+    } catch (_) {
+      return null;
+    }
   }
 
   /// 把 "1.2 M" / "28.3MB" / "1024 K" 这类文本转成字节数
@@ -261,20 +305,37 @@ class _UpdateCardState extends State<_UpdateCard> {
     // ═══ 解析直链：三级降级（本地 → 服务端 → 浏览器）═══
     //   ★ 1016：原来只有「服务端解析」一跳，未登录/票据失败就直接跳浏览器，
     //   用户看到的是「没解析就跳浏览器」。现在更新包也走完整降级链。
-    String? direct = widget.url;
-    final needParse =
-        widget.url.contains('lanzou') || widget.url.contains('lzy');
+    // ★ widget.url 是 final（不能赋值）→ 用局部变量承载「最终要解析的地址」
+    var target = widget.url;
+    final needParse = target.contains('lanzou') || target.contains('lzy');
     if (needParse) {
+      // ★ 1016：文件夹链接（/bXXXX）解析不了 → 先列出内容挑出 APK 再解析
+      final folderApk = await _pickApkInFolder(target);
+      if (folderApk != null && '${folderApk['url'] ?? ''}'.isNotEmpty) {
+        target = '${folderApk['url']}'; // 换成单文件链接继续走降级链
+        final sz = _parseSizeText('${folderApk['size'] ?? ''}');
+        if (sz > 0 && mounted && _total == 0) {
+          setState(() => _total = sz);
+        }
+      }
       // ① 本地解析（更新包属免费资源，可本地）
       try {
-        direct = await LzyLocalParser.parse(widget.url);
+        direct = await LzyLocalParser.parse(target);
       } catch (_) {
         direct = null;
       }
-      // ② 服务端解析（服务端对更新包已免登录发票据）
+      // ② 服务端专用接口：免登录、支持文件夹（自动挑出里面的 apk）
       if (direct == null || direct.isEmpty) {
         try {
-          direct = await SoftService.instance.resolveLzy(widget.url);
+          direct = await SoftService.instance.resolveUpdateDirect();
+        } catch (_) {
+          direct = null;
+        }
+      }
+      // ③ 兜底：通用解析（需登录票据）
+      if (direct == null || direct.isEmpty) {
+        try {
+          direct = await SoftService.instance.resolveLzy(target);
         } catch (_) {
           direct = null;
         }

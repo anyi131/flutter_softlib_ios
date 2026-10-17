@@ -557,6 +557,32 @@ class SoftService {
     } catch (_) {}
   }
 
+  /// ★ 1016：解析「App 自身更新包」的直链（服务端专用接口，免登录）
+  ///   支持：直链 apk / 蓝奏云单文件 / **蓝奏云文件夹**（自动挑出里面的 apk）
+  Future<String?> resolveUpdateDirect() async {
+    try {
+      final r = await dio.post(
+        '/api/softlib/lzyupdateresolve',
+        data: const <String, dynamic>{},
+        options: Options(
+          sendTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 60),
+        ),
+      );
+      final d = r.data;
+      if (d is Map && d['code'] == 1 && d['data'] is Map) {
+        final u = '${(d['data'] as Map)['url'] ?? ''}';
+        if (u.isNotEmpty) return u;
+      }
+      if (d is Map && '${d['msg'] ?? ''}'.isNotEmpty) {
+        lastParseError = '${d['msg']}';
+      }
+    } catch (e) {
+      lastParseError = e.toString().replaceFirst('Exception: ', '');
+    }
+    return null;
+  }
+
   /// 统一解析：返回可直接下载的 URL
   /// - 服务器直传：直接返回 file
   /// - 蓝奏云：走解析接口
