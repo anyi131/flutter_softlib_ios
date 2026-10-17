@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:media_kit/media_kit.dart';
+import 'app/utils/sound_util.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
@@ -30,6 +30,8 @@ Future<void> main() async {
   // ★ 全局错误捕获：任何未捕获异常都不应导致白屏/闪退
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+    // ★ 1016：音效开关读取（本地偏好）
+    unawaited(SoundUtil.init());
     // Flutter 框架层异常（构建/布局/绘制）
     FlutterError.onError = (FlutterErrorDetails details) {
       FlutterError.presentError(details);
