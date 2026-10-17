@@ -1350,6 +1350,13 @@ class MineComponent extends StatelessWidget {
           C.gold,
           () => Get.toNamed(Routes.cardShop),
         ),
+      // ★ 1016：做任务领会员（赏帮赚新手任务 → 输密码 → 领 VIP）
+      _S(
+        '任务领会员',
+        Icons.redeem_rounded,
+        C.accentOrange,
+        () => Get.toNamed(Routes.task),
+      ),
       _S(
         '下载管理',
         Icons.download_rounded,

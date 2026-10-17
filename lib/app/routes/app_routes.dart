@@ -12,6 +12,7 @@ abstract class Routes {
   static const vip = _Paths.vip;
   static const recharge = _Paths.recharge;
   static const message = _Paths.message;
+  static const task = _Paths.task;
   static const payWeb = _Paths.payWeb;
   static const urlWebview = _Paths.urlWebview;
   static const cardShop = _Paths.cardShop;
@@ -37,6 +38,7 @@ abstract class _Paths {
   static const vip = '/vip';
   static const recharge = '/recharge';
   static const message = '/message';
+  static const task = '/task';
   static const payWeb = '/payWeb';
   static const urlWebview = '/urlWebview';
   static const cardShop = '/cardShop';

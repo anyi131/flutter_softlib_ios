@@ -21,6 +21,7 @@ import 'package:flutter_softlib/app/pages/appinfo/about_page.dart';
 import 'package:flutter_softlib/app/pages/appinfo/agreement_page.dart';
 import 'package:flutter_softlib/app/pages/navigate/mine/invite_page.dart';
 import 'package:flutter_softlib/app/pages/message/message_page.dart';
+import 'package:flutter_softlib/app/pages/task/task_page.dart';
 import 'package:get/get.dart';
 
 import '../pages/navigate/navigate_binding.dart';
@@ -53,6 +54,10 @@ class AppPages {
     GetPage(
       name: _Paths.recharge,
       page: () => const RechargePage(),
+    ),
+    GetPage(
+      name: _Paths.task,
+      page: () => const TaskPage(),
     ),
     GetPage(
       name: _Paths.splash,

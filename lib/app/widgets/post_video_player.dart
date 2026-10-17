@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'mpv_core.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -59,7 +60,7 @@ class PostVideoPlayer extends StatefulWidget {
 }
 
 class _PostVideoPlayerState extends State<PostVideoPlayer> {
-  VideoPlayerController? _controller;
+  MpvController? _controller;
   WebViewController? _web;
   bool _ready = false;
   bool _failed = false;
@@ -141,7 +142,7 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
   Future<void> _initFile() async {
     try {
       // ★ UA 头：部分 CDN 无 UA 直接 403；用 _url（刷新后可变）
-      final c = VideoPlayerController.networkUrl(
+      final c = MpvController.networkUrl(
         Uri.parse(_url),
         httpHeaders: const {
           'User-Agent':
@@ -292,7 +293,7 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            VideoPlayer(c),
+            MpvView(c),
             // 单击 = 控制条显隐；双击 = 播放/暂停（v52f #5）
             GestureDetector(
               behavior: HitTestBehavior.opaque,

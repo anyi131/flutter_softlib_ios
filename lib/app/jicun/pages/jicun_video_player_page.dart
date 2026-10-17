@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../widgets/mpv_core.dart';
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -18,7 +19,7 @@ class JicunVideoPlayerPage extends StatefulWidget {
 }
 
 class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage> {
-  VideoPlayerController? _ctrl;
+  MpvController? _ctrl;
   bool _initialized = false;
   bool _failed = false;
   String _error = '';
@@ -42,7 +43,7 @@ class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage> {
       _failed = false;
       _error = '';
     });
-    final ctrl = VideoPlayerController.networkUrl(Uri.parse(widget.url));
+    final ctrl = MpvController.networkUrl(Uri.parse(widget.url));
     _ctrl = ctrl;
     try {
       await ctrl.initialize();
@@ -149,7 +150,7 @@ class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage> {
     return Center(
       child: AspectRatio(
         aspectRatio: c.value.aspectRatio <= 0 ? 16 / 9 : c.value.aspectRatio,
-        child: VideoPlayer(c),
+        child: MpvView(c),
       ),
     );
   }
@@ -244,7 +245,7 @@ class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage> {
               colors: [Colors.transparent, Colors.black.withAlpha(150)],
             ),
           ),
-          child: ValueListenableBuilder<VideoPlayerValue>(
+          child: ValueListenableBuilder<MpvValue>(
             valueListenable: c,
             builder: (context, v, _) {
               final pos = v.position;
