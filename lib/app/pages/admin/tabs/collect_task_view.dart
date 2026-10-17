@@ -132,7 +132,7 @@ class _CollectTaskViewState extends State<CollectTaskView> {
             children: [
               _switchRow('启用任务活动', '关闭后 App 里所有任务入口隐藏', enable,
                   (v) => setState(() => enable = v)),
-              Divider(height: 20, color: context.divider),
+              Divider(height: 20, color: (context.isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(12))),
               _switchRow('要求上传截图', '审核时需要用户发新手福利页截图', requireShot,
                   (v) => setState(() => requireShot = v)),
             ],
@@ -281,11 +281,11 @@ class _CollectTaskViewState extends State<CollectTaskView> {
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: context.divider),
+                borderSide: BorderSide(color: (context.isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(12))),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: context.divider),
+                borderSide: BorderSide(color: (context.isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(12))),
               ),
             ),
           ),

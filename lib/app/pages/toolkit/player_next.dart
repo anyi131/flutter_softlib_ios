@@ -168,7 +168,7 @@ class _VideoPageState extends State<VideoPage> {
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
       // ★ 1016：竖屏视频（短剧/短视频）全屏时保持竖屏，只有横屏视频才转横屏
       final v = _c?.value;
-      final isPortrait = v != null && v.height > v.width;
+      final isPortrait = v != null && v.size.height > v.size.width;
       await SystemChrome.setPreferredOrientations(
         isPortrait
             ? [DeviceOrientation.portraitUp]
@@ -560,9 +560,7 @@ class _VideoPageState extends State<VideoPage> {
   Widget _progress(MpvValue? v) {
     final total = (v?.duration.inMilliseconds ?? 0) == 0 ? 1 : v!.duration.inMilliseconds;
     final p = ((v?.position.inMilliseconds ?? 0) / total).clamp(0.0, 1.0);
-    final b = (v?.buffered.isNotEmpty ?? false)
-        ? (v!.buffered.last.end.inMilliseconds / total).clamp(0.0, 1.0)
-        : 0.0;
+    final b = 0.0; // video_player 不暴露精确缓冲区间
     return LayoutBuilder(builder: (ctx, box) {
       void seekTo(double dx) {
         final r = (dx / box.maxWidth).clamp(0.0, 1.0);

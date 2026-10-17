@@ -72,10 +72,10 @@ class LzyLocalParser {
           return null;
         }
         final tp = m.group(1)!;
-        final u0 = Uri.tryParse(url);
+        final u0 = Uri.tryParse(shareUrl);
         final origin = u0 == null ? '' : '${u0.scheme}://${u0.host}';
         final full = tp.startsWith('http') ? tp : '$origin$tp';
-        final mid = await _get(full, base: url);
+        final mid = await _get(full, base: shareUrl);
         if (mid == null || mid.isEmpty) {
           lastError = '中间页请求失败';
           return null;
