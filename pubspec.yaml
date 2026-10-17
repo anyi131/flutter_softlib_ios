@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 3.7.10+102
+version: 3.7.11+103
 
 environment:
   sdk: ">=3.10.0 <4.0.0"
@@ -49,11 +49,8 @@ dependencies:
   url_launcher: ^6.3.2
   webview_flutter: ^4.10.0
   video_player: ^2.9.2
-  # ★ 1016：统一播放器（替代旧的 3 套粗糙实现）
-  #   media_kit：基于 libmpv，支持硬解/字幕/HLS/任意格式；各平台独立包
-  media_kit: ^1.2.6
-  media_kit_video: ^2.0.1
-  media_kit_libs_video: ^1.0.6
+  # ★ 1016：统一播放器 —— better_player（ExoPlayer/AVPlayer 内核，零额外体积）
+  better_player: ^1.25.0
   volume_controller: ^2.0.7
   screen_brightness: ^0.2.2
   carousel_slider: ^5.1.2
