@@ -496,6 +496,34 @@ class SoftService {
     return null;
   }
 
+  /// ★ 1016：上报解析结果（成功/失败 + 原因 + 耗时）→ 后台「解析记录」
+  static Future<void> reportParseResult({
+    required int appId,
+    required String title,
+    required String rawUrl,
+    required bool ok,
+    String error = '',
+    int costMs = 0,
+  }) async {
+    try {
+      await instance.dio.post(
+        '/api/softlib/app/parse_result',
+        data: {
+          'app_id': appId,
+          'app_title': title,
+          'raw_url': rawUrl,
+          'ok': ok ? 1 : 0,
+          'error': error,
+          'cost_ms': costMs,
+        },
+        options: Options(
+          sendTimeout: const Duration(seconds: 6),
+          receiveTimeout: const Duration(seconds: 6),
+        ),
+      );
+    } catch (_) {}
+  }
+
   /// 统一解析：返回可直接下载的 URL
   /// - 服务器直传：直接返回 file
   /// - 蓝奏云：走解析接口

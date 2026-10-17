@@ -615,9 +615,24 @@ class AppDetailsLogic extends GetxController {
       //   改为弹窗让用户选择用浏览器打开原链接（需求 #2）
       if (parseUrl == null || parseUrl.isEmpty) {
         ResolveOverlay.dismiss();
+        // ★ 1016：上报解析失败（后台「解析记录」可查原因与耗时）
+        SoftService.reportParseResult(
+          appId: int.tryParse('${appInfo?.appId ?? 0}') ?? 0,
+          title: appInfo?.fileName ?? '',
+          rawUrl: originUrl,
+          ok: false,
+          error: '[解析失效] ${SoftService.lastParseError.isEmpty ? '解析接口无返回' : SoftService.lastParseError}',
+        );
         await _showParseFailedDialog(originUrl);
         return;
       }
+      // ★ 1016：解析成功也记一笔（便于对比成功率）
+      SoftService.reportParseResult(
+        appId: int.tryParse('${appInfo?.appId ?? 0}') ?? 0,
+        title: appInfo?.fileName ?? '',
+        rawUrl: originUrl,
+        ok: true,
+      );
     }
 
     if (parseUrl.isEmpty) {
@@ -719,9 +734,20 @@ class AppDetailsLogic extends GetxController {
           title: appInfo?.fileName ?? '',
           url: dowUrl,
           ok: false,
-          error: t0.status == DownloadTaskStatus.canceled
-              ? '下载被取消'
-              : '下载失败（连接中断 / 源站不可用）',
+          // ★ 1016：失败原因细分 —— 后台一眼能判断是「解析问题」还是「网络问题」
+          error: () {
+            if (t0.status == DownloadTaskStatus.canceled) return '[用户取消] 下载被取消';
+            final u = dowUrl.toLowerCase();
+            final isLzy = u.contains('lanzou') || u.contains('lzy') ||
+                u.contains('52yfx.cn/lzy');
+            if (u.isEmpty) return '[解析失败] 下载地址为空（解析接口无返回）';
+            if (isLzy) {
+              return '[解析失效] 蓝奏云直链不可用（解析接口返回异常/链接过期）'
+                  '\n解析来源：${u.length > 60 ? u.substring(0, 60) : u}';
+            }
+            return '[网络异常] 连接中断或源站不可用'
+                '\n地址：${u.length > 60 ? u.substring(0, 60) : u}';
+          }(),
         );
       }
     });

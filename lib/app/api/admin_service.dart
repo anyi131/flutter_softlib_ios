@@ -74,6 +74,18 @@ class AdminService {
         (await _post('sec_logs', {'page': page, 'size': size}))['data'] ?? {},
       );
 
+  /// ★ 1016：接口自测 —— 一键检测所有关键接口
+  Future<Map<String, dynamic>> apiSelftest() async {
+    final m = await _post('api_selftest');
+    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+  }
+
+  /// ★ 1016：解析记录（蓝奏云解析成功/失败 + 原因 + 耗时）
+  Future<Map<String, dynamic>> parseLogs({int page = 1}) async {
+    final m = await _post('parse_logs', {'page': page});
+    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+  }
+
   /// ★ 1016：版权梦配置统一入口
   ///   sub = banquan / banquan_save / quanju / quanju_save / auto / auto_save
   ///       / send_code / apps_list / app_stats / app_stats_all

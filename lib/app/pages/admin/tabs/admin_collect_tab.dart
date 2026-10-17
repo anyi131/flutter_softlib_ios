@@ -4,6 +4,7 @@ import '../admin_ui_kit.dart';
 
 import 'collect_ex_views.dart';
 import 'collect_ex_views2.dart';
+import 'collect_diag_views.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -34,7 +35,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   final _svc = AdminService.instance;
   final _kwCtrl = TextEditingController();
-  late final TabController _sub = TabController(length: 8, vsync: this);
+  late final TabController _sub = TabController(length: 10, vsync: this);
 
   /// 子页：0=采集 1=目录 2=日志 3=蓝奏云账号
   int get _subIndex => _sub.index;
@@ -277,6 +278,9 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                 title: '全局配置',
                 subtitle: '退出软件 / 打开网址 / 启动复制文本等',
               ),
+              // ★ 1016：诊断类子页
+              const CollectSelftestView(),
+              const CollectParseLogView(),
             ],
           ),
         ),
@@ -287,7 +291,12 @@ class _AdminCollectTabState extends State<AdminCollectTab>
   /// 子页切换（分段控件）
   Widget _subBar() {
     // ★ 1016：子页增加到 8 个 → 改横向可滚动（手机一行放不下 8 个）
-    const items = ['采集', '目录', '日志', '蓝奏云', '软件统计', '自动采集', '版权配置', '全局配置'];
+    const items = [
+      '采集', '目录', '日志', '蓝奏云',
+      '软件统计', '自动采集', '版权配置', '全局配置',
+      // ★ 1016：诊断类
+      '接口自测', '解析记录',
+    ];
     return Padding(
       padding: EdgeInsets.fromLTRB(
         context.pagePadding,
