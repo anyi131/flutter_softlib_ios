@@ -1312,6 +1312,13 @@ class MineComponent extends StatelessWidget {
   /// v54：服务条目统一抽取（宫格 / 分组列表 / 扁平列表共用）
   List<_S> _serviceItems(MineLogic logic) {
     return [
+      // ★ 1016：做任务领会员 —— 放在最前面，方便普通用户「白嫖」
+      _S(
+        '免费领会员',
+        Icons.card_giftcard_rounded,
+        C.accentOrange,
+        () => Get.toNamed(Routes.task),
+      ),
       if (_uiCfg.featureInvite)
         _S(
           '邀请好友',
@@ -1350,13 +1357,6 @@ class MineComponent extends StatelessWidget {
           C.gold,
           () => Get.toNamed(Routes.cardShop),
         ),
-      // ★ 1016：做任务领会员（赏帮赚新手任务 → 输密码 → 领 VIP）
-      _S(
-        '任务领会员',
-        Icons.redeem_rounded,
-        C.accentOrange,
-        () => Get.toNamed(Routes.task),
-      ),
       _S(
         '下载管理',
         Icons.download_rounded,

@@ -166,10 +166,14 @@ class _VideoPageState extends State<VideoPage> {
     setState(() => _fullscreen = next);
     if (next) {
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-      await SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
+      // ★ 1016：竖屏视频（短剧/短视频）全屏时保持竖屏，只有横屏视频才转横屏
+      final v = _c?.value;
+      final isPortrait = v != null && v.height > v.width;
+      await SystemChrome.setPreferredOrientations(
+        isPortrait
+            ? [DeviceOrientation.portraitUp]
+            : [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight],
+      );
     } else {
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -203,7 +207,7 @@ class _VideoPageState extends State<VideoPage> {
       backgroundColor: const Color(0xFF07080B),
       body: SafeArea(
         child: _fullscreen
-            ? _stage(v, true)
+            ? SizedBox.expand(child: _stage(v, true))
             : Column(
                 children: [
                   _header(),
