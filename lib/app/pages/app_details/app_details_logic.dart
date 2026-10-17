@@ -366,22 +366,61 @@ class AppDetailsLogic extends GetxController {
     //   complete（上一版用 _shownProgress 判断会误伤正常完成：显示层
     //   滞后于真实进度）。文件大小 ≥ 期望大小的 90% 视为真完成；
     //   大小不可得时信任下载器（progress 由回调实时驱动，已修）。
+    // ★ 1016：下载完整性校验（重写，避免误判）
+    //   旧逻辑问题：
+    //     ① 期望大小取自「采集时记录」的 fileSize —— 蓝奏云文件更新后会不一致；
+    //     ② 文件名对不上 / appInfo 为空 → 直接跳过校验（等于没校验）；
+    //     ③ 单位只按 MB，像 "512K" 会被当成 512MB。
+    //   新逻辑：优先用服务端**最新**文件大小；再退到本地记录；
+    //          实际文件按「下载目录里最新修改的 apk」兜底找；容忍 15% 差异。
     var fileOk = true;
     try {
-      final dir = downloadTask?.savedDir ?? await DownloadDir.path();
+      String dir = downloadTask?.savedDir ?? '';
+      if (dir.isEmpty) dir = await DownloadDir.path();
       final fn = downloadTask?.filename ?? (appInfo?.fileName ?? '');
+
+      File? f;
       if (dir.isNotEmpty && fn.isNotEmpty) {
-        final f = File('$dir/$fn');
-        if (f.existsSync()) {
-          final actual = f.lengthSync();
-          final expect = double.tryParse(
-                (appInfo?.fileSize ?? '').replaceAll(RegExp(r'[^0-9.]'), ''),
-              ) ??
-              0;
-          if (expect > 0) {
-            final expectBytes = expect * 1024 * 1024; // fileSize 形如 "37.1 M"
-            fileOk = actual >= expectBytes * 0.9;
+        final t = File('$dir/$fn');
+        if (t.existsSync()) f = t;
+      }
+      // 兜底：下载目录里 5 分钟内更新的 apk
+      if (f == null) {
+        final dirs = await DownloadDir.fallbackDirs();
+        File? newest;
+        for (final d in dirs) {
+          final dd = Directory(d);
+          if (!dd.existsSync()) continue;
+          for (final e in dd.listSync()) {
+            if (e is! File || !e.path.toLowerCase().endsWith('.apk')) continue;
+            if (newest == null ||
+                e.statSync().modified.isAfter(newest.statSync().modified)) {
+              newest = e;
+            }
           }
+        }
+        if (newest != null &&
+            DateTime.now().difference(newest.statSync().modified).inMinutes <= 5) {
+          f = newest;
+        }
+      }
+
+      if (f != null) {
+        final actual = f.lengthSync();
+        int expectBytes = 0;
+        // ① 先问服务端最新大小（蓝奏云文件可能已更新）
+        try {
+          final fresh = await SoftService.instance.lzyFileInfo(dowUrl);
+          expectBytes = _sizeToBytes('${fresh?['size'] ?? ''}');
+        } catch (_) {}
+        // ② 退到本地记录的 fileSize
+        if (expectBytes <= 0) {
+          expectBytes = _sizeToBytes(appInfo?.fileSize ?? '');
+        }
+        if (actual < 1024) {
+          fileOk = false;
+        } else if (expectBytes > 0 && actual < expectBytes * 0.85) {
+          fileOk = false;
         }
       }
     } catch (e) {
@@ -625,6 +664,7 @@ class AppDetailsLogic extends GetxController {
     String originUrl = '';
     if (item != null && item!.canDirectDownload) {
       parseUrl = item!.file; // 服务器直传：无需解析
+      SoftService.lastParseChannel = 'direct';
     } else {
       final target = (lzyUrl != null && lzyUrl.isNotEmpty)
           ? lzyUrl
@@ -642,7 +682,11 @@ class AppDetailsLogic extends GetxController {
       if (isFree && LzyLocalParser.isLzyUrl(target)) {
         ResolveOverlay.stage('本地解析中…');
         try {
+          SoftService.lastParseChannel = '';
           parseUrl = await LzyLocalParser.parse(target);
+          if (parseUrl != null && parseUrl.isNotEmpty) {
+            SoftService.lastParseChannel = 'local';
+          }
         } catch (e) {
           logger.e('[local-parse] $e');
         }

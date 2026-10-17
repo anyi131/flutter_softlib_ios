@@ -160,6 +160,7 @@ class SoftService {
     String url = '',
     bool ok = true,
     String error = '',
+    String channel = '',
   }) async {
     try {
       await dio.post(
@@ -171,6 +172,7 @@ class SoftService {
           'url': url,
           'status': ok ? 'ok' : 'fail',
           'error': error.length > 400 ? error.substring(0, 400) : error,
+          'channel': channel.isEmpty ? lastParseChannel : channel,
           // ★ 1016：deviceModel 一直是空串（从没赋值）→ 后台显示「设备 -」
           'device': DeviceInfo.model,
         },
@@ -258,6 +260,9 @@ class SoftService {
   /// 最近一次解析失败的具体原因（来自解析服务 msg / 异常摘要），
   /// 供调用方 toast/弹窗展示，避免用户只看到笼统的「解析失败」
   static String lastParseError = '';
+
+  /// ★ 1016：本次解析走的通道（local / api / server / direct）
+  static String lastParseChannel = '';
 
   /// ★ 1016：解析接口的原始返回片段（便于后台排查）
   static String lastParseResp = '';
@@ -382,7 +387,10 @@ class SoftService {
 
     // ② 自建 API 优先（运维可随时更新，无需发版）
     final a = await resolveLzyByApi(lzyUrl, ticket: ticket);
-    if (a != null && a.isNotEmpty) return a;
+    if (a != null && a.isNotEmpty) {
+      lastParseChannel = 'api';
+      return a;
+    }
 
     // ★ 记住自建 API 给出的**具体原因**（如「文件取消分享了」），
     //   若兜底也失败，用它覆盖兜底层的「票据/网络」笼统错误 ——

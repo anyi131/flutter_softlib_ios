@@ -869,6 +869,19 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
                           ),
                         ),
                       ),
+                      if ('${r['channel'] ?? ''}'.isNotEmpty) ...[
+                        AdTag(
+                          text: switch ('${r['channel']}') {
+                            'local' => '本地',
+                            'api' => '接口',
+                            'server' => '服务端',
+                            'direct' => '直链',
+                            _ => '${r['channel']}',
+                          },
+                          color: C.violet,
+                        ),
+                        const SizedBox(width: 5),
+                      ],
                       AdTag(
                         text: ok ? '成功' : '失败',
                         color: ok ? C.mint : C.rose,
@@ -902,6 +915,16 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
               ),
               ('状态', ok ? '成功' : '失败'),
               ('IP', '${r['ip'] ?? '-'}'),
+              (
+                '解析方式',
+                switch ('${r['channel'] ?? ''}') {
+                  'local' => '本地解析（客户端）',
+                  'api' => '自建解析接口',
+                  'server' => '服务端兜底解析',
+                  'direct' => '服务器直链（无解析）',
+                  _ => '未记录',
+                },
+              ),
               ('设备', '${r['device'] ?? '-'}'),
               if (!ok) ('失败原因', '${r['error'] ?? ''}'),
             ],
