@@ -86,6 +86,12 @@ class AdminService {
     return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
   }
 
+  /// ★ 1016：错误/崩溃日志（后台「日志 → 错误日志」）
+  Future<Map<String, dynamic>> errorLogs({int page = 1, int size = 30}) async {
+    final m = await _post('error_logs', {'page': page, 'size': size});
+    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+  }
+
   /// ★ 1016：版权梦配置统一入口
   ///   sub = banquan / banquan_save / quanju / quanju_save / auto / auto_save
   ///       / send_code / apps_list / app_stats / app_stats_all

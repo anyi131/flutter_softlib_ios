@@ -29,6 +29,9 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
   int _page = 1;
   String _kw = '';
   String _action = '';
+  // ★ 1016：错误日志模式（崩溃/下载/解析等异常）
+  bool _errMode = false;
+  List<Map<String, dynamic>> _errList = [];
 
   static const _actions = <String, String>{
     '': '全部',
@@ -81,10 +84,51 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
     }
   }
 
+  /// ★ 1016：加载错误/崩溃日志（含今日分类统计）
+  Future<void> _loadErrors({bool reset = true}) async {
+    if (reset && mounted) setState(() => _loading = true);
+    try {
+      final r = await _svc.errorLogs(page: 1, size: 60);
+      final list = ((r['list'] as List?) ?? [])
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        _errList = list;
+        _loading = false;
+      });
+    } catch (e) {
+      if (mounted) setState(() => _loading = false);
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // ★ 1016：操作日志 / 错误日志 切换
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+          child: Row(
+            children: [
+              _modeTab('操作日志', !_errMode, () {
+                if (_errMode) {
+                  setState(() => _errMode = false);
+                  _load(reset: true);
+                }
+              }),
+              const SizedBox(width: 8),
+              _modeTab('错误日志', _errMode, () {
+                if (!_errMode) {
+                  setState(() => _errMode = true);
+                  _loadErrors();
+                }
+              }),
+            ],
+          ),
+        ),
+        if (!_errMode) ...[
         // 搜索 + 筛选
         Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
@@ -209,6 +253,27 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
             ],
           ),
         ),
+        ],
+        if (_errMode)
+          Expanded(
+            child: _loading
+                ? const LoadingState(text: '加载错误日志…')
+                : (_errList.isEmpty
+                      ? const EmptyState(
+                          text: '暂无错误记录',
+                          hint: 'App 崩溃、下载失败、解析失败会自动上报到这里',
+                        )
+                      : RefreshIndicator(
+                          onRefresh: _loadErrors,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(14, 4, 14, 20),
+                            itemCount: _errList.length,
+                            itemBuilder: (context, i) =>
+                                _errCard(_errList[i]),
+                          ),
+                        )),
+          ),
+        if (!_errMode)
         Expanded(
           child: _loading
               ? const LoadingState(text: '加载操作日志…')
@@ -288,6 +353,171 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                 ('系统', '${r['os'] ?? '-'}'),
                 if ('${r['ua'] ?? ''}'.isNotEmpty) ('UA', '${r['ua']}'),
               ]),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: SoftButton(
+                  label: '关闭',
+                  onPressed: () => Navigator.pop(c),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 模式切换小标签
+  Widget _modeTab(String label, bool sel, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: sel ? C.brand : (context.isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(6)),
+          borderRadius: BorderRadius.circular(R.full),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: sel ? FontWeight.w800 : FontWeight.w500,
+            color: sel ? Colors.white : context.t2,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ★ 1016：错误日志卡片（点开看完整错误与堆栈）
+  Widget _errCard(Map<String, dynamic> r) {
+    final tag = '${r['tag'] ?? ''}';
+    final isCrash = ['crash', 'FlutterError', 'PlatformDispatcher', 'ErrorWidget', 'zone', 'startup'].contains(tag);
+    final color = isCrash ? C.rose : C.warning;
+    final icon = isCrash ? Icons.bug_report_rounded : Icons.warning_amber_rounded;
+    return AdCard(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      onTap: () => _showErrDetail(r),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color.withAlpha(context.isDark ? 40 : 26),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 15, color: color),
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Text(tag,
+                    style: Ty.h3.copyWith(fontSize: 13.5, color: context.t1)),
+              ),
+              Pill('${r['time_text'] ?? ''}', color: color, small: true),
+            ],
+          ),
+          const SizedBox(height: 7),
+          Text(
+            '${r['error'] ?? ''}',
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: Ty.small.copyWith(fontSize: 12.5, color: context.t2, height: 1.45),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Icon(Icons.smartphone_rounded, size: 12, color: context.t3),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  '${r['device'] ?? '-'} · v${r['version'] ?? '-'}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Ty.tiny.copyWith(fontSize: 11, color: context.t3),
+                ),
+              ),
+              Text('${r['ip'] ?? ''}',
+                  style: Ty.tiny.copyWith(fontSize: 11, color: context.t3)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ★ 1016：错误详情（完整错误 + 堆栈，可复制）
+  void _showErrDetail(Map<String, dynamic> r) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (c) => Container(
+        margin: const EdgeInsets.all(12),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
+        decoration: BoxDecoration(
+          color: context.isDark ? C.bg2 : Colors.white,
+          borderRadius: BorderRadius.circular(R.lg),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('错误详情',
+                        style: Ty.h3.copyWith(fontSize: 15, color: context.t1)),
+                  ),
+                  Pill('${r['tag'] ?? ''}', small: true),
+                ],
+              ),
+              const SizedBox(height: 12),
+              AdKvList(rows: [
+                ('时间', '${r['time_text'] ?? '-'}'),
+                ('设备', '${r['device'] ?? '-'}'),
+                ('版本', '${r['version'] ?? '-'}'),
+                ('IP', '${r['ip'] ?? '-'}'),
+                ('用户ID', '${r['user_id'] ?? 0}'),
+              ]),
+              const SizedBox(height: 12),
+              Text('错误内容',
+                  style: Ty.small.copyWith(fontSize: 12, color: context.t3)),
+              const SizedBox(height: 4),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: context.isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
+                  borderRadius: BorderRadius.circular(R.sm),
+                ),
+                child: SelectableText('${r['error'] ?? ''}',
+                    style: TextStyle(fontSize: 12, color: context.t1, height: 1.5)),
+              ),
+              if ('${r['stack'] ?? ''}'.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text('堆栈',
+                    style: Ty.small.copyWith(fontSize: 12, color: context.t3)),
+                const SizedBox(height: 4),
+                Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(maxHeight: 220),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: context.isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
+                    borderRadius: BorderRadius.circular(R.sm),
+                  ),
+                  child: SingleChildScrollView(
+                    child: SelectableText('${r['stack']}',
+                        style: TextStyle(fontSize: 11, color: context.t2, height: 1.45)),
+                  ),
+                ),
+              ],
               const SizedBox(height: 14),
               SizedBox(
                 width: double.infinity,
