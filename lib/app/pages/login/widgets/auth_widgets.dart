@@ -228,7 +228,7 @@ class AuthScaffold extends StatelessWidget {
             // 左侧品牌栏：渐变铺满，内容垂直居中偏下
             Container(
               width: leftW,
-              decoration: const BoxDecoration(gradient: Deco.brandGradient),
+              decoration: BoxDecoration(gradient: Deco.brandGradient),
               child: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(14, 10, 14, 24),
