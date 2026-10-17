@@ -728,9 +728,23 @@ class AppDetailsLogic extends GetxController {
           );
         } else {
           // 本地失败 → 记录原因，继续走外置接口
-          if (LzyLocalParser.lastError.isNotEmpty) {
-            SoftService.lastParseError = LzyLocalParser.lastError;
-          }
+          final why = LzyLocalParser.lastError.isEmpty
+              ? '本地解析无返回'
+              : LzyLocalParser.lastError;
+          SoftService.lastParseError = why;
+          // ★ 1016：把本地解析的失败原因上报（后台可查，不用再猜）
+          SoftService.reportParseResult(
+            appId: appIdInt,
+            title: (item?.title ?? '').isNotEmpty
+                ? item!.title
+                : (appInfo?.fileName ?? ''),
+            rawUrl: target,
+            ok: false,
+            error: '[本地解析失败] $why',
+            reqParams: 'url=$target',
+            respSnippet: LzyLocalParser.lastError,
+            channel: 'local',
+          );
           ResolveOverlay.stage('切换到备用解析…');
         }
       }

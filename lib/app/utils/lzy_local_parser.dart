@@ -16,9 +16,14 @@ import 'dart:io';
 class LzyLocalParser {
   LzyLocalParser._();
 
+  /// ★ 1016：UA 决定蓝奏云给不给真实下载页（实测结论，别乱改）
+  ///   · Chrome/120 → 返回「验证并下载」人机验证页（爬虫常用 UA，被拦）
+  ///   · Chrome/131 → 返回「立即下载」真实下载页 ✓
+  ///   · iPhone Safari → 返回「苹果手机无法安装 APK」
+  ///   所以必须用**较新的 Android Chrome UA**。
   static const _ua =
-      'Mozilla/5.0 (Linux; Android 12; Mobile) AppleWebKit/537.36 '
-      '(KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36';
+      'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 '
+      '(KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36';
 
   /// 解析结果：成功返回直链；失败返回 null，并把原因写到 [lastError]
   static String lastError = '';
@@ -101,12 +106,30 @@ class LzyLocalParser {
           return null;
         }
         if (host != null && token != null) {
-          final link = '${host.group(1)}${token.group(1)}';
-          // ★ 关键：拼出来的是 stage2 的「验证页」而不是文件时，必须判失败，
-          //   否则会把 HTML 当 APK 去下载（表现为 0% 失败），且不再降级。
-          final ok = await _verifyFileUrl(link, referer: shareUrl);
-          if (ok) return link;
-          lastError = '蓝奏云直链需要人机验证（未拿到真实文件）';
+          final stage2 = '${host.group(1)}${token.group(1)}';
+          // ★ 关键第二层：stage2 页里才是**真实直链**
+          //   （页面里有 window.location.href="https://xxx/....apk" 或
+          //    <a href="...">立即下载</a>）
+          final s2 = await _get(stage2, base: shareUrl);
+          if (s2 != null && s2.isNotEmpty) {
+            final real = RegExp(r'''window\.location(?:\.href)?\s*=\s*["']([^"']+)["']''')
+                .firstMatch(s2);
+            final link2 = RegExp(r'''href=["'](https?://[^"']+\.(?:apk|zip|rar|7z))["']''',
+                    caseSensitive: false)
+                .firstMatch(s2);
+            final target2 = real?.group(1) ?? link2?.group(1);
+            if (target2 != null && target2.isNotEmpty) {
+              return target2;
+            }
+            // stage2 本身就是文件（少见）
+            if (await _verifyFileUrl(stage2, referer: shareUrl)) return stage2;
+            // 风控提示
+            if (s2.contains('验证并下载') || s2.contains('需要验证')) {
+              lastError = '蓝奏云要求人机验证（可能是 UA/频率问题）';
+              return null;
+            }
+          }
+          lastError = '未从下载页解析出真实地址';
           return null;
         }
         if (direct != null) return direct.group(1);
