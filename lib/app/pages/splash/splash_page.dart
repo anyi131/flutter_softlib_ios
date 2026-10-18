@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../utils/safe_ctx.dart';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -574,13 +575,13 @@ class _SplashPageState extends State<SplashPage> {
         TextButton(
           onPressed: () {
             JumpUtil.openUrl(cfg.noticeUrl);
-            if (!cfg.noticeForce) Navigator.of(Get.context!).pop();
+            if (!cfg.noticeForce) SafeCtx.pop();
           },
           child: const Text('查看详情'),
         ),
       if (!cfg.noticeForce)
         FilledButton(
-          onPressed: () => Navigator.of(Get.context!).pop(),
+          onPressed: () => SafeCtx.pop(),
           child: const Text('我知道了'),
         ),
     ];
@@ -594,7 +595,7 @@ class _SplashPageState extends State<SplashPage> {
     // card：紧凑对话框（图标章 + 分隔线 + 右对齐按钮行），最轻量的一套
     if (tpl == 'card') {
       showDialog(
-        context: Get.context!,
+        context: SafeCtx.of() ?? context,
         barrierDismissible: !cfg.noticeForce,
         barrierColor: Colors.black.withAlpha(dark ? 140 : 90),
         builder: (ctx) => PopScope(
@@ -670,7 +671,7 @@ class _SplashPageState extends State<SplashPage> {
                                 onPressed: () {
                                   JumpUtil.openUrl(cfg.noticeUrl);
                                   if (!cfg.noticeForce) {
-                                    Navigator.of(Get.context!).pop();
+                                    SafeCtx.pop();
                                   }
                                 },
                                 style: TextButton.styleFrom(
@@ -689,7 +690,7 @@ class _SplashPageState extends State<SplashPage> {
                             if (!cfg.noticeForce)
                               FilledButton(
                                 onPressed: () =>
-                                    Navigator.of(Get.context!).pop(),
+                                    SafeCtx.pop(),
                                 style: FilledButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 20,
@@ -721,7 +722,7 @@ class _SplashPageState extends State<SplashPage> {
     // banner：中屏布局 —— 顶部横幅固定 + 内容独立滚动 + 底部固定整宽按钮
     if (tpl == 'banner') {
       showDialog(
-        context: Get.context!,
+        context: SafeCtx.of() ?? context,
         barrierDismissible: !cfg.noticeForce,
         barrierColor: Colors.black.withAlpha(dark ? 150 : 100),
         builder: (ctx) => PopScope(
@@ -827,7 +828,7 @@ class _SplashPageState extends State<SplashPage> {
                               onPressed: () {
                                 JumpUtil.openUrl(cfg.noticeUrl);
                                 if (!cfg.noticeForce) {
-                                  Navigator.of(Get.context!).pop();
+                                  SafeCtx.pop();
                                 }
                               },
                               style: OutlinedButton.styleFrom(
@@ -848,7 +849,7 @@ class _SplashPageState extends State<SplashPage> {
                         if (!cfg.noticeForce)
                           Expanded(
                             child: FilledButton(
-                              onPressed: () => Navigator.of(Get.context!).pop(),
+                              onPressed: () => SafeCtx.pop(),
                               style: FilledButton.styleFrom(
                                 minimumSize: const Size(0, 46),
                                 shape: RoundedRectangleBorder(
@@ -876,7 +877,7 @@ class _SplashPageState extends State<SplashPage> {
     // minimal：纯文字排版 —— 无卡片容器、无渐变，仅字重/细线/留白分层
     if (tpl == 'minimal') {
       showDialog(
-        context: Get.context!,
+        context: SafeCtx.of() ?? context,
         barrierDismissible: !cfg.noticeForce,
         barrierColor: dark ? Colors.black.withAlpha(150) : Colors.black38,
         builder: (ctx) => PopScope(
@@ -927,7 +928,7 @@ class _SplashPageState extends State<SplashPage> {
                           onPressed: () {
                             JumpUtil.openUrl(cfg.noticeUrl);
                             if (!cfg.noticeForce) {
-                              Navigator.of(Get.context!).pop();
+                              SafeCtx.pop();
                             }
                           },
                           style: TextButton.styleFrom(
@@ -946,7 +947,7 @@ class _SplashPageState extends State<SplashPage> {
                       const SizedBox(width: 8),
                       if (!cfg.noticeForce)
                         TextButton(
-                          onPressed: () => Navigator.of(Get.context!).pop(),
+                          onPressed: () => SafeCtx.pop(),
                           style: TextButton.styleFrom(
                             foregroundColor: C.brand,
                             padding: const EdgeInsets.symmetric(
@@ -975,7 +976,7 @@ class _SplashPageState extends State<SplashPage> {
     // sheet：底部面板 —— 圆角把手 + 分组内容卡 + 整宽按钮
     if (tpl == 'sheet') {
       showModalBottomSheet(
-        context: Get.context!,
+        context: SafeCtx.of() ?? context,
         isDismissible: !cfg.noticeForce,
         enableDrag: !cfg.noticeForce,
         isScrollControlled: true,
@@ -1054,7 +1055,7 @@ class _SplashPageState extends State<SplashPage> {
                       onPressed: () {
                         JumpUtil.openUrl(cfg.noticeUrl);
                         if (!cfg.noticeForce) {
-                          Navigator.of(Get.context!).pop();
+                          SafeCtx.pop();
                         }
                       },
                       style: OutlinedButton.styleFrom(
@@ -1072,7 +1073,7 @@ class _SplashPageState extends State<SplashPage> {
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
-                      onPressed: () => Navigator.of(Get.context!).pop(),
+                      onPressed: () => SafeCtx.pop(),
                       style: FilledButton.styleFrom(
                         minimumSize: const Size(0, 46),
                         shape: RoundedRectangleBorder(
@@ -1091,7 +1092,9 @@ class _SplashPageState extends State<SplashPage> {
     }
     if (tpl == 'fullscreen') {
       // 全屏沉浸：渐变 Hero 头图 + 上浮圆角内容卡 + 底部整宽按钮
-      Navigator.of(Get.context!).push(
+      final _nctx = SafeCtx.of();
+      if (_nctx == null) return;
+      Navigator.of(_nctx).push(
         MaterialPageRoute(
           fullscreenDialog: true,
           builder: (ctx) => Scaffold(
@@ -1226,7 +1229,7 @@ class _SplashPageState extends State<SplashPage> {
     // banner_card：横向布局卡 —— 左侧渐变色条 + 右上角日期戳，唯一横排骨架
     if (tpl == 'banner_card') {
       showDialog(
-        context: Get.context!,
+        context: SafeCtx.of() ?? context,
         barrierDismissible: !cfg.noticeForce,
         barrierColor: Colors.black.withAlpha(dark ? 150 : 95),
         builder: (ctx) => PopScope(
@@ -1336,7 +1339,7 @@ class _SplashPageState extends State<SplashPage> {
                                     onPressed: () {
                                       JumpUtil.openUrl(cfg.noticeUrl);
                                       if (!cfg.noticeForce) {
-                                        Navigator.of(Get.context!).pop();
+                                        SafeCtx.pop();
                                       }
                                     },
                                     style: OutlinedButton.styleFrom(
@@ -1360,7 +1363,7 @@ class _SplashPageState extends State<SplashPage> {
                                 Expanded(
                                   child: FilledButton(
                                     onPressed: () =>
-                                        Navigator.of(Get.context!).pop(),
+                                        SafeCtx.pop(),
                                     style: FilledButton.styleFrom(
                                       minimumSize: const Size(0, 44),
                                       shape: RoundedRectangleBorder(
@@ -1401,7 +1404,7 @@ class _SplashPageState extends State<SplashPage> {
     // ticker：顶部跑马灯 —— 顶部细条滚动标题 + 无卡正文 + 底部链接式按钮
     if (tpl == 'ticker') {
       showDialog(
-        context: Get.context!,
+        context: SafeCtx.of() ?? context,
         barrierDismissible: !cfg.noticeForce,
         barrierColor: dark ? Colors.black.withAlpha(160) : Colors.black38,
         builder: (ctx) => PopScope(
@@ -1473,7 +1476,7 @@ class _SplashPageState extends State<SplashPage> {
                               onTap: () {
                                 JumpUtil.openUrl(cfg.noticeUrl);
                                 if (!cfg.noticeForce) {
-                                  Navigator.of(Get.context!).pop();
+                                  SafeCtx.pop();
                                 }
                               },
                               child: Text(
@@ -1488,7 +1491,7 @@ class _SplashPageState extends State<SplashPage> {
                           const Spacer(),
                           if (!cfg.noticeForce)
                             GestureDetector(
-                              onTap: () => Navigator.of(Get.context!).pop(),
+                              onTap: () => SafeCtx.pop(),
                               child: Text(
                                 '知道了',
                                 style: TextStyle(
@@ -1513,7 +1516,7 @@ class _SplashPageState extends State<SplashPage> {
 
     // card（原版兜底）：保留默认 AlertDialog
     showDialog(
-      context: Get.context!,
+      context: SafeCtx.of() ?? context,
       barrierDismissible: !cfg.noticeForce,
       builder: (ctx) => PopScope(
         canPop: !cfg.noticeForce,

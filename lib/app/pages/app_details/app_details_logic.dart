@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../utils/safe_ctx.dart';
 import '../../utils/net_guard.dart';
 import '../../utils/sound_util.dart';
 import 'dart:io';
@@ -1153,7 +1154,7 @@ class AppDetailsLogic extends GetxController {
 
   void showPreviewImage(String imageUrl) {
     showDialog(
-      context: Get.context!,
+      context: SafeCtx.of() ?? context,
       builder: (context) {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,

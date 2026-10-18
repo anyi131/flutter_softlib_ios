@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../utils/safe_ctx.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -1379,7 +1380,7 @@ class MineComponent extends StatelessWidget {
         '关于软件',
         Icons.info_rounded,
         C.brandBright,
-        () => logic.about(Get.context!),
+        () { final c = SafeCtx.of(); if (c != null) logic.about(c); },
       ),
       _S(
         '用户协议',

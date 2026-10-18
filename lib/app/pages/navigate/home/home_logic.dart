@@ -154,8 +154,11 @@ class HomeLogic extends GetxController {
 
   ///弹窗显示图片
   void showImage(String? imageUrl) {
+    // ★ 1016：Get.context 可能为 null（页面已退出/启动期），直接 ! 会崩
+    final ctx = Get.context;
+    if (ctx == null) return;
     showDialog(
-      context: Get.context!,
+      context: ctx,
       builder: (context) {
         return AlertDialog(
           contentPadding: EdgeInsets.all(3),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/safe_ctx.dart';
 
 import '../../utils/apk_installer.dart';
 
@@ -219,7 +220,8 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
 
   /// 权限请求
   Future<void> _requestPermissionsOnStartup() async {
-    await PermissionUtils.requestAppPermissions(Get.context!);
+    final _pc = SafeCtx.of();
+    if (_pc != null) await PermissionUtils.requestAppPermissions(_pc);
   }
 
   @override

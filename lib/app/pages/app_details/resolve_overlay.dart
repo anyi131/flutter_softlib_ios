@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../utils/safe_ctx.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -29,7 +30,8 @@ class ResolveOverlay {
     _entry = OverlayEntry(builder: (_) => const _ResolveOverlayView());
     final ctx = Get.context;
     if (ctx == null) return;
-    Overlay.of(Get.context!).insert(_entry!);
+    final _ctx = SafeCtx.of();
+    if (_ctx != null) Overlay.of(_ctx).insert(_entry!);
   }
 
   /// 更新阶段文案
