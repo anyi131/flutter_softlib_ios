@@ -38,10 +38,18 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
     '': '全部',
     'login': '登录',
     'register': '注册',
+    'download': '下载',
+    'search': '搜索',
+    'sign': '签到',
     'post': '发帖',
     'comment': '评论',
+    'review': '评价',
     'buy': '购买',
-    'download': '下载',
+    'pay_ok': '支付',
+    'card': '卡密',
+    'bind_qq': '绑定QQ',
+    'profile': '资料',
+    'admin': '后台操作',
   };
 
   static const _actionIcons = <String, IconData>{
@@ -347,6 +355,29 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                 ('用户', '${r['nickname'] ?? '游客'}（ID ${r['user_id'] ?? 0}）'),
                 ('行为', _actions[action] ?? action),
                 ('详情', '${r['detail'] ?? '-'}'),
+                // ★ 1016：下载类日志补全 —— 状态 / 解析方式 / App 版本 / 失败原因
+                if ('${r['dl_status'] ?? ''}'.isNotEmpty)
+                  (
+                    '下载状态',
+                    '${r['dl_status']}' == 'ok' ? '✓ 成功' : '✗ 失败',
+                  ),
+                if ('${r['dl_channel'] ?? ''}'.isNotEmpty)
+                  (
+                    '解析方式',
+                    switch ('${r['dl_channel']}') {
+                      'local' => '本地解析（客户端）',
+                      'api' => '自建解析接口',
+                      'server' => '服务端兜底解析',
+                      'direct' => '服务器直链（无解析）',
+                      'cache' => '缓存命中',
+                      _ => '${r['dl_channel']}',
+                    },
+                  ),
+                if ('${r['app_version'] ?? ''}'.isNotEmpty)
+                  ('App 版本', '${r['app_version']}'),
+                if ('${r['dl_status']}' == 'fail' &&
+                    '${r['dl_error'] ?? ''}'.isNotEmpty)
+                  ('失败原因', '${r['dl_error']}'),
                 ('时间', '${r['createtime_text'] ?? r['time_text'] ?? '-'}'),
                 ('IP', '${r['ip'] ?? '-'}'),
                 ('归属地', '${r['address'] ?? '-'}'),

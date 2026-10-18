@@ -698,6 +698,9 @@ class AppDetailsLogic extends GetxController {
         ToastUtil.error('下载地址为空');
         return;
       }
+      // ★ 1016：记录解析总耗时（后台「解析记录」显示）
+      final _parseSw = Stopwatch()..start();
+
       // ═══ 三级降级：① 本地解析 → ② 外置接口 → ③ 原链接浏览器 ═══
       //   本地解析只用于**免费资源**：客户端算法可被反编译，
       //   付费/会员资源必须走服务端票据，否则付费墙失效。
@@ -725,6 +728,7 @@ class AppDetailsLogic extends GetxController {
             reqParams: 'url=$target',
             respSnippet: '本地解析成功',
             channel: 'local',
+            costMs: _parseSw.elapsedMilliseconds,
           );
         } else {
           // 本地失败 → 记录原因，继续走外置接口
@@ -744,6 +748,7 @@ class AppDetailsLogic extends GetxController {
             reqParams: 'url=$target',
             respSnippet: LzyLocalParser.lastError,
             channel: 'local',
+            costMs: _parseSw.elapsedMilliseconds,
           );
           ResolveOverlay.stage('切换到备用解析…');
         }
@@ -779,6 +784,7 @@ class AppDetailsLogic extends GetxController {
           channel: SoftService.lastParseChannel.isEmpty
               ? 'failed'
               : SoftService.lastParseChannel,
+          costMs: _parseSw.elapsedMilliseconds,
         );
         await _showParseFailedDialog(originUrl);
         return;
@@ -794,6 +800,7 @@ class AppDetailsLogic extends GetxController {
         channel: SoftService.lastParseChannel.isEmpty
             ? 'server'
             : SoftService.lastParseChannel,
+        costMs: _parseSw.elapsedMilliseconds,
       );
     }
 
