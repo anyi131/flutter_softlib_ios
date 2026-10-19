@@ -272,14 +272,16 @@ class _ToolsComponentState extends State<ToolsComponent>
                                     top: 4,
                                     bottom: tabBottomPadding(context) + 24,
                                   ),
-                                  children: _favOnly
-                                      ? _favSection()
-                                      : [
-                                          // ★ 1020：收藏置顶区（有收藏才显示）
-                                          if (_favIds.isNotEmpty)
-                                            _favSection(compact: true),
-                                          ..._groups.map(_groupCard),
-                                        ],
+                                  children: <Widget>[
+                                    if (_favOnly)
+                                      _favSection()
+                                    else ...[
+                                      // ★ 1020：收藏置顶区（有收藏才显示）
+                                      if (_favIds.isNotEmpty)
+                                        _favSection(compact: true),
+                                      ..._groups.map(_groupCard),
+                                    ],
+                                  ],
                                 ),
                               )),
                 ),

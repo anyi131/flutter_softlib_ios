@@ -223,75 +223,74 @@ class _ElasticBarState extends State<_ElasticBar>
   /// 玻璃主体：重模糊 + 内反光 + 高光描边 + 投影
   Widget _glassBody(BuildContext context, bool isDark) {
     final body = DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(R.full),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isDark
-                  ? const [Color(0xCC161A24), Color(0xB312151C)]
-                  : const [Color(0xF2FFFFFF), Color(0xD9F4F6FF)],
-            ),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withAlpha(56)
-                  : Colors.white.withAlpha(240),
-              width: 1.1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(isDark ? 120 : 30),
-                blurRadius: 34,
-                offset: const Offset(0, 16),
-              ),
-              BoxShadow(
-                color: Colors.white.withAlpha(isDark ? 12 : 170),
-                blurRadius: 1.2,
-                offset: const Offset(0, -1),
-              ),
-            ],
-          ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // 顶部内侧白色反光带（Liquid Glass 的标志性高光）
-              Positioned(
-                left: 12,
-                right: 12,
-                top: 1.2,
-                height: 20,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(R.full),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.white.withAlpha(isDark ? 40 : 190),
-                        Colors.white.withAlpha(0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // 斜向扫光（注意：不要写成 const，C.brand 是可变静态色）
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(R.full),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment(0.3, 1.2),
-                    colors: [
-                      Colors.white.withAlpha(isDark ? 26 : 120),
-                      Colors.white.withAlpha(0),
-                    ],
-                    stops: <double>[0.0, 0.55],
-                  ),
-                ),
-              ),
-            ],
-          ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(R.full),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? const [Color(0xCC161A24), Color(0xB312151C)]
+              : const [Color(0xF2FFFFFF), Color(0xD9F4F6FF)],
         ),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withAlpha(56)
+              : Colors.white.withAlpha(240),
+          width: 1.1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 120 : 30),
+            blurRadius: 34,
+            offset: const Offset(0, 16),
+          ),
+          BoxShadow(
+            color: Colors.white.withAlpha(isDark ? 12 : 170),
+            blurRadius: 1.2,
+            offset: const Offset(0, -1),
+          ),
+        ],
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 顶部内侧白色反光带（Liquid Glass 的标志性高光）
+          Positioned(
+            left: 12,
+            right: 12,
+            top: 1.2,
+            height: 20,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(R.full),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withAlpha(isDark ? 40 : 190),
+                    Colors.white.withAlpha(0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // 斜向扫光（注意：不要写成 const，C.brand 是可变静态色）
+          DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(R.full),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: const Alignment(0.3, 1.2),
+                colors: [
+                  Colors.white.withAlpha(isDark ? 26 : 120),
+                  Colors.white.withAlpha(0),
+                ],
+                stops: const [0.0, 0.55],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
     final anyBlur = GlassTheme.bigBlur;
     return ClipRRect(
