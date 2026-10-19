@@ -311,7 +311,8 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                       children: [
                         Text(
                           _descExpanded ? '收起' : '展开全文',
-                          style: const TextStyle(
+                          // ★ C.brand 是可变静态量，不能放进 const
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
                             color: C.brand,
