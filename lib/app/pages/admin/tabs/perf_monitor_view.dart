@@ -238,7 +238,7 @@ class _PerfMonitorViewState extends State<PerfMonitorView> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'P50 $p50ms · P95 $p95ms · $count 次',
+                    'P50 ${p50}ms · P95 ${p95}ms · $count 次',
                     style: Ty.tiny.copyWith(fontSize: 9.5, color: context.t3),
                   ),
                 ],
@@ -246,7 +246,7 @@ class _PerfMonitorViewState extends State<PerfMonitorView> {
             ),
             if (bySpeed)
               Text(
-                '$p95ms',
+                '${p95}ms',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w900,
