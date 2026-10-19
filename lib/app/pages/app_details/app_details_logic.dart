@@ -26,7 +26,7 @@ import '../../design/app_style.dart';
 import '../../design/app_style_controller.dart';
 import '../../design/ui.dart';
 import '../../models/app_item.dart';
-import '../../routes/app_routes.dart';
+import '../../routes/app_pages.dart';
 import '../../models/http/results/lzy_file_info_model.dart';
 import '../../api/api_host.dart';
 import '../../api/soft_service.dart';

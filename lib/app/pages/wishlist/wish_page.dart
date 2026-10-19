@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../api/user_service.dart';
 import '../../api/wish_service.dart';
 import '../../design/adaptive.dart';
+import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/err_text.dart';
 import '../../utils/toast_util.dart';

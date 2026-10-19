@@ -23,8 +23,8 @@ import 'package:flutter_softlib/app/pages/navigate/mine/invite_page.dart';
 import 'package:flutter_softlib/app/pages/message/message_page.dart';
 import 'package:flutter_softlib/app/pages/taskcenter/task_page.dart';
 import 'package:flutter_softlib/app/pages/wishlist/wish_page.dart';
-import 'package:flutter_softlib/app/pages/mine_fav/favorites_page.dart';
-import 'package:flutter_softlib/app/pages/mine_fav/history_page.dart';
+import 'package:flutter_softlib/app/pages/myfav/favorites_page.dart';
+import 'package:flutter_softlib/app/pages/myfav/history_page.dart';
 import 'package:get/get.dart';
 
 import '../pages/navigate/navigate_binding.dart';

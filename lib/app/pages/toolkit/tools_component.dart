@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../mine_fav/favorites_page.dart';
+import '../myfav/favorites_page.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
