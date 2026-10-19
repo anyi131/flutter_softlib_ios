@@ -87,6 +87,98 @@ class AdminService {
   }
 
   /// ★ 1016：错误/崩溃日志（后台「日志 → 错误日志」）
+  /// ★ 1020：积分排行榜（仅后台，用户明确要求不在 App 公开）
+  Future<Map<String, dynamic>> scoreRank({
+    int days = 30,
+    int limit = 50,
+  }) async {
+    final m = await _post('score_rank', {'days': days, 'limit': limit});
+    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+  }
+
+  /// ★ 1020：性能监控汇总
+  Future<Map<String, dynamic>> perfSummary({int days = 7}) async {
+    final m = await _post('perf_summary', {'days': days});
+    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+  }
+
+  /// 清理性能日志
+  Future<void> perfClean({int days = 14}) async {
+    await _post('perf_clean', {'days': days});
+  }
+
+  // ═══════════ 配置版本化与回滚（★ 1020）═══════════
+
+  /// 配置历史列表
+  Future<List<Map<String, dynamic>>> configHistory() async {
+    final m = await _post('config_history');
+    final d = (m['data'] as Map?) ?? {};
+    return ((d['list'] as List?) ?? [])
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+  }
+
+  /// 查看某版本（含与当前配置的差异）
+  Future<Map<String, dynamic>> configHistoryView(String file) async {
+    final m = await _post('config_history_view', {'file': file});
+    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+  }
+
+  /// 回滚到某版本
+  Future<void> configRollback(String file) async {
+    await _post('config_rollback', {'file': file});
+  }
+
+  /// 删除某历史版本
+  Future<void> configHistoryDelete(String file) async {
+    await _post('config_history_delete', {'file': file});
+  }
+
+  /// ★ 1020：管理员强制解绑某用户的 QQ
+  Future<void> qqUnbind(int userId) async {
+    await _post('qq_unbind', {'user_id': userId});
+  }
+
+  /// ★ 1020：已绑定 QQ 的账号列表（排查「一个 QQ 绑多个号」）
+  Future<Map<String, dynamic>> qqBindings({
+    String keyword = '',
+    int page = 1,
+  }) async {
+    final m = await _post('qq_bindings', {'keyword': keyword, 'page': page});
+    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+  }
+
+  /// ★ 1020（待办 #2）：需求投票（求软件）
+  Future<Map<String, dynamic>> wishList({String status = 'all'}) async {
+    final m = await _post('wish_admin_list', {'status': status});
+    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+  }
+
+  Future<void> wishReview({
+    required int id,
+    required String status,
+    String note = '',
+  }) async {
+    await _post('wish_admin_review', {
+      'id': id,
+      'status': status,
+      'admin_note': note,
+    });
+  }
+
+  Future<void> wishDelete(int id) async {
+    await _post('wish_admin_delete', {'id': id});
+  }
+
+  /// ★ 1020：崩溃聚合 —— 按堆栈指纹分组，按影响用户数排序
+  Future<Map<String, dynamic>> errorGroups({
+    int days = 30,
+    int limit = 20,
+  }) async {
+    final m = await _post('error_groups', {'days': days, 'limit': limit});
+    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+  }
+
   Future<Map<String, dynamic>> errorLogs({int page = 1, int size = 30}) async {
     final m = await _post('error_logs', {'page': page, 'size': size});
     return Map<String, dynamic>.from((m['data'] as Map?) ?? {});

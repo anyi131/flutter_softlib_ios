@@ -8,6 +8,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'resolve_overlay.dart';
@@ -271,12 +272,42 @@ class AppDetailsLogic extends GetxController {
   }
 
   /// 解析失败弹窗：引导用浏览器打开原链接下载（需求 #2）
+  /// ★ 1020（待办 #3）：同类替代推荐
+  ///   软件失效/解析失败时，不要让用户直接走 —— 给 3 个同分类的可用软件。
+  ///   排序：下载量优先（别人用得多的更可能可用）
+  Future<List<AppItem>> _similarApps({int limit = 3}) async {
+    try {
+      final cat = item?.catId ?? 0;
+      List<AppItem> pool = const [];
+      if (cat > 0) {
+        pool = await service.fetchApps(catId: cat);
+      }
+      if (pool.isEmpty) {
+        pool = await service.fetchApps();
+      }
+      final me = item?.id ?? 0;
+      final list =
+          pool
+              .where(
+                (e) => e.id != me && e.icon.isNotEmpty && e.title.isNotEmpty,
+              )
+              .toList()
+            ..sort((a, b) => b.downCount.compareTo(a.downCount));
+      return list.take(limit).toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
   Future<void> _showParseFailedDialog(String originUrl) async {
     final ctx = Get.context;
     if (ctx == null) {
       ToastUtil.error('直链解析失败，请稍后重试');
       return;
     }
+    // 先取同类替代（失败也不影响弹窗本身）
+    final alternatives = await _similarApps();
+    if (!ctx.mounted) return;
     final go = await showDialog<bool>(
       context: ctx,
       builder: (c) => AlertDialog(
@@ -327,6 +358,104 @@ class AppDetailsLogic extends GetxController {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 11, color: C.brand),
+                ),
+              ),
+            ],
+            // ★ 1020（待办 #3）：同类替代 —— 别让用户空手离开
+            if (alternatives.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  const Icon(Icons.swap_horiz_rounded, size: 15, color: C.mint),
+                  const SizedBox(width: 5),
+                  const Text(
+                    '试试这些同类软件',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ...alternatives.map(
+                (a) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () {
+                      Navigator.pop(c, null);
+                      Get.offAndToNamed(
+                        Routes.appDetails,
+                        arguments: {'appId': a.id.toString(), 'item': a},
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: C.mint.withAlpha(18),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: C.mint.withAlpha(60)),
+                      ),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl: a.icon,
+                              width: 32,
+                              height: 32,
+                              fit: BoxFit.cover,
+                              errorWidget: (_, __, ___) => Container(
+                                width: 32,
+                                height: 32,
+                                color: C.mint.withAlpha(30),
+                                child: const Icon(
+                                  Icons.android,
+                                  size: 16,
+                                  color: C.mint,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 9),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  a.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                if (a.size.isNotEmpty)
+                                  Text(
+                                    a.size,
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -936,6 +1065,12 @@ class AppDetailsLogic extends GetxController {
       if (t0.status == DownloadTaskStatus.canceled ||
           t0.status == DownloadTaskStatus.failed) {
         t.cancel();
+        // ★ 1020（待办 #1）：失败先静默重连，不立刻报错
+        //   用户取消（canceled）不重试 —— 那是主动行为
+        if (t0.status == DownloadTaskStatus.failed && !_silentRetrying) {
+          final recovered = await _trySilentRetry();
+          if (recovered) return; // 已重新入队，轮询由新任务接管
+        }
         // ★ 1016：上报失败（后台「下载记录」可查）
         SoftService.instance.reportDownloadResult(
           appId: appIdInt,
@@ -963,6 +1098,107 @@ class AppDetailsLogic extends GetxController {
         );
       }
     });
+  }
+
+  // ═══════════════ 静默重试（用户待办 #1）═══════════════
+  //
+  // 背景：下载失败/被源站中断时，原来直接进 failed 态，用户得手动点重试，
+  //       而且 retryDownload 会**把进度清零** —— 下了 20MB 再从头开始。
+  //
+  // 现在：失败后在后台自动重试 3 次（3s / 8s / 20s），每次换解析通道重新取直链；
+  //       重试期间界面显示「正在重连(第 n 次)」，进度条保持不动、不归零；
+  //       三次全败才真正进 failed 态并提示用户。
+  int _silentRetry = 0;
+  Timer? _silentRetryTimer;
+  bool _silentRetrying = false;
+
+  /// 是否正在静默重试（UI 用来显示「正在重连」而不是「失败」）
+  bool get silentRetrying => _silentRetrying;
+
+  /// 重试间隔：第 1/2/3 次
+  static const List<int> _retryDelays = [3, 8, 20];
+
+  /// 下载失败时的入口：先尝试静默重连，全败才交给上层显示失败
+  Future<bool> _trySilentRetry() async {
+    if (_silentRetry >= _retryDelays.length) return false;
+    final delay = _retryDelays[_silentRetry];
+    _silentRetry++;
+    _silentRetrying = true;
+    update(['download']);
+    _silentRetryTimer?.cancel();
+    final done = Completer<bool>();
+    _silentRetryTimer = Timer(Duration(seconds: delay), () async {
+      try {
+        // ★ 换通道：重新解析一次直链（蓝奏云直链有时效，旧的必然 403）
+        var ok = false;
+        try {
+          final t = item?.url ?? dowUrl;
+          if (t.isNotEmpty) {
+            final fresh = await service.resolveLzy(t);
+            if (fresh != null && fresh.isNotEmpty) {
+              ok = await _enqueueSilentRetry(fresh);
+            }
+          }
+        } catch (_) {}
+        // 换通道失败 → 试试原任务 retry（部分情况是网络瞬断，原链接仍可用）
+        if (!ok && taskId != null && taskId!.isNotEmpty) {
+          final nt = await FlutterDownloader.retry(taskId: taskId!);
+          if (nt != null && nt.isNotEmpty) {
+            taskId = nt;
+            ok = true;
+          }
+        }
+        if (ok) {
+          _silentRetrying = false;
+          // ★ 不重置 _shownProgress：进度条保持不动，用户感知是「接着下」
+          _uiPhase = phaseDownloading;
+          _explicitReset = false;
+          update(['download']);
+          _startProgressPolling();
+          done.complete(true);
+        } else {
+          _silentRetrying = false;
+          update(['download']);
+          final again = await _trySilentRetry();
+          done.complete(again);
+        }
+      } catch (_) {
+        _silentRetrying = false;
+        update(['download']);
+        done.complete(false);
+      }
+    });
+    return done.future;
+  }
+
+  /// 用新直链重新入队（保留原进度语义：清掉旧任务，新任务从断点续传）
+  Future<bool> _enqueueSilentRetry(String freshUrl) async {
+    try {
+      // 删除失败的旧任务（避免列表里堆一串失败记录）
+      final old = taskId;
+      if (old != null && old.isNotEmpty) {
+        try {
+          await FlutterDownloader.remove(
+            taskId: old,
+            shouldDeleteContent: false,
+          );
+        } catch (_) {}
+      }
+      final nt = await FlutterDownloader.enqueue(
+        url: freshUrl,
+        savedDir: await DownloadDir.path(),
+        fileName: appInfo?.fileName ?? '',
+        showNotification: true,
+        openFileFromNotification: false,
+        saveInPublicStorage: false,
+      );
+      if (nt == null || nt.isEmpty) return false;
+      taskId = nt;
+      dowUrl = freshUrl;
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> pauseDownload() async {

@@ -67,6 +67,58 @@ class MineLogic extends GetxController {
 
   /// ★ 1016：绑定 QQ 到当前账号 —— 以后 QQ 一键登录直接进这个号，
   ///   不会再被自动开一个新号。
+  /// ★ 1020：QQ 是否已绑定（我的页显示状态 + 决定是「绑定」还是「解绑」）
+  bool qqBound = false;
+
+  Future<void> refreshQqBound() async {
+    if (!_userService.isLoggedIn) {
+      if (qqBound) {
+        qqBound = false;
+        update();
+      }
+      return;
+    }
+    final b = await _userService.qqBound();
+    if (b != qqBound) {
+      qqBound = b;
+      update();
+    }
+  }
+
+  /// ★ 1020：解绑 QQ（绑错了能自救）
+  Future<void> unbindQQ() async {
+    final ok = await Get.dialog<bool>(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text('解绑 QQ', style: TextStyle(fontSize: 16)),
+        content: const Text(
+          '解绑后，QQ 一键登录将不再进入当前账号。\n'
+          '你的账号、积分、会员权益都不受影响。\n\n确定解绑吗？',
+          style: TextStyle(fontSize: 13, height: 1.6),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('解绑', style: TextStyle(color: C.danger)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await _userService.unbindQQ();
+      qqBound = false;
+      update();
+      ToastUtil.success('已解绑 QQ');
+    } catch (e) {
+      ToastUtil.error(ErrText.of(e));
+    }
+  }
+
   /// ★ 1020（反馈 #2）：加锁 —— 等待期间重复点击直接忽略。
   ///   之前重复点击会并发发起多次 QQ 登录，原生回调错乱 → 用户说的「未知问题」。
   bool _binding = false;
@@ -101,6 +153,7 @@ class MineLogic extends GetxController {
       }
       // 页面已销毁（用户在等待时被路由带走）→ 只刷新数据，不弹提示
       if (isClosed) return;
+      qqBound = true;
       ToastUtil.success('绑定成功，以后 QQ 一键登录直接进本账号');
       await load();
     } catch (e) {
@@ -173,6 +226,8 @@ class MineLogic extends GetxController {
         // 未读消息数（「消息」格子红点）
         messageCount = unreadN;
         update();
+        // ★ 1020：顺带查一下 QQ 绑定状态（决定显示「绑定」还是「解绑」）
+        refreshQqBound();
         return;
       }
     }

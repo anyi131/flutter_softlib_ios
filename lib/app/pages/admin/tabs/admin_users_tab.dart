@@ -1589,6 +1589,8 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                 _detailRow('昵称', '${u['nickname'] ?? '-'}'),
                 _detailRow('邮箱', '${u['email'] ?? '-'}'),
                 _detailRow('QQ', '${u['qq'] ?? '-'}'),
+                // ★ 1020：QQ 绑定状态 —— 管理员要能看到谁绑了，并能强制解绑
+                _qqBindRow(u),
                 _detailRow('称号', '${u['title'] ?? '-'}'),
                 _detailRow('积分', '${u['score'] ?? 0}'),
                 _detailRow('余额', '¥${u['money'] ?? '0.00'}'),
@@ -1625,6 +1627,122 @@ class _AdminUsersTabState extends State<AdminUsersTab>
         ],
       ),
     );
+  }
+
+  /// QQ 绑定状态行（已绑定 → 显示脱敏 openid + 解绑按钮）
+  Widget _qqBindRow(Map u) {
+    final bound = u['qq_bound'] == true || u['qq_bound'] == 1;
+    final masked = '${u['qq_openid_masked'] ?? ''}';
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 7),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 66,
+            child: Text(
+              'QQ绑定',
+              style: Ty.tiny.copyWith(color: context.t3, fontSize: 12),
+            ),
+          ),
+          Expanded(
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 1.5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: (bound ? C.mint : context.t3).withAlpha(28),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    bound ? '已绑定' : '未绑定',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: bound ? C.mint : context.t3,
+                    ),
+                  ),
+                ),
+                if (bound && masked.isNotEmpty) ...[
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      masked,
+                      style: Ty.tiny.copyWith(
+                        fontSize: 10.5,
+                        color: context.t2,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _forceUnbindQq(u),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: C.danger.withAlpha(24),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: C.danger.withAlpha(80)),
+                      ),
+                      child: const Text(
+                        '解绑',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          color: C.danger,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 管理员强制解绑 QQ（二次确认，防止误点）
+  Future<void> _forceUnbindQq(Map u) async {
+    final name = '${u['nickname'] ?? u['username'] ?? ''}';
+    final ok = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('强制解绑 QQ'),
+        content: Text(
+          '将解绑「$name」的 QQ 绑定。\n\n'
+          '解绑后该用户无法再用 QQ 一键登录此账号，'
+          '但账号数据（积分/余额/会员）不受影响。\n\n确定吗？',
+          style: const TextStyle(fontSize: 13, height: 1.6),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Get.back(result: true),
+            style: FilledButton.styleFrom(backgroundColor: C.danger),
+            child: const Text('强制解绑'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await _svc.qqUnbind((u['id'] as num?)?.toInt() ?? 0);
+      ToastUtil.success('已解绑');
+      Get.back();
+      _load();
+    } catch (e) {
+      ToastUtil.error(ErrText.of(e));
+    }
   }
 
   Widget _detailRow(String k, String v) => Padding(

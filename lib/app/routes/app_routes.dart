@@ -14,6 +14,9 @@ abstract class Routes {
   static const recharge = _Paths.recharge;
   static const message = _Paths.message;
   static const task = _Paths.task;
+  static const wish = _Paths.wish;
+  static const favorites = _Paths.favorites;
+  static const history = _Paths.history;
   static const payWeb = _Paths.payWeb;
   static const urlWebview = _Paths.urlWebview;
   static const cardShop = _Paths.cardShop;
@@ -40,6 +43,9 @@ abstract class _Paths {
   static const recharge = '/recharge';
   static const message = '/message';
   static const task = '/task';
+  static const wish = '/wish';
+  static const favorites = '/favorites';
+  static const history = '/history';
   static const payWeb = '/payWeb';
   static const urlWebview = '/urlWebview';
   static const cardShop = '/cardShop';

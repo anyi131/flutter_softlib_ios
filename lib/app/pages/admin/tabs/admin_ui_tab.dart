@@ -14,6 +14,7 @@ import '../../../design/app_style_controller.dart';
 import '../../../design/theme_controller.dart';
 import '../../../design/theme_palette.dart';
 import '../../../design/ui.dart';
+import 'config_history_view.dart';
 import '../admin_template.dart';
 import '../../../utils/toast_util.dart';
 import '../../../pages/navigate/navigate_logic.dart';
@@ -388,6 +389,36 @@ class _AdminUiTabState extends State<AdminUiTab> {
             _card('邀请页模板', _inviteTemplatePicker()),
             _card('底部导航栏模板', _navTemplatePicker()),
             _card('全局玻璃质感（Liquid Glass）', _glassPicker()),
+            _card(
+              '配置历史与回滚',
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '每次保存配置都会自动留一份快照。'
+                    '改坏了（比如导航模板、更新地址填错）可以一键回滚到之前的版本。',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      height: 1.6,
+                      color: context.t3,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => Get.to(
+                        () => const Scaffold(
+                          body: SafeArea(child: ConfigHistoryView()),
+                        ),
+                      ),
+                      icon: const Icon(Icons.history_rounded, size: 17),
+                      label: const Text('查看历史版本'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             _card('工具箱布局模板', _toolLayoutPicker()),
             _card('管理后台整体模板', _adminTemplatePicker()),
             _card('邀请配置', _inviteConfig()),

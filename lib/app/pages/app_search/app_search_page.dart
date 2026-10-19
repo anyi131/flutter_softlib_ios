@@ -213,7 +213,10 @@ class _AppSearchPageState extends State<AppSearchPage> {
               ),
               const SizedBox(height: 22),
               FilledButton.icon(
-                onPressed: () => Get.toNamed(Routes.message),
+                // ★ 1020：改为跳「求软件」页（带关键词预填），
+                //   原来的 Routes.message 是消息中心，用户点进去更懵
+                onPressed: () =>
+                    Get.toNamed(Routes.wish, arguments: {'keyword': _keyword}),
                 icon: const Icon(Icons.add_comment_rounded, size: 17),
                 label: const Text('求这个软件'),
                 style: FilledButton.styleFrom(

@@ -1171,7 +1171,96 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         ),
         const SizedBox(height: 22),
         _recommend(),
+        // ★ 1020（待办）：弱化版「你可能还喜欢」
+        //   复用推荐数据，但视觉极轻：纯文字 + 小图标，不抢精品推荐的视觉
+        _alsoLike(),
       ],
+    );
+  }
+
+  /// 你可能还喜欢（极轻量，纯文字 + 16px 小图标）
+  Widget _alsoLike() {
+    _recFuture ??= _loadRecommend();
+    return FutureBuilder<List<AppItem>>(
+      future: _recFuture,
+      builder: (context, snap) {
+        final all = snap.data ?? const <AppItem>[];
+        if (all.length < 4) return const SizedBox.shrink();
+        final picks = all.skip(4).take(3).toList();
+        if (picks.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.auto_awesome_outlined,
+                    size: 13,
+                    color: context.t3,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    '你可能还喜欢',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: context.t3,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ...picks.map(
+                (a) => InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => Get.offAndToNamed(
+                    Routes.appDetails,
+                    arguments: {'appId': a.id.toString(), 'item': a},
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(5),
+                          child: CachedNetworkImage(
+                            imageUrl: a.icon,
+                            width: 16,
+                            height: 16,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) =>
+                                const SizedBox(width: 16, height: 16),
+                          ),
+                        ),
+                        const SizedBox(width: 7),
+                        Expanded(
+                          child: Text(
+                            a.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: context.t2,
+                            ),
+                          ),
+                        ),
+                        if (a.size.isNotEmpty)
+                          Text(
+                            a.size,
+                            style: TextStyle(fontSize: 10, color: context.t3),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -1580,8 +1669,14 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     final isPaused = st == DownloadTaskStatus.paused;
     final isFailed = st == DownloadTaskStatus.failed;
 
-    final Color accent = isFailed ? C.danger : (isPaused ? C.warning : C.brand);
-    final String title = isFailed ? '下载失败' : (isPaused ? '已暂停' : '正在下载中');
+    // ★ 1020（待办 #1）：静默重连中 —— 不显示「失败」，进度保持不变
+    final retrying = download.silentRetrying;
+    final Color accent = retrying
+        ? C.amber
+        : (isFailed ? C.danger : (isPaused ? C.warning : C.brand));
+    final String title = retrying
+        ? '连接中断，正在重连…'
+        : (isFailed ? '下载失败' : (isPaused ? '已暂停' : '正在下载中'));
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -1596,11 +1691,13 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                isFailed
-                    ? Icons.error_outline_rounded
-                    : (isPaused
-                          ? Icons.pause_rounded
-                          : Icons.downloading_rounded),
+                retrying
+                    ? Icons.sync_rounded
+                    : (isFailed
+                          ? Icons.error_outline_rounded
+                          : (isPaused
+                                ? Icons.pause_rounded
+                                : Icons.downloading_rounded)),
                 size: 14,
                 color: accent,
               ),

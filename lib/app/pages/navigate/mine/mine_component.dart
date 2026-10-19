@@ -1329,6 +1329,20 @@ class MineComponent extends StatelessWidget {
           C.rose,
           () => Get.toNamed(Routes.invite),
         ),
+      // ★ 1020（待办）：统一收藏夹 —— 软件 + 工具一个入口
+      _S(
+        '我的收藏',
+        Icons.star_rounded,
+        C.amber,
+        () => Get.toNamed(Routes.favorites),
+      ),
+      // ★ 1020（待办）：使用历史（可删除 / 批量清理）
+      _S(
+        '使用历史',
+        Icons.history_rounded,
+        C.violet,
+        () => Get.toNamed(Routes.history),
+      ),
       _S(
         '充值余额',
         Icons.account_balance_wallet_rounded,
@@ -1336,8 +1350,20 @@ class MineComponent extends StatelessWidget {
         () => logic.recharge(),
       ),
       // ★ 1016：绑定 QQ —— 老用户用它把 QQ 绑到自己原有的账号上
+      // ★ 1020：已绑定时改为「解绑QQ」，并且能解绑（之前只能绑、不能解）
       if (logic.isLoggedIn)
-        _S('绑定QQ', Icons.link_rounded, C.brand, () => logic.bindQQ()),
+        _S(
+          logic.qqBound ? '解绑QQ' : '绑定QQ',
+          logic.qqBound ? Icons.link_off_rounded : Icons.link_rounded,
+          logic.qqBound ? C.danger : C.brand,
+          () {
+            if (logic.qqBound) {
+              logic.unbindQQ();
+            } else {
+              logic.bindQQ();
+            }
+          },
+        ),
       if (_uiCfg.featureDonateRank)
         _S(
           '赞助排行',

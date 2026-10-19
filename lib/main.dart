@@ -27,6 +27,7 @@ import 'app/design/app_style_controller.dart';
 import 'app/design/glass_theme.dart';
 import 'app/design/glass_perf_guard.dart';
 import 'app/api/soft_service.dart';
+import 'app/api/wish_service.dart';
 import 'app/api/app_sign.dart';
 
 /// 应用程序主入口
@@ -172,6 +173,8 @@ Future<void> _initializeServices() async {
   await ThemeController.instance.restore();
   // 界面样式（软件列表风格，需求 #9）
   Get.put<AppStyleController>(AppStyleController.instance, permanent: true);
+  // ★ 1020：求软件 / 需求投票服务
+  if (!Get.isRegistered<WishService>()) Get.put<WishService>(WishService());
   await AppStyleController.instance.restore();
   // v52j #2：冷启动先拉一次配置并应用主题（首帧就是后台设置的样子）
   try {

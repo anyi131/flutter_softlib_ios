@@ -35,6 +35,14 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
   bool _errMode = false;
   List<Map<String, dynamic>> _errList = [];
 
+  /// ★ 1020（待办 #4）：崩溃聚合视图
+  ///   2940 条原始日志人翻不动。这里按堆栈指纹分组，
+  ///   按「影响用户数 → 出现次数」排序，一眼看出最该修的是哪个。
+  bool _groupMode = true;
+  List<Map<String, dynamic>> _groups = [];
+  int _groupDays = 30;
+  bool _groupLoading = false;
+
   static const _actions = <String, String>{
     '': '全部',
     'login': '登录',
@@ -132,7 +140,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
               _modeTab('错误日志', _errMode, () {
                 if (!_errMode) {
                   setState(() => _errMode = true);
-                  _loadErrors();
+                  _loadGroups();
                 }
               }),
             ],
@@ -262,24 +270,117 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
             ),
           ),
         ],
-        if (_errMode)
-          Expanded(
-            child: _loading
-                ? const LoadingState(text: '加载错误日志…')
-                : (_errList.isEmpty
-                      ? const EmptyState(
-                          text: '暂无错误记录',
-                          hint: 'App 崩溃、下载失败、解析失败会自动上报到这里',
-                        )
-                      : RefreshIndicator(
-                          onRefresh: _loadErrors,
-                          child: ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(14, 4, 14, 20),
-                            itemCount: _errList.length,
-                            itemBuilder: (context, i) => _errCard(_errList[i]),
+        if (_errMode) ...[
+          // ★ 1020：聚合 / 原始 两种视角
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
+            child: Row(
+              children: [
+                _modeTab('聚合视图', _groupMode, () {
+                  if (!_groupMode) {
+                    setState(() => _groupMode = true);
+                    _loadGroups();
+                  }
+                }),
+                const SizedBox(width: 8),
+                _modeTab('原始日志', !_groupMode, () {
+                  if (_groupMode) {
+                    setState(() => _groupMode = false);
+                    _loadErrors();
+                  }
+                }),
+                const Spacer(),
+                if (_groupMode)
+                  PopupMenuButton<int>(
+                    initialValue: _groupDays,
+                    onSelected: (v) {
+                      setState(() => _groupDays = v);
+                      _loadGroups();
+                    },
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(value: 1, child: Text('今天')),
+                      PopupMenuItem(value: 7, child: Text('近 7 天')),
+                      PopupMenuItem(value: 30, child: Text('近 30 天')),
+                      PopupMenuItem(value: 90, child: Text('近 90 天')),
+                    ],
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: C.brand.withAlpha(22),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.date_range_rounded,
+                            size: 13,
+                            color: C.brand,
                           ),
-                        )),
+                          const SizedBox(width: 4),
+                          Text(
+                            '近 $_groupDays 天',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: C.brand,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
+          Expanded(
+            child: _groupMode
+                ? (_groupLoading
+                      ? const LoadingState(text: '正在聚合崩溃…')
+                      : (_groups.isEmpty
+                            ? const EmptyState(
+                                text: '这个时间段没有错误',
+                                hint: '换个时间范围试试',
+                              )
+                            : RefreshIndicator(
+                                onRefresh: _loadGroups,
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    14,
+                                    4,
+                                    14,
+                                    20,
+                                  ),
+                                  itemCount: _groups.length,
+                                  itemBuilder: (context, i) =>
+                                      _groupCard(_groups[i]),
+                                ),
+                              )))
+                : (_loading
+                      ? const LoadingState(text: '加载错误日志…')
+                      : (_errList.isEmpty
+                            ? const EmptyState(
+                                text: '暂无错误记录',
+                                hint: 'App 崩溃、下载失败、解析失败会自动上报到这里',
+                              )
+                            : RefreshIndicator(
+                                onRefresh: _loadErrors,
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    14,
+                                    4,
+                                    14,
+                                    20,
+                                  ),
+                                  itemCount: _errList.length,
+                                  itemBuilder: (context, i) =>
+                                      _errCard(_errList[i]),
+                                ),
+                              ))),
+          ),
+        ],
         if (!_errMode)
           Expanded(
             child: _loading
@@ -400,6 +501,195 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
   }
 
   /// 模式切换小标签
+  /// 加载崩溃聚合（按堆栈指纹分组）
+  Future<void> _loadGroups() async {
+    setState(() => _groupLoading = true);
+    try {
+      final r = await _svc.errorGroups(days: _groupDays, limit: 50);
+      if (!mounted) return;
+      setState(() {
+        _groups = ((r['groups'] as List?) ?? [])
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+        _groupLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _groupLoading = false);
+      ToastUtil.error(ErrText.of(e));
+    }
+  }
+
+  /// 崩溃聚合卡片：一眼看出「多少次 / 影响多少人 / 什么时间 / 哪些设备」
+  Widget _groupCard(Map<String, dynamic> g) {
+    final count = (g['count'] as num?)?.toInt() ?? 0;
+    final users = (g['user_count'] as num?)?.toInt() ?? 0;
+    final tag = '${g['tag'] ?? ''}';
+    final devices = (g['devices'] as List?) ?? const [];
+    final versions = (g['versions'] as List?) ?? const [];
+    final Color level = users >= 5
+        ? C.danger
+        : (users >= 2 ? C.amber : (count >= 20 ? C.violet : C.mint));
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 9),
+      child: AdCard(
+        radius: R.md,
+        padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
+        onTap: () => _showGroupDetail(g),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: level.withAlpha(30),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    tag,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: level,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Text(
+                    '${g['title'] ?? ''}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
+                      color: context.t1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 9),
+            Row(
+              children: [
+                _mini('影响用户', '$users', users > 0 ? level : context.t3),
+                const SizedBox(width: 14),
+                _mini('出现次数', '$count', context.t2),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    '${g['first_text'] ?? ''} ~ ${g['last_text'] ?? ''}',
+                    style: Ty.tiny.copyWith(color: context.t3),
+                  ),
+                ),
+              ],
+            ),
+            if (devices.isNotEmpty || versions.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                [
+                  if (devices.isNotEmpty) '设备 ${devices.take(2).join(' / ')}',
+                  if (versions.isNotEmpty) '版本 ${versions.take(3).join(' / ')}',
+                ].join('  ·  '),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Ty.tiny.copyWith(color: context.t3),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _mini(String label, String value, Color c) => Row(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.baseline,
+    textBaseline: TextBaseline.alphabetic,
+    children: [
+      Text(
+        value,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w900,
+          color: c,
+          letterSpacing: -0.3,
+        ),
+      ),
+      const SizedBox(width: 3),
+      Text(label, style: Ty.tiny.copyWith(color: context.t3)),
+    ],
+  );
+
+  void _showGroupDetail(Map<String, dynamic> g) {
+    Get.bottomSheet(
+      Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
+        decoration: BoxDecoration(
+          color: context.isDark ? C.bg1 : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            Text(
+              '${g['title'] ?? ''}',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: context.t1,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              '标签：${g['tag']}    次数：${g['count']}    '
+              '影响用户：${g['user_count']}\n'
+              '首次：${g['first_text']}    最近：${g['last_text']}\n'
+              '设备：${(g['devices'] as List?)?.join(' / ') ?? '-'}\n'
+              '版本：${(g['versions'] as List?)?.join(' / ') ?? '-'}',
+              style: Ty.small.copyWith(color: context.t2, height: 1.7),
+            ),
+            const SizedBox(height: 14),
+            Text('错误信息', style: Ty.tiny.copyWith(color: context.t3)),
+            const SizedBox(height: 4),
+            _mono('${g['sample_error'] ?? ''}'),
+            const SizedBox(height: 12),
+            Text('堆栈（最新一条）', style: Ty.tiny.copyWith(color: context.t3)),
+            const SizedBox(height: 4),
+            _mono('${g['sample_stack'] ?? ''}'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _mono(String text) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: context.isDark ? Colors.black38 : const Color(0xFF10131C),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: SelectableText(
+      text,
+      style: const TextStyle(
+        fontSize: 10.5,
+        height: 1.5,
+        color: Color(0xFF9FE8A8),
+        fontFamily: 'monospace',
+      ),
+    ),
+  );
+
   Widget _modeTab(String label, bool sel, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,

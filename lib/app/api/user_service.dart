@@ -227,6 +227,31 @@ class UserService {
   /// ★ 1016：把 QQ 绑定到**当前已登录账号**
   ///   场景：老用户先用自己的邮箱账号登录 → 绑定 QQ →
   ///        以后 QQ 一键登录直接进这个号（不会再自动开一个新号）。
+  /// ★ 1020：查询 QQ 绑定状态（我的页显示「已绑定/未绑定」）
+  Future<bool> qqBound() async {
+    try {
+      final r = await _dio.post(
+        '/api/softlib/user/qq_status',
+        data: {'token': _token},
+      );
+      if (r.data is Map && r.data['code'] == 1) {
+        return (r.data['data']?['bound'] ?? 0) == 1;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  /// ★ 1020：解绑 QQ（之前只有绑定，绑错了没法自救）
+  Future<void> unbindQQ() async {
+    final r = await _dio.post(
+      '/api/softlib/user/unbind_qq',
+      data: {'token': _token},
+    );
+    if (r.data is! Map) throw Exception('解绑失败：返回格式异常');
+    final d = Map<String, dynamic>.from(r.data as Map);
+    if (d['code'] != 1) throw Exception('${d['msg'] ?? '解绑失败'}');
+  }
+
   Future<Map<String, dynamic>> bindQQ({
     required String openid,
     required String accessToken,

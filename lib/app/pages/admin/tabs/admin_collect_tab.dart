@@ -8,6 +8,9 @@ import 'collect_ex_views.dart';
 import 'collect_ex_views2.dart';
 import 'collect_diag_views.dart';
 import 'collect_task_view.dart';
+import 'wish_admin_view.dart';
+import 'score_rank_view.dart';
+import 'perf_monitor_view.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -38,7 +41,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   final _svc = AdminService.instance;
   final _kwCtrl = TextEditingController();
-  late final TabController _sub = TabController(length: 11, vsync: this);
+  late final TabController _sub = TabController(length: 14, vsync: this);
 
   /// 子页：0=采集 1=目录 2=日志 3=蓝奏云账号
   int get _subIndex => _sub.index;
@@ -285,6 +288,11 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               const CollectTaskView(),
               const CollectSelftestView(),
               const CollectParseLogView(),
+              // ★ 1020（待办 #2）：用户提的软件需求，按票数排序
+              const WishAdminView(),
+              // ★ 1020：积分排行（仅后台）/ 性能监控
+              const ScoreRankView(),
+              const PerfMonitorView(),
             ],
           ),
         ),
@@ -299,7 +307,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
       '采集', '目录', '日志', '蓝奏云',
       '软件统计', '自动采集', '版权配置', '全局配置',
       // ★ 1016：诊断类
-      '任务活动', '接口自测', '解析记录',
+      '任务活动', '接口自测', '解析记录', '需求投票', '积分排行', '性能监控',
     ];
     return Padding(
       padding: EdgeInsets.fromLTRB(

@@ -128,28 +128,61 @@ class SoftService {
       if (hit != null && !hit.expired) return hit.data as List<AppItem>;
     }
     final t0 = DateTime.now();
+    // ★ 1020（用户要求）：缓存必须有，但数据更新要强制刷新。
+    //   做法：把上次拿到的「数据版本号」带上去，服务端比对后回
+    //   X-Data-Cached: 1 表示没变 → 直接用本地缓存（省流量、秒开）；
+    //   一变（后台新增/改了软件）就回 0，App 立即换新数据，不等 TTL。
+    final knownDv = _dataVersion;
     final resp = await dio.get(
       '/api/softlib/app/index',
       queryParameters: {
         if (catId > 0) 'cat_id': catId,
         if (keyword.trim().isNotEmpty) 'keyword': keyword.trim(),
         if (provider.isNotEmpty) 'provider': provider,
+        if (knownDv.isNotEmpty) 'dv': knownDv,
       },
     );
+    final respDv = '${resp.headers.value('x-data-version') ?? ''}';
+    final cachedFlag = '${resp.headers.value('x-data-cached') ?? ''}' == '1';
+    if (respDv.isNotEmpty) _dataVersion = respDv;
+
+    // 服务端说「没变化」→ 用缓存里的那份（必须是同一 key）
+    if (cachedFlag && !force) {
+      final hit = _cache[key];
+      if (hit != null) {
+        debugPrint('[Softlib] fetchApps 未变化，用本地缓存（dv=$respDv）');
+        return hit.data as List<AppItem>;
+      }
+      // 没有对应缓存（换了分类/关键词）→ 再请求一次（不带 dv）
+      return fetchApps(
+        catId: catId,
+        keyword: keyword,
+        provider: provider,
+        force: true,
+      );
+    }
+
     final data = resp.data;
     if (data is Map && data['code'] == 1) {
       final list = AppItem.listFrom(data['data']);
       _cache[key] = _CacheEntry(list);
       debugPrint(
-        '[Softlib] fetchApps ${DateTime.now().difference(t0).inMilliseconds}ms (${list.length}条)',
+        '[Softlib] fetchApps ${DateTime.now().difference(t0).inMilliseconds}ms '
+        '(${list.length}条 dv=$respDv)',
       );
       return list;
     }
     throw Exception((data is Map ? data['msg'] : '获取软件列表失败') ?? '获取失败');
   }
 
+  /// 服务端数据版本号（列表类缓存用）
+  static String _dataVersion = '';
+
   /// 清空缓存（下拉刷新时用）
-  static void clearCache() => _cache.clear();
+  static void clearCache() {
+    _cache.clear();
+    _dataVersion = '';
+  }
 
   /// 工具箱配置缓存（由文件末尾的 ToolboxService 扩展维护，这里给类一个同步入口）
   static Map<String, dynamic>? get toolboxCache => ToolboxService._jzsCache;

@@ -22,6 +22,9 @@ import 'package:flutter_softlib/app/pages/appinfo/agreement_page.dart';
 import 'package:flutter_softlib/app/pages/navigate/mine/invite_page.dart';
 import 'package:flutter_softlib/app/pages/message/message_page.dart';
 import 'package:flutter_softlib/app/pages/taskcenter/task_page.dart';
+import 'package:flutter_softlib/app/pages/wishlist/wish_page.dart';
+import 'package:flutter_softlib/app/pages/favorites/favorites_page.dart';
+import 'package:flutter_softlib/app/pages/history/history_page.dart';
 import 'package:get/get.dart';
 
 import '../pages/navigate/navigate_binding.dart';
@@ -41,6 +44,21 @@ class AppPages {
     GetPage(name: _Paths.agreement, page: () => const AgreementPage()),
     GetPage(name: _Paths.recharge, page: () => const RechargePage()),
     GetPage(name: _Paths.task, page: () => const TaskPage()),
+    // ★ 1020：统一收藏夹（软件 + 工具）
+    GetPage(name: _Paths.favorites, page: () => const FavoritesPage()),
+    // ★ 1020：使用历史（可删除 / 批量清理）
+    GetPage(name: _Paths.history, page: () => const HistoryPage()),
+    // ★ 1020：求软件 / 需求投票
+    GetPage(
+      name: _Paths.wish,
+      page: () {
+        // 从搜索无结果跳进来时带上关键词
+        final arg = Get.arguments;
+        String kw = '';
+        if (arg is Map) kw = '${arg['keyword'] ?? ''}';
+        return WishPage(initialKeyword: kw);
+      },
+    ),
     GetPage(name: _Paths.splash, page: () => const SplashPage()),
     GetPage(
       name: _Paths.index,
