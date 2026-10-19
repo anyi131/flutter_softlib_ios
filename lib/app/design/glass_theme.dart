@@ -59,8 +59,17 @@ class GlassTheme {
   static bool get enabled => _level != GlassLevel.off;
   static bool get isDarkMode => false;
 
-  /// 卡片是否允许真模糊（只有 high 才开，其余一律不模糊）
-  static bool get cardBlur => _level == GlassLevel.high;
+  /// 卡片是否允许真模糊
+  ///
+  /// ★★ 1020 修复「字体发虚」：
+  ///   之前 high 档给**每张卡片**套 BackdropFilter。BackdropFilter 会把
+  ///   卡片内的内容（包括文字）一起纳入模糊采样，在高分屏上表现为
+  ///   「文字边缘发灰、整体不清晰」—— 用户反馈的就是这个。
+  ///
+  ///   现在：**卡片一律不做真模糊**，只用「半透明 + 高光边 + 极淡渐变」
+  ///   模拟玻璃质感（观感接近，文字 100% 清晰）。
+  ///   真模糊只留给导航栏 / 弹窗 / 头图这类没有正文的大容器。
+  static bool get cardBlur => false;
 
   /// 大容器（导航栏/弹窗/头图）是否允许真模糊
   static bool get bigBlur =>

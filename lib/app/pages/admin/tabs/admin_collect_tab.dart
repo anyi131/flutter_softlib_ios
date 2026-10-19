@@ -7,10 +7,6 @@ import '../admin_ui_kit.dart';
 import 'collect_ex_views.dart';
 import 'collect_ex_views2.dart';
 import 'collect_diag_views.dart';
-import 'collect_task_view.dart';
-import 'wish_admin_view.dart';
-import 'score_rank_view.dart';
-import 'perf_monitor_view.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -41,7 +37,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   final _svc = AdminService.instance;
   final _kwCtrl = TextEditingController();
-  late final TabController _sub = TabController(length: 14, vsync: this);
+  late final TabController _sub = TabController(length: 8, vsync: this);
 
   /// 子页：0=采集 1=目录 2=日志 3=蓝奏云账号
   int get _subIndex => _sub.index;
@@ -284,15 +280,6 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                 title: '全局配置',
                 subtitle: '退出软件 / 打开网址 / 启动复制文本等',
               ),
-              // ★ 1016：诊断类子页
-              const CollectTaskView(),
-              const CollectSelftestView(),
-              const CollectParseLogView(),
-              // ★ 1020（待办 #2）：用户提的软件需求，按票数排序
-              const WishAdminView(),
-              // ★ 1020：积分排行（仅后台）/ 性能监控
-              const ScoreRankView(),
-              const PerfMonitorView(),
             ],
           ),
         ),
@@ -302,43 +289,14 @@ class _AdminCollectTabState extends State<AdminCollectTab>
 
   /// 子页切换
   ///
-  /// ★ 1020（整体优化）：原来 14 个子页横向铺在一行里，手机上要滑半天才能找到
-  ///   「积分排行 / 性能监控」，而且完全没有分组，新用户根本不知道该去哪。
-  ///   现在改成「分组下拉」：点击顶部按钮弹出分组菜单，4 组一目了然。
-  static const List<(String, IconData, List<int>)> _subGroups = [
-    ('采集', Icons.cloud_download_rounded, [0, 1, 2, 3]),
-    ('数据', Icons.insights_rounded, [4, 11, 12, 13]),
-    ('配置', Icons.tune_rounded, [5, 6, 7, 8]),
-    ('诊断', Icons.build_rounded, [9, 10]),
-  ];
-
-  static const List<String> _subNames = [
-    '采集',
-    '目录',
-    '日志',
-    '蓝奏云',
-    '软件统计',
-    '自动采集',
-    '版权配置',
-    '全局配置',
-    '任务活动',
-    '接口自测',
-    '解析记录',
-    '需求投票',
-    '积分排行',
-    '性能监控',
-  ];
-
+  /// ★ 1020（用户要求）：
+  ///   采集 Tab 只保留**版权梦（采集平台）相关**的 8 个子页：
+  ///   采集 / 目录 / 日志 / 蓝奏云 / 软件统计 / 自动采集 / 版权配置 / 全局配置
+  ///
+  ///   之前混进来的「任务活动 / 接口自测 / 解析记录 / 需求投票 / 积分排行 / 性能监控」
+  ///   属于运营、诊断、数据类，不属于采集，且 14 个横向排不下才做了折叠菜单。
+  ///   现在 8 个一屏放得下 → 恢复成横排，**不折叠**，点一下就切。
   Widget _subBar() {
-    // 当前子页属于哪个分组
-    String groupName = '采集';
-    for (final g in _subGroups) {
-      if (g.$3.contains(_subIndex)) {
-        groupName = g.$1;
-        break;
-      }
-    }
-
     return Padding(
       padding: EdgeInsets.fromLTRB(
         context.pagePadding,
@@ -346,140 +304,44 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         context.pagePadding,
         6,
       ),
-      child: Row(
-        children: [
-          // 分组切换
-          PopupMenuButton<int>(
-            onSelected: (v) => setState(() => _sub.animateTo(v)),
-            itemBuilder: (_) => [
-              for (final g in _subGroups) ...[
-                PopupMenuItem<int>(
-                  enabled: false,
-                  height: 28,
+      child: Container(
+        height: 38,
+        decoration: BoxDecoration(
+          color: context.isDark ? Colors.white.withAlpha(10) : Colors.white,
+          borderRadius: BorderRadius.circular(R.full),
+          border: Border.all(color: C.stroke),
+        ),
+        padding: const EdgeInsets.all(3),
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: List.generate(_subNames.length, (i) {
+            final sel = _subIndex == i;
+            return GestureDetector(
+              onTap: () {
+                if (_subIndex != i) setState(() => _sub.animateTo(i));
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  gradient: sel ? Deco.brandGradient : null,
+                  borderRadius: BorderRadius.circular(R.full),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: Text(
-                    g.$1,
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w800,
-                      color: C.brand,
+                    _subNames[i],
+                    style: Ty.tiny.copyWith(
+                      fontSize: 12.5,
+                      color: sel ? Colors.white : context.t2,
+                      fontWeight: sel ? FontWeight.w800 : FontWeight.w500,
                     ),
                   ),
                 ),
-                for (final i in g.$3)
-                  PopupMenuItem<int>(
-                    value: i,
-                    height: 40,
-                    child: Row(
-                      children: [
-                        if (_subIndex == i)
-                          Icon(Icons.check_rounded, size: 15, color: C.brand)
-                        else
-                          const SizedBox(width: 15),
-                        const SizedBox(width: 8),
-                        Text(
-                          _subNames[i],
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: _subIndex == i
-                                ? FontWeight.w800
-                                : FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ],
-            child: Container(
-              height: 38,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              decoration: BoxDecoration(
-                gradient: Deco.brandGradient,
-                borderRadius: BorderRadius.circular(R.full),
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    _subGroups
-                        .firstWhere(
-                          (g) => g.$1 == groupName,
-                          orElse: () => _subGroups.first,
-                        )
-                        .$2,
-                    size: 14,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    _subNames[_subIndex],
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 3),
-                  const Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    size: 16,
-                    color: Colors.white,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          // 同组快捷切换（只显示当前组的其他页，最多 4 个）
-          Expanded(
-            child: Container(
-              height: 38,
-              decoration: BoxDecoration(
-                color: context.isDark
-                    ? Colors.white.withAlpha(10)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(R.full),
-                border: Border.all(color: C.stroke),
-              ),
-              padding: const EdgeInsets.all(3),
-              child: Row(
-                children: [
-                  for (final g in _subGroups)
-                    if (g.$1 == groupName)
-                      for (final i in g.$3)
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              if (_subIndex != i) _sub.animateTo(i);
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: _subIndex == i
-                                    ? C.brand.withAlpha(30)
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(R.full),
-                              ),
-                              child: Text(
-                                _subNames[i],
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Ty.tiny.copyWith(
-                                  fontSize: 11,
-                                  color: _subIndex == i ? C.brand : context.t3,
-                                  fontWeight: _subIndex == i
-                                      ? FontWeight.w800
-                                      : FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                ],
-              ),
-            ),
-          ),
-        ],
+            );
+          }),
+        ),
       ),
     );
   }

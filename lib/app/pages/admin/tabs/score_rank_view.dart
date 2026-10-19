@@ -229,7 +229,15 @@ class _ScoreRankViewState extends State<ScoreRankView> {
     final rank = (r['rank'] as num?)?.toInt() ?? 0;
     final gain = (r['month_gain'] as num?)?.toInt() ?? 0;
     final avatar = '${r['avatar'] ?? ''}';
-    final sources = (r['sources'] as Map?) ?? {};
+    // ★ 1020 修复：PHP 的空数组会编码成 JSON 的 `[]`（数组），
+    //   这里 `as Map?` 会直接抛
+    //   「type 'List<dynamic>' is not a subtype of type 'Map<dynamic,dynamic>?'」
+    //   → 整个「积分排行」页变成「内容加载异常」。
+    //   改为：不是 Map 就当空处理。
+    final rawSources = r['sources'];
+    final sources = rawSources is Map
+        ? Map<String, dynamic>.from(rawSources)
+        : <String, dynamic>{};
     final vip = r['vip'] == true;
 
     final Color rankColor = rank == 1

@@ -1592,17 +1592,38 @@ class _HomeComponentState extends State<HomeComponent> {
                 Expanded(
                   child: SizedBox(
                     height: 18,
-                    child: Marquee(
-                      text: text,
-                      style: Ty.small.copyWith(
-                        color: context.t2,
-                        fontSize: 12.5,
-                      ),
-                      blankSpace: 90,
-                      velocity: 30,
-                      accelerationDuration: const Duration(milliseconds: 800),
-                      decelerationDuration: const Duration(milliseconds: 800),
-                    ),
+                    // ★ 1020 修复：文本很短时（如「欢迎」）不再跑马灯 ——
+                    //   Marquee 的 blankSpace 会把短文本平铺多次填满整行，
+                    //   看起来像「欢迎 欢迎 欢迎」重复三遍（用户截图反馈）。
+                    //   短文本直接静态显示，长文本才滚动。
+                    child: text.characters.length <= 16
+                        ? Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              text,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Ty.small.copyWith(
+                                color: context.t2,
+                                fontSize: 12.5,
+                              ),
+                            ),
+                          )
+                        : Marquee(
+                            text: text,
+                            style: Ty.small.copyWith(
+                              color: context.t2,
+                              fontSize: 12.5,
+                            ),
+                            blankSpace: 90,
+                            velocity: 30,
+                            accelerationDuration: const Duration(
+                              milliseconds: 800,
+                            ),
+                            decelerationDuration: const Duration(
+                              milliseconds: 800,
+                            ),
+                          ),
                   ),
                 ),
               ],

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
+import 'perf_monitor_view.dart';
+import 'collect_diag_views.dart';
+import 'score_rank_view.dart';
 
 import 'package:get/get.dart';
 
@@ -32,7 +35,10 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
   String _kw = '';
   String _action = '';
   // ★ 1016：错误日志模式（崩溃/下载/解析等异常）
-  bool _errMode = false;
+  /// ★ 1020：日志 Tab 改为多模式（不再只有 操作/错误 两态）
+  ///   0=操作日志 1=错误日志 2=性能监控 3=积分排行 4=解析记录 5=接口自测
+  int _mode = 0;
+  bool get _errMode => _mode == 1;
   List<Map<String, dynamic>> _errList = [];
 
   /// ★ 1020（待办 #4）：崩溃聚合视图
@@ -125,28 +131,37 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // ★ 1016：操作日志 / 错误日志 切换
+        // ★ 1020：日志类页面统一挂在这里
         Padding(
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
-          child: Row(
-            children: [
-              _modeTab('操作日志', !_errMode, () {
-                if (_errMode) {
-                  setState(() => _errMode = false);
-                  _load(reset: true);
-                }
-              }),
-              const SizedBox(width: 8),
-              _modeTab('错误日志', _errMode, () {
-                if (!_errMode) {
-                  setState(() => _errMode = true);
-                  _loadGroups();
-                }
-              }),
-            ],
+          child: SizedBox(
+            height: 34,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _modeTab2('操作日志', 0),
+                const SizedBox(width: 8),
+                _modeTab2('错误日志', 1),
+                const SizedBox(width: 8),
+                _modeTab2('性能监控', 2),
+                const SizedBox(width: 8),
+                _modeTab2('解析记录', 3),
+                const SizedBox(width: 8),
+                _modeTab2('接口自测', 4),
+              ],
+            ),
           ),
         ),
-        if (!_errMode) ...[
+        // ★ 1020：性能监控 / 解析记录 / 接口自测 直接复用已有页面
+        if (_mode == 2)
+          const Expanded(child: PerfMonitorView())
+        else if (_mode == 3)
+          const Expanded(child: CollectParseLogView())
+        else if (_mode == 4)
+          const Expanded(child: CollectSelftestView())
+        else if (_mode == 5)
+          const Expanded(child: ScoreRankView()),
+        if (_mode == 0) ...[
           // 搜索 + 筛选
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
@@ -381,7 +396,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                               ))),
           ),
         ],
-        if (!_errMode)
+        if (_mode == 0)
           Expanded(
             child: _loading
                 ? const LoadingState(text: '加载操作日志…')
@@ -689,6 +704,44 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
       ),
     ),
   );
+
+  /// 模式切换按钮（索引式）
+  Widget _modeTab2(String label, int idx) {
+    final sel = _mode == idx;
+    return GestureDetector(
+      onTap: () {
+        if (_mode == idx) return;
+        setState(() => _mode = idx);
+        if (idx == 1) {
+          _loadGroups();
+        } else if (idx == 0) {
+          _load(reset: true);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 13),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          gradient: sel ? Deco.brandGradient : null,
+          color: sel ? null : (context.isDark ? Colors.white10 : Colors.white),
+          borderRadius: BorderRadius.circular(R.full),
+          border: Border.all(
+            color: sel
+                ? Colors.transparent
+                : (context.isDark ? Colors.white12 : Colors.black.withAlpha(7)),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: sel ? FontWeight.w800 : FontWeight.w500,
+            color: sel ? Colors.white : context.t2,
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _modeTab(String label, bool sel, VoidCallback onTap) {
     return GestureDetector(

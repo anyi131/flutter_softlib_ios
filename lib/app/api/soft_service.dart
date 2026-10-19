@@ -146,20 +146,18 @@ class SoftService {
     final cachedFlag = '${resp.headers.value('x-data-cached') ?? ''}' == '1';
     if (respDv.isNotEmpty) _dataVersion = respDv;
 
-    // 服务端说「没变化」→ 用缓存里的那份（必须是同一 key）
+    // ★★ 1020 修复（首页空白事故）：
+    //   原实现「cached=1 但本地没缓存时」会递归调用 fetchApps(force:true)，
+    //   而服务端对 force 请求仍可能回 cached=1 → **无限递归**，
+    //   最终抛栈溢出，首页列表整块空白。
+    //   现在：cached=1 时**只复用内存缓存**，没有就当普通响应处理，绝不递归。
     if (cachedFlag && !force) {
       final hit = _cache[key];
       if (hit != null) {
         debugPrint('[Softlib] fetchApps 未变化，用本地缓存（dv=$respDv）');
         return hit.data as List<AppItem>;
       }
-      // 没有对应缓存（换了分类/关键词）→ 再请求一次（不带 dv）
-      return fetchApps(
-        catId: catId,
-        keyword: keyword,
-        provider: provider,
-        force: true,
-      );
+      // 没有缓存 → 落到下面按正常数据解析（服务端同时也返回了完整 data）
     }
 
     final data = resp.data;

@@ -14,6 +14,7 @@ import 'resolve_overlay.dart';
 import 'package:get/get.dart';
 import 'package:photo_view/photo_view.dart';
 
+import '../../api/api_host.dart';
 import '../../api/soft_service.dart';
 import '../../api/user_service.dart';
 import '../../api/unlock_service.dart';
@@ -47,6 +48,13 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     with SingleTickerProviderStateMixin {
   final AppDetailsLogic logic = Get.find<AppDetailsLogic>();
   late final TabController _tab = TabController(length: 2, vsync: this);
+
+  @override
+  void initState() {
+    super.initState();
+    // ★ 1020：进页面就查一次收藏状态（顶栏星标亮不亮）
+    _favIdsFuture = _loadFavIds();
+  }
 
   @override
   void dispose() {
@@ -348,6 +356,9 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   ),
                 ),
                 const Spacer(),
+                // ★ 1020：收藏按钮（之前详情页根本没有收藏入口）
+                _favBtn(),
+                const SizedBox(width: 8),
                 _topBtn(
                   Icons.ios_share_rounded,
                   () => logic.showSharePopUps(context),
@@ -358,6 +369,95 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         ),
       ),
     );
+  }
+
+  /// 收藏按钮（详情页顶栏）
+  ///
+  /// ★ 1020：软件收藏接口早就有了（/api/softlib/appfav），
+  ///   但详情页一直没有入口 → 用户看不到收藏功能。
+  Widget _favBtn() {
+    return FutureBuilder<Set<int>>(
+      future: _favIdsFuture,
+      builder: (context, snap) {
+        final favs = snap.data ?? <int>{};
+        final id = item?.id ?? 0;
+        final on = id > 0 && favs.contains(id);
+        return GestureDetector(
+          onTap: () => _toggleFav(id, on),
+          child: Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: context.isDark ? Colors.white.withAlpha(20) : Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: context.isDark
+                    ? Colors.white12
+                    : Colors.black.withAlpha(6),
+              ),
+            ),
+            child: Icon(
+              on ? Icons.star_rounded : Icons.star_border_rounded,
+              size: 19,
+              color: on ? C.amber : context.t2,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<Set<int>>? _favIdsFuture;
+
+  Future<Set<int>> _loadFavIds() async {
+    try {
+      final r = await Dio(
+        BaseOptions(
+          baseUrl: ApiHost.base,
+          connectTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 8),
+        ),
+      ).post(
+        '/api/softlib/appfavids',
+        data: {'token': UserService.instance.token},
+      );
+      if (r.data is Map && r.data['code'] == 1) {
+        final list = (r.data['data']?['ids'] as List?) ?? [];
+        return list.map((e) => (e as num).toInt()).toSet();
+      }
+    } catch (_) {}
+    return <int>{};
+  }
+
+  Future<void> _toggleFav(int id, bool currentlyOn) async {
+    if (id <= 0) return;
+    if (!UserService.instance.isLoggedIn) {
+      ToastUtil.info('登录后才能收藏');
+      return;
+    }
+    try {
+      final r = await Dio(
+        BaseOptions(
+          baseUrl: ApiHost.base,
+          connectTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 8),
+        ),
+      ).post(
+        '/api/softlib/appfav',
+        data: {'app_id': id, 'token': UserService.instance.token},
+      );
+      if (r.data is Map && r.data['code'] == 1) {
+        ToastUtil.success(currentlyOn ? '已取消收藏' : '已收藏，可在「我的收藏」查看');
+        setState(() {
+          _favIdsFuture = _loadFavIds();
+        });
+      } else {
+        ToastUtil.error('${r.data is Map ? r.data['msg'] : '操作失败'}');
+      }
+    } catch (e) {
+      ToastUtil.error(ErrText.of(e));
+    }
   }
 
   Widget _topBtn(IconData i, VoidCallback f) => GestureDetector(

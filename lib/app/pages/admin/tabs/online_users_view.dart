@@ -66,7 +66,11 @@ class _OnlineUsersViewState extends State<OnlineUsersView> {
           .toList();
       setState(() {
         _list = more ? [..._list, ...list] : list;
-        _buckets = Map<String, dynamic>.from((r['buckets'] as Map?) ?? {});
+        // ★ 1020：空对象会被 PHP 编码成 []，as Map? 会崩
+        final rawB = r['buckets'];
+        _buckets = rawB is Map
+            ? Map<String, dynamic>.from(rawB)
+            : <String, dynamic>{};
         _total = (r['total'] as num?)?.toInt() ?? 0;
         _hasMore = r['has_more'] == true;
         _loading = false;

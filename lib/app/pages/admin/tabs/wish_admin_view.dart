@@ -47,7 +47,11 @@ class _WishAdminViewState extends State<WishAdminView>
         _list = ((r['list'] as List?) ?? [])
             .map((e) => Map<String, dynamic>.from(e as Map))
             .toList();
-        _stat = Map<String, dynamic>.from(r['stat'] ?? {});
+        // ★ 1020：同上，空数组会崩
+        final rawStat = r['stat'];
+        _stat = rawStat is Map
+            ? Map<String, dynamic>.from(rawStat)
+            : <String, dynamic>{};
         _loading = false;
       });
     } catch (e) {
