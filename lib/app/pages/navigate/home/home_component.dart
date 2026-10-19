@@ -249,6 +249,99 @@ class _HomeComponentState extends State<HomeComponent> {
           img = refs.first.image ?? '';
           if ((refs.first.title ?? '').isNotEmpty) title = refs.first.title!;
         }
+        // ★★ 1020 修复「首页顶部一大块空白渐变」：
+        //   后台没配轮播图、也没有推荐位时，img 为空，
+        //   原来仍然渲染 268px 高的纯渐变块 + 底部黑罩 →
+        //   用户看到一大片空蓝色，像页面坏了。
+        //   现在：没有图 → 换成紧凑品牌头图（带软件总数），高度 150。
+        if (img.isEmpty) {
+          // 用兜底列表长度当「软件总数」（推荐位空时它就是软件列表）
+          final total = logic.fallbackRefs?.length ?? 0;
+          return Container(
+            height: 150 + MediaQuery.of(context).padding.top,
+            decoration: BoxDecoration(gradient: Deco.brandGradient),
+            child: Stack(
+              children: [
+                // 装饰光斑
+                Positioned(
+                  right: -40,
+                  top: -50,
+                  child: Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(22),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: -50,
+                  bottom: -70,
+                  child: Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(14),
+                    ),
+                  ),
+                ),
+                // 文案
+                Positioned(
+                  left: context.pagePadding,
+                  right: context.pagePadding,
+                  bottom: 22,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 7),
+                      Text(
+                        total > 0 ? '共 $total 个软件 · $sub' : sub,
+                        style: TextStyle(
+                          color: Colors.white.withAlpha(215),
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // 右上角两个圆按钮
+                Positioned(
+                  right: context.pagePadding - 6,
+                  top: MediaQuery.of(context).padding.top + 8,
+                  child: Row(
+                    children: [
+                      if (logic.configData?.groupBtnOn != false)
+                        _circleBtnGlass(Icons.group_add_outlined, () {
+                          logic.joinGroup();
+                        }),
+                      if (logic.configData?.userBtnOn != false) ...[
+                        const SizedBox(width: 8),
+                        _circleBtnGlass(
+                          Icons.support_agent_outlined,
+                          () => logic.joinUser(),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
         return Stack(
           children: [
             // 全宽大图
