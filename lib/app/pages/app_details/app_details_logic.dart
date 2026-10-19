@@ -205,6 +205,35 @@ class AppDetailsLogic extends GetxController {
     isLoadingInfo = true;
     update(['appInfo', 'share', 'download']);
 
+    // ★★ 1020 修复「详情页永远卡骨架屏」：
+    //   有些入口只传 appId、不传 item（收藏页、首页兜底列表）。
+    //   原来 item==null && dowUrl 为空时直接 return，
+    //   isLoadingInfo 永远为 true → 骨架屏转不停，页面打不开。
+    //   现在：没有 item 但有 appId → 先按 id 拉一次详情再走后续流程。
+    if (item == null && appIdInt > 0) {
+      try {
+        final fetched = await service.fetchAppDetail(id: appIdInt);
+        if (fetched != null) {
+          item = fetched;
+          if (dowUrl.isEmpty) dowUrl = fetched.url;
+          if (_taskKey.isEmpty) {
+            _taskKey = fetched.url.isNotEmpty
+                ? 'u_${fetched.url.hashCode.abs()}'
+                : 'i_${fetched.id}';
+          }
+        }
+      } catch (e) {
+        logger.e('[detail] fetch by id failed: $e');
+      }
+      if (item == null) {
+        // 拉不到也要结束 loading，并给明确提示，不能一直转圈
+        isLoadingInfo = false;
+        msgError ??= '软件信息加载失败，请返回重试';
+        update(['appInfo', 'share', 'download']);
+        return;
+      }
+    }
+
     // ① 立即用本地已有数据构造（不等待任何网络）
     if (item != null) {
       final it = item!;
@@ -238,7 +267,12 @@ class AppDetailsLogic extends GetxController {
         : (!item!.isLocal &&
               item!.url.isNotEmpty &&
               (item!.description.isEmpty || item!.size.isEmpty));
-    if (!needFetch) return;
+    if (!needFetch) {
+      // ★ 1020：即使不补全，也必须结束骨架屏，否则页面永远是骨架
+      isLoadingInfo = false;
+      update(['appInfo', 'share', 'download']);
+      return;
+    }
 
     try {
       final target = item?.url ?? dowUrl;

@@ -246,6 +246,96 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     );
   }
 
+  // ═══════════ 新模板共用：详情 Tab 内容 ═══════════
+  //
+  // ★★ 1020 修复「内容重复两遍」：
+  //   `_detail()` 内部已经包含 软件介绍 + 应用截图 + 精品推荐 + 你可能还喜欢，
+  //   上一版我在它外面又加了一遍 → 每块内容出现两次（用户截图实锤）。
+  //   现在新模板自己拼 Tab：详情页里只放一次「截图 + 介绍」，
+  //   推荐/你可能还喜欢只放在最外层一次。
+
+  Widget _newTplTabArea(
+    BuildContext context, {
+    required bool isDark,
+    required List<String> shots,
+    required String desc,
+    required Widget Function(String title, Widget? trailing) sectionHeader,
+    required Widget Function() officialBadge,
+    required Widget Function() shotsWidget,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _tabBarCard(isDark),
+        const SizedBox(height: 16),
+        AnimatedBuilder(
+          animation: _tab,
+          builder: (c, _) {
+            if (_tab.index != 0) {
+              return ReviewTab(appId: item?.id ?? 0);
+            }
+            final text = desc.isEmpty ? '暂无详细介绍' : desc;
+            final needToggle = text.length > 120;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (shots.isNotEmpty) ...[
+                  sectionHeader(
+                    '应用截图',
+                    Text(
+                      '共 ${shots.length} 张',
+                      style: Ty.tiny.copyWith(fontSize: 10, color: c.t3),
+                    ),
+                  ),
+                  shotsWidget(),
+                  const SizedBox(height: 26),
+                ],
+                sectionHeader('软件介绍', officialBadge()),
+                const SizedBox(height: 2),
+                Text(
+                  text,
+                  maxLines: _descExpanded ? null : 6,
+                  overflow: _descExpanded ? null : TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    height: 1.9,
+                    color: isDark ? Colors.grey[300] : const Color(0xFF41454B),
+                  ),
+                ),
+                if (needToggle) ...[
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () => setState(() => _descExpanded = !_descExpanded),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _descExpanded ? '收起' : '展开全文',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: C.brand,
+                          ),
+                        ),
+                        Icon(
+                          _descExpanded
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.keyboard_arrow_down_rounded,
+                          size: 15,
+                          color: C.brand,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
   // ═══════════ 第 6 套：极光渐变 ═══════════
 
   List<Widget> _auroraBody(bool isDark, List<Widget> tabArea) {
@@ -255,7 +345,6 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     final desc = (info?.fileDesc ?? it?.description ?? '').trim();
 
     return [
-      // ① 渐变头图（含图标/标题/徽章）
       DetailAurora.header(
         context,
         item: it,
@@ -266,8 +355,6 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           if (d.verText.isNotEmpty) ('ver', 'v${d.verText}'),
         ],
       ),
-      const SizedBox(height: 0),
-      // ② 毛玻璃数据卡（紧贴头图，视觉上压在渐变上）
       Transform.translate(
         offset: const Offset(0, -18),
         child: DetailAurora.statGlass(
@@ -289,82 +376,25 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           ],
         ),
       ),
-      const SizedBox(height: 4),
-      // ③ 截图
-      if (d.shots.isNotEmpty) ...[
-        DetailAurora.section(
-          context,
-          '应用截图',
-          trailing: Text(
-            '共 ${d.shots.length} 张',
-            style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3),
-          ),
-        ),
-        DetailAurora.screenshots(
+      const SizedBox(height: 6),
+      _newTplTabArea(
+        context,
+        isDark: isDark,
+        shots: d.shots,
+        desc: desc,
+        sectionHeader: (t, trail) =>
+            DetailAurora.section(context, t, trailing: trail),
+        officialBadge: DetailAurora.officialBadge,
+        shotsWidget: () => DetailAurora.screenshots(
           context,
           shots: d.shots,
           onTap: (i) => _previewGallery(d.shots, i),
         ),
-        const SizedBox(height: 22),
-      ],
-      // ④ 介绍
-      DetailAurora.section(
-        context,
-        '软件介绍',
-        trailing: DetailAurora.officialBadge(),
       ),
-      _auroraDesc(desc, isDark),
-      ...tabArea,
-      const SizedBox(height: 22),
+      const SizedBox(height: 24),
       _recommend(),
       _alsoLike(),
     ];
-  }
-
-  Widget _auroraDesc(String desc, bool isDark) {
-    final text = desc.isEmpty ? '暂无详细介绍' : desc;
-    final needToggle = text.length > 120;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          text,
-          maxLines: _descExpanded ? null : 6,
-          overflow: _descExpanded ? null : TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 13.5,
-            height: 1.88,
-            color: isDark ? Colors.grey[300] : const Color(0xFF41454B),
-          ),
-        ),
-        if (needToggle) ...[
-          const SizedBox(height: 8),
-          GestureDetector(
-            onTap: () => setState(() => _descExpanded = !_descExpanded),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _descExpanded ? '收起' : '展开全文',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: DetailAurora.aViolet,
-                  ),
-                ),
-                Icon(
-                  _descExpanded
-                      ? Icons.keyboard_arrow_up_rounded
-                      : Icons.keyboard_arrow_down_rounded,
-                  size: 15,
-                  color: DetailAurora.aViolet,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
   }
 
   // ═══════════ 第 7 套：霓虹（深浅自适应）═══════════
@@ -385,7 +415,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         sizeText: d.sizeText,
         dark: dark,
       ),
-      const SizedBox(height: 26),
+      const SizedBox(height: 24),
       DetailNeon.statBar(
         context,
         dark: dark,
@@ -396,34 +426,23 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           (it?.ageRating ?? '16+', 'AGE', DetailNeon.violet(dark)),
         ],
       ),
-      const SizedBox(height: 28),
-      if (d.shots.isNotEmpty) ...[
-        DetailNeon.section(
-          context,
-          '应用截图',
-          dark: dark,
-          trailing: Text(
-            '共 ${d.shots.length} 张',
-            style: Ty.tiny.copyWith(fontSize: 9.5, color: context.t3),
-          ),
-        ),
-        DetailNeon.screenshots(
+      const SizedBox(height: 26),
+      _newTplTabArea(
+        context,
+        isDark: isDark,
+        shots: d.shots,
+        desc: desc,
+        sectionHeader: (t, trail) =>
+            DetailNeon.section(context, t, dark: dark, trailing: trail),
+        officialBadge: () => DetailNeon.officialBadge(dark),
+        shotsWidget: () => DetailNeon.screenshots(
           context,
           shots: d.shots,
           dark: dark,
           onTap: (i) => _previewGallery(d.shots, i),
         ),
-        const SizedBox(height: 28),
-      ],
-      DetailNeon.section(
-        context,
-        '软件介绍',
-        dark: dark,
-        trailing: DetailNeon.officialBadge(dark),
       ),
-      _auroraDesc(desc, isDark),
-      ...tabArea,
-      const SizedBox(height: 22),
+      const SizedBox(height: 24),
       _recommend(),
       _alsoLike(),
     ];

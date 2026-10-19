@@ -20,6 +20,13 @@ class HomeLogic extends GetxController {
   HttpApi httpApi = Get.find<HttpApi>();
   List<CarouselData>? carouses;
   List<ReferralData>? referrals;
+
+  /// ★ 1020：推荐位为空时的兜底列表（软件列表）
+  ///
+  /// ★★ 必须和 referrals 分开！上一版把软件直接塞进 referrals，
+  ///    结果首页头图 `_magazineHero` 拿 referrals.first.image 当全屏封面，
+  ///    变成一个 App 图标被拉满整屏 —— 就是用户截图里的「顶栏错位」。
+  List<ReferralData>? fallbackRefs;
   AppConfig? configData;
   String? word;
 
@@ -74,13 +81,13 @@ class HomeLogic extends GetxController {
       if (referral.code == 1) {
         referrals = referral.data;
       }
-      // ★ 推荐位没数据 → 用软件列表兜底
+      // ★ 推荐位没数据 → 用软件列表兜底（写进 fallbackRefs，不动 referrals）
       if (referrals == null || referrals!.isEmpty) {
         final apps = await SoftService.instance.fetchApps();
         if (apps.isNotEmpty) {
           final sorted = List<AppItem>.from(apps)
             ..sort((a, b) => b.downCount.compareTo(a.downCount));
-          referrals = sorted
+          fallbackRefs = sorted
               .take(20)
               .map(
                 (a) => ReferralData(

@@ -222,6 +222,14 @@ class _HomeComponentState extends State<HomeComponent> {
   //                    minimal / store
   // ═══════════════════════════════════════════════════════════════
 
+  /// 列表展示用：优先真实推荐位，没有就用软件兜底
+  List<dynamic>? _displayRefs(HomeLogic logic) {
+    if (logic.referrals != null && logic.referrals!.isNotEmpty) {
+      return logic.referrals;
+    }
+    return logic.fallbackRefs;
+  }
+
   // ── 杂志流 ──
 
   /// 首屏：全宽大图（取第一个轮播或推荐图），下压圆角覆盖问候语
@@ -385,7 +393,7 @@ class _HomeComponentState extends State<HomeComponent> {
     return GetBuilder<HomeLogic>(
       id: 'referral',
       builder: (logic) {
-        final list = logic.referrals;
+        final list = _displayRefs(logic);
         if (list == null || list.isEmpty) {
           return const SliverToBoxAdapter(child: SizedBox.shrink());
         }
@@ -488,7 +496,7 @@ class _HomeComponentState extends State<HomeComponent> {
           Text('全部应用', style: Ty.h3.copyWith(color: context.t1)),
           const Spacer(),
           Text(
-            '共 ${logic.referrals?.length ?? 0} 个',
+            '共 ${_displayRefs(logic)?.length ?? 0} 个',
             style: Ty.tiny.copyWith(color: context.t3),
           ),
         ],
@@ -501,7 +509,7 @@ class _HomeComponentState extends State<HomeComponent> {
     return GetBuilder<HomeLogic>(
       id: 'referral',
       builder: (logic) {
-        final list = logic.referrals;
+        final list = _displayRefs(logic);
         if (list == null || list.isEmpty) {
           return const SliverToBoxAdapter(child: SizedBox.shrink());
         }
@@ -874,7 +882,7 @@ class _HomeComponentState extends State<HomeComponent> {
     return GetBuilder<HomeLogic>(
       id: 'referral',
       builder: (logic) {
-        final list = logic.referrals;
+        final list = _displayRefs(logic);
         if (list == null || list.isEmpty) {
           return const SliverToBoxAdapter(child: SizedBox.shrink());
         }
@@ -1079,7 +1087,7 @@ class _HomeComponentState extends State<HomeComponent> {
     return GetBuilder<HomeLogic>(
       id: 'referral',
       builder: (logic) {
-        final list = logic.referrals;
+        final list = _displayRefs(logic);
         if (list == null || list.isEmpty) {
           return const SliverToBoxAdapter(child: SizedBox.shrink());
         }
@@ -1646,7 +1654,7 @@ class _HomeComponentState extends State<HomeComponent> {
     return GetBuilder<HomeLogic>(
       id: 'referral',
       builder: (logic) {
-        final list = logic.referrals;
+        final list = _displayRefs(logic);
         if (list == null || list.isEmpty) {
           return const SizedBox.shrink();
         }
@@ -1786,7 +1794,7 @@ class _HomeComponentState extends State<HomeComponent> {
     return GetBuilder<HomeLogic>(
       id: 'referral',
       builder: (logic) {
-        final list = logic.referrals;
+        final list = _displayRefs(logic);
         if (list == null || list.isEmpty) {
           return const SliverToBoxAdapter(child: SizedBox.shrink());
         }
@@ -1817,7 +1825,7 @@ class _HomeComponentState extends State<HomeComponent> {
     return GetBuilder<HomeLogic>(
       id: 'referral',
       builder: (logic) {
-        final list = logic.referrals;
+        final list = _displayRefs(logic);
         if (list == null || list.isEmpty) {
           return const SliverToBoxAdapter(child: SizedBox.shrink());
         }

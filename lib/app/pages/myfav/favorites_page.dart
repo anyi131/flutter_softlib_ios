@@ -9,6 +9,10 @@ import '../../api/user_service.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
+import '../toolkit/tool_router.dart';
+import '../toolkit/tool_api_page.dart';
+import '../toolkit/tool_browser_page.dart';
+import '../../utils/tool_ctx.dart';
 import '../../routes/app_pages.dart';
 import '../../utils/err_text.dart';
 import '../../utils/toast_util.dart';
@@ -356,12 +360,57 @@ class _FavoritesPageState extends State<FavoritesPage>
         if ('${a['version'] ?? ''}'.isNotEmpty) 'v${a['version']}',
         if (vip) '会员专享',
       ].join(' · '),
-      onTap: () => Get.toNamed(
-        Routes.appDetails,
-        arguments: {'appId': '${a['id']}'},
-      ),
+      onTap: () =>
+          Get.toNamed(Routes.appDetails, arguments: {'appId': '${a['id']}'}),
       onUnfav: () => _unfavSoftware(a),
     );
+  }
+
+  /// 打开工具（真正跳转，不再只弹提示）
+  ///
+  /// ★ 1020：原来收藏页点工具只弹「请在工具箱中打开」，
+  ///   用户根本打不开 —— 等于收藏没用。
+  ///   现在复用 toolRoute 直接进工具页，并设置 ToolCtx 让工具页能显示收藏星标。
+  void _openTool(Map<String, dynamic> t) {
+    final id = (t['id'] as num?)?.toInt() ?? 0;
+    final kind = '${t['kind'] ?? ''}';
+    final route = '${t['route'] ?? ''}';
+    final title = '${t['title'] ?? ''}';
+    final apiUrl = '${t['api_url'] ?? ''}';
+
+    ToolCtx.set(id, title);
+
+    final fn = toolRoute(kind, route: route);
+    if (fn != null) {
+      fn(title: title, apiUrl: apiUrl);
+      return;
+    }
+    // 兜底：外部链接 / 通用接口
+    final target = '${t['target'] ?? ''}';
+    final apiPath = '${t['api_path'] ?? ''}';
+    if (apiUrl.startsWith('http') && apiPath.isNotEmpty) {
+      Get.to(
+        () => ApiToolPage(
+          title: title,
+          apiUrl: apiUrl,
+          cfg: {
+            'api_path': apiPath,
+            'f_title': '${t['f_title'] ?? ''}',
+            'f_sub': '${t['f_sub'] ?? ''}',
+            'f_image': '${t['f_image'] ?? ''}',
+            'f_link': '${t['f_link'] ?? ''}',
+            'f_extra': '${t['f_extra'] ?? ''}',
+          },
+        ),
+      );
+      return;
+    }
+    final link = target.isNotEmpty ? target : apiUrl;
+    if (link.startsWith('http')) {
+      Get.to(() => ToolBrowserPage(title: title, url: link));
+      return;
+    }
+    ToastUtil.info('「$title」暂未开放');
   }
 
   Widget _toolTile(Map<String, dynamic> t) {
@@ -387,7 +436,7 @@ class _FavoritesPageState extends State<FavoritesPage>
       ),
       title: '${t['title'] ?? ''}',
       subtitle: '${t['subtitle'] ?? t['cat'] ?? ''}',
-      onTap: () => ToastUtil.info('「${t['title']}」请在工具箱中打开'),
+      onTap: () => _openTool(t),
       onUnfav: () => _unfavTool(t),
     );
   }

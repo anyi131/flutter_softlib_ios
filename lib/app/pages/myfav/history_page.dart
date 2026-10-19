@@ -51,9 +51,7 @@ class _HistoryPageState extends State<HistoryPage> {
         final list = (r.data['data']?['list'] as List?) ?? [];
         if (!mounted) return;
         setState(() {
-          _list = list
-              .map((e) => Map<String, dynamic>.from(e as Map))
-              .toList();
+          _list = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _loading = false;
         });
         return;
@@ -256,7 +254,10 @@ class _HistoryPageState extends State<HistoryPage> {
                             Icons.delete_sweep_rounded,
                             size: 17,
                           ),
-                          label: const Text('清理', style: TextStyle(fontSize: 12)),
+                          label: const Text(
+                            '清理',
+                            style: TextStyle(fontSize: 12),
+                          ),
                         ),
                     ],
                   ),
@@ -275,8 +276,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                 color: C.brand,
                                 child: ListView.builder(
                                   physics: const BouncingScrollPhysics(
-                                    parent:
-                                        AlwaysScrollableScrollPhysics(),
+                                    parent: AlwaysScrollableScrollPhysics(),
                                   ),
                                   padding: EdgeInsets.fromLTRB(
                                     context.pagePadding,
@@ -374,11 +374,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 onTap: () => _deleteOne(h),
                 child: Padding(
                   padding: const EdgeInsets.all(6),
-                  child: Icon(
-                    Icons.close_rounded,
-                    size: 17,
-                    color: context.t3,
-                  ),
+                  child: Icon(Icons.close_rounded, size: 17, color: context.t3),
                 ),
               ),
             ],
