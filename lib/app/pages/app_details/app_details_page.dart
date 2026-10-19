@@ -252,7 +252,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     final it = item;
     final info = logic.appInfo;
     final d = _tplData();
-    final desc = (info?.fileDescription ?? it?.description ?? '').trim();
+    final desc = (info?.fileDesc ?? it?.description ?? '').trim();
 
     return [
       // ① 渐变头图（含图标/标题/徽章）
@@ -373,7 +373,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     final it = item;
     final info = logic.appInfo;
     final d = _tplData();
-    final desc = (info?.fileDescription ?? it?.description ?? '').trim();
+    final desc = (info?.fileDesc ?? it?.description ?? '').trim();
     final dark = isDark;
 
     return [

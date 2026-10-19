@@ -32,7 +32,8 @@ class ToastUtil {
   static void _show(String message, _Tone tone) {
     if (message.trim().isEmpty) return;
     final ctx = Get.context;
-    final overlay = ctx?.overlay;
+    if (ctx == null) return;
+    final overlay = Overlay.maybeOf(ctx, rootOverlay: true);
     if (overlay == null) return;
 
     _dismiss();

@@ -25,6 +25,7 @@ class DetailAurora {
   static const Color aViolet = Color(0xFF5B3BFF);
   static const Color aPink = Color(0xFFFF3D9A);
   static const Color aCyan = Color(0xFF00C2FF);
+  static const Color aBlue = Color(0xFF38BDF8);
   static const Color aMint = Color(0xFF00E0A4);
   static const Color aOrange = Color(0xFFFF9E3D);
   static const Color aNight = Color(0xFF0B0E1A);
