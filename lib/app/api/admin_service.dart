@@ -87,6 +87,22 @@ class AdminService {
   }
 
   /// ★ 1016：错误/崩溃日志（后台「日志 → 错误日志」）
+  /// ★ 1020：全部在线用户（分页 + 时间筛选 + 搜索）
+  Future<Map<String, dynamic>> onlineUsers({
+    int mins = 60,
+    int page = 1,
+    int size = 50,
+    String kw = '',
+  }) async {
+    final m = await _post('online_users', {
+      'mins': mins,
+      'page': page,
+      'size': size,
+      'kw': kw,
+    });
+    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+  }
+
   /// ★ 1020：积分排行榜（仅后台，用户明确要求不在 App 公开）
   Future<Map<String, dynamic>> scoreRank({
     int days = 30,

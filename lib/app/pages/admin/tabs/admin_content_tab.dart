@@ -2033,39 +2033,83 @@ class _AdminContentTabState extends State<AdminContentTab>
     }
   }
 
+  /// 配置页
+  ///
+  /// ★ 1020（修复「相同功能影响数据」）：
+  ///   原来这里能改「用户协议 / 隐私政策」，而「配置 → 用户协议/隐私政策」
+  ///   也能改 **同一份数据** —— 两处保存会互相覆盖，非常危险。
+  ///   现在：这里只保留「首页通知条」，协议类统一指引到配置页修改。
   Widget _configList() {
     final placard = TextEditingController();
-    final agreement = TextEditingController();
-    final privacy = TextEditingController();
     return FutureBuilder<Map<String, dynamic>>(
       future: _svc.config(),
       builder: (context, snap) {
         if (!snap.hasData) {
-          return const LoadingState(text: '加载协议配置…');
+          return const LoadingState(text: '加载配置…');
         }
         if (placard.text.isEmpty) {
           placard.text = '${snap.data!['placard'] ?? ''}';
-          agreement.text = '${snap.data!['agreement'] ?? ''}';
-          privacy.text = '${snap.data!['privacy'] ?? ''}';
         }
         return ListView(
           padding: const EdgeInsets.all(14),
           children: [
-            _f('首页公告', placard, 2),
-            _f('用户协议', agreement, 6),
-            _f('隐私政策', privacy, 6),
-            const SizedBox(height: 6),
+            _f('首页通知条（App 首页顶部滚动小字）', placard, 2),
+            const SizedBox(height: 4),
+            Text(
+              '提示：这里是首页顶部的一条短通知，不弹窗。'
+              '要改「公告弹窗」请去「配置 → 公告弹窗」。',
+              style: TextStyle(fontSize: 11, height: 1.6, color: context.t3),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: C.amber.withAlpha(18),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: C.amber.withAlpha(60)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline_rounded,
+                        size: 15,
+                        color: C.amber,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '用户协议 / 隐私政策已移走',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: C.amber,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '为避免两处同时编辑造成互相覆盖，'
+                    '协议内容统一在「配置 → 用户协议/隐私政策」里修改。',
+                    style: TextStyle(
+                      fontSize: 11,
+                      height: 1.6,
+                      color: context.t2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
             PrimaryButton(
               label: '保存配置',
               icon: Icons.save_rounded,
               height: 46,
               onPressed: () async {
                 try {
-                  await _svc.saveConfig({
-                    'placard': placard.text,
-                    'agreement': agreement.text,
-                    'privacy': privacy.text,
-                  });
+                  await _svc.saveConfig({'placard': placard.text});
                   ToastUtil.success('保存成功');
                 } catch (e) {
                   ToastUtil.error(ErrText.of(e));
