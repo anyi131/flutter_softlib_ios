@@ -38,8 +38,7 @@ class ToolboxService {
   Map<String, dynamic>? get cachedConfig => SoftService.toolboxCache;
 
   /// 工具搜索
-  Future<List<Map<String, dynamic>>> search(String kw) =>
-      _ss.jzsSearch(kw);
+  Future<List<Map<String, dynamic>>> search(String kw) => _ss.jzsSearch(kw);
 
   /// 收藏 / 取消收藏（需登录），返回收藏后的状态
   Future<bool> toggleFav(int toolId) => _ss.jzsToggleFav(toolId);
@@ -139,10 +138,7 @@ class ToolboxService {
   /// 漫画图片（纯字符串列表）
   /// ★ 1015 修复：服务端参数名是 chapterid（原来传 id/chapter → 「参数错误」）
   Future<List<String>> comicImages(String id, String chapter) async {
-    final r = await _ss.toolbox1(
-      'comic_images',
-      query: {'chapterid': chapter},
-    );
+    final r = await _ss.toolbox1('comic_images', query: {'chapterid': chapter});
     final d = r?['list'] ?? r?['data'];
     if (d is List) return d.map((e) => '$e').toList();
     return const [];
@@ -156,10 +152,7 @@ class ToolboxService {
     String kw, {
     int page = 1,
   }) async {
-    final r = await _ss.media(
-      'movie_search',
-      query: {'q': kw, 'page': page},
-    );
+    final r = await _ss.media('movie_search', query: {'q': kw, 'page': page});
     return _asList(r?['list'] ?? r?['data']);
   }
 
@@ -169,13 +162,15 @@ class ToolboxService {
     String id, {
     String name = '',
     bool all = false,
-  }) =>
-      _ss.media('movie_detail', query: {
-        'src': src,
-        'id': id,
-        if (name.isNotEmpty) 'name': name,
-        if (all) 'all': 1,
-      });
+  }) => _ss.media(
+    'movie_detail',
+    query: {
+      'src': src,
+      'id': id,
+      if (name.isNotEmpty) 'name': name,
+      if (all) 'all': 1,
+    },
+  );
 
   Future<Map<String, dynamic>?> musicHome() => _ss.media('music_home');
 

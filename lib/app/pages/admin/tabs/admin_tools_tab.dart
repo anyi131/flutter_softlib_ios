@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
@@ -429,9 +430,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                       setState(() => t['enable_switch'] = v ? 1 : 0);
                       ToastUtil.success(v ? '已启用' : '已停用');
                     } catch (e) {
-                      ToastUtil.error(
-                        ErrText.of(e),
-                      );
+                      ToastUtil.error(ErrText.of(e));
                     }
                   },
                 ),
@@ -599,9 +598,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                       setState(() => c['enable_switch'] = v ? 1 : 0);
                       ToastUtil.success(v ? '已启用' : '已停用');
                     } catch (e) {
-                      ToastUtil.error(
-                        ErrText.of(e),
-                      );
+                      ToastUtil.error(ErrText.of(e));
                     }
                   },
                 ),

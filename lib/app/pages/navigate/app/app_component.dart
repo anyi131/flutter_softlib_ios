@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import '../../../utils/err_text.dart';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
@@ -516,7 +518,8 @@ class _AppComponentState extends State<AppComponent> {
   /// 把当前渲染状态上报一次（状态不变不重复报）
   void _reportRender() {
     try {
-      final sig = 'apps=${_apps.length} cats=${_cats.length} '
+      final sig =
+          'apps=${_apps.length} cats=${_cats.length} '
           'loading=$_loading parsing=$_folderParsing err=$_err '
           'style=${AppStyleController.instance.listStyle.value.name} '
           'cat=$_cat kw=$_kw src=$_source';

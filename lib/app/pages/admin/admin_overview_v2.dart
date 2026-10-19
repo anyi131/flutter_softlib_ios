@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../utils/err_text.dart';
 
 import '../../api/admin_service.dart';
@@ -153,11 +154,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
           const SizedBox(height: Ad.gapL),
 
           // ② 核心指标
-          AdSection(
-            title: '待处理',
-            subtitle: '需要你尽快处理的事项',
-            accent: C.warning,
-          ),
+          AdSection(title: '待处理', subtitle: '需要你尽快处理的事项', accent: C.warning),
           AdCard(
             child: Row(
               children: [
@@ -207,12 +204,20 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
                 accent: C.warning,
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline_rounded, size: 16, color: C.warning),
+                    Icon(
+                      Icons.error_outline_rounded,
+                      size: 16,
+                      color: C.warning,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         '${_appStats?['vip_msg'] ?? '版权梦 VIP 已到期，统计数据暂停'}',
-                        style: TextStyle(fontSize: 12.5, color: context.t2, height: 1.4),
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: context.t2,
+                          height: 1.4,
+                        ),
                       ),
                     ),
                   ],
@@ -357,8 +362,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
           // ⑥ 下载数据
           AdSection(
             title: '下载数据',
-            subtitle:
-                '失败率 ${_dbl('down_fail_rate')}% · 点记录可看详情',
+            subtitle: '失败率 ${_dbl('down_fail_rate')}% · 点记录可看详情',
             accent: C.cyan,
           ),
           AdCard(
@@ -451,18 +455,25 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.people_outline_rounded,
-                          size: 15, color: C.brand),
+                      Icon(
+                        Icons.people_outline_rounded,
+                        size: 15,
+                        color: C.brand,
+                      ),
                       const SizedBox(width: 6),
-                      Text('今日启动用户',
-                          style: Ty.small.copyWith(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                              color: context.t1)),
+                      Text(
+                        '今日启动用户',
+                        style: Ty.small.copyWith(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: context.t1,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  for (final u in ((_d?['boot_users'] as List?) ?? const []).take(8))
+                  for (final u
+                      in ((_d?['boot_users'] as List?) ?? const []).take(8))
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6),
                       child: Row(
@@ -473,21 +484,26 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: Ty.tiny.copyWith(
-                                  fontSize: 12, color: context.t2),
+                                fontSize: 12,
+                                color: context.t2,
+                              ),
                             ),
                           ),
                           Text(
                             '${u is Map ? u['count'] ?? 0 : 0} 次',
                             style: Ty.tiny.copyWith(
-                                fontSize: 11.5,
-                                color: C.brand,
-                                fontWeight: FontWeight.w700),
+                              fontSize: 11.5,
+                              color: C.brand,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             '${u is Map ? u['last'] ?? '' : ''}',
                             style: Ty.tiny.copyWith(
-                                fontSize: 11, color: context.t3),
+                              fontSize: 11,
+                              color: context.t3,
+                            ),
                           ),
                         ],
                       ),
@@ -632,8 +648,12 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
       ),
       ('会员数', '${_i('vip_users')}', C.amber, Icons.workspace_premium_rounded),
       ('动态数', '${_i('posts')}', C.violet, Icons.forum_rounded),
-      ('评价数', _orphanHint('reviews', 'reviewsOrphan'), C.pink,
-          Icons.rate_review_rounded),
+      (
+        '评价数',
+        _orphanHint('reviews', 'reviewsOrphan'),
+        C.pink,
+        Icons.rate_review_rounded,
+      ),
     ];
     return AdCard(
       padding: const EdgeInsets.all(11),

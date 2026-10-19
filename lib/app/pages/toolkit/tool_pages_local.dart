@@ -483,7 +483,7 @@ class _UnitPageState extends State<UnitPage> {
     return ToolScaffold(
       title: '单位换算',
       subtitle: '长度 / 重量 / 面积 / 存储 / 时间',
-      
+
       child: Column(
         children: [
           ToolChips<String>(
@@ -677,7 +677,7 @@ class _BmiPageState extends State<BmiPage> {
     return ToolScaffold(
       title: 'BMI 计算',
       subtitle: '中国成人标准',
-      
+
       child: Column(
         children: [
           ToolField(
@@ -758,10 +758,7 @@ class _BmiPageState extends State<BmiPage> {
                         Expanded(
                           child: Text(
                             r.$1,
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              color: context.t2,
-                            ),
+                            style: TextStyle(fontSize: 13.5, color: context.t2),
                           ),
                         ),
                         Text(r.$2, style: Ty.small.copyWith(color: context.t3)),
@@ -886,10 +883,7 @@ class _LoanPageState extends State<LoanPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '总利息（等额本息）',
-                  style: Ty.tiny.copyWith(color: context.t3),
-                ),
+                Text('总利息（等额本息）', style: Ty.tiny.copyWith(color: context.t3)),
                 const SizedBox(height: 4),
                 Text(
                   _m(_interest),
@@ -903,10 +897,7 @@ class _LoanPageState extends State<LoanPage> {
             ),
           ),
           const SizedBox(height: 10),
-          Text(
-            '结果仅供参考，实际以银行为准',
-            style: Ty.tiny.copyWith(color: context.t3),
-          ),
+          Text('结果仅供参考，实际以银行为准', style: Ty.tiny.copyWith(color: context.t3)),
         ],
       ),
     );
@@ -936,7 +927,7 @@ class _Base64PageState extends State<Base64Page> {
     return ToolScaffold(
       title: 'Base64',
       subtitle: '编码 / 解码（UTF-8）',
-      
+
       child: Column(
         children: [
           ToolField(
@@ -1052,7 +1043,7 @@ class _RandomPageState extends State<RandomPage> {
     return ToolScaffold(
       title: '随机数生成',
       subtitle: '批量 / 不重复',
-      
+
       child: Column(
         children: [
           Row(
@@ -1061,9 +1052,7 @@ class _RandomPageState extends State<RandomPage> {
                 child: ToolField(
                   controller: _min,
                   label: '最小值',
-                  keyboard: const TextInputType.numberWithOptions(
-                    signed: true,
-                  ),
+                  keyboard: const TextInputType.numberWithOptions(signed: true),
                 ),
               ),
               const SizedBox(width: 10),
@@ -1071,9 +1060,7 @@ class _RandomPageState extends State<RandomPage> {
                 child: ToolField(
                   controller: _max,
                   label: '最大值',
-                  keyboard: const TextInputType.numberWithOptions(
-                    signed: true,
-                  ),
+                  keyboard: const TextInputType.numberWithOptions(signed: true),
                 ),
               ),
             ],
@@ -1197,11 +1184,18 @@ class _PasswordPageState extends State<PasswordPage> {
   Widget build(BuildContext context) {
     final st = _strength.clamp(0, 5);
     const labels = ['极弱', '弱', '一般', '较强', '强', '很强'];
-    final colors = [C.danger, C.danger, C.warning, C.amber, C.success, C.success];
+    final colors = [
+      C.danger,
+      C.danger,
+      C.warning,
+      C.amber,
+      C.success,
+      C.success,
+    ];
     return ToolScaffold(
       title: '密码生成',
       subtitle: '本地随机 · 不联网',
-      
+
       child: Column(
         children: [
           ToolCard(
@@ -1442,7 +1436,7 @@ class _RelativePageState extends State<RelativePage> {
     return ToolScaffold(
       title: '亲戚称呼计算',
       subtitle: '输入关系链，算出该怎么称呼',
-      
+
       child: Column(
         children: [
           ToolField(
@@ -1503,35 +1497,30 @@ class _RelativePageState extends State<RelativePage> {
             spacing: 8,
             runSpacing: 8,
             children:
-                [
-                  '父亲的父亲的儿子',
-                  '父亲的哥哥',
-                  '母亲的妹妹',
-                  '父亲的姐妹的儿子',
-                  '妻子的母亲',
-                  '爷爷的母亲',
-                ].map(
-                  (t) => AppPressable(
-                    onTap: () {
-                      _ctrl.text = t;
-                      _calc();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 7,
+                ['父亲的父亲的儿子', '父亲的哥哥', '母亲的妹妹', '父亲的姐妹的儿子', '妻子的母亲', '爷爷的母亲']
+                    .map(
+                      (t) => AppPressable(
+                        onTap: () {
+                          _ctrl.text = t;
+                          _calc();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 7,
+                          ),
+                          decoration: BoxDecoration(
+                            color: C.brand.withAlpha(14),
+                            borderRadius: BorderRadius.circular(R.full),
+                          ),
+                          child: Text(
+                            t,
+                            style: TextStyle(fontSize: 12.5, color: C.brand),
+                          ),
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        color: C.brand.withAlpha(14),
-                        borderRadius: BorderRadius.circular(R.full),
-                      ),
-                      child: Text(
-                        t,
-                        style: TextStyle(fontSize: 12.5, color: C.brand),
-                      ),
-                    ),
-                  ),
-                ).toList(),
+                    )
+                    .toList(),
           ),
         ],
       ),

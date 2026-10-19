@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'mpv_core.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -144,8 +145,7 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
       final c = MpvController.networkUrl(
         Uri.parse(_url),
         httpHeaders: const {
-          'User-Agent':
-              'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36',
+          'User-Agent': 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36',
         },
       );
       await c.initialize();

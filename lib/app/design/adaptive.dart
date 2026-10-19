@@ -33,8 +33,7 @@ extension Adaptive on BuildContext {
   }
 
   /// 字体缩放（限制上限，避免系统字体过大导致溢出）
-  double get fontScale =>
-      (_mq?.textScaler.scale(1.0) ?? 1.0).clamp(0.9, 1.2);
+  double get fontScale => (_mq?.textScaler.scale(1.0) ?? 1.0).clamp(0.9, 1.2);
 
   /// 卡片横向间距（小屏收窄）
   double get pagePadding => isCompact ? 14 : (isWide ? 28 : 18);
@@ -68,8 +67,12 @@ class AdaptiveGrid {
 }
 
 /// 防止文字溢出的小工具
-Widget ellipsis(String text,
-    {int maxLines = 1, TextStyle? style, TextAlign? align}) {
+Widget ellipsis(
+  String text, {
+  int maxLines = 1,
+  TextStyle? style,
+  TextAlign? align,
+}) {
   return Text(
     text,
     maxLines: maxLines,

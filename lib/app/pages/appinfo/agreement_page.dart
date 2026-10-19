@@ -61,14 +61,17 @@ class _AgreementPageState extends State<AgreementPage> {
                           child: SizedBox(
                             width: 26,
                             height: 26,
-                            child:
-                                CircularProgressIndicator(strokeWidth: 2.4),
+                            child: CircularProgressIndicator(strokeWidth: 2.4),
                           ),
                         )
                       : SingleChildScrollView(
                           physics: const BouncingScrollPhysics(),
-                          padding: EdgeInsets.fromLTRB(context.pagePadding, 4,
-                              context.pagePadding, context.tabSpace + 30),
+                          padding: EdgeInsets.fromLTRB(
+                            context.pagePadding,
+                            4,
+                            context.pagePadding,
+                            context.tabSpace + 30,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -92,9 +95,10 @@ class _AgreementPageState extends State<AgreementPage> {
                                 ),
                               const SizedBox(height: 18),
                               Center(
-                                child: Text('如有疑问请联系管理员',
-                                    style:
-                                        Ty.tiny.copyWith(color: context.t3)),
+                                child: Text(
+                                  '如有疑问请联系管理员',
+                                  style: Ty.tiny.copyWith(color: context.t3),
+                                ),
                               ),
                             ],
                           ),
@@ -111,7 +115,11 @@ class _AgreementPageState extends State<AgreementPage> {
   Widget _topBar() {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          context.pagePadding, 10, context.pagePadding, 10),
+        context.pagePadding,
+        10,
+        context.pagePadding,
+        10,
+      ),
       child: Row(
         children: [
           GestureDetector(
@@ -120,8 +128,9 @@ class _AgreementPageState extends State<AgreementPage> {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color:
-                    context.isDark ? Colors.white.withAlpha(14) : Colors.white,
+                color: context.isDark
+                    ? Colors.white.withAlpha(14)
+                    : Colors.white,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: context.isDark
@@ -129,13 +138,15 @@ class _AgreementPageState extends State<AgreementPage> {
                       : Colors.black.withAlpha(8),
                 ),
               ),
-              child: Icon(Icons.arrow_back_ios_new_rounded,
-                  size: 16, color: context.t1),
+              child: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 16,
+                color: context.t1,
+              ),
             ),
           ),
           const SizedBox(width: 12),
-          Text(_title,
-              style: Ty.h2.copyWith(fontSize: 20, color: context.t1)),
+          Text(_title, style: Ty.h2.copyWith(fontSize: 20, color: context.t1)),
         ],
       ),
     );
@@ -143,8 +154,9 @@ class _AgreementPageState extends State<AgreementPage> {
 
   Widget _headCard(bool isPrivacy) {
     final color = isPrivacy ? C.pink : C.violet;
-    final icon =
-        isPrivacy ? Icons.privacy_tip_rounded : Icons.description_rounded;
+    final icon = isPrivacy
+        ? Icons.privacy_tip_rounded
+        : Icons.description_rounded;
     final desc = isPrivacy
         ? '我们非常重视你的隐私。本政策说明我们收集哪些信息、如何使用与保护它们。'
         : '使用本软件即表示你已阅读并同意以下条款，请仔细阅读。';
@@ -179,12 +191,19 @@ class _AgreementPageState extends State<AgreementPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_title,
-                    style: Ty.h3.copyWith(fontSize: 15.5, color: context.t1)),
+                Text(
+                  _title,
+                  style: Ty.h3.copyWith(fontSize: 15.5, color: context.t1),
+                ),
                 const SizedBox(height: 5),
-                Text(desc,
-                    style: Ty.small
-                        .copyWith(fontSize: 12, height: 1.6, color: context.t2)),
+                Text(
+                  desc,
+                  style: Ty.small.copyWith(
+                    fontSize: 12,
+                    height: 1.6,
+                    color: context.t2,
+                  ),
+                ),
               ],
             ),
           ),
@@ -200,12 +219,16 @@ class _AgreementPageState extends State<AgreementPage> {
         children: [
           Icon(Icons.article_outlined, size: 40, color: context.t3),
           const SizedBox(height: 14),
-          Text('${isPrivacy ? '隐私政策' : '用户协议'}暂未配置',
-              style: Ty.h3.copyWith(fontSize: 14, color: context.t1)),
+          Text(
+            '${isPrivacy ? '隐私政策' : '用户协议'}暂未配置',
+            style: Ty.h3.copyWith(fontSize: 14, color: context.t1),
+          ),
           const SizedBox(height: 8),
-          Text('管理员可在「后台管理 → 配置」中填写内容',
-              textAlign: TextAlign.center,
-              style: Ty.small.copyWith(fontSize: 12, color: context.t3)),
+          Text(
+            '管理员可在「后台管理 → 配置」中填写内容',
+            textAlign: TextAlign.center,
+            style: Ty.small.copyWith(fontSize: 12, color: context.t3),
+          ),
         ],
       ),
     );

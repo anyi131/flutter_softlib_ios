@@ -32,8 +32,10 @@ class _AdminLinkPreviewSheetState extends State<AdminLinkPreviewSheet> {
     if (u.startsWith('/')) u = 'https://flrjk.52yfx.cn$u';
     final low = u.toLowerCase();
     String kind = 'other';
-    if (_imgExt.any((e) => low.contains(e))) kind = 'image';
-    else if (_vidExt.any((e) => low.contains(e))) kind = 'video';
+    if (_imgExt.any((e) => low.contains(e)))
+      kind = 'image';
+    else if (_vidExt.any((e) => low.contains(e)))
+      kind = 'video';
     setState(() {
       _url = u;
       _kind = kind;
@@ -64,8 +66,10 @@ class _AdminLinkPreviewSheetState extends State<AdminLinkPreviewSheet> {
               Icon(Icons.visibility_outlined, size: 18, color: C.brand),
               const SizedBox(width: 8),
               Expanded(
-                child: Text('链接预览',
-                    style: Ty.h3.copyWith(fontSize: 15, color: context.t1)),
+                child: Text(
+                  '链接预览',
+                  style: Ty.h3.copyWith(fontSize: 15, color: context.t1),
+                ),
               ),
               GestureDetector(
                 onTap: () => Navigator.pop(context),
@@ -74,8 +78,10 @@ class _AdminLinkPreviewSheetState extends State<AdminLinkPreviewSheet> {
             ],
           ),
           const SizedBox(height: 10),
-          Text('粘贴图片 / 视频链接，或站内上传后的路径（如 /uploads/xxx.png）',
-              style: Ty.tiny.copyWith(fontSize: 11.5, color: context.t3)),
+          Text(
+            '粘贴图片 / 视频链接，或站内上传后的路径（如 /uploads/xxx.png）',
+            style: Ty.tiny.copyWith(fontSize: 11.5, color: context.t3),
+          ),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -87,9 +93,12 @@ class _AdminLinkPreviewSheetState extends State<AdminLinkPreviewSheet> {
                     hintText: 'https://... 或 /uploads/xxx.mp4',
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 11),
+                      horizontal: 12,
+                      vertical: 11,
+                    ),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(R.md)),
+                      borderRadius: BorderRadius.circular(R.md),
+                    ),
                   ),
                   onSubmitted: _apply,
                 ),
@@ -112,8 +121,10 @@ class _AdminLinkPreviewSheetState extends State<AdminLinkPreviewSheet> {
               ),
             ),
             const SizedBox(height: 8),
-            SelectableText(_url,
-                style: Ty.tiny.copyWith(fontSize: 11, color: context.t3)),
+            SelectableText(
+              _url,
+              style: Ty.tiny.copyWith(fontSize: 11, color: context.t3),
+            ),
           ],
         ],
       ),
@@ -126,38 +137,43 @@ class _AdminLinkPreviewSheetState extends State<AdminLinkPreviewSheet> {
         _url,
         fit: BoxFit.contain,
         errorBuilder: (_, __, ___) => _err('图片加载失败（可能 404 或需要鉴权）'),
-        loadingBuilder: (c, child, p) =>
-            p == null ? child : const Center(child: CircularProgressIndicator()),
+        loadingBuilder: (c, child, p) => p == null
+            ? child
+            : const Center(child: CircularProgressIndicator()),
       );
     }
     // 原视频播放依赖主 App 的播放器组件；这里给出可点击的打开方式，
     // 避免在后台引入额外依赖或崩溃风险。
-    return _err(_kind == 'video'
-        ? '视频链接已识别\n可在浏览器中打开预览'
-        : '非图片链接\n可使用「打开」按钮在浏览器中查看');
+    return _err(
+      _kind == 'video' ? '视频链接已识别\n可在浏览器中打开预览' : '非图片链接\n可使用「打开」按钮在浏览器中查看',
+    );
   }
 
   Widget _err(String msg) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.info_outline_rounded, size: 26, color: context.t3),
-              const SizedBox(height: 8),
-              Text(msg,
-                  textAlign: TextAlign.center,
-                  style: Ty.tiny.copyWith(fontSize: 12, color: context.t3)),
-              if (_url.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () => JumpUtil.openUrl(_url),
-                  child: Text('打开链接',
-                      style: TextStyle(fontSize: 12.5, color: C.brand)),
-                ),
-              ],
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.info_outline_rounded, size: 26, color: context.t3),
+          const SizedBox(height: 8),
+          Text(
+            msg,
+            textAlign: TextAlign.center,
+            style: Ty.tiny.copyWith(fontSize: 12, color: context.t3),
           ),
-        ),
-      );
+          if (_url.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () => JumpUtil.openUrl(_url),
+              child: Text(
+                '打开链接',
+                style: TextStyle(fontSize: 12.5, color: C.brand),
+              ),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
 }

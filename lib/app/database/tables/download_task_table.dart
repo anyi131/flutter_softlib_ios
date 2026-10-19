@@ -58,8 +58,9 @@ class DownloadTaskDao extends DatabaseAccessor<AppDatabase>
     required String appSize,
     required String appIcon,
   }) async {
-    return (update(downloadTasks)
-      ..where((tbl) => tbl.appId.equals(appId))).write(
+    return (update(
+      downloadTasks,
+    )..where((tbl) => tbl.appId.equals(appId))).write(
       DownloadTasksCompanion(
         taskId: Value(taskId),
         appName: Value(appName),
@@ -71,8 +72,9 @@ class DownloadTaskDao extends DatabaseAccessor<AppDatabase>
 
   ///删除数据
   Future<int> deleteDownloadTask(String appId) async {
-    return (delete(downloadTasks)
-      ..where((tbl) => tbl.appId.equals(appId))).go();
+    return (delete(
+      downloadTasks,
+    )..where((tbl) => tbl.appId.equals(appId))).go();
   }
 
   ///查询所有下载任务

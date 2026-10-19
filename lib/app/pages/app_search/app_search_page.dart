@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../../design/kit.dart';
 import '../../design/adaptive.dart';
 import '../../routes/app_pages.dart';
 import '../../design/ui.dart';
+
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
@@ -69,7 +71,10 @@ class _AppSearchPageState extends State<AppSearchPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('软件搜索', style: TextStyle(fontWeight: FontWeight.w600)),
+        title: const Text(
+          '软件搜索',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
       ),
       body: Column(
         children: [
@@ -102,12 +107,19 @@ class _AppSearchPageState extends State<AppSearchPage> {
                       onSubmitted: (_) => _search(),
                       decoration: InputDecoration(
                         hintText: '输入软件名称关键词',
-                        hintStyle:
-                            TextStyle(fontSize: 14, color: Colors.grey[500]),
-                        prefixIcon: Icon(Icons.search,
-                            size: 20, color: Colors.grey[500]),
+                        hintStyle: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[500],
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          size: 20,
+                          color: Colors.grey[500],
+                        ),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 13),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 13,
+                        ),
                       ),
                     ),
                   ),
@@ -144,11 +156,16 @@ class _AppSearchPageState extends State<AppSearchPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_rounded,
-                size: 64, color: Colors.grey.withAlpha(90)),
+            Icon(
+              Icons.search_rounded,
+              size: 64,
+              color: Colors.grey.withAlpha(90),
+            ),
             const SizedBox(height: 12),
-            Text('输入关键词，搜索软件库资源',
-                style: TextStyle(color: Colors.grey[500], fontSize: 14)),
+            Text(
+              '输入关键词，搜索软件库资源',
+              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+            ),
           ],
         ),
       );
@@ -168,16 +185,32 @@ class _AppSearchPageState extends State<AppSearchPage> {
                   color: C.brand.withAlpha(context.isDark ? 30 : 18),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.travel_explore_rounded, size: 42, color: C.brand.withAlpha(170)),
+                child: Icon(
+                  Icons.travel_explore_rounded,
+                  size: 42,
+                  color: C.brand.withAlpha(170),
+                ),
               ),
               const SizedBox(height: 18),
-              Text('没找到「$_keyword」',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: context.t1)),
+              Text(
+                '没找到「$_keyword」',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: context.t1,
+                ),
+              ),
               const SizedBox(height: 8),
-              Text('换个关键词试试，或者告诉我们你想要什么',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12.5, height: 1.6, color: context.t3)),
+              Text(
+                '换个关键词试试，或者告诉我们你想要什么',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  height: 1.6,
+                  color: context.t3,
+                ),
+              ),
               const SizedBox(height: 22),
               FilledButton.icon(
                 onPressed: () => Get.toNamed(Routes.message),
@@ -186,14 +219,22 @@ class _AppSearchPageState extends State<AppSearchPage> {
                 style: FilledButton.styleFrom(
                   backgroundColor: C.brand,
                   minimumSize: const Size(160, 44),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
               TextButton(
                 onPressed: () => Navigator.maybePop(context),
-                child: Text('返回软件库浏览', style: TextStyle(fontSize: 12.5, color: context.t3)),
+                child: Text(
+                  '返回软件库浏览',
+                  style: TextStyle(fontSize: 12.5, color: context.t3),
+                ),
               ),
             ],
           ),
@@ -205,10 +246,13 @@ class _AppSearchPageState extends State<AppSearchPage> {
       itemCount: _results.length,
       itemBuilder: (context, index) => AppCard(
         item: _results[index],
-        onTap: () => Get.toNamed(Routes.appDetails, arguments: {
-          'appId': _results[index].id.toString(),
-          'item': _results[index],
-        }),
+        onTap: () => Get.toNamed(
+          Routes.appDetails,
+          arguments: {
+            'appId': _results[index].id.toString(),
+            'item': _results[index],
+          },
+        ),
       ),
     );
   }

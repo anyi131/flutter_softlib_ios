@@ -252,15 +252,14 @@ class _HomeComponentState extends State<HomeComponent> {
                       imageUrl: img,
                       fit: BoxFit.cover,
                       memCacheWidth: 1000,
-                      placeholder: (_, __) =>
-                          Container(color: context.cardBg),
+                      placeholder: (_, __) => Container(color: context.cardBg),
                       errorWidget: (_, __, ___) => Container(
-                        decoration: BoxDecoration(
-                          gradient: Deco.brandGradient,
-                        ),
+                        decoration: BoxDecoration(gradient: Deco.brandGradient),
                       ),
                     )
-                  : Container(decoration: BoxDecoration(gradient: Deco.brandGradient)),
+                  : Container(
+                      decoration: BoxDecoration(gradient: Deco.brandGradient),
+                    ),
             ),
             // 底部渐隐
             Positioned(
@@ -314,10 +313,9 @@ class _HomeComponentState extends State<HomeComponent> {
               child: Row(
                 children: [
                   if (logic.configData?.groupBtnOn != false)
-                    _circleBtnGlass(
-                      Icons.group_add_outlined,
-                      () => logic.joinGroup(),
-                    ),
+                    _circleBtnGlass(Icons.group_add_outlined, () {
+                      logic.joinGroup();
+                    }),
                   if (logic.configData?.userBtnOn != false) ...[
                     const SizedBox(width: 8),
                     _circleBtnGlass(
@@ -358,23 +356,23 @@ class _HomeComponentState extends State<HomeComponent> {
     //   这就是「后台一切换首页模板就卡死」的原因。
     return SliverToBoxAdapter(
       child: Padding(
-      padding: EdgeInsets.fromLTRB(
-        context.pagePadding,
-        20,
-        context.pagePadding,
-        10,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 17,
-            decoration: BoxDecoration(
-              gradient: Deco.brandGradient,
-              borderRadius: BorderRadius.circular(3),
+        padding: EdgeInsets.fromLTRB(
+          context.pagePadding,
+          20,
+          context.pagePadding,
+          10,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 4,
+              height: 17,
+              decoration: BoxDecoration(
+                gradient: Deco.brandGradient,
+                borderRadius: BorderRadius.circular(3),
+              ),
             ),
-          ),
-          const SizedBox(width: 9),
+            const SizedBox(width: 9),
             Text('最新推荐', style: Ty.h3.copyWith(color: context.t1)),
           ],
         ),
@@ -510,13 +508,12 @@ class _HomeComponentState extends State<HomeComponent> {
         return SliverPadding(
           padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
           sliver: SliverGrid(
-            gridDelegate:
-                const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.78,
-                ),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.78,
+            ),
             delegate: SliverChildBuilderDelegate((context, i) {
               final d = list[i];
               return GestureDetector(
@@ -536,9 +533,8 @@ class _HomeComponentState extends State<HomeComponent> {
                                 imageUrl: d.image!,
                                 fit: BoxFit.cover,
                                 memCacheWidth: 400,
-                                placeholder: (_, __) => Container(
-                                  color: C.brand.withAlpha(16),
-                                ),
+                                placeholder: (_, __) =>
+                                    Container(color: C.brand.withAlpha(16)),
                                 errorWidget: (_, __, ___) => Container(
                                   color: C.brand.withAlpha(16),
                                   child: Icon(
@@ -599,11 +595,9 @@ class _HomeComponentState extends State<HomeComponent> {
                       imageUrl: list.first.image ?? '',
                       fit: BoxFit.cover,
                       memCacheWidth: 1100,
-                      placeholder: (_, __) =>
-                          Container(color: context.cardBg),
+                      placeholder: (_, __) => Container(color: context.cardBg),
                       errorWidget: (_, __, ___) => Container(
-                        decoration:
-                            BoxDecoration(gradient: Deco.brandGradient),
+                        decoration: BoxDecoration(gradient: Deco.brandGradient),
                       ),
                     )
                   else
@@ -661,10 +655,9 @@ class _HomeComponentState extends State<HomeComponent> {
                             ),
                           ),
                           if (logic.configData?.groupBtnOn != false)
-                            _circleBtn(
-                              Icons.group_add_outlined,
-                              () => logic.joinGroup(),
-                            ),
+                            _circleBtn(Icons.group_add_outlined, () {
+                              logic.joinGroup();
+                            }),
                           if (logic.configData?.userBtnOn != false) ...[
                             const SizedBox(width: 6),
                             _circleBtn(
@@ -691,70 +684,65 @@ class _HomeComponentState extends State<HomeComponent> {
 
   Widget _drawerGroups() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(context.pagePadding, 18, context.pagePadding, 4),
+      padding: EdgeInsets.fromLTRB(
+        context.pagePadding,
+        18,
+        context.pagePadding,
+        4,
+      ),
       child: Column(
         children: [
-          _drawerGroup(
-            '快捷功能',
-            Icons.bolt_rounded,
-            C.amber,
-            [
-              if (logic.configData?.uiConfig.quickSign ?? true)
-                _drawerItem(
-                  '每日签到',
-                  Icons.emoji_events_rounded,
-                  C.amber,
-                  () => Get.find<NavigateLogic>().goMine(),
-                ),
-              if (logic.configData?.uiConfig.quickVip ?? true)
-                _drawerItem(
-                  'VIP会员',
-                  Icons.workspace_premium_rounded,
-                  C.gold,
-                  () => Get.toNamed(Routes.vip),
-                ),
-              if (logic.configData?.uiConfig.quickService ?? true)
-                _drawerItem(
-                  '联系客服',
-                  Icons.headset_mic_rounded,
-                  C.cyan,
-                  () => logic.joinUser(),
-                ),
-              if (logic.configData?.uiConfig.quickUpdate ?? true)
-                _drawerItem(
-                  '检查更新',
-                  Icons.auto_awesome_rounded,
-                  C.violet,
-                  () => UpdateFlow.check(showLatestTip: true),
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          _drawerGroup(
-            '我的资产',
-            Icons.account_balance_wallet_rounded,
-            C.mint,
-            [
+          _drawerGroup('快捷功能', Icons.bolt_rounded, C.amber, [
+            if (logic.configData?.uiConfig.quickSign ?? true)
               _drawerItem(
-                '充值余额',
-                Icons.add_card_rounded,
-                C.mint,
-                () => Get.toNamed(Routes.recharge),
+                '每日签到',
+                Icons.emoji_events_rounded,
+                C.amber,
+                () => Get.find<NavigateLogic>().goMine(),
               ),
+            if (logic.configData?.uiConfig.quickVip ?? true)
               _drawerItem(
-                '下载管理',
-                Icons.download_rounded,
-                C.cyan,
-                () => Get.toNamed(Routes.appDownload),
-              ),
-              _drawerItem(
-                '卡密商城',
-                Icons.storefront_rounded,
+                'VIP会员',
+                Icons.workspace_premium_rounded,
                 C.gold,
-                () => Get.toNamed(Routes.cardShop),
+                () => Get.toNamed(Routes.vip),
               ),
-            ],
-          ),
+            if (logic.configData?.uiConfig.quickService ?? true)
+              _drawerItem(
+                '联系客服',
+                Icons.headset_mic_rounded,
+                C.cyan,
+                () => logic.joinUser(),
+              ),
+            if (logic.configData?.uiConfig.quickUpdate ?? true)
+              _drawerItem(
+                '检查更新',
+                Icons.auto_awesome_rounded,
+                C.violet,
+                () => UpdateFlow.check(showLatestTip: true),
+              ),
+          ]),
+          const SizedBox(height: 10),
+          _drawerGroup('我的资产', Icons.account_balance_wallet_rounded, C.mint, [
+            _drawerItem(
+              '充值余额',
+              Icons.add_card_rounded,
+              C.mint,
+              () => Get.toNamed(Routes.recharge),
+            ),
+            _drawerItem(
+              '下载管理',
+              Icons.download_rounded,
+              C.cyan,
+              () => Get.toNamed(Routes.appDownload),
+            ),
+            _drawerItem(
+              '卡密商城',
+              Icons.storefront_rounded,
+              C.gold,
+              () => Get.toNamed(Routes.cardShop),
+            ),
+          ]),
         ],
       ),
     );
@@ -817,10 +805,7 @@ class _HomeComponentState extends State<HomeComponent> {
                 ? CrossFadeState.showFirst
                 : CrossFadeState.showSecond,
             firstChild: Column(
-              children: [
-                for (final it in items) it,
-                const SizedBox(height: 6),
-              ],
+              children: [for (final it in items) it, const SizedBox(height: 6)],
             ),
             secondChild: const SizedBox(width: double.infinity),
           ),
@@ -1010,10 +995,7 @@ class _HomeComponentState extends State<HomeComponent> {
           children: [
             Icon(Icons.search_rounded, size: 18, color: context.t3),
             const SizedBox(width: 8),
-            Text(
-              '搜软件、找工具',
-              style: Ty.small.copyWith(color: context.t3),
-            ),
+            Text('搜软件、找工具', style: Ty.small.copyWith(color: context.t3)),
           ],
         ),
       ),
@@ -1035,7 +1017,12 @@ class _HomeComponentState extends State<HomeComponent> {
       height: 78,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.fromLTRB(context.pagePadding, 16, context.pagePadding, 6),
+        padding: EdgeInsets.fromLTRB(
+          context.pagePadding,
+          16,
+          context.pagePadding,
+          6,
+        ),
         itemCount: cats.length,
         separatorBuilder: (_, __) => const SizedBox(width: 16),
         itemBuilder: (context, i) {
@@ -1129,9 +1116,8 @@ class _HomeComponentState extends State<HomeComponent> {
                                     imageUrl: d.image!,
                                     fit: BoxFit.cover,
                                     memCacheWidth: 220,
-                                    placeholder: (_, __) => Container(
-                                      color: C.brand.withAlpha(16),
-                                    ),
+                                    placeholder: (_, __) =>
+                                        Container(color: C.brand.withAlpha(16)),
                                     errorWidget: (_, __, ___) => Container(
                                       color: C.brand.withAlpha(16),
                                       child: Icon(
@@ -1240,7 +1226,9 @@ class _HomeComponentState extends State<HomeComponent> {
           const SizedBox(width: 12),
           // 两个按钮可在后台配置（开关 + 链接）
           if (logic.configData?.groupBtnOn != false) ...[
-            _circleBtn(Icons.group_add_outlined, () => logic.joinGroup()),
+            _circleBtn(Icons.group_add_outlined, () {
+              logic.joinGroup();
+            }),
             const SizedBox(width: 8),
           ],
           if (logic.configData?.userBtnOn != false)

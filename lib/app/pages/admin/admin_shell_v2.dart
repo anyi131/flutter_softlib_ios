@@ -134,8 +134,11 @@ class _AdminShellV2State extends State<AdminShellV2> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.visibility_rounded,
-                  size: 20, color: Colors.white),
+              child: const Icon(
+                Icons.visibility_rounded,
+                size: 20,
+                color: Colors.white,
+              ),
             ),
           ),
         ),

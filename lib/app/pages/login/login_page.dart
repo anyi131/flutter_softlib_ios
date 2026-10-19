@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../utils/err_text.dart';
+
 import 'package:get/get.dart';
 
 import '../../api/qq_login.dart';
@@ -43,6 +45,7 @@ class _LoginPageState extends State<LoginPage> {
 
   /// ★ 1016：点下去立刻有反馈（原来点完界面毫无反应，等 QQ 冷启动像卡死）
   bool _qqLoading = false;
+
   /// 阶段文案：正在唤起 QQ… / 正在登录…
   String _qqStage = '正在唤起 QQ…';
 
@@ -184,7 +187,9 @@ class _LoginPageState extends State<LoginPage> {
       );
       // ★ 缓存里的 token 已被服务端判定无效（过期/被回收）
       //   → 清掉缓存，老老实实走一次 QQ 授权
-      if (fromCache && '${res['token'] ?? ''}'.isEmpty && '${res['need_register'] ?? ''}' != '1') {
+      if (fromCache &&
+          '${res['token'] ?? ''}'.isEmpty &&
+          '${res['need_register'] ?? ''}' != '1') {
         await QQLogin.clearAuth();
         final r2 = await QQLogin.login();
         msNative = sw.elapsedMilliseconds;

@@ -18,13 +18,18 @@ class NetGuard {
   static Future<bool> isMobile() async {
     if (!Platform.isAndroid) return false;
     try {
-      final r = await Process.run('ip', ['route', 'get', '1.1.1.1'])
-          .timeout(const Duration(seconds: 2));
+      final r = await Process.run('ip', [
+        'route',
+        'get',
+        '1.1.1.1',
+      ]).timeout(const Duration(seconds: 2));
       final out = '${r.stdout}'.toLowerCase();
       if (out.isEmpty) return false;
       // 默认路由走 wlan0 → WiFi；走 rmnet/ccmni → 蜂窝
       if (out.contains('wlan')) return false;
-      if (out.contains('rmnet') || out.contains('ccmni') || out.contains('wwan')) {
+      if (out.contains('rmnet') ||
+          out.contains('ccmni') ||
+          out.contains('wwan')) {
         return true;
       }
       return false;
@@ -39,7 +44,9 @@ class NetGuard {
     if (!await isMobile()) return null;
     // 小于 20MB 不提醒
     if (sizeBytes > 0 && sizeBytes < 20 * 1024 * 1024) return null;
-    final mb = sizeBytes > 0 ? '${(sizeBytes / 1048576).toStringAsFixed(1)} MB' : '较大的';
+    final mb = sizeBytes > 0
+        ? '${(sizeBytes / 1048576).toStringAsFixed(1)} MB'
+        : '较大的';
     return '当前是移动数据网络，安装包约 $mb\n继续下载会消耗流量';
   }
 }

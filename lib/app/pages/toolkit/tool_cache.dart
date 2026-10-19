@@ -23,7 +23,8 @@ class ToolCache {
       if (m is! Map) return null;
       // 过期检查：超过 24 小时当没有
       final at = (m['_at'] as num?)?.toInt() ?? 0;
-      if (DateTime.now().millisecondsSinceEpoch - at > 24 * 3600 * 1000) return null;
+      if (DateTime.now().millisecondsSinceEpoch - at > 24 * 3600 * 1000)
+        return null;
       return Map<String, dynamic>.from(m);
     } catch (_) {
       return null;

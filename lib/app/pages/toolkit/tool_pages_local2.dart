@@ -56,7 +56,10 @@ class _CalcPageState extends State<CalcPage> {
     if (v == v.roundToDouble() && v.abs() < 1e15) {
       return v.toInt().toString();
     }
-    return v.toStringAsPrecision(12).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    return v
+        .toStringAsPrecision(12)
+        .replaceAll(RegExp(r'0+$'), '')
+        .replaceAll(RegExp(r'\.$'), '');
   }
 
   /// 极简表达式求值（支持 + - * / % ^ 括号、pi/e、常见函数）
@@ -85,7 +88,11 @@ class _CalcPageState extends State<CalcPage> {
             icon: Icons.calculate_rounded,
             onSubmitted: (_) => _run(),
           ),
-          ToolButton(label: '计算', icon: Icons.play_arrow_rounded, onPressed: _run),
+          ToolButton(
+            label: '计算',
+            icon: Icons.play_arrow_rounded,
+            onPressed: _run,
+          ),
           const SizedBox(height: 14),
           if (_result.isNotEmpty)
             ToolCard(
@@ -113,19 +120,30 @@ class _CalcPageState extends State<CalcPage> {
                 children: [
                   Row(
                     children: [
-                      Text('历史', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                      Text(
+                        '历史',
+                        style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                      ),
                       const Spacer(),
                       AppPressable(
                         onTap: () => setState(() => _hist.clear()),
-                        child: Text('清空', style: Ty.tiny.copyWith(color: C.danger)),
+                        child: Text(
+                          '清空',
+                          style: Ty.tiny.copyWith(color: C.danger),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  ..._hist.map((h) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Text(h, style: Ty.tiny.copyWith(color: context.t2)),
-                      )),
+                  ..._hist.map(
+                    (h) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Text(
+                        h,
+                        style: Ty.tiny.copyWith(color: context.t2),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -308,7 +326,12 @@ class _HexConvPageState extends State<HexConvPage> {
           ),
           const SizedBox(height: 4),
           if (v == null)
-            ToolCard(child: Text('请输入合法的 $_fromBase 进制数', style: Ty.small.copyWith(color: context.t3)))
+            ToolCard(
+              child: Text(
+                '请输入合法的 $_fromBase 进制数',
+                style: Ty.small.copyWith(color: context.t3),
+              ),
+            )
           else
             ToolCard(
               child: Column(
@@ -326,26 +349,33 @@ class _HexConvPageState extends State<HexConvPage> {
   }
 
   Widget _row(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 7),
-        child: Row(
-          children: [
-            SizedBox(width: Ad.w(context, 96), child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Expanded(
-              child: SelectableText(
-                v,
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.t1),
-              ),
-            ),
-            AppPressable(
-              onTap: () {
-                Clipboard.setData(ClipboardData(text: v));
-                ToastUtil.success('已复制');
-              },
-              child: Icon(Icons.copy_rounded, size: 17, color: context.t3),
-            ),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 7),
+    child: Row(
+      children: [
+        SizedBox(
+          width: Ad.w(context, 96),
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Expanded(
+          child: SelectableText(
+            v,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: context.t1,
+            ),
+          ),
+        ),
+        AppPressable(
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: v));
+            ToastUtil.success('已复制');
+          },
+          child: Icon(Icons.copy_rounded, size: 17, color: context.t3),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ③ 时间戳转换 ───────────────
@@ -372,7 +402,10 @@ class _TimestampPageState extends State<TimestampPage> {
     if (n == null) return ToastUtil.error('请输入数字时间戳');
     if (n > 99999999999) n = n ~/ 1000; // 毫秒自动转秒
     final d = DateTime.fromMillisecondsSinceEpoch(n * 1000);
-    setState(() => _out = '${d.year}-${_p(d.month)}-${_p(d.day)} ${_p(d.hour)}:${_p(d.minute)}:${_p(d.second)}');
+    setState(
+      () => _out =
+          '${d.year}-${_p(d.month)}-${_p(d.day)} ${_p(d.hour)}:${_p(d.minute)}:${_p(d.second)}',
+    );
   }
 
   void _date2ts() {
@@ -388,7 +421,7 @@ class _TimestampPageState extends State<TimestampPage> {
     return ToolScaffold(
       title: '时间戳转换',
       subtitle: 'Unix 时间戳 ↔ 日期时间',
-      
+
       child: Column(
         children: [
           ToolCard(
@@ -398,18 +431,29 @@ class _TimestampPageState extends State<TimestampPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('当前时间戳（秒）', style: Ty.tiny.copyWith(color: context.t3)),
+                      Text(
+                        '当前时间戳（秒）',
+                        style: Ty.tiny.copyWith(color: context.t3),
+                      ),
                       const SizedBox(height: 4),
                       SelectableText(
                         '${now.millisecondsSinceEpoch ~/ 1000}',
-                        style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: C.brand),
+                        style: TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w900,
+                          color: C.brand,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 AppPressable(
                   onTap: () {
-                    Clipboard.setData(ClipboardData(text: '${now.millisecondsSinceEpoch ~/ 1000}'));
+                    Clipboard.setData(
+                      ClipboardData(
+                        text: '${now.millisecondsSinceEpoch ~/ 1000}',
+                      ),
+                    );
                     ToastUtil.success('已复制');
                   },
                   child: Icon(Icons.copy_rounded, size: 19, color: context.t3),
@@ -428,11 +472,20 @@ class _TimestampPageState extends State<TimestampPage> {
           Row(
             children: [
               Expanded(
-                child: ToolButton(label: '时间戳→日期', icon: Icons.event_rounded, onPressed: _ts2date),
+                child: ToolButton(
+                  label: '时间戳→日期',
+                  icon: Icons.event_rounded,
+                  onPressed: _ts2date,
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: ToolButton(label: '取当前时间戳', icon: Icons.access_time_rounded, outline: true, onPressed: _date2ts),
+                child: ToolButton(
+                  label: '取当前时间戳',
+                  icon: Icons.access_time_rounded,
+                  outline: true,
+                  onPressed: _date2ts,
+                ),
               ),
             ],
           ),
@@ -444,7 +497,14 @@ class _TimestampPageState extends State<TimestampPage> {
                 children: [
                   Text('结果', style: Ty.tiny.copyWith(color: context.t3)),
                   const SizedBox(height: 6),
-                  SelectableText(_out, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: C.brand)),
+                  SelectableText(
+                    _out,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: C.brand,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -486,7 +546,12 @@ class _CaseConvPageState extends State<CaseConvPage> {
       scrollable: true,
       child: Column(
         children: [
-          ToolField(controller: _in, label: '原文', lines: 4, icon: Icons.text_fields_rounded),
+          ToolField(
+            controller: _in,
+            label: '原文',
+            lines: 4,
+            icon: Icons.text_fields_rounded,
+          ),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -496,11 +561,29 @@ class _CaseConvPageState extends State<CaseConvPage> {
               _chip('首字母大写', () => _apply(_title, '首字母大写')),
               _chip('驼峰命名', () => _apply(_camel, '驼峰')),
               _chip('下划线', () => _apply(_snake, '下划线')),
-              _chip('中划线', () => _apply((s) => _snake(s).replaceAll('_', '-'), '中划线')),
-              _chip('去空格', () => _apply((s) => s.replaceAll(RegExp(r'\s+'), ''), '去空格')),
-              _chip('去多余空行', () => _apply((s) => s.replaceAll(RegExp(r'\n\s*\n+'), '\n'), '整理')),
-              _chip('文字反转', () => _apply((s) => s.split('').reversed.join(), '反转')),
-              _chip('去重行', () => _apply((s) => s.split('\n').toSet().join('\n'), '去重')),
+              _chip(
+                '中划线',
+                () => _apply((s) => _snake(s).replaceAll('_', '-'), '中划线'),
+              ),
+              _chip(
+                '去空格',
+                () => _apply((s) => s.replaceAll(RegExp(r'\s+'), ''), '去空格'),
+              ),
+              _chip(
+                '去多余空行',
+                () => _apply(
+                  (s) => s.replaceAll(RegExp(r'\n\s*\n+'), '\n'),
+                  '整理',
+                ),
+              ),
+              _chip(
+                '文字反转',
+                () => _apply((s) => s.split('').reversed.join(), '反转'),
+              ),
+              _chip(
+                '去重行',
+                () => _apply((s) => s.split('\n').toSet().join('\n'), '去重'),
+              ),
               _chip('排序行', () {
                 final l = _in.text.split('\n')..sort();
                 setState(() => _out.text = l.join('\n'));
@@ -523,14 +606,25 @@ class _CaseConvPageState extends State<CaseConvPage> {
     );
   }
 
-  static String _title(String s) =>
-      s.split(' ').map((w) => w.isEmpty ? w : w[0].toUpperCase() + w.substring(1).toLowerCase()).join(' ');
+  static String _title(String s) => s
+      .split(' ')
+      .map(
+        (w) =>
+            w.isEmpty ? w : w[0].toUpperCase() + w.substring(1).toLowerCase(),
+      )
+      .join(' ');
 
   static String _camel(String s) {
-    final parts = s.split(RegExp(r'[\s_\-]+')).where((e) => e.isNotEmpty).toList();
+    final parts = s
+        .split(RegExp(r'[\s_\-]+'))
+        .where((e) => e.isNotEmpty)
+        .toList();
     if (parts.isEmpty) return s;
     return parts.first.toLowerCase() +
-        parts.skip(1).map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase()).join();
+        parts
+            .skip(1)
+            .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase())
+            .join();
   }
 
   static String _snake(String s) => s
@@ -539,16 +633,23 @@ class _CaseConvPageState extends State<CaseConvPage> {
       .toLowerCase();
 
   Widget _chip(String label, VoidCallback onTap) => AppPressable(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
-          decoration: BoxDecoration(
-            color: C.brand.withAlpha(context.isDark ? 30 : 14),
-            borderRadius: BorderRadius.circular(R.full),
-          ),
-          child: Text(label, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: C.brand)),
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+      decoration: BoxDecoration(
+        color: C.brand.withAlpha(context.isDark ? 30 : 14),
+        borderRadius: BorderRadius.circular(R.full),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12.5,
+          fontWeight: FontWeight.w700,
+          color: C.brand,
         ),
-      );
+      ),
+    ),
+  );
 }
 
 // ─────────────── ⑤ UUID 生成 ───────────────
@@ -594,7 +695,11 @@ class _UuidPageState extends State<UuidPage> {
             onPick: (v) => setState(() => _count = v),
           ),
           const SizedBox(height: 12),
-          ToolButton(label: '生成', icon: Icons.auto_awesome_rounded, onPressed: _gen),
+          ToolButton(
+            label: '生成',
+            icon: Icons.auto_awesome_rounded,
+            onPressed: _gen,
+          ),
           const SizedBox(height: 14),
           if (_list.isNotEmpty)
             ToolCard(
@@ -603,22 +708,39 @@ class _UuidPageState extends State<UuidPage> {
                 children: [
                   Row(
                     children: [
-                      Text('已生成 ${_list.length} 个', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                      Text(
+                        '已生成 ${_list.length} 个',
+                        style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                      ),
                       const Spacer(),
                       AppPressable(
                         onTap: () {
-                          Clipboard.setData(ClipboardData(text: _list.join('\n')));
+                          Clipboard.setData(
+                            ClipboardData(text: _list.join('\n')),
+                          );
                           ToastUtil.success('已全部复制');
                         },
-                        child: Text('全部复制', style: Ty.tiny.copyWith(color: C.brand)),
+                        child: Text(
+                          '全部复制',
+                          style: Ty.tiny.copyWith(color: C.brand),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  ..._list.map((u) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: SelectableText(u, style: TextStyle(fontSize: 12.5, color: context.t1, fontFamily: 'monospace')),
-                      )),
+                  ..._list.map(
+                    (u) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: SelectableText(
+                        u,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: context.t1,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -682,36 +804,65 @@ class _ColorConvPageState extends State<ColorConvPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _row('HEX', '#${v.toRadixString(16).padLeft(6, '0').toUpperCase()}'),
-                  _row('RGB', 'rgb(${(v >> 16) & 255}, ${(v >> 8) & 255}, ${v & 255})'),
-                  _row('RGBA', 'rgba(${(v >> 16) & 255}, ${(v >> 8) & 255}, ${v & 255}, 1)'),
-                  _row('数值', '0xFF${v.toRadixString(16).padLeft(6, '0').toUpperCase()}'),
+                  _row(
+                    'HEX',
+                    '#${v.toRadixString(16).padLeft(6, '0').toUpperCase()}',
+                  ),
+                  _row(
+                    'RGB',
+                    'rgb(${(v >> 16) & 255}, ${(v >> 8) & 255}, ${v & 255})',
+                  ),
+                  _row(
+                    'RGBA',
+                    'rgba(${(v >> 16) & 255}, ${(v >> 8) & 255}, ${v & 255}, 1)',
+                  ),
+                  _row(
+                    '数值',
+                    '0xFF${v.toRadixString(16).padLeft(6, '0').toUpperCase()}',
+                  ),
                 ],
               ),
             ),
           ] else
-            ToolCard(child: Text('请输入 3 位或 6 位十六进制颜色', style: Ty.small.copyWith(color: context.t3))),
+            ToolCard(
+              child: Text(
+                '请输入 3 位或 6 位十六进制颜色',
+                style: Ty.small.copyWith(color: context.t3),
+              ),
+            ),
         ],
       ),
     );
   }
 
   Widget _row(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            SizedBox(width: Ad.w(context, 66), child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Expanded(child: SelectableText(v, style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: context.t1))),
-            AppPressable(
-              onTap: () {
-                Clipboard.setData(ClipboardData(text: v));
-                ToastUtil.success('已复制');
-              },
-              child: Icon(Icons.copy_rounded, size: 17, color: context.t3),
-            ),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        SizedBox(
+          width: Ad.w(context, 66),
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Expanded(
+          child: SelectableText(
+            v,
+            style: TextStyle(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w800,
+              color: context.t1,
+            ),
+          ),
+        ),
+        AppPressable(
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: v));
+            ToastUtil.success('已复制');
+          },
+          child: Icon(Icons.copy_rounded, size: 17, color: context.t3),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑦ 百分比 / 折扣计算 ───────────────
@@ -741,20 +892,37 @@ class _PercentPageState extends State<PercentPage> {
     return ToolScaffold(
       title: '折扣计算',
       subtitle: '原价 / 现价 → 折扣与省额',
-      
+
       child: Column(
         children: [
           Row(
             children: [
-              Expanded(child: ToolField(controller: _a, label: '原价（元）', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _a,
+                  label: '原价（元）',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
               const SizedBox(width: 10),
-              Expanded(child: ToolField(controller: _b, label: '现价（元）', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _b,
+                  label: '现价（元）',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
             ],
           ),
           ToolCard(
             child: Column(
               children: [
-                _row('打折', '${(b / (a == 0 ? 1 : a) * 10).toStringAsFixed(2)} 折'),
+                _row(
+                  '打折',
+                  '${(b / (a == 0 ? 1 : a) * 10).toStringAsFixed(2)} 折',
+                ),
                 _row('省下', '¥${save.toStringAsFixed(2)}'),
                 _row('降幅', '${off.toStringAsFixed(2)}%'),
               ],
@@ -765,17 +933,30 @@ class _PercentPageState extends State<PercentPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('常用折扣对照（原价 ¥$a）', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                  '常用折扣对照（原价 ¥$a）',
+                  style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 8),
-                ...[9, 8, 7, 6, 5].map((d) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 3),
-                      child: Row(
-                        children: [
-                          Expanded(child: Text('$d 折', style: Ty.tiny.copyWith(color: context.t3))),
-                          Text('¥${(a * d / 10).toStringAsFixed(2)}', style: Ty.tiny.copyWith(fontWeight: FontWeight.w800)),
-                        ],
-                      ),
-                    )),
+                ...[9, 8, 7, 6, 5].map(
+                  (d) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 3),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '$d 折',
+                            style: Ty.tiny.copyWith(color: context.t3),
+                          ),
+                        ),
+                        Text(
+                          '¥${(a * d / 10).toStringAsFixed(2)}',
+                          style: Ty.tiny.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -785,14 +966,23 @@ class _PercentPageState extends State<PercentPage> {
   }
 
   Widget _row(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 7),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: C.brand)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 7),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w900,
+            color: C.brand,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑧ 日期间隔计算 ───────────────
@@ -834,38 +1024,55 @@ class _DateCalcPageState extends State<DateCalcPage> {
     );
   }
 
-  Widget _picker(String label, DateTime d, ValueChanged<DateTime> onPick) => ToolCard(
-        onTap: () async {
-          final r = await showDatePicker(
-            context: context,
-            initialDate: d,
-            firstDate: DateTime(1970),
-            lastDate: DateTime(2100),
-            helpText: label,
-          );
-          if (r != null) onPick(r);
-        },
-        child: Row(
-          children: [
-            Icon(Icons.calendar_month_rounded, size: 19, color: C.brand),
-            const SizedBox(width: 10),
-            Text(label, style: Ty.small.copyWith(color: context.t3)),
-            const Spacer(),
-            Text(
-              '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.t1),
-            ),
-          ],
-        ),
+  Widget _picker(
+    String label,
+    DateTime d,
+    ValueChanged<DateTime> onPick,
+  ) => ToolCard(
+    onTap: () async {
+      final r = await showDatePicker(
+        context: context,
+        initialDate: d,
+        firstDate: DateTime(1970),
+        lastDate: DateTime(2100),
+        helpText: label,
       );
+      if (r != null) onPick(r);
+    },
+    child: Row(
+      children: [
+        Icon(Icons.calendar_month_rounded, size: 19, color: C.brand),
+        const SizedBox(width: 10),
+        Text(label, style: Ty.small.copyWith(color: context.t3)),
+        const Spacer(),
+        Text(
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+            color: context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 
   Widget _row(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 7),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: C.brand)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 7),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            color: C.brand,
+          ),
+        ),
+      ],
+    ),
+  );
 }

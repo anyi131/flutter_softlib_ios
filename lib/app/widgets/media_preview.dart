@@ -23,15 +23,29 @@ class MediaPreview {
   /// 判断是不是图片
   static bool isImage(String url) {
     final u = url.toLowerCase().split('?').first;
-    return ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic']
-        .any((e) => u.endsWith(e));
+    return [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.webp',
+      '.bmp',
+      '.heic',
+    ].any((e) => u.endsWith(e));
   }
 
   /// 判断是不是视频
   static bool isVideo(String url) {
     final u = url.toLowerCase().split('?').first;
-    return ['.mp4', '.m3u8', '.mov', '.avi', '.mkv', '.flv', '.ts']
-        .any((e) => u.endsWith(e));
+    return [
+      '.mp4',
+      '.m3u8',
+      '.mov',
+      '.avi',
+      '.mkv',
+      '.flv',
+      '.ts',
+    ].any((e) => u.endsWith(e));
   }
 
   /// 图片预览（支持多图翻页）
@@ -46,10 +60,7 @@ class MediaPreview {
       return;
     }
     final cur = index.clamp(0, list.length - 1);
-    await Get.to(
-      () => _GalleryPage(urls: list, index: cur),
-      opaque: false,
-    );
+    await Get.to(() => _GalleryPage(urls: list, index: cur), opaque: false);
   }
 
   /// 单张图片
@@ -94,11 +105,16 @@ class _GalleryPageState extends State<_GalleryPage> {
               imageProvider: CachedNetworkImageProvider(widget.urls[i]),
               minScale: PhotoViewComputedScale.contained,
               maxScale: PhotoViewComputedScale.covered * 3,
-              heroAttributes: PhotoViewHeroAttributes(tag: 'pv_${widget.urls[i]}'),
+              heroAttributes: PhotoViewHeroAttributes(
+                tag: 'pv_${widget.urls[i]}',
+              ),
               onTapUp: (_, __, ___) => setState(() => _showBar = !_showBar),
             ),
             loadingBuilder: (_, __) => const Center(
-              child: CircularProgressIndicator(color: Colors.white70, strokeWidth: 2),
+              child: CircularProgressIndicator(
+                color: Colors.white70,
+                strokeWidth: 2,
+              ),
             ),
           ),
           // 顶部栏
@@ -106,7 +122,9 @@ class _GalleryPageState extends State<_GalleryPage> {
             opacity: _showBar ? 1 : 0,
             duration: const Duration(milliseconds: 180),
             child: Container(
-              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 6),
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + 6,
+              ),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Colors.black.withAlpha(170), Colors.transparent],
@@ -123,12 +141,19 @@ class _GalleryPageState extends State<_GalleryPage> {
                   const Spacer(),
                   Text(
                     '${_i + 1} / ${widget.urls.length}',
-                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(width: 6),
                   // ★ 1015：保存到相册
                   IconButton(
-                    icon: const Icon(Icons.download_rounded, color: Colors.white),
+                    icon: const Icon(
+                      Icons.download_rounded,
+                      color: Colors.white,
+                    ),
                     tooltip: '保存到相册',
                     onPressed: () {
                       if (_i >= 0 && _i < widget.urls.length) {
@@ -148,7 +173,10 @@ class _GalleryPageState extends State<_GalleryPage> {
               bottom: MediaQuery.of(context).padding.bottom + 16,
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withAlpha(28),
                     borderRadius: BorderRadius.circular(20),
@@ -242,11 +270,17 @@ class MediaGrid extends StatelessWidget {
           child: CachedNetworkImage(
             imageUrl: urls[i],
             fit: BoxFit.cover,
-            placeholder: (_, __) => Container(color: context.isDark ? Colors.white10 : Colors.black12),
+            placeholder: (_, __) => Container(
+              color: context.isDark ? Colors.white10 : Colors.black12,
+            ),
             errorWidget: (_, __, ___) => Container(
               color: context.isDark ? Colors.white10 : Colors.black12,
               alignment: Alignment.center,
-              child: Icon(Icons.broken_image_outlined, size: 22, color: context.t3),
+              child: Icon(
+                Icons.broken_image_outlined,
+                size: 22,
+                color: context.t3,
+              ),
             ),
           ),
         ),

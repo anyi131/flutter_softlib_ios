@@ -75,8 +75,12 @@ class _AboutPageState extends State<AboutPage> {
                   )
                 : ListView(
                     physics: const BouncingScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(context.pagePadding, 8,
-                        context.pagePadding, context.tabSpace + 30),
+                    padding: EdgeInsets.fromLTRB(
+                      context.pagePadding,
+                      8,
+                      context.pagePadding,
+                      context.tabSpace + 30,
+                    ),
                     children: [
                       _topBar(),
                       const SizedBox(height: 20),
@@ -110,15 +114,20 @@ class _AboutPageState extends State<AboutPage> {
                     : Colors.black.withAlpha(8),
               ),
             ),
-            child: Icon(Icons.arrow_back_ios_new_rounded,
-                size: 16, color: context.t1),
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 16,
+              color: context.t1,
+            ),
           ),
         ),
         const SizedBox(width: 12),
         ShaderMask(
           shaderCallback: (r) => Deco.aurora().createShader(r),
-          child: Text('关于软件',
-              style: Ty.h2.copyWith(color: Colors.white, fontSize: 21)),
+          child: Text(
+            '关于软件',
+            style: Ty.h2.copyWith(color: Colors.white, fontSize: 21),
+          ),
         ),
       ],
     );
@@ -239,10 +248,7 @@ class _AboutPageState extends State<AboutPage> {
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: C.brand.withAlpha(90),
-                  width: 1.6,
-                ),
+                border: Border.all(color: C.brand.withAlpha(90), width: 1.6),
               ),
               child: logo.isEmpty
                   ? _logoFallback()
@@ -356,17 +362,23 @@ class _AboutPageState extends State<AboutPage> {
     if (tpl == 'plain') {
       // v52w：纯文字排版（无卡无边框，编辑器风）
       return [
-        Text(cfg?.aboutName ?? '安逸软件汇',
-            style: Ty.display.copyWith(color: context.t1)),
+        Text(
+          cfg?.aboutName ?? '安逸软件汇',
+          style: Ty.display.copyWith(color: context.t1),
+        ),
         if ((cfg?.aboutSlogan ?? '').isNotEmpty) ...[
           const SizedBox(height: 6),
-          Text(cfg!.aboutSlogan,
-              style: TextStyle(fontSize: 13.5, color: context.t3)),
+          Text(
+            cfg!.aboutSlogan,
+            style: TextStyle(fontSize: 13.5, color: context.t3),
+          ),
         ],
         const SizedBox(height: 22),
         if ((cfg?.aboutDesc ?? '').isNotEmpty) ...[
-          Text(cfg!.aboutDesc,
-              style: TextStyle(fontSize: 14, height: 1.8, color: context.t2)),
+          Text(
+            cfg!.aboutDesc,
+            style: TextStyle(fontSize: 14, height: 1.8, color: context.t2),
+          ),
           const SizedBox(height: 22),
         ],
         _infoList(cfg),
@@ -381,14 +393,13 @@ class _AboutPageState extends State<AboutPage> {
         Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: context.isDark
-                ? Colors.white.withAlpha(10)
-                : Colors.white,
+            color: context.isDark ? Colors.white.withAlpha(10) : Colors.white,
             borderRadius: BorderRadius.circular(R.xl),
             border: Border.all(
-                color: context.isDark
-                    ? Colors.white.withAlpha(18)
-                    : Colors.black.withAlpha(12)),
+              color: context.isDark
+                  ? Colors.white.withAlpha(18)
+                  : Colors.black.withAlpha(12),
+            ),
           ),
           child: Row(
             children: [
@@ -396,8 +407,9 @@ class _AboutPageState extends State<AboutPage> {
                 width: 66,
                 height: 66,
                 clipBehavior: Clip.antiAlias,
-                decoration:
-                    BoxDecoration(borderRadius: BorderRadius.circular(18)),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                ),
                 child: logo.isEmpty
                     ? _logoFallback()
                     : CachedNetworkImage(
@@ -411,15 +423,19 @@ class _AboutPageState extends State<AboutPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(cfg?.aboutName ?? '安逸软件汇',
-                        style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                            color: context.t1)),
+                    Text(
+                      cfg?.aboutName ?? '安逸软件汇',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                        color: context.t1,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text(cfg?.aboutSlogan ?? '',
-                        style: TextStyle(
-                            fontSize: 12, color: context.t3)),
+                    Text(
+                      cfg?.aboutSlogan ?? '',
+                      style: TextStyle(fontSize: 12, color: context.t3),
+                    ),
                   ],
                 ),
               ),
@@ -499,11 +515,14 @@ class _AboutPageState extends State<AboutPage> {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: C.brand.withAlpha(80), width: 0.8),
             ),
-            child: Text('v${_localVersion.isNotEmpty ? _localVersion : (cfg?.aboutVersion ?? "")}',
-                style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
-                    color: C.brand)),
+            child: Text(
+              'v${_localVersion.isNotEmpty ? _localVersion : (cfg?.aboutVersion ?? "")}',
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+                color: C.brand,
+              ),
+            ),
           ),
         ),
       ],
@@ -511,10 +530,10 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   Widget _logoFallback() => Container(
-        decoration: BoxDecoration(gradient: Deco.brandGradient),
-        alignment: Alignment.center,
-        child: const Icon(Icons.android_rounded, color: Colors.white, size: 40),
-      );
+    decoration: BoxDecoration(gradient: Deco.brandGradient),
+    alignment: Alignment.center,
+    child: const Icon(Icons.android_rounded, color: Colors.white, size: 40),
+  );
 
   // ── 详细介绍 ──
   Widget _descCard(String desc) {
@@ -529,23 +548,31 @@ class _AboutPageState extends State<AboutPage> {
           Row(
             children: [
               Container(
-                  width: 3.5,
-                  height: 14,
-                  decoration: BoxDecoration(
-                      color: C.brand, borderRadius: BorderRadius.circular(2))),
+                width: 3.5,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: C.brand,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(width: 8),
-              Text('软件介绍',
-                  style: Ty.h3.copyWith(fontSize: 14.5, color: context.t1)),
+              Text(
+                '软件介绍',
+                style: Ty.h3.copyWith(fontSize: 14.5, color: context.t1),
+              ),
             ],
           ),
           const SizedBox(height: 10),
-          Text(clean,
-              style: TextStyle(
-                  fontSize: 13.5,
-                  height: 1.8,
-                  color: context.isDark
-                      ? Colors.grey[300]
-                      : const Color(0xFF41454B))),
+          Text(
+            clean,
+            style: TextStyle(
+              fontSize: 13.5,
+              height: 1.8,
+              color: context.isDark
+                  ? Colors.grey[300]
+                  : const Color(0xFF41454B),
+            ),
+          ),
         ],
       ),
     );
@@ -570,9 +597,23 @@ class _AboutPageState extends State<AboutPage> {
   // ── 信息列表 ──
   Widget _infoList(AppConfig? cfg, {bool flat = false}) {
     // ★ 每行带自己的 onTap（修复「按键没功能」）
-    final rows = <({IconData icon, Color color, String label, String value, VoidCallback? onTap})>[];
-    void add(IconData i, Color c, String label, String value,
-        {VoidCallback? onTap}) {
+    final rows =
+        <
+          ({
+            IconData icon,
+            Color color,
+            String label,
+            String value,
+            VoidCallback? onTap,
+          })
+        >[];
+    void add(
+      IconData i,
+      Color c,
+      String label,
+      String value, {
+      VoidCallback? onTap,
+    }) {
       if (value.isEmpty) return;
       rows.add((icon: i, color: c, label: label, value: value, onTap: onTap));
     }
@@ -580,19 +621,42 @@ class _AboutPageState extends State<AboutPage> {
     final contact = cfg?.aboutContact ?? '';
     final website = cfg?.aboutWebsite ?? '';
     final updateUrl = cfg?.aboutUpdateUrl ?? '';
-    add(Icons.alternate_email_rounded, C.cyan, '联系方式', contact,
-        onTap: contact.isEmpty ? null : () => _copy(contact));
-    add(Icons.language_rounded, C.mint, '官方网站', website,
-        onTap: website.isEmpty ? null : () => _openUrl(website));
-    add(Icons.system_update_rounded, C.violet, '检查更新',
-        updateUrl.isEmpty ? '' : '前往下载最新版',
-        onTap: updateUrl.isEmpty ? null : () => _openUrl(updateUrl));
-    add(Icons.share_rounded, C.brandBright, '分享本软件', '推荐给朋友',
-        onTap: _shareApp);
-    add(Icons.description_rounded, C.violet, '用户协议', '查看详情',
-        onTap: () => Get.toNamed('/agreement', arguments: {'type': 'agreement'}));
-    add(Icons.privacy_tip_rounded, C.pink, '隐私政策', '查看详情',
-        onTap: () => Get.toNamed('/agreement', arguments: {'type': 'privacy'}));
+    add(
+      Icons.alternate_email_rounded,
+      C.cyan,
+      '联系方式',
+      contact,
+      onTap: contact.isEmpty ? null : () => _copy(contact),
+    );
+    add(
+      Icons.language_rounded,
+      C.mint,
+      '官方网站',
+      website,
+      onTap: website.isEmpty ? null : () => _openUrl(website),
+    );
+    add(
+      Icons.system_update_rounded,
+      C.violet,
+      '检查更新',
+      updateUrl.isEmpty ? '' : '前往下载最新版',
+      onTap: updateUrl.isEmpty ? null : () => _openUrl(updateUrl),
+    );
+    add(Icons.share_rounded, C.brandBright, '分享本软件', '推荐给朋友', onTap: _shareApp);
+    add(
+      Icons.description_rounded,
+      C.violet,
+      '用户协议',
+      '查看详情',
+      onTap: () => Get.toNamed('/agreement', arguments: {'type': 'agreement'}),
+    );
+    add(
+      Icons.privacy_tip_rounded,
+      C.pink,
+      '隐私政策',
+      '查看详情',
+      onTap: () => Get.toNamed('/agreement', arguments: {'type': 'privacy'}),
+    );
 
     if (rows.isEmpty) return const SizedBox.shrink();
 
@@ -610,7 +674,8 @@ class _AboutPageState extends State<AboutPage> {
                     : Colors.black.withAlpha(10),
               ),
             InkWell(
-              onTap: rows[i].onTap ??
+              onTap:
+                  rows[i].onTap ??
                   (rows[i].value.isEmpty ? null : () => _copy(rows[i].value)),
               borderRadius: BorderRadius.circular(8),
               child: Padding(
@@ -642,9 +707,7 @@ class _AboutPageState extends State<AboutPage> {
                         style: Ty.small.copyWith(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w600,
-                          color: rows[i].onTap != null
-                              ? C.brand
-                              : context.t1,
+                          color: rows[i].onTap != null ? C.brand : context.t1,
                         ),
                       ),
                     ),
@@ -664,13 +727,15 @@ class _AboutPageState extends State<AboutPage> {
           for (int i = 0; i < rows.length; i++) ...[
             if (i > 0)
               Divider(
-                  height: 1,
-                  thickness: 0.5,
-                  color: context.isDark
-                      ? Colors.white.withAlpha(14)
-                      : Colors.black.withAlpha(8)),
+                height: 1,
+                thickness: 0.5,
+                color: context.isDark
+                    ? Colors.white.withAlpha(14)
+                    : Colors.black.withAlpha(8),
+              ),
             InkWell(
-              onTap: rows[i].onTap ??
+              onTap:
+                  rows[i].onTap ??
                   (rows[i].value.isEmpty ? null : () => _copy(rows[i].value)),
               borderRadius: BorderRadius.circular(8),
               child: Padding(
@@ -680,12 +745,12 @@ class _AboutPageState extends State<AboutPage> {
                     Container(
                       padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
-                        color: rows[i].color
-                            .withAlpha(context.isDark ? 38 : 24),
+                        color: rows[i].color.withAlpha(
+                          context.isDark ? 38 : 24,
+                        ),
                         borderRadius: BorderRadius.circular(9),
                       ),
-                      child:
-                          Icon(rows[i].icon, size: 15, color: rows[i].color),
+                      child: Icon(rows[i].icon, size: 15, color: rows[i].color),
                     ),
                     const SizedBox(width: 11),
                     // ★ 1014 需求7：标签不再抢占空间（去掉 Spacer 与 Flexible 竞争），
@@ -696,8 +761,10 @@ class _AboutPageState extends State<AboutPage> {
                         rows[i].label,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style:
-                            Ty.body.copyWith(fontSize: 13.5, color: context.t2),
+                        style: Ty.body.copyWith(
+                          fontSize: 13.5,
+                          color: context.t2,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -715,8 +782,11 @@ class _AboutPageState extends State<AboutPage> {
                       ),
                     ),
                     const SizedBox(width: 2),
-                    Icon(Icons.chevron_right_rounded,
-                        size: 16, color: context.t3),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 16,
+                      color: context.t3,
+                    ),
                   ],
                 ),
               ),
@@ -759,8 +829,9 @@ class _AboutPageState extends State<AboutPage> {
       await Share.share(
         text.toString().trim(),
         subject: name,
-        sharePositionOrigin:
-            box != null ? box.localToGlobal(Offset.zero) & box.size : null,
+        sharePositionOrigin: box != null
+            ? box.localToGlobal(Offset.zero) & box.size
+            : null,
       );
     } catch (e) {
       ToastUtil.error('分享失败');
@@ -808,20 +879,26 @@ class _AboutPageState extends State<AboutPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(it['title']!,
-                          style: Ty.h3
-                              .copyWith(fontSize: 14, color: context.t1)),
+                      Text(
+                        it['title']!,
+                        style: Ty.h3.copyWith(fontSize: 14, color: context.t1),
+                      ),
                       if ((it['content'] ?? '').isNotEmpty) ...[
                         const SizedBox(height: 4),
-                        Text(it['content']!,
-                            style: Ty.small.copyWith(color: context.t3)),
+                        Text(
+                          it['content']!,
+                          style: Ty.small.copyWith(color: context.t3),
+                        ),
                       ],
                     ],
                   ),
                 ),
                 if ((it['url'] ?? '').isNotEmpty)
-                  Icon(Icons.chevron_right_rounded,
-                      size: 18, color: context.t3),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
+                    color: context.t3,
+                  ),
               ],
             ),
           ),
@@ -837,14 +914,18 @@ class _AboutPageState extends State<AboutPage> {
     return Column(
       children: [
         if (copyright.isNotEmpty)
-          Text(copyright,
-              textAlign: TextAlign.center,
-              style: Ty.tiny.copyWith(color: context.t3)),
+          Text(
+            copyright,
+            textAlign: TextAlign.center,
+            style: Ty.tiny.copyWith(color: context.t3),
+          ),
         if (footer.isNotEmpty) ...[
           const SizedBox(height: 6),
-          Text(footer,
-              textAlign: TextAlign.center,
-              style: Ty.tiny.copyWith(fontSize: 10, color: context.t3)),
+          Text(
+            footer,
+            textAlign: TextAlign.center,
+            style: Ty.tiny.copyWith(fontSize: 10, color: context.t3),
+          ),
         ],
       ],
     );

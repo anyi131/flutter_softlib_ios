@@ -50,8 +50,17 @@ class _CollectTaskViewState extends State<CollectTaskView> {
   @override
   void dispose() {
     for (final c in [
-      _platform, _inviteUrl, _inviteCode, _wechat, _password,
-      _title, _content, _rewardValue, _limitDays, _limitCount, _replyHours,
+      _platform,
+      _inviteUrl,
+      _inviteCode,
+      _wechat,
+      _password,
+      _title,
+      _content,
+      _rewardValue,
+      _limitDays,
+      _limitCount,
+      _replyHours,
     ]) {
       c.dispose();
     }
@@ -124,17 +133,35 @@ class _CollectTaskViewState extends State<CollectTaskView> {
       return const Center(child: CircularProgressIndicator());
     }
     return ListView(
-      padding: EdgeInsets.fromLTRB(context.pagePadding, 10, context.pagePadding, 100),
+      padding: EdgeInsets.fromLTRB(
+        context.pagePadding,
+        10,
+        context.pagePadding,
+        100,
+      ),
       children: [
         AdSection(title: '任务活动', subtitle: 'App「我的 → 免费领会员」和付费弹窗入口都受此控制'),
         AdCard(
           child: Column(
             children: [
-              _switchRow('启用任务活动', '关闭后 App 里所有任务入口隐藏', enable,
-                  (v) => setState(() => enable = v)),
-              Divider(height: 20, color: (context.isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(12))),
-              _switchRow('要求上传截图', '审核时需要用户发新手福利页截图', requireShot,
-                  (v) => setState(() => requireShot = v)),
+              _switchRow(
+                '启用任务活动',
+                '关闭后 App 里所有任务入口隐藏',
+                enable,
+                (v) => setState(() => enable = v),
+              ),
+              Divider(
+                height: 20,
+                color: (context.isDark
+                    ? Colors.white.withAlpha(20)
+                    : Colors.black.withAlpha(12)),
+              ),
+              _switchRow(
+                '要求上传截图',
+                '审核时需要用户发新手福利页截图',
+                requireShot,
+                (v) => setState(() => requireShot = v),
+              ),
             ],
           ),
         ),
@@ -144,7 +171,12 @@ class _CollectTaskViewState extends State<CollectTaskView> {
           child: Column(
             children: [
               _field('平台名称', _platform, hint: '赏帮赚'),
-              _field('邀请下载链接', _inviteUrl, hint: 'https://...?code=你的推广码', maxLines: 2),
+              _field(
+                '邀请下载链接',
+                _inviteUrl,
+                hint: 'https://...?code=你的推广码',
+                maxLines: 2,
+              ),
               _field('你的邀请码', _inviteCode, hint: '如 11922299'),
               _field('管理员微信', _wechat, hint: '用户加这个微信提交申请'),
               _field('承诺回复时长(小时)', _replyHours, hint: '1', number: true),
@@ -166,16 +198,30 @@ class _CollectTaskViewState extends State<CollectTaskView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('${_tasks[i]['title'] ?? ''}',
-                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.t1)),
+                            Text(
+                              '${_tasks[i]['title'] ?? ''}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: context.t1,
+                              ),
+                            ),
                             if ('${_tasks[i]['desc'] ?? ''}'.isNotEmpty)
-                              Text('${_tasks[i]['desc']}',
-                                  style: TextStyle(fontSize: 11.5, color: context.t3)),
+                              Text(
+                                '${_tasks[i]['desc']}',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: context.t3,
+                                ),
+                              ),
                           ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          size: 18,
+                        ),
                         onPressed: () => setState(() => _tasks.removeAt(i)),
                       ),
                     ],
@@ -196,13 +242,25 @@ class _CollectTaskViewState extends State<CollectTaskView> {
             children: [
               Row(
                 children: [
-                  _typeChip('会员天数', rewardType == 'vip', () => setState(() => rewardType = 'vip')),
+                  _typeChip(
+                    '会员天数',
+                    rewardType == 'vip',
+                    () => setState(() => rewardType = 'vip'),
+                  ),
                   const SizedBox(width: 8),
-                  _typeChip('积分', rewardType == 'score', () => setState(() => rewardType = 'score')),
+                  _typeChip(
+                    '积分',
+                    rewardType == 'score',
+                    () => setState(() => rewardType = 'score'),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
-              _field(rewardType == 'vip' ? '奖励天数' : '奖励积分', _rewardValue, number: true),
+              _field(
+                rewardType == 'vip' ? '奖励天数' : '奖励积分',
+                _rewardValue,
+                number: true,
+              ),
               _field('每人可领天数(窗口)', _limitDays, number: true, hint: '30'),
               _field('窗口内可领次数', _limitCount, number: true, hint: '1'),
             ],
@@ -210,9 +268,7 @@ class _CollectTaskViewState extends State<CollectTaskView> {
         ),
         const SizedBox(height: 16),
         AdSection(title: '任务密码', subtitle: '用户在 App 里输入此密码领取奖励'),
-        AdCard(
-          child: _field('密码', _password, hint: '如 anyi0131'),
-        ),
+        AdCard(child: _field('密码', _password, hint: '如 anyi0131')),
         const SizedBox(height: 16),
         AdSection(title: '文案', subtitle: 'App 顶部展示'),
         AdCard(
@@ -230,10 +286,17 @@ class _CollectTaskViewState extends State<CollectTaskView> {
             onPressed: _saving ? null : _save,
             style: FilledButton.styleFrom(
               backgroundColor: C.brand,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: Text(_saving ? '保存中…' : '保存设置',
-                style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+            child: Text(
+              _saving ? '保存中…' : '保存设置',
+              style: const TextStyle(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ),
       ],
@@ -247,7 +310,14 @@ class _CollectTaskViewState extends State<CollectTaskView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(t, style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: context.t1)),
+              Text(
+                t,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: context.t1,
+                ),
+              ),
               const SizedBox(height: 2),
               Text(sub, style: TextStyle(fontSize: 11, color: context.t3)),
             ],
@@ -258,8 +328,13 @@ class _CollectTaskViewState extends State<CollectTaskView> {
     );
   }
 
-  Widget _field(String label, TextEditingController c,
-      {String hint = '', int maxLines = 1, bool number = false}) {
+  Widget _field(
+    String label,
+    TextEditingController c, {
+    String hint = '',
+    int maxLines = 1,
+    bool number = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Column(
@@ -274,18 +349,34 @@ class _CollectTaskViewState extends State<CollectTaskView> {
             style: TextStyle(fontSize: 13.5, color: context.t1),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(fontSize: 12.5, color: context.t3.withAlpha(140)),
+              hintStyle: TextStyle(
+                fontSize: 12.5,
+                color: context.t3.withAlpha(140),
+              ),
               isDense: true,
               filled: true,
-              fillColor: context.isDark ? Colors.white.withAlpha(10) : const Color(0xFFF8F9FC),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+              fillColor: context.isDark
+                  ? Colors.white.withAlpha(10)
+                  : const Color(0xFFF8F9FC),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 11,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: (context.isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(12))),
+                borderSide: BorderSide(
+                  color: (context.isDark
+                      ? Colors.white.withAlpha(20)
+                      : Colors.black.withAlpha(12)),
+                ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: (context.isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(12))),
+                borderSide: BorderSide(
+                  color: (context.isDark
+                      ? Colors.white.withAlpha(20)
+                      : Colors.black.withAlpha(12)),
+                ),
               ),
             ),
           ),
@@ -300,14 +391,21 @@ class _CollectTaskViewState extends State<CollectTaskView> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: sel ? C.brand : (context.isDark ? Colors.white.withAlpha(12) : const Color(0xFFF1F3F8)),
+          color: sel
+              ? C.brand
+              : (context.isDark
+                    ? Colors.white.withAlpha(12)
+                    : const Color(0xFFF1F3F8)),
           borderRadius: BorderRadius.circular(9),
         ),
-        child: Text(t,
-            style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
-                color: sel ? Colors.white : context.t2)),
+        child: Text(
+          t,
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
+            color: sel ? Colors.white : context.t2,
+          ),
+        ),
       ),
     );
   }
@@ -322,18 +420,34 @@ class _CollectTaskViewState extends State<CollectTaskView> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: t, decoration: const InputDecoration(labelText: '标题'), style: const TextStyle(fontSize: 14)),
-            TextField(controller: d, decoration: const InputDecoration(labelText: '说明（可选）'), style: const TextStyle(fontSize: 14)),
+            TextField(
+              controller: t,
+              decoration: const InputDecoration(labelText: '标题'),
+              style: const TextStyle(fontSize: 14),
+            ),
+            TextField(
+              controller: d,
+              decoration: const InputDecoration(labelText: '说明（可选）'),
+              style: const TextStyle(fontSize: 14),
+            ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('添加')),
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('添加'),
+          ),
         ],
       ),
     );
     if (ok == true && t.text.trim().isNotEmpty) {
-      setState(() => _tasks.add({'title': t.text.trim(), 'desc': d.text.trim()}));
+      setState(
+        () => _tasks.add({'title': t.text.trim(), 'desc': d.text.trim()}),
+      );
     }
   }
 }

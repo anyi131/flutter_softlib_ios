@@ -4,7 +4,9 @@ import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
 import 'app/utils/sound_util.dart';
+
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
@@ -22,6 +24,8 @@ import 'app/widgets/pro_motion.dart';
 import 'app/api/user_service.dart';
 import 'app/utils/device_info_util.dart';
 import 'app/design/app_style_controller.dart';
+import 'app/design/glass_theme.dart';
+import 'app/design/glass_perf_guard.dart';
 import 'app/api/soft_service.dart';
 import 'app/api/app_sign.dart';
 
@@ -184,6 +188,16 @@ Future<void> _initializeServices() async {
       // ★ 1015 修复：详情页模板此前完全没应用后台下发值
       AppStyleController.instance.applyServerDetail(ui.detailStyle);
     }
+  } catch (_) {}
+
+  // ★ 1020 全局玻璃（Liquid Glass）+ 自动降级
+  //   后台 ui_config.glass_mode 可选 auto/off/low/medium/high，默认 auto。
+  //   探测到的设备能力是上限 —— 后台设得再高，低端机也不会硬开真模糊。
+  try {
+    final mode =
+        SoftService.instance.cachedConfig?.uiConfig.glassMode ?? 'auto';
+    await GlassTheme.init(serverMode: mode);
+    GlassPerfGuard.start();
   } catch (_) {}
   // 配置EasyLoading
   _configureEasyLoading();

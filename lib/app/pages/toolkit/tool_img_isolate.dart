@@ -83,7 +83,11 @@ Uint8List? _compress(ImgJobArgs a) {
   var im = img.decodeImage(a.bytes);
   if (im == null) return null;
   if (a.b > 0 && im.width > a.b) {
-    im = img.copyResize(im, width: a.b, interpolation: img.Interpolation.average);
+    im = img.copyResize(
+      im,
+      width: a.b,
+      interpolation: img.Interpolation.average,
+    );
   }
   return Uint8List.fromList(img.encodeJpg(im, quality: a.a.clamp(10, 100)));
 }
@@ -122,7 +126,12 @@ Uint8List? _crop(ImgJobArgs a) {
   }
   final x = ((im.width - w) / 2).round();
   final y = ((im.height - h) / 2).round();
-  return Uint8List.fromList(img.encodeJpg(img.copyCrop(im, x: x, y: y, width: w, height: h), quality: 92));
+  return Uint8List.fromList(
+    img.encodeJpg(
+      img.copyCrop(im, x: x, y: y, width: w, height: h),
+      quality: 92,
+    ),
+  );
 }
 
 Uint8List? _convert(ImgJobArgs a) {
@@ -244,8 +253,15 @@ Uint8List? _resize(ImgJobArgs a) {
   var im = img.decodeImage(a.bytes);
   if (im == null) return null;
   final nw = a.a > 0 ? a.a : im.width;
-  final nh = a.flag ? (nw * im.height / im.width).round() : (a.b > 0 ? a.b : im.height);
-  im = img.copyResize(im, width: nw, height: nh, interpolation: img.Interpolation.average);
+  final nh = a.flag
+      ? (nw * im.height / im.width).round()
+      : (a.b > 0 ? a.b : im.height);
+  im = img.copyResize(
+    im,
+    width: nw,
+    height: nh,
+    interpolation: img.Interpolation.average,
+  );
   return Uint8List.fromList(img.encodeJpg(im, quality: 92));
 }
 
@@ -318,7 +334,8 @@ Uint8List? _palette(ImgJobArgs a) {
       map[key] = (map[key] ?? 0) + 1;
     }
   }
-  final sorted = map.entries.toList()..sort((x, y) => y.value.compareTo(x.value));
+  final sorted = map.entries.toList()
+    ..sort((x, y) => y.value.compareTo(x.value));
   _paletteList = sorted.take(8).map((e) {
     return '#${e.key.toRadixString(16).padLeft(6, '0').toUpperCase()}';
   }).toList();

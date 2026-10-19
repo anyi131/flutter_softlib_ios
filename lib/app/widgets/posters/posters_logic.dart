@@ -58,10 +58,9 @@ class PostersLogic extends GetxController {
       if (result != null && result['isSuccess'] == true) {
         ToastUtil.success('海报已保存至相册');
       } else {
-        final errorMsg =
-            result != null && result['errorMessage'] != null
-                ? '保存失败: ${result['errorMessage']}'
-                : '保存失败，请重试';
+        final errorMsg = result != null && result['errorMessage'] != null
+            ? '保存失败: ${result['errorMessage']}'
+            : '保存失败，请重试';
         ToastUtil.error(errorMsg);
         logger.e('Save poster failed: $result');
       }

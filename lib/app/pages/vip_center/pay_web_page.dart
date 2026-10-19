@@ -27,6 +27,7 @@ class _PayWebPageState extends State<PayWebPage> {
   late final String _url;
   late final String _outTradeNo;
   late final String _amount;
+
   /// 完成后的回调（余额充值用它刷新余额；会员续费不传）
   Future<void> Function()? _onReturn;
   late final String _title;
@@ -51,38 +52,42 @@ class _PayWebPageState extends State<PayWebPage> {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFFFFFFFF))
-      ..setNavigationDelegate(NavigationDelegate(
-        // ★ 1015：加载失败兜底
-        onWebResourceError: (e) {
-          if (mounted && e.isForMainFrame == true) {
-            setState(() => _loading = false);
-          }
-        },
-        onPageStarted: (u) {
-          if (mounted) setState(() => _loading = true);
-        },
-        onPageFinished: (u) {
-          if (mounted) setState(() => _loading = false);
-          // 命中支付站的同步返回地址 → 认为已支付
-          if (u.contains('/api/softlib/pay/return')) {
-            _finish(true);
-          }
-        },
-        onProgress: (p) {
-          // ★ 1015 性能：进度的每 1% 都 setState 会引发重建风暴 → 卡顿
-            if (mounted && (p.round() % 10 == 0 || p.round() == 100) && _progress != p.round()) {
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          // ★ 1015：加载失败兜底
+          onWebResourceError: (e) {
+            if (mounted && e.isForMainFrame == true) {
+              setState(() => _loading = false);
+            }
+          },
+          onPageStarted: (u) {
+            if (mounted) setState(() => _loading = true);
+          },
+          onPageFinished: (u) {
+            if (mounted) setState(() => _loading = false);
+            // 命中支付站的同步返回地址 → 认为已支付
+            if (u.contains('/api/softlib/pay/return')) {
+              _finish(true);
+            }
+          },
+          onProgress: (p) {
+            // ★ 1015 性能：进度的每 1% 都 setState 会引发重建风暴 → 卡顿
+            if (mounted &&
+                (p.round() % 10 == 0 || p.round() == 100) &&
+                _progress != p.round()) {
               setState(() => _progress = p.round());
             }
-        },
-        onNavigationRequest: (req) {
-          // 拦截支付完成后的同步跳转，避免加载到我们自己的结果页
-          if (req.url.contains('/api/softlib/pay/return')) {
-            _finish(true);
-            return NavigationDecision.prevent;
-          }
-          return NavigationDecision.navigate;
-        },
-      ))
+          },
+          onNavigationRequest: (req) {
+            // 拦截支付完成后的同步跳转，避免加载到我们自己的结果页
+            if (req.url.contains('/api/softlib/pay/return')) {
+              _finish(true);
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
+        ),
+      )
       ..loadRequest(Uri.parse(_url));
 
     // 兜底轮询：有些渠道不会回归 return_url
@@ -139,7 +144,11 @@ class _PayWebPageState extends State<PayWebPage> {
           // 顶栏：标题 + 金额 + 关闭
           Container(
             padding: EdgeInsets.only(
-                top: topInset + 6, bottom: 10, left: 12, right: 12),
+              top: topInset + 6,
+              bottom: 10,
+              left: 12,
+              right: 12,
+            ),
             color: context.isDark ? C.bg1 : Colors.white,
             child: Row(
               children: [
@@ -154,8 +163,11 @@ class _PayWebPageState extends State<PayWebPage> {
                           : Colors.black.withAlpha(6),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.close_rounded,
-                        size: 18, color: context.t1),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: context.t1,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -164,11 +176,15 @@ class _PayWebPageState extends State<PayWebPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(_title,
-                          style: Ty.h3.copyWith(fontSize: 15, color: context.t1)),
+                      Text(
+                        _title,
+                        style: Ty.h3.copyWith(fontSize: 15, color: context.t1),
+                      ),
                       if (_amount.isNotEmpty)
-                        Text('应付 ¥$_amount',
-                            style: Ty.tiny.copyWith(color: C.gold)),
+                        Text(
+                          '应付 ¥$_amount',
+                          style: Ty.tiny.copyWith(color: C.gold),
+                        ),
                     ],
                   ),
                 ),
@@ -191,9 +207,7 @@ class _PayWebPageState extends State<PayWebPage> {
                 backgroundColor: Colors.transparent,
               ),
             ),
-          Expanded(
-            child: WebViewWidget(controller: _controller),
-          ),
+          Expanded(child: WebViewWidget(controller: _controller)),
         ],
       ),
     );

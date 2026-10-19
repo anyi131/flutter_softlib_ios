@@ -166,8 +166,8 @@ class JicunParseService {
     final friendly = msg.contains('TimeoutException')
         ? '解析超时,请检查网络后重试'
         : msg.contains('SocketException') || msg.contains('Handshake')
-            ? '网络连接失败(接口域名可能被阻断),请稍后重试'
-            : msg.replaceFirst('Exception: ', '');
+        ? '网络连接失败(接口域名可能被阻断),请稍后重试'
+        : msg.replaceFirst('Exception: ', '');
     throw mainError is ParseException
         ? mainError
         : ParseException(friendly.isEmpty ? '解析失败,请稍后再试' : friendly);

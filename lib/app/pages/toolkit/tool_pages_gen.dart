@@ -71,16 +71,34 @@ class _TimerPageState extends State<TimerPage> {
     return ToolScaffold(
       title: '定时器',
       subtitle: '倒计时提醒（时/分/秒）',
-      
+
       child: Column(
         children: [
           Row(
             children: [
-              Expanded(child: ToolField(controller: _h, label: '时', keyboard: TextInputType.number)),
+              Expanded(
+                child: ToolField(
+                  controller: _h,
+                  label: '时',
+                  keyboard: TextInputType.number,
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _m, label: '分', keyboard: TextInputType.number)),
+              Expanded(
+                child: ToolField(
+                  controller: _m,
+                  label: '分',
+                  keyboard: TextInputType.number,
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _s, label: '秒', keyboard: TextInputType.number)),
+              Expanded(
+                child: ToolField(
+                  controller: _s,
+                  label: '秒',
+                  keyboard: TextInputType.number,
+                ),
+              ),
             ],
           ),
           if (_running || _left > 0) ...[
@@ -94,8 +112,16 @@ class _TimerPageState extends State<TimerPage> {
               ),
               child: Column(
                 children: [
-                  Text(_fmt,
-                      style: const TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: Colors.white, height: 1, letterSpacing: 2)),
+                  Text(
+                    _fmt,
+                    style: const TextStyle(
+                      fontSize: 42,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      height: 1,
+                      letterSpacing: 2,
+                    ),
+                  ),
                   if (_total > 0) ...[
                     const SizedBox(height: 14),
                     Padding(
@@ -117,7 +143,11 @@ class _TimerPageState extends State<TimerPage> {
           ],
           const SizedBox(height: 12),
           if (!_running)
-            ToolButton(label: '开始倒计时', icon: Icons.play_arrow_rounded, onPressed: _start)
+            ToolButton(
+              label: '开始倒计时',
+              icon: Icons.play_arrow_rounded,
+              onPressed: _start,
+            )
           else
             ToolButton(
               label: '停止',
@@ -130,28 +160,44 @@ class _TimerPageState extends State<TimerPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('常用快捷', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                  '常用快捷',
+                  style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [1, 3, 5, 10, 15, 30, 60]
-                      .map<Widget>((m) => AppPressable(
-                            onTap: () => setState(() {
-                              _h.text = '0';
-                              _m.text = '$m';
-                              _s.text = '0';
-                            }),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: C.brand.withAlpha(context.isDark ? 30 : 14),
-                                borderRadius: BorderRadius.circular(R.full),
-                              ),
-                              child: Text('$m 分钟',
-                                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: C.brand)),
+                      .map<Widget>(
+                        (m) => AppPressable(
+                          onTap: () => setState(() {
+                            _h.text = '0';
+                            _m.text = '$m';
+                            _s.text = '0';
+                          }),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 13,
+                              vertical: 8,
                             ),
-                          ))
+                            decoration: BoxDecoration(
+                              color: C.brand.withAlpha(
+                                context.isDark ? 30 : 14,
+                              ),
+                              borderRadius: BorderRadius.circular(R.full),
+                            ),
+                            child: Text(
+                              '$m 分钟',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: C.brand,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
                       .toList(),
                 ),
               ],
@@ -196,22 +242,36 @@ class _DicePageState extends State<DicePage> {
           ),
           const SizedBox(height: 10),
           ToolChips<int>(
-            items: const [(6, '6 面'), (10, '10 面'), (20, '20 面'), (100, '100 面')],
+            items: const [
+              (6, '6 面'),
+              (10, '10 面'),
+              (20, '20 面'),
+              (100, '100 面'),
+            ],
             current: _faces,
             onPick: (v) => setState(() => _faces = v),
           ),
           const SizedBox(height: 16),
-          ToolButton(label: '掷骰子', icon: Icons.casino_rounded, onPressed: _roll),
+          ToolButton(
+            label: '掷骰子',
+            icon: Icons.casino_rounded,
+            onPressed: _roll,
+          ),
           if (out.isNotEmpty) ...[
             const SizedBox(height: 18),
             if (_faces == 6)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: out
-                    .map<Widget>((n) => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: Text(dice[n - 1], style: TextStyle(fontSize: 52, color: C.brand)),
-                        ))
+                    .map<Widget>(
+                      (n) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Text(
+                          dice[n - 1],
+                          style: TextStyle(fontSize: 52, color: C.brand),
+                        ),
+                      ),
+                    )
                     .toList(),
               )
             else
@@ -220,22 +280,35 @@ class _DicePageState extends State<DicePage> {
                 runSpacing: 10,
                 alignment: WrapAlignment.center,
                 children: out
-                    .map<Widget>((n) => Container(
-                          width: 54,
-                          height: 54,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            gradient: Deco.brandGradient,
-                            borderRadius: BorderRadius.circular(R.md),
+                    .map<Widget>(
+                      (n) => Container(
+                        width: 54,
+                        height: 54,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          gradient: Deco.brandGradient,
+                          borderRadius: BorderRadius.circular(R.md),
+                        ),
+                        child: Text(
+                          '$n',
+                          style: const TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
                           ),
-                          child: Text('$n',
-                              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: Colors.white)),
-                        ))
+                        ),
+                      ),
+                    )
                     .toList(),
               ),
             const SizedBox(height: 14),
-            Text('合计：${out.fold<int>(0, (a, b) => a + b)}',
-                style: Ty.small.copyWith(fontWeight: FontWeight.w800, color: context.t2)),
+            Text(
+              '合计：${out.fold<int>(0, (a, b) => a + b)}',
+              style: Ty.small.copyWith(
+                fontWeight: FontWeight.w800,
+                color: context.t2,
+              ),
+            ),
           ],
         ],
       ),
@@ -261,7 +334,11 @@ class _DecidePageState extends State<DecidePage> {
   }
 
   void _pick() {
-    final opts = _c.text.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    final opts = _c.text
+        .split('\n')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
     if (opts.isEmpty) return ToastUtil.info('请输入选项（每行一个）');
     setState(() => _out = opts[math.Random().nextInt(opts.length)]);
   }
@@ -274,8 +351,17 @@ class _DecidePageState extends State<DecidePage> {
       scrollable: true,
       child: Column(
         children: [
-          ToolField(controller: _c, label: '选项（每行一个）', lines: 6, icon: Icons.list_rounded),
-          ToolButton(label: '帮我选一个', icon: Icons.shuffle_rounded, onPressed: _pick),
+          ToolField(
+            controller: _c,
+            label: '选项（每行一个）',
+            lines: 6,
+            icon: Icons.list_rounded,
+          ),
+          ToolButton(
+            label: '帮我选一个',
+            icon: Icons.shuffle_rounded,
+            onPressed: _pick,
+          ),
           if (_out.isNotEmpty) ...[
             const SizedBox(height: 18),
             Container(
@@ -284,15 +370,35 @@ class _DecidePageState extends State<DecidePage> {
               decoration: BoxDecoration(
                 gradient: Deco.brandGradient,
                 borderRadius: BorderRadius.circular(R.lg),
-                boxShadow: [BoxShadow(color: C.brand.withAlpha(80), blurRadius: 24, offset: const Offset(0, 8))],
+                boxShadow: [
+                  BoxShadow(
+                    color: C.brand.withAlpha(80),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
-                  const Text('就选它', style: TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w700)),
+                  const Text(
+                    '就选它',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                   const SizedBox(height: 10),
-                  Text(_out,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white, height: 1.3)),
+                  Text(
+                    _out,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      height: 1.3,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -350,11 +456,23 @@ class _ClockPageState extends State<ClockPage> {
               children: [
                 Text(
                   '${_now.hour.toString().padLeft(2, '0')}:${_now.minute.toString().padLeft(2, '0')}:${_now.second.toString().padLeft(2, '0')}',
-                  style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: Colors.white, height: 1, letterSpacing: 2),
+                  style: const TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    height: 1,
+                    letterSpacing: 2,
+                  ),
                 ),
                 const SizedBox(height: 10),
-                Text('${_now.year}年${_now.month}月${_now.day}日 星期$w',
-                    style: const TextStyle(fontSize: 13.5, color: Colors.white70, fontWeight: FontWeight.w700)),
+                Text(
+                  '${_now.year}年${_now.month}月${_now.day}日 星期$w',
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
           ),
@@ -370,7 +488,10 @@ class _ClockPageState extends State<ClockPage> {
             ),
           ),
           const SizedBox(height: 10),
-          Text('基于设备本地时间，系统不准可在设置里开启自动校准', style: Ty.tiny.copyWith(color: context.t3)),
+          Text(
+            '基于设备本地时间，系统不准可在设置里开启自动校准',
+            style: Ty.tiny.copyWith(color: context.t3),
+          ),
         ],
       ),
     );
@@ -382,14 +503,24 @@ class _ClockPageState extends State<ClockPage> {
   }
 
   Widget _r(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.t1, fontFamily: 'monospace')),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: context.t1,
+            fontFamily: 'monospace',
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑤ 骰子/抽签之外的：转盘分组 ───────────────
@@ -412,7 +543,11 @@ class _GroupPageState extends State<GroupPage> {
   }
 
   void _split() {
-    final names = _c.text.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    final names = _c.text
+        .split('\n')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
     final g = int.tryParse(_n.text) ?? 2;
     if (names.isEmpty) return ToastUtil.info('请输入名单');
     if (g < 2) return ToastUtil.info('至少分 2 组');
@@ -429,15 +564,32 @@ class _GroupPageState extends State<GroupPage> {
     return ToolScaffold(
       title: '随机分组',
       subtitle: '抽签分组 / 团队分配',
-      
+
       child: Column(
         children: [
-          ToolField(controller: _c, label: '名单（每行一个）', lines: 6, icon: Icons.groups_rounded),
+          ToolField(
+            controller: _c,
+            label: '名单（每行一个）',
+            lines: 6,
+            icon: Icons.groups_rounded,
+          ),
           Row(
             children: [
-              Expanded(child: ToolField(controller: _n, label: '分成几组', keyboard: TextInputType.number)),
+              Expanded(
+                child: ToolField(
+                  controller: _n,
+                  label: '分成几组',
+                  keyboard: TextInputType.number,
+                ),
+              ),
               const SizedBox(width: 10),
-              Expanded(child: ToolButton(label: '开始分组', icon: Icons.shuffle_rounded, onPressed: _split)),
+              Expanded(
+                child: ToolButton(
+                  label: '开始分组',
+                  icon: Icons.shuffle_rounded,
+                  onPressed: _split,
+                ),
+              ),
             ],
           ),
           if (result.isNotEmpty) ...[
@@ -452,20 +604,38 @@ class _GroupPageState extends State<GroupPage> {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               gradient: Deco.brandGradient,
                               borderRadius: BorderRadius.circular(R.full),
                             ),
-                            child: Text('第 ${i + 1} 组',
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white)),
+                            child: Text(
+                              '第 ${i + 1} 组',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                           const Spacer(),
-                          Text('${result[i].length} 人', style: Ty.tiny.copyWith(color: context.t3)),
+                          Text(
+                            '${result[i].length} 人',
+                            style: Ty.tiny.copyWith(color: context.t3),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Text(result[i].join('、'), style: Ty.small.copyWith(color: context.t1, height: 1.7)),
+                      Text(
+                        result[i].join('、'),
+                        style: Ty.small.copyWith(
+                          color: context.t1,
+                          height: 1.7,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -518,7 +688,7 @@ class _LapTimerPageState extends State<LapTimerPage> {
     return ToolScaffold(
       title: '秒表计次',
       subtitle: '带计次（Lap）的秒表',
-      
+
       child: Column(
         children: [
           Container(
@@ -528,9 +698,16 @@ class _LapTimerPageState extends State<LapTimerPage> {
               gradient: Deco.brandGradient,
               borderRadius: BorderRadius.circular(R.lg),
             ),
-            child: Text(_fmt(_sw.elapsedMilliseconds),
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: Colors.white, fontFamily: 'monospace')),
+            child: Text(
+              _fmt(_sw.elapsedMilliseconds),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                fontFamily: 'monospace',
+              ),
+            ),
           ),
           const SizedBox(height: 14),
           Row(
@@ -558,7 +735,8 @@ class _LapTimerPageState extends State<LapTimerPage> {
                   label: '计次',
                   icon: Icons.flag_rounded,
                   outline: true,
-                  onPressed: () => setState(() => laps.insert(0, _sw.elapsedMilliseconds)),
+                  onPressed: () =>
+                      setState(() => laps.insert(0, _sw.elapsedMilliseconds)),
                 ),
               ),
             ],
@@ -585,9 +763,26 @@ class _LapTimerPageState extends State<LapTimerPage> {
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Row(
                       children: [
-                        SizedBox(width: 50, child: Text('第 ${laps.length - e.key} 次', style: Ty.tiny.copyWith(color: context.t3))),
-                        Expanded(child: Text(_fmt(e.value), style: Ty.small.copyWith(color: context.t1, fontFamily: 'monospace'))),
-                        Text('+${_fmt(e.value - prev)}', style: Ty.tiny.copyWith(color: C.brand)),
+                        SizedBox(
+                          width: 50,
+                          child: Text(
+                            '第 ${laps.length - e.key} 次',
+                            style: Ty.tiny.copyWith(color: context.t3),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            _fmt(e.value),
+                            style: Ty.small.copyWith(
+                              color: context.t1,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '+${_fmt(e.value - prev)}',
+                          style: Ty.tiny.copyWith(color: C.brand),
+                        ),
                       ],
                     ),
                   );
@@ -616,14 +811,20 @@ class RulerPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('横向刻度（单位：cm 参考值）', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                  '横向刻度（单位：cm 参考值）',
+                  style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 10),
                 SizedBox(
                   height: 46,
                   child: LayoutBuilder(
                     builder: (ctx, c) => CustomPaint(
                       size: Size(c.maxWidth, 46),
-                      painter: _RulerPainter(C.brand, context.isDark ? Colors.white70 : Colors.black87),
+                      painter: _RulerPainter(
+                        C.brand,
+                        context.isDark ? Colors.white70 : Colors.black87,
+                      ),
                     ),
                   ),
                 ),
@@ -635,7 +836,10 @@ class RulerPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('说明', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                  '说明',
+                  style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 6),
                 Text(
                   '· 不同设备屏幕像素密度不同，显示长度会有偏差\n'

@@ -41,12 +41,9 @@ class _TipsComponentState extends State<TipsComponent> {
             appBar: AppBar(
               title: const Text('线报', style: Ty.h3),
               bottom: TabBar(
-                tabs:
-                    reportCats
-                        .map(
-                          (reportCat) => Tab(text: reportCat.title ?? '未知标题'),
-                        )
-                        .toList(),
+                tabs: reportCats
+                    .map((reportCat) => Tab(text: reportCat.title ?? '未知标题'))
+                    .toList(),
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
                 overlayColor: WidgetStateColor.transparent,
@@ -56,14 +53,13 @@ class _TipsComponentState extends State<TipsComponent> {
               ),
             ),
             body: TabBarView(
-              children:
-                  reportCats.map((reportCat) {
-                    Get.lazyPut(
-                      () => ReportListLogic(reportCat.id),
-                      tag: reportCat.id.toString(),
-                    );
-                    return ReportListWidget(id: reportCat.id);
-                  }).toList(),
+              children: reportCats.map((reportCat) {
+                Get.lazyPut(
+                  () => ReportListLogic(reportCat.id),
+                  tag: reportCat.id.toString(),
+                );
+                return ReportListWidget(id: reportCat.id);
+              }).toList(),
             ),
           ),
         );

@@ -34,27 +34,27 @@ class ReviewItem {
   static String _s(dynamic v) => (v ?? '').toString();
 
   factory ReviewItem.fromJson(Map j) => ReviewItem(
-        id: _i(j['id']),
-        userId: _i(j['user_id']),
-        nickname: _s(j['nickname']),
-        avatar: _s(j['avatar']),
-        score: _i(j['score']),
-        content: _s(j['content']),
-        images: (j['images'] is List)
-            ? (j['images'] as List).map((e) => e.toString()).toList()
-            : const [],
-        likeCount: _i(j['like_count']),
-        createtime: _i(j['createtime']),
-        level: _s(j['level']),
-        timeText: _s(j['createtime_text']),
-        replyCount: _i(j['reply_count']),
-        replies: (j['replies'] is List)
-            ? (j['replies'] as List)
-                .whereType<Map>()
-                .map((e) => ReviewReply.fromJson(Map<String, dynamic>.from(e)))
-                .toList()
-            : const [],
-      );
+    id: _i(j['id']),
+    userId: _i(j['user_id']),
+    nickname: _s(j['nickname']),
+    avatar: _s(j['avatar']),
+    score: _i(j['score']),
+    content: _s(j['content']),
+    images: (j['images'] is List)
+        ? (j['images'] as List).map((e) => e.toString()).toList()
+        : const [],
+    likeCount: _i(j['like_count']),
+    createtime: _i(j['createtime']),
+    level: _s(j['level']),
+    timeText: _s(j['createtime_text']),
+    replyCount: _i(j['reply_count']),
+    replies: (j['replies'] is List)
+        ? (j['replies'] as List)
+              .whereType<Map>()
+              .map((e) => ReviewReply.fromJson(Map<String, dynamic>.from(e)))
+              .toList()
+        : const [],
+  );
 
   static List<ReviewItem> listFrom(dynamic data) {
     if (data is List) {
@@ -89,16 +89,16 @@ class ReviewSummary {
   });
 
   factory ReviewSummary.fromJson(Map j) => ReviewSummary(
-        avg: double.tryParse('${j['avg'] ?? 0}') ?? 0,
-        count: int.tryParse('${j['count'] ?? 0}') ?? 0,
-        good: int.tryParse('${j['good'] ?? 0}') ?? 0,
-        mid: int.tryParse('${j['mid'] ?? 0}') ?? 0,
-        bad: int.tryParse('${j['bad'] ?? 0}') ?? 0,
-        goodRate: int.tryParse('${j['good_rate'] ?? 100}') ?? 100,
-      );
+    avg: double.tryParse('${j['avg'] ?? 0}') ?? 0,
+    count: int.tryParse('${j['count'] ?? 0}') ?? 0,
+    good: int.tryParse('${j['good'] ?? 0}') ?? 0,
+    mid: int.tryParse('${j['mid'] ?? 0}') ?? 0,
+    bad: int.tryParse('${j['bad'] ?? 0}') ?? 0,
+    goodRate: int.tryParse('${j['good_rate'] ?? 100}') ?? 100,
+  );
 
-  static ReviewSummary empty() => ReviewSummary(
-      avg: 0, count: 0, good: 0, mid: 0, bad: 0, goodRate: 100);
+  static ReviewSummary empty() =>
+      ReviewSummary(avg: 0, count: 0, good: 0, mid: 0, bad: 0, goodRate: 100);
 }
 
 /// 评价回复
@@ -125,12 +125,12 @@ class ReviewReply {
   static String _s(dynamic v) => (v ?? '').toString();
 
   factory ReviewReply.fromJson(Map j) => ReviewReply(
-        id: _i(j['id']),
-        userId: _i(j['user_id']),
-        nickname: _s(j['nickname']),
-        avatar: _s(j['avatar']),
-        replyTo: _s(j['reply_to']),
-        content: _s(j['content']),
-        timeText: _s(j['createtime_text']),
-      );
+    id: _i(j['id']),
+    userId: _i(j['user_id']),
+    nickname: _s(j['nickname']),
+    avatar: _s(j['avatar']),
+    replyTo: _s(j['reply_to']),
+    content: _s(j['content']),
+    timeText: _s(j['createtime_text']),
+  );
 }

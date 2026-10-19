@@ -36,12 +36,13 @@ class DeviceInfo {
       debugPrint('[Softlib] device info: $e');
     }
     if (model.isEmpty) model = '未知设备';
-    if (os.isEmpty) os = Platform.isAndroid ? 'Android' : (Platform.isIOS ? 'iOS' : '未知系统');
+    if (os.isEmpty)
+      os = Platform.isAndroid ? 'Android' : (Platform.isIOS ? 'iOS' : '未知系统');
   }
 
   /// 供 Dio 使用的请求头
   static Map<String, String> get headers => {
-        if (model.isNotEmpty) 'X-Device-Model': model,
-        if (os.isNotEmpty) 'X-Os-Version': os,
-      };
+    if (model.isNotEmpty) 'X-Device-Model': model,
+    if (os.isNotEmpty) 'X-Os-Version': os,
+  };
 }

@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
+
 import '../../../utils/safe_ctx.dart';
+
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -1365,7 +1367,9 @@ class MineComponent extends StatelessWidget {
         () => Get.toNamed(Routes.appDownload),
       ),
       if (_uiCfg.featureQqGroup)
-        _S('QQ通知群', Icons.forum_rounded, C.cyan, () => logic.joinGroup()),
+        _S('QQ通知群', Icons.forum_rounded, C.cyan, () {
+          logic.joinGroup();
+        }),
       // ★ 1014 需求3：分享本软件（分享文案后台可配）
       if (_uiCfg.featureShareApp)
         _S('分享软件', Icons.share_rounded, C.brandBright, () => logic.shareApp()),
@@ -1376,12 +1380,10 @@ class MineComponent extends StatelessWidget {
           C.accentOrange,
           () => logic.pointsExchange(),
         ),
-      _S(
-        '关于软件',
-        Icons.info_rounded,
-        C.brandBright,
-        () { final c = SafeCtx.of(); if (c != null) logic.about(c); },
-      ),
+      _S('关于软件', Icons.info_rounded, C.brandBright, () {
+        final c = SafeCtx.of();
+        if (c != null) logic.about(c);
+      }),
       _S(
         '用户协议',
         Icons.description_rounded,

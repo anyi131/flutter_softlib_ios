@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+
 import '../utils/err_text.dart';
+
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 
@@ -403,9 +405,7 @@ class SoftService {
     //   「解析凭证无效或已过期，请重新从详情页下载」（真机复现过）。
     final ticket2 = await _applyParseTicket(lzyUrl);
     if (ticket2 == null) {
-      lastParseError = lastParseError.isEmpty
-          ? '重新申请解析凭证失败'
-          : lastParseError;
+      lastParseError = lastParseError.isEmpty ? '重新申请解析凭证失败' : lastParseError;
       return null;
     }
     final sv = await resolveLzyByServer(lzyUrl, ticket: ticket2);
@@ -590,6 +590,39 @@ class SoftService {
       }
     } catch (e) {
       lastParseError = ErrText.of(e);
+    }
+    return null;
+  }
+
+  /// ★ 1020：解析 QQ 群短链（qm.qq.com/q/xxx）里的群号
+  ///   后台填的群链接常是短链，App 端解析不出群号只能丢浏览器（用户反馈 #3）
+  ///   这里用服务端抓页面拿群号，客户端拿到后直接唤起 QQ 加群界面
+  static final Map<String, String> _groupCache = {};
+
+  Future<String?> resolveQqGroup(String url) async {
+    if (url.isEmpty) return null;
+    final hit = _groupCache[url];
+    if (hit != null) return hit.isEmpty ? null : hit;
+    try {
+      final r = await dio.get(
+        '/api/softlib/qqgroup',
+        queryParameters: {'url': url},
+        options: Options(
+          sendTimeout: const Duration(seconds: 8),
+          receiveTimeout: const Duration(seconds: 20),
+        ),
+      );
+      final d = r.data;
+      if (d is Map && d['code'] == 1 && d['data'] is Map) {
+        final gc = '${(d['data'] as Map)['gc'] ?? ''}';
+        if (gc.isNotEmpty) {
+          _groupCache[url] = gc;
+          return gc;
+        }
+      }
+      _groupCache[url] = '';
+    } catch (_) {
+      // 网络问题不缓存，下次还能重试
     }
     return null;
   }

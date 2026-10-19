@@ -60,7 +60,9 @@ class LzyLocalParser {
         return null;
       }
       // 页面过短且没有下载入口 → 基本可判定链接失效
-      if (html.length < 1800 && !html.contains('ddown') && !html.contains('link.href')) {
+      if (html.length < 1800 &&
+          !html.contains('ddown') &&
+          !html.contains('link.href')) {
         lastError = '页面无下载入口（链接可能已失效）';
         return null;
       }
@@ -79,7 +81,8 @@ class LzyLocalParser {
       }
 
       if (html.contains('/tp/') || html.contains('webtp=')) {
-        final m = RegExp(r'''link\.href\s*=\s*['"]([^'"]+)['"]''').firstMatch(html);
+        final m = RegExp(r'''link\.href\s*=\s*['"]([^'"]+)['"]''')
+            .firstMatch(html);
         if (m == null) {
           lastError = '未找到下载跳转（页面结构变化）';
           return null;
@@ -96,8 +99,10 @@ class LzyLocalParser {
         // 中间页可能是 302 直接给直链
         final direct = RegExp(r'''(https?://[^\s"']+\.(?:apk|zip|rar|7z))''')
             .firstMatch(mid);
-        final host = RegExp(r'''var\s+vkjxld\s*=\s*['"]([^'"]+)['"]''').firstMatch(mid);
-        final token = RegExp(r'''var\s+hyggid\s*=\s*['"]([^'"]+)['"]''').firstMatch(mid);
+        final host = RegExp(r'''var\s+vkjxld\s*=\s*['"]([^'"]+)['"]''')
+            .firstMatch(mid);
+        final token = RegExp(r'''var\s+hyggid\s*=\s*['"]([^'"]+)['"]''')
+            .firstMatch(mid);
         // 中间页本身可能就是风控页
         if (mid.contains('需要验证后下载') ||
             mid.contains('验证并下载') ||
@@ -112,11 +117,13 @@ class LzyLocalParser {
           //    <a href="...">立即下载</a>）
           final s2 = await _get(stage2, base: shareUrl);
           if (s2 != null && s2.isNotEmpty) {
-            final real = RegExp(r'''window\.location(?:\.href)?\s*=\s*["']([^"']+)["']''')
-                .firstMatch(s2);
-            final link2 = RegExp(r'''href=["'](https?://[^"']+\.(?:apk|zip|rar|7z))["']''',
-                    caseSensitive: false)
-                .firstMatch(s2);
+            final real = RegExp(
+              r'''window\.location(?:\.href)?\s*=\s*["']([^"']+)["']''',
+            ).firstMatch(s2);
+            final link2 = RegExp(
+              r'''href=["'](https?://[^"']+\.(?:apk|zip|rar|7z))["']''',
+              caseSensitive: false,
+            ).firstMatch(s2);
             final target2 = real?.group(1) ?? link2?.group(1);
             if (target2 != null && target2.isNotEmpty) {
               return target2;
@@ -267,7 +274,8 @@ class LzyLocalParser {
         buf.addAll(chunk);
         if (buf.length >= 8) break;
       }
-      if (buf.length >= 2 && buf[0] == 0x50 && buf[1] == 0x4B) return true; // PK
+      if (buf.length >= 2 && buf[0] == 0x50 && buf[1] == 0x4B)
+        return true; // PK
       return false;
     } catch (_) {
       return false;
@@ -283,8 +291,10 @@ class LzyLocalParser {
       final req = await c.getUrl(Uri.parse(url));
       req.headers.set('User-Agent', _ua);
       req.headers.set('Referer', base);
-      req.headers.set('Accept',
-          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8');
+      req.headers.set(
+        'Accept',
+        'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      );
       req.headers.set('Accept-Language', 'zh-CN,zh;q=0.9');
       final res = await req.close().timeout(const Duration(seconds: 20));
       final body = await res.transform(utf8.decoder).join();
@@ -309,12 +319,19 @@ class LzyLocalParser {
       req.headers.set('Referer', referer);
       req.headers.set('Origin', origin);
       req.headers.set('X-Requested-With', 'XMLHttpRequest');
-      req.headers.set('Accept', 'application/json, text/javascript, */*; q=0.01');
+      req.headers.set(
+        'Accept',
+        'application/json, text/javascript, */*; q=0.01',
+      );
       req.headers.set('Content-Type', 'application/x-www-form-urlencoded');
-      req.write(data.entries
-          .map((e) =>
-              '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value)}')
-          .join('&'));
+      req.write(
+        data.entries
+            .map(
+              (e) =>
+                  '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value)}',
+            )
+            .join('&'),
+      );
       final res = await req.close().timeout(const Duration(seconds: 20));
       return await res.transform(utf8.decoder).join();
     } catch (_) {
@@ -324,8 +341,10 @@ class LzyLocalParser {
     }
   }
 
-  static Future<String?> _headLocation(String url,
-      {required String referer}) async {
+  static Future<String?> _headLocation(
+    String url, {
+    required String referer,
+  }) async {
     final c = await _client();
     try {
       final req = await c.openUrl('GET', Uri.parse(url));

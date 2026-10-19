@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import '../../../utils/err_text.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -540,9 +541,7 @@ class _SquareComponentState extends State<SquareComponent> {
                           } catch (e) {
                             // ★ 1014 P0：失败必须有反馈（原来完全静默）
                             if (mounted) {
-                              _toast(
-                                ErrText.of(e),
-                              );
+                              _toast(ErrText.of(e));
                             }
                           } finally {
                             _likeBusy.remove(p.id);

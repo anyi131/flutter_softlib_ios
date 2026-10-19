@@ -46,10 +46,7 @@ class ImgSaver {
         ToastUtil.error('图片下载失败');
         return;
       }
-      await saveBytes(
-        Uint8List.fromList(bytes),
-        name: name ?? _guessName(url),
-      );
+      await saveBytes(Uint8List.fromList(bytes), name: name ?? _guessName(url));
     } catch (e) {
       ToastUtil.error('保存失败：${_friendly(e)}');
     }

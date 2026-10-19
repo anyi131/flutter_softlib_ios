@@ -1,7 +1,10 @@
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'ui.dart';
+import 'glass_theme.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 ///  统一组件库（Design Kit）
@@ -296,25 +299,36 @@ class KitCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDark;
+    final r = BorderRadius.circular(radius);
+    // ★ 1020 全局玻璃：high/medium 档用半透明底 + 高光边；
+    //   low/off 档等价于原来的实心卡（零差异，低端机不受影响）。
+    //   自定义 gradient 的卡片保持原样，避免破坏会员卡那种彩色卡面。
+    final glass = GlassTheme.enabled && gradient == null;
     Widget c = Container(
       padding: padding,
       decoration: BoxDecoration(
-        gradient: gradient,
-        color: gradient == null ? (isDark ? C.bg2 : Colors.white) : null,
-        borderRadius: BorderRadius.circular(radius),
+        gradient: gradient ?? (glass ? GlassTheme.edgeGradient(context) : null),
+        color: gradient != null
+            ? null
+            : (glass
+                  ? GlassTheme.cardColor(context)
+                  : (isDark ? C.bg2 : Colors.white)),
+        borderRadius: r,
         border: border
             ? Border.all(
-                color: isDark
-                    ? Colors.white.withAlpha(16)
-                    : Colors.black.withAlpha(8),
-                width: 0.8,
+                color: glass
+                    ? GlassTheme.borderColor(context)
+                    : (isDark
+                          ? Colors.white.withAlpha(16)
+                          : Colors.black.withAlpha(8)),
+                width: glass ? 1.0 : 0.8,
               )
             : null,
         boxShadow: isDark
             ? null
             : [
                 BoxShadow(
-                  color: const Color(0xFF2C3550).withAlpha(14),
+                  color: const Color(0xFF2C3550).withAlpha(glass ? 10 : 14),
                   blurRadius: 18,
                   offset: const Offset(0, 6),
                 ),
@@ -322,6 +336,19 @@ class KitCard extends StatelessWidget {
       ),
       child: child,
     );
+    // 仅 high 档给卡片加真模糊（medium 只做半透明，保证列表滑动的帧率）
+    if (glass && GlassTheme.cardBlur) {
+      c = ClipRRect(
+        borderRadius: r,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: GlassTheme.sigma,
+            sigmaY: GlassTheme.sigma,
+          ),
+          child: c,
+        ),
+      );
+    }
     if (onTap != null) {
       c = Material(
         color: Colors.transparent,

@@ -35,34 +35,13 @@ class AppPages {
   static const index = Routes.index;
 
   static final routes = [
-    GetPage(
-      name: _Paths.message,
-      page: () => const MessagePage(),
-    ),
-    GetPage(
-      name: _Paths.about,
-      page: () => const AboutPage(),
-    ),
-    GetPage(
-      name: _Paths.invite,
-      page: () => const InvitePage(),
-    ),
-    GetPage(
-      name: _Paths.agreement,
-      page: () => const AgreementPage(),
-    ),
-    GetPage(
-      name: _Paths.recharge,
-      page: () => const RechargePage(),
-    ),
-    GetPage(
-      name: _Paths.task,
-      page: () => const TaskPage(),
-    ),
-    GetPage(
-      name: _Paths.splash,
-      page: () => const SplashPage(),
-    ),
+    GetPage(name: _Paths.message, page: () => const MessagePage()),
+    GetPage(name: _Paths.about, page: () => const AboutPage()),
+    GetPage(name: _Paths.invite, page: () => const InvitePage()),
+    GetPage(name: _Paths.agreement, page: () => const AgreementPage()),
+    GetPage(name: _Paths.recharge, page: () => const RechargePage()),
+    GetPage(name: _Paths.task, page: () => const TaskPage()),
+    GetPage(name: _Paths.splash, page: () => const SplashPage()),
     GetPage(
       name: _Paths.index,
       page: () => const NavigatePage(),
@@ -88,10 +67,7 @@ class AppPages {
       page: () => const ArticleReadingPage(),
       binding: ArticleReadingBinding(),
     ),
-    GetPage(
-      name: _Paths.vip,
-      page: () => const VipPage(),
-    ),
+    GetPage(name: _Paths.vip, page: () => const VipPage()),
     GetPage(name: _Paths.payWeb, page: () => const PayWebPage()),
     GetPage(name: Routes.urlWebview, page: () => const UrlWebviewPage()),
     GetPage(name: Routes.cardShop, page: () => const CardShopPage()),

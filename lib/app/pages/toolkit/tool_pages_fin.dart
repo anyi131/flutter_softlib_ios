@@ -45,23 +45,51 @@ class _CarLoanPageState extends State<CarLoanPage> {
     final loan = price * (1 - downPct / 100);
     final n = y * 12;
     final mr = r / 12;
-    final monthly = mr == 0 ? loan / n : loan * mr * math.pow(1 + mr, n) / (math.pow(1 + mr, n) - 1);
+    final monthly = mr == 0
+        ? loan / n
+        : loan * mr * math.pow(1 + mr, n) / (math.pow(1 + mr, n) - 1);
     final total = monthly * n;
     final interest = total - loan;
     return ToolScaffold(
       title: '车贷计算',
       subtitle: '首付比例 / 月供 / 总利息',
-      
+
       child: Column(
         children: [
-          ToolField(controller: _price, label: '车价（元）', keyboard: TextInputType.number, onChanged: (_) => setState(() {})),
+          ToolField(
+            controller: _price,
+            label: '车价（元）',
+            keyboard: TextInputType.number,
+            onChanged: (_) => setState(() {}),
+          ),
           Row(
             children: [
-              Expanded(child: ToolField(controller: _down, label: '首付比例(%)', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _down,
+                  label: '首付比例(%)',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _years, label: '年限', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _years,
+                  label: '年限',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _rate, label: '年利率(%)', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _rate,
+                  label: '年利率(%)',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
             ],
           ),
           ToolCard(
@@ -82,14 +110,23 @@ class _CarLoanPageState extends State<CarLoanPage> {
   }
 
   Widget _r(String k, String v, {bool big = false, Color? color}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: big ? 19 : 15, fontWeight: FontWeight.w900, color: color ?? (big ? C.brand : context.t1))),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: big ? 19 : 15,
+            fontWeight: FontWeight.w900,
+            color: color ?? (big ? C.brand : context.t1),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ② 年终奖个税 ───────────────
@@ -157,21 +194,33 @@ class _BonusTaxPageState extends State<BonusTaxPage> {
             ),
           ),
           const SizedBox(height: 10),
-          Text('注：单独计税与并入综合所得结果不同，可在个税 App 里两种都试一下选少的', style: Ty.tiny.copyWith(color: context.t3)),
+          Text(
+            '注：单独计税与并入综合所得结果不同，可在个税 App 里两种都试一下选少的',
+            style: Ty.tiny.copyWith(color: context.t3),
+          ),
         ],
       ),
     );
   }
 
   Widget _r(String k, String v, {bool big = false, Color? color}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: big ? 19 : 15, fontWeight: FontWeight.w900, color: color ?? (big ? C.brand : context.t1))),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: big ? 19 : 15,
+            fontWeight: FontWeight.w900,
+            color: color ?? (big ? C.brand : context.t1),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ③ 社保计算 ───────────────
@@ -222,26 +271,41 @@ class _SocialPageState extends State<SocialPage> {
                 _r('住房公积金 12%', '¥${housing.toStringAsFixed(2)}'),
                 const Divider(height: 20),
                 _r('个人合计', '¥${total.toStringAsFixed(2)}', big: true),
-                _r('占比', '${(total / (b == 0 ? 1 : b) * 100).toStringAsFixed(1)}%'),
+                _r(
+                  '占比',
+                  '${(total / (b == 0 ? 1 : b) * 100).toStringAsFixed(1)}%',
+                ),
               ],
             ),
           ),
           const SizedBox(height: 10),
-          Text('注：各地比例不同（如公积金 5%-12%），以当地政策为准', style: Ty.tiny.copyWith(color: context.t3)),
+          Text(
+            '注：各地比例不同（如公积金 5%-12%），以当地政策为准',
+            style: Ty.tiny.copyWith(color: context.t3),
+          ),
         ],
       ),
     );
   }
 
   Widget _r(String k, String v, {bool big = false}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: big ? 18 : 14.5, fontWeight: FontWeight.w900, color: big ? C.brand : context.t1)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: big ? 18 : 14.5,
+            fontWeight: FontWeight.w900,
+            color: big ? C.brand : context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ④ 工资到手 ───────────────
@@ -270,8 +334,12 @@ class _SalaryPageState extends State<SalaryPage> {
     final housing = g * hp;
     final taxable = math.max(0.0, g - social - housing - 5000);
     const brackets = [
-      (3000.0, 0.03, 0.0), (12000.0, 0.10, 210.0), (25000.0, 0.20, 1410.0),
-      (35000.0, 0.25, 2660.0), (55000.0, 0.30, 4410.0), (80000.0, 0.35, 7160.0),
+      (3000.0, 0.03, 0.0),
+      (12000.0, 0.10, 210.0),
+      (25000.0, 0.20, 1410.0),
+      (35000.0, 0.25, 2660.0),
+      (55000.0, 0.30, 4410.0),
+      (80000.0, 0.35, 7160.0),
       (double.infinity, 0.45, 15160.0),
     ];
     double tax = 0;
@@ -285,14 +353,29 @@ class _SalaryPageState extends State<SalaryPage> {
     return ToolScaffold(
       title: '工资到手',
       subtitle: '税前 → 税后到手估算',
-      
+
       child: Column(
         children: [
           Row(
             children: [
-              Expanded(flex: 2, child: ToolField(controller: _gross, label: '税前工资', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                flex: 2,
+                child: ToolField(
+                  controller: _gross,
+                  label: '税前工资',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _housing, label: '公积金%', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _housing,
+                  label: '公积金%',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
             ],
           ),
           ToolCard(
@@ -302,8 +385,16 @@ class _SalaryPageState extends State<SalaryPage> {
                 _r('公积金(个人)', '-¥${housing.toStringAsFixed(2)}'),
                 _r('个税', '-¥${tax.toStringAsFixed(2)}'),
                 const Divider(height: 20),
-                _r('实际到手', '¥${net.toStringAsFixed(2)}', big: true, color: C.success),
-                _r('到手比例', '${(net / (g == 0 ? 1 : g) * 100).toStringAsFixed(1)}%'),
+                _r(
+                  '实际到手',
+                  '¥${net.toStringAsFixed(2)}',
+                  big: true,
+                  color: C.success,
+                ),
+                _r(
+                  '到手比例',
+                  '${(net / (g == 0 ? 1 : g) * 100).toStringAsFixed(1)}%',
+                ),
               ],
             ),
           ),
@@ -313,14 +404,23 @@ class _SalaryPageState extends State<SalaryPage> {
   }
 
   Widget _r(String k, String v, {bool big = false, Color? color}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: big ? 19 : 15, fontWeight: FontWeight.w900, color: color ?? context.t1)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: big ? 19 : 15,
+            fontWeight: FontWeight.w900,
+            color: color ?? context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑤ 瓷砖用量 ───────────────
@@ -333,7 +433,14 @@ class TilePage extends StatefulWidget {
 class _TilePageState extends State<TilePage> {
   final _area = TextEditingController(text: '60');
   int _size = 0;
-  static const _sizes = [(300, 300), (400, 400), (600, 600), (800, 800), (600, 1200), (750, 1500)];
+  static const _sizes = [
+    (300, 300),
+    (400, 400),
+    (600, 600),
+    (800, 800),
+    (600, 1200),
+    (750, 1500),
+  ];
 
   @override
   void dispose() {
@@ -354,10 +461,18 @@ class _TilePageState extends State<TilePage> {
       scrollable: true,
       child: Column(
         children: [
-          ToolField(controller: _area, label: '铺贴面积（㎡）', keyboard: TextInputType.number, onChanged: (_) => setState(() {})),
+          ToolField(
+            controller: _area,
+            label: '铺贴面积（㎡）',
+            keyboard: TextInputType.number,
+            onChanged: (_) => setState(() {}),
+          ),
           const SizedBox(height: 8),
           ToolChips<int>(
-            items: List.generate(_sizes.length, (i) => (i, '${_sizes[i].$1}×${_sizes[i].$2}')),
+            items: List.generate(
+              _sizes.length,
+              (i) => (i, '${_sizes[i].$1}×${_sizes[i].$2}'),
+            ),
             current: _size,
             onPick: (v) => setState(() => _size = v),
           ),
@@ -379,14 +494,23 @@ class _TilePageState extends State<TilePage> {
   }
 
   Widget _r(String k, String v, {bool big = false}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: big ? 18 : 14.5, fontWeight: FontWeight.w900, color: big ? C.brand : context.t1)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: big ? 18 : 14.5,
+            fontWeight: FontWeight.w900,
+            color: big ? C.brand : context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑥ 涂料用量 ───────────────
@@ -417,7 +541,12 @@ class _PaintPageState extends State<PaintPage> {
       scrollable: true,
       child: Column(
         children: [
-          ToolField(controller: _area, label: '涂刷面积（㎡）', keyboard: TextInputType.number, onChanged: (_) => setState(() {})),
+          ToolField(
+            controller: _area,
+            label: '涂刷面积（㎡）',
+            keyboard: TextInputType.number,
+            onChanged: (_) => setState(() {}),
+          ),
           const SizedBox(height: 8),
           ToolChips<int>(
             items: const [(1, '刷 1 遍'), (2, '刷 2 遍'), (3, '刷 3 遍')],
@@ -442,14 +571,23 @@ class _PaintPageState extends State<PaintPage> {
   }
 
   Widget _r(String k, String v, {bool big = false}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: big ? 18 : 14.5, fontWeight: FontWeight.w900, color: big ? C.brand : context.t1)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: big ? 18 : 14.5,
+            fontWeight: FontWeight.w900,
+            color: big ? C.brand : context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑦ 油耗换算（每公里/百公里） ───────────────
@@ -493,7 +631,12 @@ class _FuelConvPageState extends State<FuelConvPage> {
             onPick: (v) => setState(() => _type = v),
           ),
           const SizedBox(height: 12),
-          ToolField(controller: _v, label: '数值', keyboard: TextInputType.number, onChanged: (_) => setState(() {})),
+          ToolField(
+            controller: _v,
+            label: '数值',
+            keyboard: TextInputType.number,
+            onChanged: (_) => setState(() {}),
+          ),
           ToolCard(
             child: Column(
               children: [
@@ -509,14 +652,23 @@ class _FuelConvPageState extends State<FuelConvPage> {
   }
 
   Widget _r(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 7),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: C.brand)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 7),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w900,
+            color: C.brand,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑧ 进制时间（毫秒） ───────────────
@@ -545,7 +697,8 @@ class _MsTimePageState extends State<MsTimePage> {
       if (x.inHours % 24 > 0) parts.add('${x.inHours % 24}小时');
       if (x.inMinutes % 60 > 0) parts.add('${x.inMinutes % 60}分');
       if (x.inSeconds % 60 > 0) parts.add('${x.inSeconds % 60}秒');
-      if (x.inMilliseconds % 1000 > 0) parts.add('${x.inMilliseconds % 1000}毫秒');
+      if (x.inMilliseconds % 1000 > 0)
+        parts.add('${x.inMilliseconds % 1000}毫秒');
       return parts.isEmpty ? '0' : parts.join('');
     }
 
@@ -580,14 +733,23 @@ class _MsTimePageState extends State<MsTimePage> {
   }
 
   Widget _r(String k, String v, {bool big = false}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: big ? 18 : 14.5, fontWeight: FontWeight.w900, color: big ? C.brand : context.t1)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: big ? 18 : 14.5,
+            fontWeight: FontWeight.w900,
+            color: big ? C.brand : context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑨ 数字单位（万/亿/万亿） ───────────────
@@ -635,8 +797,14 @@ class _BigNumPageState extends State<BigNumPage> {
               children: [
                 Text('简写形式', style: Ty.tiny.copyWith(color: context.t3)),
                 const SizedBox(height: 8),
-                SelectableText(_unit(v),
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: C.brand)),
+                SelectableText(
+                  _unit(v),
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    color: C.brand,
+                  ),
+                ),
                 const SizedBox(height: 14),
                 const Divider(height: 1),
                 const SizedBox(height: 12),
@@ -653,14 +821,24 @@ class _BigNumPageState extends State<BigNumPage> {
   }
 
   Widget _r(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.t1, fontFamily: 'monospace')),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 5),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: context.t1,
+            fontFamily: 'monospace',
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑩ 小费/服务费 ───────────────
@@ -691,19 +869,40 @@ class _TipPageState extends State<TipPage> {
     return ToolScaffold(
       title: '小费计算',
       subtitle: '按比例算小费（国外旅行用）',
-      
+
       child: Column(
         children: [
           Row(
             children: [
-              Expanded(flex: 2, child: ToolField(controller: _amt, label: '账单金额', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                flex: 2,
+                child: ToolField(
+                  controller: _amt,
+                  label: '账单金额',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _n, label: '人数', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _n,
+                  label: '人数',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),
           ToolChips<int>(
-            items: const [(5, '5%'), (10, '10%'), (15, '15%'), (18, '18%'), (20, '20%')],
+            items: const [
+              (5, '5%'),
+              (10, '10%'),
+              (15, '15%'),
+              (18, '18%'),
+              (20, '20%'),
+            ],
             current: _pct,
             onPick: (v) => setState(() => _pct = v),
           ),
@@ -715,7 +914,11 @@ class _TipPageState extends State<TipPage> {
                 _r('总计', '${total.toStringAsFixed(2)}', big: true),
                 if (n > 1) ...[
                   const Divider(height: 20),
-                  _r('每人付', '${(total / n).toStringAsFixed(2)}', color: C.brand),
+                  _r(
+                    '每人付',
+                    '${(total / n).toStringAsFixed(2)}',
+                    color: C.brand,
+                  ),
                 ],
               ],
             ),
@@ -726,12 +929,21 @@ class _TipPageState extends State<TipPage> {
   }
 
   Widget _r(String k, String v, {bool big = false, Color? color}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: big ? 19 : 15, fontWeight: FontWeight.w900, color: color ?? (big ? C.brand : context.t1))),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: big ? 19 : 15,
+            fontWeight: FontWeight.w900,
+            color: color ?? (big ? C.brand : context.t1),
+          ),
+        ),
+      ],
+    ),
+  );
 }

@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import '../../api/task_service.dart';
 import '../../utils/err_text.dart';
 
@@ -20,6 +21,7 @@ import '../../api/unlock_service.dart';
 import 'dart:ui';
 
 import '../../config.dart';
+import '../../design/glass_theme.dart';
 import '../../design/adaptive.dart';
 import '../../design/app_style.dart';
 import '../../design/app_style_controller.dart';
@@ -467,7 +469,9 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                               right: 14,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 9, vertical: 3),
+                                  horizontal: 9,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.black.withAlpha(110),
                                   borderRadius: BorderRadius.circular(999),
@@ -492,44 +496,44 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             // ★ 1014 需求5：minimal 模板没有头图，图标改为内嵌在标题行，
             //   这里不再叠一个悬浮图标（否则会与标题重叠错位）。
             if (tpl != AppDetailStyle.minimal)
-            Positioned(
-              left: tpl == AppDetailStyle.compact ? 14 : 18,
-              bottom: 0,
-              child: Container(
-                width: tpl == AppDetailStyle.poster
-                    ? 96
-                    : (tpl == AppDetailStyle.compact ? 68 : 84),
-                height: tpl == AppDetailStyle.poster
-                    ? 96
-                    : (tpl == AppDetailStyle.compact ? 68 : 84),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(R.lg + 4),
-                  border: Border.all(
-                    color: context.isDark ? C.bg1 : Colors.white,
-                    width: 3,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: C.brand.withAlpha(context.isDark ? 90 : 60),
-                      blurRadius: 22,
-                      offset: const Offset(0, 8),
+              Positioned(
+                left: tpl == AppDetailStyle.compact ? 14 : 18,
+                bottom: 0,
+                child: Container(
+                  width: tpl == AppDetailStyle.poster
+                      ? 96
+                      : (tpl == AppDetailStyle.compact ? 68 : 84),
+                  height: tpl == AppDetailStyle.poster
+                      ? 96
+                      : (tpl == AppDetailStyle.compact ? 68 : 84),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(R.lg + 4),
+                    border: Border.all(
+                      color: context.isDark ? C.bg1 : Colors.white,
+                      width: 3,
                     ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(R.lg),
-                  child: icon.isEmpty
-                      ? _phIcon()
-                      : CachedNetworkImage(
-                          imageUrl: icon,
-                          fit: BoxFit.cover,
-                          memCacheWidth: 220,
-                          placeholder: (_, __) => _phIcon(),
-                          errorWidget: (_, __, ___) => _phIcon(),
-                        ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: C.brand.withAlpha(context.isDark ? 90 : 60),
+                        blurRadius: 22,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(R.lg),
+                    child: icon.isEmpty
+                        ? _phIcon()
+                        : CachedNetworkImage(
+                            imageUrl: icon,
+                            fit: BoxFit.cover,
+                            memCacheWidth: 220,
+                            placeholder: (_, __) => _phIcon(),
+                            errorWidget: (_, __, ___) => _phIcon(),
+                          ),
+                  ),
                 ),
               ),
-            ),
             // 状态标签（右上角）
             Positioned(
               right: 12,
@@ -729,22 +733,27 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             ),
           ]
         : [
-      (
-        Icons.sd_storage_rounded,
-        info?.fileSize ?? it?.size ?? '-',
-        '大小',
-        C.brandBright,
-      ),
-      (Icons.visibility_rounded, '${it?.views ?? 0}', '浏览', C.cyan),
-      (Icons.download_rounded, _fmtCount(it?.downCount ?? 0), '下载', C.mint),
-      (
-        Icons.schedule_rounded,
-        _shortDate(it?.uploadDate ?? ''),
-        '上传',
-        C.violet,
-      ),
-      (Icons.face_rounded, it?.ageRating ?? '16+', '年龄', C.mint),
-    ];
+            (
+              Icons.sd_storage_rounded,
+              info?.fileSize ?? it?.size ?? '-',
+              '大小',
+              C.brandBright,
+            ),
+            (Icons.visibility_rounded, '${it?.views ?? 0}', '浏览', C.cyan),
+            (
+              Icons.download_rounded,
+              _fmtCount(it?.downCount ?? 0),
+              '下载',
+              C.mint,
+            ),
+            (
+              Icons.schedule_rounded,
+              _shortDate(it?.uploadDate ?? ''),
+              '上传',
+              C.violet,
+            ),
+            (Icons.face_rounded, it?.ageRating ?? '16+', '年龄', C.mint),
+          ];
     // ★ 1014 重做：5 格信息条改为「一行均分」，不再折行错位。
     //   关键：用 Expanded 均分 + 小图标 + 缩小字号，让日期（10-12）也放得下，
     //   彻底避免「2026-10…」被截断，视觉上也更整齐。
@@ -775,10 +784,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                     ),
                   ),
                   const SizedBox(height: 3),
-                  Text(
-                    cells[i].$3,
-                    style: Ty.tiny.copyWith(color: context.t3),
-                  ),
+                  Text(cells[i].$3, style: Ty.tiny.copyWith(color: context.t3)),
                 ],
               ),
             ),
@@ -816,11 +822,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               (it?.linkUrl ?? '').replaceFirst(RegExp(r'^https?://'), ''),
               '链接',
             ),
-            (
-              Icons.schedule_rounded,
-              _shortDate(it?.uploadDate ?? ''),
-              '上传',
-            ),
+            (Icons.schedule_rounded, _shortDate(it?.uploadDate ?? ''), '上传'),
           ]
         : [
             (Icons.sd_storage_rounded, info?.fileSize ?? it?.size ?? '-', '大小'),
@@ -868,10 +870,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    cells[i].$3,
-                    style: Ty.tiny.copyWith(color: context.t3),
-                  ),
+                  Text(cells[i].$3, style: Ty.tiny.copyWith(color: context.t3)),
                 ],
               ),
             ),
@@ -893,7 +892,9 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: context.isDark ? Colors.white.withAlpha(8) : Colors.white,
+        color: GlassTheme.enabled
+            ? GlassTheme.cardColor(context)
+            : (context.isDark ? Colors.white.withAlpha(8) : Colors.white),
         borderRadius: BorderRadius.circular(R.lg),
         border: Border.all(
           color: context.isDark
@@ -951,7 +952,9 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   Widget _tabBarCard(bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withAlpha(14) : Colors.white,
+        color: GlassTheme.enabled
+            ? GlassTheme.cardColor(context)
+            : (isDark ? Colors.white.withAlpha(14) : Colors.white),
         borderRadius: BorderRadius.circular(R.lg),
         border: Border.all(
           color: isDark
@@ -1172,13 +1175,23 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     );
   }
 
-  // ===== 精品推荐（同类软件横滑） =====
+  // ===== 精品推荐（同类软件） =====
+  //
+  // ★ 1020（反馈 #6）：原实现有三个明确问题
+  //   ① 拉的是「全站最新 8 个」，跟当前软件**毫无关系**（用户说「太乱」）
+  //   ② 卡片只有 58px 图标 + 11px 标题，没有分类/大小/版本，信息单薄
+  //   ③ 图标为空时只剩一个灰方块，横向高度写死 118，长标题会溢出错位
+  //   现在：同分类优先 → 不足再按「热门」补位 → 卡片信息完整、样式统一
   Widget _recommend() {
+    // 首次构建时惰性发起请求（推荐区在页面底部，前面内容先渲染）
+    _recFuture ??= _loadRecommend();
     return FutureBuilder<List<AppItem>>(
-      future: SoftService.instance.fetchApps(),
+      future: _recFuture,
       builder: (context, snap) {
-        final all = snap.data ?? [];
-        final others = all.where((e) => e.id != item?.id).take(8).toList();
+        if (snap.connectionState != ConnectionState.done) {
+          return const SizedBox.shrink();
+        }
+        final others = snap.data ?? const <AppItem>[];
         if (others.isEmpty) return const SizedBox.shrink();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1189,7 +1202,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   width: 3.5,
                   height: 15,
                   decoration: BoxDecoration(
-                    color: C.brand,
+                    gradient: Deco.brandGradient,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1198,84 +1211,180 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   '精品推荐',
                   style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800),
                 ),
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 1.5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: C.brand.withAlpha(context.isDark ? 40 : 18),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    _recSameCat ? '同类应用' : '大家都在用',
+                    style: TextStyle(
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w700,
+                      color: C.brand,
+                    ),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              '为你精选更多实用应用',
-              style: TextStyle(fontSize: 11.5, color: Colors.grey[500]),
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             SizedBox(
-              height: 118,
+              height: 152,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                padding: const EdgeInsets.symmetric(horizontal: 2),
                 itemCount: others.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
-                itemBuilder: (context, i) {
-                  final a = others[i];
-                  return GestureDetector(
-                    onTap: () => Get.offAndToNamed(
-                      Routes.appDetails,
-                      arguments: {'appId': a.id.toString(), 'item': a},
-                    ),
-                    child: SizedBox(
-                      width: 72,
-                      child: Column(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: a.icon.isEmpty
-                                ? Container(
-                                    width: 58,
-                                    height: 58,
-                                    color: C.brand.withAlpha(28),
-                                    child: Icon(
-                                      Icons.android,
-                                      color: C.brand,
-                                      size: 27,
-                                    ),
-                                  )
-                                : CachedNetworkImage(
-                                    imageUrl: a.icon,
-                                    width: 58,
-                                    height: 58,
-                                    fit: BoxFit.cover,
-                                    placeholder: (_, __) => Container(
-                                      width: 58,
-                                      height: 58,
-                                      color: Colors.black12,
-                                    ),
-                                    errorWidget: (_, __, ___) => Container(
-                                      width: 58,
-                                      height: 58,
-                                      color: C.brand.withAlpha(28),
-                                      child: Icon(
-                                        Icons.android,
-                                        color: C.brand,
-                                        size: 27,
-                                      ),
-                                    ),
-                                  ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            a.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (context, i) => _recCard(others[i]),
               ),
             ),
           ],
         );
       },
+    );
+  }
+
+  /// 推荐数据只算一次（避免每次重建都发请求）
+  Future<List<AppItem>>? _recFuture;
+  bool _recSameCat = true;
+
+  Future<List<AppItem>> _loadRecommend() async {
+    final cur = item;
+    final cat = cur?.catId ?? 0;
+    List<AppItem> pool = const [];
+    try {
+      // ① 同分类（catId > 0 才有意义）
+      if (cat > 0) pool = await SoftService.instance.fetchApps(catId: cat);
+    } catch (_) {}
+    var list = pool
+        .where((e) => e.id != (cur?.id ?? 0) && e.icon.isNotEmpty)
+        .toList();
+    _recSameCat = list.length >= 3;
+    // ② 同分类不足 → 用全站补，但按热度排序（不是随便取最新 8 个）
+    if (list.length < 6) {
+      try {
+        final all = await SoftService.instance.fetchApps();
+        final rest =
+            all
+                .where(
+                  (e) =>
+                      e.id != (cur?.id ?? 0) &&
+                      e.icon.isNotEmpty &&
+                      !list.any((x) => x.id == e.id),
+                )
+                .toList()
+              ..sort((a, b) => b.downCount.compareTo(a.downCount));
+        list = [...list, ...rest];
+      } catch (_) {}
+    }
+    return list.take(8).toList();
+  }
+
+  /// 推荐卡：图标 + 名称 + 大小/版本 + 下载量
+  Widget _recCard(AppItem a) {
+    final dark = context.isDark;
+    return GestureDetector(
+      onTap: () => Get.offAndToNamed(
+        Routes.appDetails,
+        arguments: {'appId': a.id.toString(), 'item': a},
+      ),
+      child: Container(
+        width: 96,
+        padding: const EdgeInsets.fromLTRB(8, 10, 8, 9),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: dark
+                ? [Colors.white.withAlpha(16), Colors.white.withAlpha(6)]
+                : [Colors.white, const Color(0xFFF6F8FF)],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: dark ? Colors.white10 : Colors.black.withAlpha(7),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF2C3550).withAlpha(dark ? 40 : 12),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(13),
+              child: CachedNetworkImage(
+                imageUrl: a.icon,
+                width: 52,
+                height: 52,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  width: 52,
+                  height: 52,
+                  color: C.brand.withAlpha(20),
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  width: 52,
+                  height: 52,
+                  color: C.brand.withAlpha(20),
+                  child: Icon(Icons.android, color: C.brand, size: 24),
+                ),
+              ),
+            ),
+            const SizedBox(height: 7),
+            Text(
+              a.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: context.t1,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              [
+                if (a.size.isNotEmpty) a.size,
+                if (a.version.isNotEmpty) 'v${a.version}',
+              ].join(' · '),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Ty.tiny.copyWith(fontSize: 9, color: context.t3),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.download_rounded,
+                  size: 10,
+                  color: C.mint.withAlpha(220),
+                ),
+                const SizedBox(width: 2),
+                Text(
+                  _fmtCount(a.downCount),
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: C.mint.withAlpha(230),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1292,7 +1401,9 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       decoration: BoxDecoration(
-        color: isDark ? C.bg2 : Colors.white,
+        color: GlassTheme.enabled
+            ? GlassTheme.cardColor(context)
+            : (isDark ? C.bg2 : Colors.white),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
@@ -1350,9 +1461,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                     isBrowser
                         ? Icons.open_in_browser_rounded
                         : Icons.language_rounded,
-                    isBrowser
-                        ? '跳转系统浏览器打开'
-                        : 'App 内置浏览器打开',
+                    isBrowser ? '跳转系统浏览器打开' : 'App 内置浏览器打开',
                     C.cyan,
                   ),
                   const SizedBox(height: 9),
@@ -1371,10 +1480,10 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                       if (isBrowser) {
                         JumpUtil.openUrl(u);
                       } else {
-                        Get.toNamed(Routes.urlWebview, arguments: {
-                          'url': u,
-                          'title': item?.title ?? '页面',
-                        });
+                        Get.toNamed(
+                          Routes.urlWebview,
+                          arguments: {'url': u, 'title': item?.title ?? '页面'},
+                        );
                       }
                     },
                   ),
@@ -1625,9 +1734,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     if (!loggedIn) {
       _dialog(
         '需要登录',
-        localNeedPay
-            ? '该资源为付费资源，请先登录账号'
-            : '下载前请先登录账号（所有下载都需要经过服务端校验）',
+        localNeedPay ? '该资源为付费资源，请先登录账号' : '下载前请先登录账号（所有下载都需要经过服务端校验）',
         '去登录',
         Routes.login,
       );
@@ -1677,7 +1784,9 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       // ★ 1014 安全：只接受「完全同名」的唯一匹配。
       //   原先的 contains 双向模糊匹配，会把付费资源误判到同名的免费条目上，
       //   从而通过免费 id 的校验 —— 这在强制鉴权模型下是绕过口，已收紧。
-      final exact = list.where((a) => a.id > 0 && a.title.trim() == title).toList();
+      final exact = list
+          .where((a) => a.id > 0 && a.title.trim() == title)
+          .toList();
       if (exact.length == 1) return exact.first.id;
       // 多个完全同名 → 无法唯一确定，宁可不下载
       if (exact.length > 1) return 0;

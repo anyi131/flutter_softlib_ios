@@ -34,8 +34,8 @@ class PermissionUtils {
       Permission.videos,
     ];
 
-    Map<Permission, PermissionStatus> statuses =
-        await mediaPermissions.request();
+    Map<Permission, PermissionStatus> statuses = await mediaPermissions
+        .request();
 
     // 检查各项媒体权限
     bool allMediaGranted = true;

@@ -41,10 +41,12 @@ class Ad {
   }
 
   /// 屏幕宽度百分比
-  static double wp(BuildContext c, double p) => MediaQuery.of(c).size.width * p / 100;
+  static double wp(BuildContext c, double p) =>
+      MediaQuery.of(c).size.width * p / 100;
 
   /// 屏幕高度百分比
-  static double hp(BuildContext c, double p) => MediaQuery.of(c).size.height * p / 100;
+  static double hp(BuildContext c, double p) =>
+      MediaQuery.of(c).size.height * p / 100;
 
   /// 安全宽度（左右各留一点，不贴边）
   static double safeWidth(BuildContext c, {double min = 0, double max = 9999}) {

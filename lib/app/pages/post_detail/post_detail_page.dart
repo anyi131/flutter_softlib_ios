@@ -1,5 +1,7 @@
 import 'dart:io';
+
 import '../../utils/err_text.dart';
+
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -387,9 +389,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
           Row(
             children: [
               _action(
-                _liked
-                    ? Icons.favorite_rounded
-                    : Icons.favorite_border_rounded,
+                _liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                 '${p.likeCount}',
                 () async {
                   if (_likeBusy) return; // ★ P0：防连点
@@ -405,9 +405,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   } catch (e) {
                     // ★ P0：失败必须有反馈（原来完全静默）
                     if (mounted) {
-                      ToastUtil.error(
-                        ErrText.of(e),
-                      );
+                      ToastUtil.error(ErrText.of(e));
                     }
                   } finally {
                     _likeBusy = false;
@@ -433,8 +431,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
     String label,
     VoidCallback onTap, {
     Color? color,
-  }) =>
-      InkWell(
+  }) => InkWell(
     onTap: onTap,
     borderRadius: BorderRadius.circular(R.xs),
     child: Padding(

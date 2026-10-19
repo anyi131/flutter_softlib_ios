@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../utils/err_text.dart';
+
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
@@ -100,11 +102,11 @@ class _CardShopPageState extends State<CardShopPage>
       body: _loading
           ? const LoadingState(text: '加载卡密商城…')
           : (_err.isNotEmpty
-              ? ErrorState(text: '加载失败', hint: _err, onRetry: _load)
-              : TabBarView(
-                  controller: _tab,
-                  children: [_shopTab(), _mineTab()],
-                )),
+                ? ErrorState(text: '加载失败', hint: _err, onRetry: _load)
+                : TabBarView(
+                    controller: _tab,
+                    children: [_shopTab(), _mineTab()],
+                  )),
     );
   }
 
@@ -114,7 +116,11 @@ class _CardShopPageState extends State<CardShopPage>
       onRefresh: _load,
       child: ListView(
         padding: EdgeInsets.fromLTRB(
-            context.pagePadding, 12, context.pagePadding, 24),
+          context.pagePadding,
+          12,
+          context.pagePadding,
+          24,
+        ),
         children: [
           _balanceCard(),
           const SizedBox(height: 14),
@@ -125,13 +131,17 @@ class _CardShopPageState extends State<CardShopPage>
               icon: Icons.storefront_outlined,
             )
           else ...[
-            Text('选择要购买的卡密',
-                style: Ty.h3.copyWith(fontSize: 14.5, color: context.t1)),
+            Text(
+              '选择要购买的卡密',
+              style: Ty.h3.copyWith(fontSize: 14.5, color: context.t1),
+            ),
             const SizedBox(height: 10),
             for (final g in _goods) _goodsCard(g),
             const SizedBox(height: 6),
-            Text('购买后会出现在「我的卡密」，点一下即可兑换。',
-                style: Ty.tiny.copyWith(color: context.t3)),
+            Text(
+              '购买后会出现在「我的卡密」，点一下即可兑换。',
+              style: Ty.tiny.copyWith(color: context.t3),
+            ),
           ],
         ],
       ),
@@ -162,23 +172,29 @@ class _CardShopPageState extends State<CardShopPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('我的余额',
-                    style: TextStyle(
-                        fontSize: 12, color: Colors.white.withAlpha(200))),
+                Text(
+                  '我的余额',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withAlpha(200),
+                  ),
+                ),
                 const SizedBox(height: 6),
-                Text('¥$_balance',
-                    style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white)),
+                Text(
+                  '¥$_balance',
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
+                ),
               ],
             ),
           ),
           GestureDetector(
             onTap: () => Get.toNamed('/recharge'),
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
               decoration: BoxDecoration(
                 color: Colors.white.withAlpha(38),
                 borderRadius: BorderRadius.circular(999),
@@ -189,11 +205,14 @@ class _CardShopPageState extends State<CardShopPage>
                 children: [
                   Icon(Icons.add_rounded, size: 15, color: Colors.white),
                   SizedBox(width: 4),
-                  Text('充值',
-                      style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white)),
+                  Text(
+                    '充值',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -230,9 +249,7 @@ class _CardShopPageState extends State<CardShopPage>
                 borderRadius: BorderRadius.circular(R.md),
               ),
               child: Icon(
-                isVip
-                    ? Icons.workspace_premium_rounded
-                    : Icons.stars_rounded,
+                isVip ? Icons.workspace_premium_rounded : Icons.stars_rounded,
                 color: Colors.white,
                 size: 24,
               ),
@@ -242,8 +259,10 @@ class _CardShopPageState extends State<CardShopPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name,
-                      style: Ty.h3.copyWith(fontSize: 15, color: context.t1)),
+                  Text(
+                    name,
+                    style: Ty.h3.copyWith(fontSize: 15, color: context.t1),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     desc.isNotEmpty
@@ -260,14 +279,18 @@ class _CardShopPageState extends State<CardShopPage>
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('¥$price',
-                    style: Ty.h3.copyWith(fontSize: 17, color: accent)),
+                Text(
+                  '¥$price',
+                  style: Ty.h3.copyWith(fontSize: 17, color: accent),
+                ),
                 const SizedBox(height: 6),
                 GestureDetector(
                   onTap: canBuy ? () => _buy(g) : null,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 6),
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       gradient: Deco.brandGradient,
                       borderRadius: BorderRadius.circular(999),
@@ -279,11 +302,14 @@ class _CardShopPageState extends State<CardShopPage>
                         ),
                       ],
                     ),
-                    child: const Text('购买',
-                        style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white)),
+                    child: const Text(
+                      '购买',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -307,7 +333,11 @@ class _CardShopPageState extends State<CardShopPage>
       onRefresh: _load,
       child: ListView.separated(
         padding: EdgeInsets.fromLTRB(
-            context.pagePadding, 12, context.pagePadding, 24),
+          context.pagePadding,
+          12,
+          context.pagePadding,
+          24,
+        ),
         itemCount: _mine.length,
         separatorBuilder: (_, __) => const SizedBox(height: 10),
         itemBuilder: (_, i) => _myCardTile(_mine[i]),
@@ -330,11 +360,16 @@ class _CardShopPageState extends State<CardShopPage>
           Row(
             children: [
               Expanded(
-                child: Text(name,
-                    style: Ty.h3.copyWith(fontSize: 14.5, color: context.t1)),
+                child: Text(
+                  name,
+                  style: Ty.h3.copyWith(fontSize: 14.5, color: context.t1),
+                ),
               ),
-              Pill(used ? '已兑换' : '未使用',
-                  color: used ? C.t3 : C.success, small: true),
+              Pill(
+                used ? '已兑换' : '未使用',
+                color: used ? C.t3 : C.success,
+                small: true,
+              ),
             ],
           ),
           const SizedBox(height: 9),
@@ -379,8 +414,7 @@ class _CardShopPageState extends State<CardShopPage>
           const SizedBox(height: 9),
           Row(
             children: [
-              Text('购买价 ¥$price',
-                  style: Ty.tiny.copyWith(color: context.t3)),
+              Text('购买价 ¥$price', style: Ty.tiny.copyWith(color: context.t3)),
               if (buyTime.isNotEmpty) ...[
                 const SizedBox(width: 10),
                 Text(buyTime, style: Ty.tiny.copyWith(color: context.t3)),
@@ -391,16 +425,21 @@ class _CardShopPageState extends State<CardShopPage>
                   onTap: () => _redeem(code),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 6),
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       gradient: Deco.goldGradient,
                       borderRadius: BorderRadius.circular(999),
                     ),
-                    child: const Text('立即兑换',
-                        style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white)),
+                    child: const Text(
+                      '立即兑换',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
             ],
@@ -420,11 +459,13 @@ class _CardShopPageState extends State<CardShopPage>
         content: Text('购买「$name」\n\n将扣除余额 ¥$price\n当前余额 ¥$_balance'),
         actions: [
           TextButton(
-              onPressed: () => Get.back(result: false),
-              child: const Text('取消')),
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
           FilledButton(
-              onPressed: () => Get.back(result: true),
-              child: const Text('确认购买')),
+            onPressed: () => Get.back(result: true),
+            child: const Text('确认购买'),
+          ),
         ],
       ),
     );
@@ -441,8 +482,7 @@ class _CardShopPageState extends State<CardShopPage>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('$name 已发放，卡密：',
-                  style: const TextStyle(fontSize: 13)),
+              Text('$name 已发放，卡密：', style: const TextStyle(fontSize: 13)),
               const SizedBox(height: 10),
               SelectableText(
                 code,
@@ -453,8 +493,10 @@ class _CardShopPageState extends State<CardShopPage>
                 ),
               ),
               const SizedBox(height: 10),
-              Text('余额 ¥${r['balance'] ?? '0.00'}',
-                  style: TextStyle(fontSize: 12, color: C.t3)),
+              Text(
+                '余额 ¥${r['balance'] ?? '0.00'}',
+                style: TextStyle(fontSize: 12, color: C.t3),
+              ),
             ],
           ),
           actions: [
@@ -488,11 +530,13 @@ class _CardShopPageState extends State<CardShopPage>
         content: Text('将兑换卡密：\n$code\n\n兑换后不可撤销，确定吗？'),
         actions: [
           TextButton(
-              onPressed: () => Get.back(result: false),
-              child: const Text('取消')),
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
           FilledButton(
-              onPressed: () => Get.back(result: true),
-              child: const Text('确认兑换')),
+            onPressed: () => Get.back(result: true),
+            child: const Text('确认兑换'),
+          ),
         ],
       ),
     );

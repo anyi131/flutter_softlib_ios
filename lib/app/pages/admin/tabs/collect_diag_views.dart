@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../utils/err_text.dart';
 
 import '../../../api/admin_service.dart';
@@ -60,8 +61,12 @@ class _CollectSelftestViewState extends State<CollectSelftestView> {
     final allOk = _total > 0 && _okCount == _total;
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(context.pagePadding, 12,
-          context.pagePadding, 40),
+      padding: EdgeInsets.fromLTRB(
+        context.pagePadding,
+        12,
+        context.pagePadding,
+        40,
+      ),
       children: [
         AdCard(
           border: _total > 0 && !allOk,
@@ -73,11 +78,11 @@ class _CollectSelftestViewState extends State<CollectSelftestView> {
                   Icon(
                     _total == 0
                         ? Icons.science_rounded
-                        : (allOk ? Icons.verified_rounded : Icons.warning_rounded),
+                        : (allOk
+                              ? Icons.verified_rounded
+                              : Icons.warning_rounded),
                     size: 20,
-                    color: _total == 0
-                        ? C.brand
-                        : (allOk ? C.mint : C.warning),
+                    color: _total == 0 ? C.brand : (allOk ? C.mint : C.warning),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -85,13 +90,12 @@ class _CollectSelftestViewState extends State<CollectSelftestView> {
                       _total == 0
                           ? '接口自测'
                           : (_okCount == _total
-                              ? '全部正常 $_okCount/$_total'
-                              : '异常 ${_total - _okCount} 项（$_okCount/$_total 正常）'),
+                                ? '全部正常 $_okCount/$_total'
+                                : '异常 ${_total - _okCount} 项（$_okCount/$_total 正常）'),
                       style: Ty.h3.copyWith(fontSize: 15),
                     ),
                   ),
-                  if (_costMs > 0)
-                    AdTag(text: '${_costMs}ms', color: C.brand),
+                  if (_costMs > 0) AdTag(text: '${_costMs}ms', color: C.brand),
                 ],
               ),
               const SizedBox(height: 6),
@@ -115,9 +119,9 @@ class _CollectSelftestViewState extends State<CollectSelftestView> {
                           ),
                         )
                       : const Icon(Icons.play_arrow_rounded, size: 18),
-                  label: Text(_loading
-                      ? '检测中…'
-                      : (_total == 0 ? '开始检测' : '重新检测')),
+                  label: Text(
+                    _loading ? '检测中…' : (_total == 0 ? '开始检测' : '重新检测'),
+                  ),
                 ),
               ),
             ],
@@ -128,12 +132,17 @@ class _CollectSelftestViewState extends State<CollectSelftestView> {
           AdCard(
             child: Row(
               children: [
-                const Icon(Icons.error_outline_rounded,
-                    size: 18, color: C.rose),
+                const Icon(
+                  Icons.error_outline_rounded,
+                  size: 18,
+                  color: C.rose,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(_err,
-                      style: Ty.small.copyWith(color: C.rose, fontSize: 12.5)),
+                  child: Text(
+                    _err,
+                    style: Ty.small.copyWith(color: C.rose, fontSize: 12.5),
+                  ),
                 ),
               ],
             ),
@@ -154,7 +163,9 @@ class _CollectSelftestViewState extends State<CollectSelftestView> {
                   if (i > 0) Divider(height: 1, color: Ad.stroke(context)),
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 13, vertical: 11),
+                      horizontal: 13,
+                      vertical: 11,
+                    ),
                     child: Row(
                       children: [
                         Icon(
@@ -183,7 +194,9 @@ class _CollectSelftestViewState extends State<CollectSelftestView> {
                                   child: Text(
                                     '${_items[i]['msg']}',
                                     style: Ty.tiny.copyWith(
-                                        color: C.rose, fontSize: 11.5),
+                                      color: C.rose,
+                                      fontSize: 11.5,
+                                    ),
                                   ),
                                 ),
                             ],
@@ -321,7 +334,11 @@ class _CollectParseLogViewState extends State<CollectParseLogView> {
           parent: BouncingScrollPhysics(),
         ),
         padding: EdgeInsets.fromLTRB(
-            context.pagePadding, 12, context.pagePadding, 40),
+          context.pagePadding,
+          12,
+          context.pagePadding,
+          40,
+        ),
         children: [
           AdCard(
             child: Row(
@@ -361,16 +378,14 @@ class _CollectParseLogViewState extends State<CollectParseLogView> {
           if (_err.isNotEmpty) ...[
             const SizedBox(height: 10),
             AdCard(
-              child: Text(_err,
-                  style: Ty.small.copyWith(color: C.rose, fontSize: 12.5)),
+              child: Text(
+                _err,
+                style: Ty.small.copyWith(color: C.rose, fontSize: 12.5),
+              ),
             ),
           ],
           const SizedBox(height: 16),
-          AdSection(
-            title: '解析记录',
-            subtitle: '点记录看详情与失败原因',
-            accent: C.cyan,
-          ),
+          AdSection(title: '解析记录', subtitle: '点记录看详情与失败原因', accent: C.cyan),
           if (_list.isEmpty)
             AdCard(
               child: Padding(
@@ -395,7 +410,9 @@ class _CollectParseLogViewState extends State<CollectParseLogView> {
                       onTap: () => _detail(_list[i]),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 13, vertical: 11),
+                          horizontal: 13,
+                          vertical: 11,
+                        ),
                         child: Row(
                           children: [
                             Container(
@@ -403,7 +420,8 @@ class _CollectParseLogViewState extends State<CollectParseLogView> {
                               height: 7,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: (_list[i]['ok'] == 1 ||
+                                color:
+                                    (_list[i]['ok'] == 1 ||
                                         _list[i]['ok'] == true)
                                     ? C.mint
                                     : C.rose,
@@ -431,11 +449,13 @@ class _CollectParseLogViewState extends State<CollectParseLogView> {
                             ),
                             const SizedBox(width: 8),
                             AdTag(
-                              text: (_list[i]['ok'] == 1 ||
+                              text:
+                                  (_list[i]['ok'] == 1 ||
                                       _list[i]['ok'] == true)
                                   ? '成功'
                                   : '失败',
-                              color: (_list[i]['ok'] == 1 ||
+                              color:
+                                  (_list[i]['ok'] == 1 ||
                                       _list[i]['ok'] == true)
                                   ? C.mint
                                   : C.rose,

@@ -42,7 +42,8 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
   Future<Uint8List?> _capture() async {
     try {
       final boundary =
-          _repaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+          _repaintKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
       if (boundary == null) return null;
       final image = await boundary.toImage(pixelRatio: 3.0);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -76,10 +77,9 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
       return;
     }
     try {
-      await Share.shareXFiles(
-        [XFile.fromData(bytes, mimeType: 'image/png', name: 'invite.png')],
-        text: '我的邀请码：${widget.code}',
-      );
+      await Share.shareXFiles([
+        XFile.fromData(bytes, mimeType: 'image/png', name: 'invite.png'),
+      ], text: '我的邀请码：${widget.code}');
     } catch (_) {
       await _save();
     }
@@ -97,7 +97,10 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
         backgroundColor: const Color(0xFF0E1017),
         foregroundColor: Colors.white,
         elevation: 0,
-        title: const Text('邀请海报', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+        title: const Text(
+          '邀请海报',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
       ),
       body: Column(
         children: [
@@ -107,10 +110,7 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
                 padding: const EdgeInsets.all(20),
                 child: RepaintBoundary(
                   key: _repaintKey,
-                  child: SizedBox(
-                    width: 330,
-                    child: _poster(url),
-                  ),
+                  child: SizedBox(width: 330, child: _poster(url)),
                 ),
               ),
             ),
@@ -136,7 +136,9 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
                         foregroundColor: Colors.white,
                         side: BorderSide(color: Colors.white.withAlpha(50)),
                         minimumSize: const Size(0, 46),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),
@@ -149,7 +151,9 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
                       style: FilledButton.styleFrom(
                         backgroundColor: C.brand,
                         minimumSize: const Size(0, 46),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),
@@ -172,7 +176,11 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
           colors: [Color(0xFF4B5EF5), Color(0xFF7C4DFF), Color(0xFF9B5CF6)],
         ),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF4B5EF5).withAlpha(90), blurRadius: 28, offset: const Offset(0, 14)),
+          BoxShadow(
+            color: const Color(0xFF4B5EF5).withAlpha(90),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
+          ),
         ],
       ),
       child: ClipRRect(
@@ -225,8 +233,11 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
                             : Image.network(
                                 widget.logoUrl,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    Icon(Icons.apps_rounded, color: C.brand, size: 24),
+                                errorBuilder: (_, __, ___) => Icon(
+                                  Icons.apps_rounded,
+                                  color: C.brand,
+                                  size: 24,
+                                ),
                               ),
                       ),
                       const SizedBox(width: 10),
@@ -254,7 +265,11 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
                   const SizedBox(height: 10),
                   Text(
                     '注册时填写邀请码，你我各得积分',
-                    style: TextStyle(color: Colors.white.withAlpha(215), fontSize: 12.5, height: 1.6),
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(215),
+                      fontSize: 12.5,
+                      height: 1.6,
+                    ),
                   ),
                   const SizedBox(height: 26),
                   // 卡片：二维码 + 邀请码
@@ -287,8 +302,13 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text('我的邀请码',
-                                  style: TextStyle(fontSize: 11.5, color: Colors.black.withAlpha(120))),
+                              Text(
+                                '我的邀请码',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: Colors.black.withAlpha(120),
+                                ),
+                              ),
                               const SizedBox(height: 4),
                               FittedBox(
                                 fit: BoxFit.scaleDown,
@@ -304,8 +324,13 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
                                 ),
                               ),
                               const SizedBox(height: 6),
-                              Text('扫码下载 · 注册填码',
-                                  style: TextStyle(fontSize: 11, color: Colors.black.withAlpha(110))),
+                              Text(
+                                '扫码下载 · 注册填码',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.black.withAlpha(110),
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -316,7 +341,10 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
                   Center(
                     child: Text(
                       '安逸软件汇 · 精选软件每日更新',
-                      style: TextStyle(color: Colors.white.withAlpha(180), fontSize: 11.5),
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(180),
+                        fontSize: 11.5,
+                      ),
                     ),
                   ),
                 ],

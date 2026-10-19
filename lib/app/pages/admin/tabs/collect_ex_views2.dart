@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
@@ -576,7 +577,7 @@ class _CollectConfigViewState extends State<CollectConfigView> {
 
   Widget _fieldCard(Map<String, dynamic> f) {
     // ★ 1016：优先显示中文标签（服务端下发 label），没有才退回字段名
-        final name = '${f['label'] ?? f['name']}';
+    final name = '${f['label'] ?? f['name']}';
     final type = '${f['type']}';
     final opts = ((f['options'] as List?) ?? [])
         .whereType<Map>()

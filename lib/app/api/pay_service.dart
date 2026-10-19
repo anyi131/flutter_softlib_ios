@@ -20,11 +20,11 @@ class PayPlan {
   });
 
   factory PayPlan.fromJson(Map<String, dynamic> j) => PayPlan(
-        id: (j['id'] ?? '').toString(),
-        name: (j['name'] ?? '').toString(),
-        money: (j['money'] ?? '').toString(),
-        days: int.tryParse((j['days'] ?? 0).toString()) ?? 0,
-      );
+    id: (j['id'] ?? '').toString(),
+    name: (j['name'] ?? '').toString(),
+    money: (j['money'] ?? '').toString(),
+    days: int.tryParse((j['days'] ?? 0).toString()) ?? 0,
+  );
 }
 
 /// 创建订单的结果
@@ -44,11 +44,13 @@ class PayService {
   PayService._();
   static final PayService instance = PayService._();
 
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: ApiHost.base,
-    connectTimeout: const Duration(seconds: 8),
-    receiveTimeout: const Duration(seconds: 15),
-  ));
+  final Dio _dio = Dio(
+    BaseOptions(
+      baseUrl: ApiHost.base,
+      connectTimeout: const Duration(seconds: 8),
+      receiveTimeout: const Duration(seconds: 15),
+    ),
+  );
 
   dynamic _unwrap(Response r) {
     final d = r.data;
@@ -62,7 +64,9 @@ class PayService {
   /// 套餐列表 + 支付开关状态
   Future<Map<String, dynamic>> plans() async {
     final data = _unwrap(await _dio.get('/api/softlib/pay/plans'));
-    final m = data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{};
+    final m = data is Map
+        ? Map<String, dynamic>.from(data)
+        : <String, dynamic>{};
     m['planList'] = ((m['plans'] as List?) ?? [])
         .whereType<Map>()
         .map((e) => PayPlan.fromJson(Map<String, dynamic>.from(e)))
@@ -74,13 +78,16 @@ class PayService {
   /// 余额充值套餐（与会员套餐分开）
   Future<RechargePlans> rechargePlans() async {
     final data = _unwrap(await _dio.get('/api/softlib/pay/recharge_plans'));
-    final m = data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{};
+    final m = data is Map
+        ? Map<String, dynamic>.from(data)
+        : <String, dynamic>{};
     final list = ((m['plans'] as List?) ?? [])
         .whereType<Map>()
         .map((e) => PayPlan.fromJson(Map<String, dynamic>.from(e)))
         .toList();
-    final methods = ((m['methods'] as Map?) ?? {})
-        .map((k, v) => MapEntry(k.toString(), v == true || v == 1));
+    final methods = ((m['methods'] as Map?) ?? {}).map(
+      (k, v) => MapEntry(k.toString(), v == true || v == 1),
+    );
     return RechargePlans(
       plans: list,
       enabled: m['enabled'] == true || m['enabled'] == 1,
@@ -93,12 +100,19 @@ class PayService {
     required String money,
     required String payType,
   }) async {
-    final data = _unwrap(await _dio.post('/api/softlib/pay/recharge', data: {
-      'token': UserService.instance.token,
-      'money': money,
-      'pay_type': payType,
-    }));
-    final m = data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{};
+    final data = _unwrap(
+      await _dio.post(
+        '/api/softlib/pay/recharge',
+        data: {
+          'token': UserService.instance.token,
+          'money': money,
+          'pay_type': payType,
+        },
+      ),
+    );
+    final m = data is Map
+        ? Map<String, dynamic>.from(data)
+        : <String, dynamic>{};
     return (m['pay_url'] ?? '').toString();
   }
 
@@ -107,11 +121,12 @@ class PayService {
     required String payType,
   }) async {
     final token = UserService.instance.token;
-    final data = _unwrap(await _dio.post('/api/softlib/pay/create', data: {
-      'plan_id': planId,
-      'pay_type': payType,
-      'token': token,
-    }));
+    final data = _unwrap(
+      await _dio.post(
+        '/api/softlib/pay/create',
+        data: {'plan_id': planId, 'pay_type': payType, 'token': token},
+      ),
+    );
     final m = Map<String, dynamic>.from(data as Map);
     return PayOrder(
       outTradeNo: (m['out_trade_no'] ?? '').toString(),
@@ -124,10 +139,12 @@ class PayService {
   Future<bool> isPaid(String outTradeNo) async {
     try {
       final token = UserService.instance.token;
-      final data = _unwrap(await _dio.post('/api/softlib/pay/status', data: {
-        'out_trade_no': outTradeNo,
-        'token': token,
-      }));
+      final data = _unwrap(
+        await _dio.post(
+          '/api/softlib/pay/status',
+          data: {'out_trade_no': outTradeNo, 'token': token},
+        ),
+      );
       if (data is Map) return data['paid'] == true || data['status'] == 1;
       return false;
     } catch (e) {

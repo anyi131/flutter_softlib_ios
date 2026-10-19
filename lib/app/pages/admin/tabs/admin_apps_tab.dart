@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
@@ -1026,9 +1027,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                         ToastUtil.success('已保存');
                         await reload();
                       } catch (e) {
-                        ToastUtil.error(
-                          ErrText.of(e),
-                        );
+                        ToastUtil.error(ErrText.of(e));
                       }
                     },
                     child: const Text('保存'),

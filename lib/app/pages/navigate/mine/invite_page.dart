@@ -92,9 +92,7 @@ class _InvitePageState extends State<InvitePage> {
       ToastUtil.info('请先登录后再生成海报');
       return;
     }
-    Get.to(() => InvitePosterPage(
-          code: _code,
-        ));
+    Get.to(() => InvitePosterPage(code: _code));
   }
 
   @override
@@ -687,7 +685,10 @@ class _InvitePageState extends State<InvitePage> {
                   AppPressable(
                     onTap: _openPoster,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withAlpha(28),
                         borderRadius: BorderRadius.circular(999),
@@ -696,7 +697,11 @@ class _InvitePageState extends State<InvitePage> {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.image_rounded, size: 15, color: Colors.white),
+                          Icon(
+                            Icons.image_rounded,
+                            size: 15,
+                            color: Colors.white,
+                          ),
                           SizedBox(width: 6),
                           Text(
                             '生成邀请海报',

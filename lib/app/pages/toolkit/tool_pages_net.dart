@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
+
 import '../../utils/err_text.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -62,6 +64,7 @@ class HotPage extends StatefulWidget {
 
 class _HotPageState extends State<HotPage> {
   final _svc = ToolboxService.instance;
+
   /// ★ 1015：板块改为「服务端下发 + 内置兜底」。
   ///   原来写死 6 个，导致微博/抖音/头条这些必须各占一条工具（3 条功能重复）。
   ///   现在一条「全网热搜」就能覆盖所有平台/板块，板块随服务端增加而自动变多。
@@ -83,6 +86,7 @@ class _HotPageState extends State<HotPage> {
   String _label = '';
   bool _loading = true;
   String _err = '';
+
   /// ★ 1015：请求序号 —— 快速切板块时丢弃过期响应，防止旧数据覆盖新数据
   ///   （原来每次切 Tab 都发新请求且不取消旧的，连点会堆积 → 卡顿/卡死）
   int _reqSeq = 0;
@@ -107,7 +111,8 @@ class _HotPageState extends State<HotPage> {
       try {
         SoftService.reportLogStatic(
           tag: 'hot',
-          error: '[hot-res] tab=${_tabs[idx].$3} type=${_tabs[idx].$1} board=${_tabs[idx].$2} '
+          error:
+              '[hot-res] tab=${_tabs[idx].$3} type=${_tabs[idx].$1} board=${_tabs[idx].$2} '
               'null=${d == null} keys=${d?.keys.toList()} '
               'listLen=${((d?["list"] as List?) ?? []).length}',
         ).catchError((_) {});
@@ -514,24 +519,37 @@ class _EpicPageState extends State<EpicPage> {
                   padding: EdgeInsets.zero,
                   onTap: link.isEmpty
                       ? null
-                      : () => Get.to(() => ToolBrowserPage(title: '${it['title'] ?? ''}', url: link)),
+                      : () => Get.to(
+                          () => ToolBrowserPage(
+                            title: '${it['title'] ?? ''}',
+                            url: link,
+                          ),
+                        ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // 封面（16:9 大图）
                       if (img.isNotEmpty)
                         ClipRRect(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(R.lg)),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(R.lg),
+                          ),
                           child: AspectRatio(
                             aspectRatio: 16 / 9,
                             child: CachedNetworkImage(
                               imageUrl: img,
                               fit: BoxFit.cover,
                               memCacheWidth: 800,
-                              placeholder: (_, __) => Container(color: C.brand.withAlpha(16)),
+                              placeholder: (_, __) =>
+                                  Container(color: C.brand.withAlpha(16)),
                               errorWidget: (_, __, ___) => Container(
                                 color: C.brand.withAlpha(16),
-                                child: const Center(child: Icon(Icons.videogame_asset_rounded, size: 34)),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.videogame_asset_rounded,
+                                    size: 34,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -560,9 +578,13 @@ class _EpicPageState extends State<EpicPage> {
                                 ),
                                 const SizedBox(width: 8),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: (isNow ? C.success : C.warning).withAlpha(30),
+                                    color: (isNow ? C.success : C.warning)
+                                        .withAlpha(30),
                                     borderRadius: BorderRadius.circular(R.full),
                                   ),
                                   child: Text(
@@ -582,42 +604,64 @@ class _EpicPageState extends State<EpicPage> {
                                 desc,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: Ty.tiny.copyWith(color: context.t3, height: 1.55),
+                                style: Ty.tiny.copyWith(
+                                  color: context.t3,
+                                  height: 1.55,
+                                ),
                               ),
                             ],
                             const SizedBox(height: 11),
                             Row(
                               children: [
                                 if (orig.isNotEmpty && orig != '0.00') ...[
-                                  Text('¥$orig',
-                                      style: Ty.tiny.copyWith(
-                                        color: context.t3,
-                                        decoration: TextDecoration.lineThrough,
-                                      )),
+                                  Text(
+                                    '¥$orig',
+                                    style: Ty.tiny.copyWith(
+                                      color: context.t3,
+                                      decoration: TextDecoration.lineThrough,
+                                    ),
+                                  ),
                                   const SizedBox(width: 7),
                                 ],
-                                Text('免费',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w900,
-                                      color: C.success,
-                                    )),
+                                Text(
+                                  '免费',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w900,
+                                    color: C.success,
+                                  ),
+                                ),
                                 const Spacer(),
                                 if (end.isNotEmpty) ...[
-                                  Icon(Icons.schedule_rounded, size: 13, color: context.t3),
+                                  Icon(
+                                    Icons.schedule_rounded,
+                                    size: 13,
+                                    color: context.t3,
+                                  ),
                                   const SizedBox(width: 3),
-                                  Text('至 $end', style: Ty.tiny.copyWith(color: context.t3)),
+                                  Text(
+                                    '至 $end',
+                                    style: Ty.tiny.copyWith(color: context.t3),
+                                  ),
                                   const SizedBox(width: 8),
                                 ],
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
                                     gradient: Deco.brandGradient,
                                     borderRadius: BorderRadius.circular(R.full),
                                   ),
-                                  child: const Text('去领取',
-                                      style: TextStyle(
-                                          fontSize: 11.5, fontWeight: FontWeight.w800, color: Colors.white)),
+                                  child: const Text(
+                                    '去领取',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -1010,12 +1054,7 @@ class _TranslatePageState extends State<TranslatePage> {
             ],
           ),
           const SizedBox(height: 14),
-          ToolField(
-            controller: _in,
-            label: '原文',
-            hint: '输入要翻译的文本',
-            lines: 4,
-          ),
+          ToolField(controller: _in, label: '原文', hint: '输入要翻译的文本', lines: 4),
           ToolButton(
             label: '翻译',
             icon: Icons.translate_rounded,
@@ -1199,10 +1238,7 @@ class _ExchangePageState extends State<ExchangePage> {
                         Expanded(
                           child: Text(
                             _err,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: context.t2,
-                            ),
+                            style: TextStyle(fontSize: 13, color: context.t2),
                           ),
                         ),
                       ],
@@ -1297,10 +1333,7 @@ class _ExchangePageState extends State<ExchangePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '常用参考',
-                          style: Ty.h3.copyWith(color: context.t1),
-                        ),
+                        Text('常用参考', style: Ty.h3.copyWith(color: context.t1)),
                         const SizedBox(height: 10),
                         for (final k in ['USD', 'EUR', 'JPY', 'HKD', 'GBP'])
                           if (_rates!.containsKey(k))
@@ -2096,7 +2129,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
       if (e is Map) {
         final n = '${e['name'] ?? ''}';
         final u = '${e['url'] ?? ''}';
-        if (u.startsWith('http')) out.add((n.isEmpty ? '第${out.length + 1}集' : n, u));
+        if (u.startsWith('http'))
+          out.add((n.isEmpty ? '第${out.length + 1}集' : n, u));
       }
     }
     return out;
@@ -2110,14 +2144,16 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
       return;
     }
     final d = _d;
-    Get.to(() => ToolPlayerPage(
-      url: eps[index].$2,
-      title: '${d?['name'] ?? widget.name}',
-      cover: '${d?['pic'] ?? widget.cover}',
-      subtitle: eps[index].$1,
-      playlist: eps,
-      initialIndex: index,
-    ));
+    Get.to(
+      () => ToolPlayerPage(
+        url: eps[index].$2,
+        title: '${d?['name'] ?? widget.name}',
+        cover: '${d?['pic'] ?? widget.cover}',
+        subtitle: eps[index].$1,
+        playlist: eps,
+        initialIndex: index,
+      ),
+    );
   }
 
   @override
@@ -2157,14 +2193,20 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                   width: Ad.w(context, 110),
                                   height: Ad.h(context, 155),
                                   color: C.brand.withAlpha(24),
-                                  child: const Icon(Icons.movie_rounded, size: 34),
+                                  child: const Icon(
+                                    Icons.movie_rounded,
+                                    size: 34,
+                                  ),
                                 ),
                               )
                             : Container(
                                 width: Ad.w(context, 110),
                                 height: Ad.h(context, 155),
                                 color: C.brand.withAlpha(24),
-                                child: const Icon(Icons.movie_rounded, size: 34),
+                                child: const Icon(
+                                  Icons.movie_rounded,
+                                  size: 34,
+                                ),
                               ),
                       ),
                       const SizedBox(width: 13),
@@ -2172,16 +2214,25 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(name,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    fontSize: 15.5, fontWeight: FontWeight.w900, color: context.t1, height: 1.35)),
+                            Text(
+                              name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 15.5,
+                                fontWeight: FontWeight.w900,
+                                color: context.t1,
+                                height: 1.35,
+                              ),
+                            ),
                             const SizedBox(height: 7),
-                            if ('${d?['score'] ?? ''}'.isNotEmpty && '${d?['score']}' != '0.0')
+                            if ('${d?['score'] ?? ''}'.isNotEmpty &&
+                                '${d?['score']}' != '0.0')
                               _kv(context, '评分', '${d?['score']}'),
-                            if ('${d?['area'] ?? ''}'.isNotEmpty) _kv(context, '地区', '${d?['area']}'),
-                            if ('${d?['remarks'] ?? ''}'.isNotEmpty) _kv(context, '状态', '${d?['remarks']}'),
+                            if ('${d?['area'] ?? ''}'.isNotEmpty)
+                              _kv(context, '地区', '${d?['area']}'),
+                            if ('${d?['remarks'] ?? ''}'.isNotEmpty)
+                              _kv(context, '状态', '${d?['remarks']}'),
                             if ('${d?['director'] ?? ''}'.isNotEmpty)
                               _kv(context, '导演', '${d?['director']}'),
                             if ('${d?['actor'] ?? ''}'.isNotEmpty)
@@ -2199,10 +2250,18 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                 if (_groups.length > 1) ...[
                   Row(
                     children: [
-                      Text('播放源', style: Ty.small.copyWith(fontWeight: FontWeight.w800, color: context.t1)),
+                      Text(
+                        '播放源',
+                        style: Ty.small.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: context.t1,
+                        ),
+                      ),
                       const SizedBox(width: 8),
-                      Text('${_groups.length} 个可选 · 换源可避开广告',
-                          style: Ty.tiny.copyWith(color: context.t3)),
+                      Text(
+                        '${_groups.length} 个可选 · 换源可避开广告',
+                        style: Ty.tiny.copyWith(color: context.t3),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -2225,9 +2284,18 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                 if (eps.isNotEmpty) ...[
                   Row(
                     children: [
-                      Text('选集', style: Ty.small.copyWith(fontWeight: FontWeight.w800, color: context.t1)),
+                      Text(
+                        '选集',
+                        style: Ty.small.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: context.t1,
+                        ),
+                      ),
                       const SizedBox(width: 8),
-                      Text('共 ${eps.length} 集', style: Ty.tiny.copyWith(color: context.t3)),
+                      Text(
+                        '共 ${eps.length} 集',
+                        style: Ty.tiny.copyWith(color: context.t3),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -2240,15 +2308,24 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                           onTap: () => _play(i),
                           child: Container(
                             constraints: const BoxConstraints(minWidth: 58),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 9,
+                            ),
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: C.brand.withAlpha(context.isDark ? 26 : 12),
+                              color: C.brand.withAlpha(
+                                context.isDark ? 26 : 12,
+                              ),
                               borderRadius: BorderRadius.circular(R.sm),
                             ),
                             child: Text(
                               eps[i].$1,
-                              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: C.brand),
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: C.brand,
+                              ),
                             ),
                           ),
                         ),
@@ -2264,7 +2341,11 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                   ToolCard(
                     child: Row(
                       children: [
-                        Icon(Icons.info_outline_rounded, size: 19, color: C.warning),
+                        Icon(
+                          Icons.info_outline_rounded,
+                          size: 19,
+                          color: C.warning,
+                        ),
                         const SizedBox(width: 9),
                         Expanded(
                           child: Text(
@@ -2278,10 +2359,18 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
 
                 if (intro.isNotEmpty) ...[
                   const SizedBox(height: 16),
-                  Text('剧情简介', style: Ty.small.copyWith(fontWeight: FontWeight.w800, color: context.t1)),
+                  Text(
+                    '剧情简介',
+                    style: Ty.small.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: context.t1,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text(intro,
-                      style: Ty.small.copyWith(color: context.t2, height: 1.75)),
+                  Text(
+                    intro,
+                    style: Ty.small.copyWith(color: context.t2, height: 1.75),
+                  ),
                 ],
                 const SizedBox(height: 24),
               ],
@@ -2290,20 +2379,28 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   }
 
   Widget _kv(BuildContext context, String k, String v) => Padding(
-        padding: const EdgeInsets.only(bottom: 4),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(width: 34, child: Text(k, style: Ty.tiny.copyWith(color: context.t3))),
-            Expanded(
-              child: Text(v,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Ty.tiny.copyWith(color: context.t2, fontWeight: FontWeight.w600)),
-            ),
-          ],
+    padding: const EdgeInsets.only(bottom: 4),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 34,
+          child: Text(k, style: Ty.tiny.copyWith(color: context.t3)),
         ),
-      );
+        Expanded(
+          child: Text(
+            v,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: Ty.tiny.copyWith(
+              color: context.t2,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class MusicPage extends StatefulWidget {
@@ -2397,15 +2494,19 @@ class _MusicPageState extends State<MusicPage> {
           .where((e) => '${e['name'] ?? ''}'.isNotEmpty)
           .map((e) => ('${e['name'] ?? ''}', ''))
           .toList();
-      Get.to(() => ToolPlayerPage(
-        url: url,
-        title: '${it['name'] ?? ''}',
-        subtitle: '${it['artist'] ?? ''}',
-        cover: '${it['pic'] ?? ''}',
-        isAudio: true,
-        playlist: list.length > 1 ? list : null,
-        initialIndex: list.indexWhere((e) => e.$1 == '${it['name'] ?? ''}').clamp(0, list.isEmpty ? 0 : list.length - 1),
-      ));
+      Get.to(
+        () => ToolPlayerPage(
+          url: url,
+          title: '${it['name'] ?? ''}',
+          subtitle: '${it['artist'] ?? ''}',
+          cover: '${it['pic'] ?? ''}',
+          isAudio: true,
+          playlist: list.length > 1 ? list : null,
+          initialIndex: list
+              .indexWhere((e) => e.$1 == '${it['name'] ?? ''}')
+              .clamp(0, list.isEmpty ? 0 : list.length - 1),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() => _busyId = null);
@@ -2534,9 +2635,7 @@ class _MusicPageState extends State<MusicPage> {
                                     '${it['artist'] ?? ''}',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: Ty.tiny.copyWith(
-                                      color: context.t3,
-                                    ),
+                                    style: Ty.tiny.copyWith(color: context.t3),
                                   ),
                                 ],
                               ),
@@ -2645,8 +2744,9 @@ class _HeroGalleryPageState extends State<HeroGalleryPage> {
                   final s = skins[i];
                   return ToolCard(
                     padding: EdgeInsets.zero,
-                    onTap: () => MediaPreview.showImage(context, '${s['url'] ?? ''}'),
-                                            onLongPress: () => ImgSaver.saveUrl('${s['url'] ?? ''}'),
+                    onTap: () =>
+                        MediaPreview.showImage(context, '${s['url'] ?? ''}'),
+                    onLongPress: () => ImgSaver.saveUrl('${s['url'] ?? ''}'),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(R.lg),
                       child: Stack(
@@ -2887,9 +2987,8 @@ class _ComicPageState extends State<ComicPage> {
                                     imageUrl: '${it['cover'] ?? ''}',
                                     fit: BoxFit.cover,
                                     memCacheWidth: 360,
-                                    placeholder: (_, __) => Container(
-                                      color: C.brand.withAlpha(14),
-                                    ),
+                                    placeholder: (_, __) =>
+                                        Container(color: C.brand.withAlpha(14)),
                                     errorWidget: (_, __, ___) => Container(
                                       color: C.brand.withAlpha(14),
                                       child: Icon(
@@ -3056,7 +3155,8 @@ class _ComicReadPageState extends State<ComicReadPage> {
                           physics: const BouncingScrollPhysics(),
                           padding: const EdgeInsets.only(bottom: 20),
                           itemCount: _images.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 3),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 3),
                           itemBuilder: (c, i) => ClipRRect(
                             borderRadius: BorderRadius.circular(R.sm),
                             child: CachedNetworkImage(
@@ -3159,7 +3259,8 @@ class _WallpaperPageState extends State<WallpaperPage> {
                         ),
                     itemCount: _urls.length,
                     itemBuilder: (c, i) => AppPressable(
-                      onTap: () => MediaPreview.showImages(context, _urls, index: i),
+                      onTap: () =>
+                          MediaPreview.showImages(context, _urls, index: i),
                       // ★ 1015：长按直接保存到相册
                       onLongPress: () => ImgSaver.saveUrl(_urls[i]),
                       child: ClipRRect(

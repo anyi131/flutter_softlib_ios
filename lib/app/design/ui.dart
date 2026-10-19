@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'glass_theme.dart';
+
 import 'package:flutter/material.dart';
 
 /// ═══════════════════════════════════════════════════════════════
@@ -46,10 +48,10 @@ class C {
 
   /// 品牌渐变（跟随当前配色方案）
   static LinearGradient get brandGradient => LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [brand, accent],
-      );
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [brand, accent],
+  );
 
   // 强调色
   static const cyan = Color(0xFF22D3EE);
@@ -113,6 +115,16 @@ class Deco {
   /// 主背景：浅色页面底 + 柔和彩色光晕（浅色为主）
   /// ★ fit: expand 保证无论父级约束如何都铺满，避免转场/首帧露出底色
   /// ★ RepaintBoundary：光晕是静态的，隔离后滚动/动画时不会跟着重绘
+  /// 柔光斑（径向渐变的实心圆，无模糊，性能友好）
+  static Widget _glowBlob(Color c, double size) => Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      gradient: RadialGradient(colors: [c, c.withAlpha(0)], radius: 0.9),
+      shape: BoxShape.circle,
+    ),
+  );
+
   static Widget pageBackground(BuildContext context, {Widget? child}) {
     final isDark = dark(context);
     return RepaintBoundary(
@@ -172,6 +184,22 @@ class Deco {
               ),
             ),
           ),
+          // ★ 1020 玻璃模式：再加两处柔光斑
+          //   半透明卡片需要「底下有东西可透」才像玻璃；
+          //   只有纯色底时玻璃卡片看起来会发灰、显脏。
+          //   这里只加极淡的光斑（不模糊、不耗性能），卡片透过去就有层次了。
+          if (GlassTheme.enabled) ...[
+            Positioned(
+              top: 320,
+              left: -120,
+              child: _glowBlob(C.mint.withAlpha(isDark ? 26 : 16), 300),
+            ),
+            Positioned(
+              bottom: 220,
+              right: -130,
+              child: _glowBlob(C.brand.withAlpha(isDark ? 30 : 14), 320),
+            ),
+          ],
           if (child != null) Positioned.fill(child: child),
         ],
       ),

@@ -9,6 +9,7 @@ import 'posters_logic.dart';
 
 class PostersWidget extends StatefulWidget {
   final String? dowUrl;
+
   /// 二维码内容（默认与 dowUrl 相同；会员防护场景传站点详情页地址）
   final String? qrData;
   final LzyFileInfoData? appInfo;

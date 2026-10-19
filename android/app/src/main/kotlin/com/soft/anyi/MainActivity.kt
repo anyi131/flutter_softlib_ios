@@ -32,6 +32,13 @@ class MainActivity : FlutterActivity() {
             android.util.Log.w("QQLoginBridge", "注册失败: ${e.message}")
         }
 
+        // ★ 1020：设备能力通道（全局玻璃自动降级要读 SDK/内存）
+        try {
+            DeviceInfoBridge.register(flutterEngine.dartExecutor.binaryMessenger, this)
+        } catch (e: Throwable) {
+            android.util.Log.w("DeviceInfoBridge", "注册失败: ${e.message}")
+        }
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
             .setMethodCallHandler { call, result ->
                 when (call.method) {

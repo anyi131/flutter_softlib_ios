@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../../design/adaptive.dart';
@@ -13,6 +15,8 @@ import '../../design/ui.dart';
 ///
 /// 使用方式：新页面直接用下面这些组件；老页面可逐步替换。
 /// ═══════════════════════════════════════════════════════════════
+import '../../design/glass_theme.dart';
+
 class Ad {
   Ad._();
 
@@ -27,12 +31,13 @@ class Ad {
   static const double gapL = 18;
 
   /// 卡片底色
-  static Color cardBg(BuildContext c) =>
-      c.isDark ? const Color(0xFF1A1D26) : Colors.white;
+  ///
+  /// ★ 1020：接入全局玻璃（GlassTheme）—— high/medium 档返回半透明底，
+  ///   low/off 档与原来的实心色**完全一致**（保证低端机 / 关闭玻璃时零差异）。
+  static Color cardBg(BuildContext c) => GlassTheme.cardColor(c);
 
-  /// 卡片描边
-  static Color stroke(BuildContext c) =>
-      c.isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(12);
+  /// 卡片描边（玻璃档位下换成更亮的高光边）
+  static Color stroke(BuildContext c) => GlassTheme.borderColor(c);
 }
 
 /// 统一卡片（商业化：细描边 + 极轻阴影，不用大阴影）
@@ -69,11 +74,13 @@ class AdCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final body = Container(
+    final r = BorderRadius.circular(radius);
+    final edge = GlassTheme.edgeGradient(context);
+    Widget body = Container(
       padding: padding ?? EdgeInsets.zero,
       decoration: BoxDecoration(
         color: Ad.cardBg(context),
-        borderRadius: BorderRadius.circular(radius),
+        borderRadius: r,
         border: Border.all(
           width: border ? 1.6 : 1,
           color: border
@@ -85,6 +92,39 @@ class AdCard extends StatelessWidget {
       ),
       child: child,
     );
+
+    // ★ 1020 全局玻璃：只在「有内容可透」的档位加叠层
+    //   high  → 真模糊（卡片数量多，只在旗舰机开，且由 GlassTheme 控制）
+    //   medium→ 不模糊，只叠一层极淡的斜向高光渐变（视觉上是玻璃，性能近零）
+    if (GlassTheme.enabled && edge != null) {
+      body = ClipRRect(
+        borderRadius: r,
+        child: Stack(
+          children: [
+            if (GlassTheme.cardBlur)
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: GlassTheme.sigma,
+                    sigmaY: GlassTheme.sigma,
+                  ),
+                  child: const SizedBox.expand(),
+                ),
+              ),
+            body,
+            // 边缘折光（不吃点击）
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(borderRadius: r, gradient: edge),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: margin ?? EdgeInsets.zero,
       child: onTap == null ? body : GestureDetector(onTap: onTap, child: body),

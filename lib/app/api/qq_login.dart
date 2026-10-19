@@ -146,6 +146,7 @@ class QQLogin {
     } catch (_) {}
   }
 }
+
 class QQAuthResult {
   final String openid;
   final String accessToken;
@@ -162,5 +163,4 @@ class QQAuthResult {
     this.uiMs = -1,
     this.initMs = -1,
   });
-
 }

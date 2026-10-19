@@ -109,16 +109,15 @@ class AdminService {
     int size = 20,
     String status = '',
     String keyword = '',
-  }) async =>
-      Map<String, dynamic>.from(
-        (await _post('download_logs', {
+  }) async => Map<String, dynamic>.from(
+    (await _post('download_logs', {
           'page': page,
           'size': size,
           if (status.isNotEmpty) 'status': status,
           if (keyword.isNotEmpty) 'keyword': keyword,
         }))['data'] ??
-            {},
-      );
+        {},
+  );
 
   /// ★ 1016：切换签名守卫模式（0=观察 1=拦截）
   Future<Map<String, dynamic>> secSignGuardSave(int mode) async =>

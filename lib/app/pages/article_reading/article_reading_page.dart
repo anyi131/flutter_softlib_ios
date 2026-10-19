@@ -90,7 +90,9 @@ class ArticleReadingPage extends StatelessWidget {
         children: [
           // 图片预览Gallery
           PhotoViewGallery.builder(
-            pageController: PageController(initialPage: logic.currentImageIndex),
+            pageController: PageController(
+              initialPage: logic.currentImageIndex,
+            ),
             itemCount: logic.imageUrls.length,
             builder: (context, index) {
               return PhotoViewGalleryPageOptions(

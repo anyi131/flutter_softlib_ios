@@ -55,18 +55,26 @@ class AppCard extends StatelessWidget {
                 Row(
                   children: [
                     if (item.size.isNotEmpty) ...[
-                      Icon(Icons.data_usage, size: 13, color: C.brand.withAlpha(150)),
+                      Icon(
+                        Icons.data_usage,
+                        size: 13,
+                        color: C.brand.withAlpha(150),
+                      ),
                       const SizedBox(width: 3),
-                      Text(item.size,
-                          style: Ty.tiny.copyWith(color: context.t2)),
+                      Text(
+                        item.size,
+                        style: Ty.tiny.copyWith(color: context.t2),
+                      ),
                       const SizedBox(width: 10),
                     ],
                     if (item.version.isNotEmpty)
                       Flexible(
-                        child: Text(item.version,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Ty.tiny.copyWith(color: context.t3)),
+                        child: Text(
+                          item.version,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Ty.tiny.copyWith(color: context.t3),
+                        ),
                       ),
                   ],
                 ),

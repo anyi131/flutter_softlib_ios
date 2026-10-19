@@ -27,19 +27,22 @@ class StarRating extends StatelessWidget {
               i <= score.round()
                   ? Icons.star_rounded
                   : (i - 0.5 <= score
-                      ? Icons.star_half_rounded
-                      : Icons.star_border_rounded),
+                        ? Icons.star_half_rounded
+                        : Icons.star_border_rounded),
               size: size,
               color: C.amber,
             ),
           ),
         if (showScore) ...[
           const SizedBox(width: 5),
-          Text('${score.toStringAsFixed(1)}',
-              style: TextStyle(
-                  fontSize: size - 1,
-                  fontWeight: FontWeight.w800,
-                  color: C.amber)),
+          Text(
+            '${score.toStringAsFixed(1)}',
+            style: TextStyle(
+              fontSize: size - 1,
+              fontWeight: FontWeight.w800,
+              color: C.amber,
+            ),
+          ),
         ],
       ],
     );

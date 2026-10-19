@@ -127,9 +127,11 @@ class AppDownloadLogic extends GetxController {
     try {
       final st = await UnlockService.instance.status(appId);
       if (!st.canDownload) {
-        ToastUtil.error(st.price.isNotEmpty && (double.tryParse(st.price) ?? 0) > 0
-            ? '该资源需支付 ¥${st.price} 后下载'
-            : '该资源需要开通会员后下载');
+        ToastUtil.error(
+          st.price.isNotEmpty && (double.tryParse(st.price) ?? 0) > 0
+              ? '该资源需支付 ¥${st.price} 后下载'
+              : '该资源需要开通会员后下载',
+        );
         return false;
       }
       return true;

@@ -49,17 +49,30 @@ class JumpUtil {
   }
 
   /// 添加QQ群
-  static Future<void> joinQQGroup(String groupCode) async {
-    String qunUrl =
-        "mqqapi://card/show_pslcard?src_type=internal&version=1&uin=$groupCode&card_type=group&source=qrcode";
-    if (await canLaunchUrlString(qunUrl)) {
-      await launchUrlString(
+  ///
+  /// ★ 1020：canLaunchUrlString 对 mqqapi:// 常返回 false（Android 11+ 的
+  ///   package visibility 限制），之前会直接弹「无法打开QQ群」而不是跳转。
+  ///   现在「直接尝试唤起」为准，失败再退回浏览器加群页（用户反馈 #3）。
+  static Future<bool> joinQQGroup(String groupCode) async {
+    if (groupCode.isEmpty) return false;
+    final qunUrl =
+        "mqqapi://card/show_pslcard?src_type=internal&version=1"
+        "&uin=$groupCode&card_type=group&source=qrcode";
+    try {
+      final ok = await launchUrlString(
         qunUrl,
-        mode: LaunchMode.externalNonBrowserApplication,
+        mode: LaunchMode.externalApplication,
       );
-    } else {
-      ToastUtil.error('无法打开QQ群: $groupCode');
-    }
+      if (ok) return true;
+    } catch (_) {}
+    // 兜底：QQ 群网页版（浏览器里能继续唤起 QQ 或提示安装）
+    try {
+      await launchUrlString(
+        'https://qm.qq.com/cgi-bin/qm/qr?k=&group_code=$groupCode',
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (_) {}
+    return false;
   }
 
   /// 添加QQ好友

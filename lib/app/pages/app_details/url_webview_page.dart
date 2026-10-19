@@ -38,29 +38,32 @@ class _UrlWebviewPageState extends State<UrlWebviewPage> {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFFFFFFFF))
-      ..setNavigationDelegate(NavigationDelegate(
-        // ★ 1015：加载失败兜底（原来没有 → 失败就永久白屏）
-        onWebResourceError: (e) {
-          if (mounted && e.isForMainFrame == true) {
-            setState(() => _loading = false);
-          }
-        },
-        onPageStarted: (_) {
-          if (mounted) setState(() => _loading = true);
-        },
-        onPageFinished: (_) {
-          if (mounted) setState(() => _loading = false);
-        },
-        onProgress: (p) {
-          // ★ 1015 性能：进度的每 1% 都 setState 会引发重建风暴 → 卡顿
-            if (mounted && (p.round() % 10 == 0 || p.round() == 100) && _progress != p.round()) {
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          // ★ 1015：加载失败兜底（原来没有 → 失败就永久白屏）
+          onWebResourceError: (e) {
+            if (mounted && e.isForMainFrame == true) {
+              setState(() => _loading = false);
+            }
+          },
+          onPageStarted: (_) {
+            if (mounted) setState(() => _loading = true);
+          },
+          onPageFinished: (_) {
+            if (mounted) setState(() => _loading = false);
+          },
+          onProgress: (p) {
+            // ★ 1015 性能：进度的每 1% 都 setState 会引发重建风暴 → 卡顿
+            if (mounted &&
+                (p.round() % 10 == 0 || p.round() == 100) &&
+                _progress != p.round()) {
               setState(() => _progress = p.round());
             }
-        },
-      ))
+          },
+        ),
+      )
       ..loadRequest(Uri.parse(_url));
   }
-
 
   @override
   void dispose() {
@@ -68,6 +71,7 @@ class _UrlWebviewPageState extends State<UrlWebviewPage> {
     //   控制器不释放 → 每次打开泄漏一个 WebView → 多次后 Native OOM → 闪退回桌面。
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,7 +83,9 @@ class _UrlWebviewPageState extends State<UrlWebviewPage> {
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(2),
                 child: LinearProgressIndicator(
-                    value: _progress / 100, minHeight: 2),
+                  value: _progress / 100,
+                  minHeight: 2,
+                ),
               )
             : null,
       ),

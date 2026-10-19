@@ -1,6 +1,8 @@
 import 'dart:convert';
+
 import '../../../utils/sound_util.dart';
 import '../../../utils/err_text.dart';
+
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -27,6 +29,7 @@ import '../../../utils/jump_util.dart';
 import '../../../utils/local_splash.dart';
 import '../../../routes/app_pages.dart';
 import '../../../utils/toast_util.dart';
+import '../../../widgets/blocking_dialog.dart';
 
 /// 我的页逻辑：登录态 + 本地资料
 class MineLogic extends GetxController {
@@ -64,11 +67,17 @@ class MineLogic extends GetxController {
 
   /// ★ 1016：绑定 QQ 到当前账号 —— 以后 QQ 一键登录直接进这个号，
   ///   不会再被自动开一个新号。
+  /// ★ 1020（反馈 #2）：加锁 —— 等待期间重复点击直接忽略。
+  ///   之前重复点击会并发发起多次 QQ 登录，原生回调错乱 → 用户说的「未知问题」。
+  bool _binding = false;
+
   Future<void> bindQQ() async {
     if (!_userService.isLoggedIn) {
       ToastUtil.info('请先登录你自己的账号，再绑定 QQ');
       return;
     }
+    if (_binding || BlockingDialog.isOpen) return;
+    _binding = true;
     try {
       final cfg = await UserService.instance.fetchConfig();
       final appId = '${cfg['qq_app_id'] ?? ''}';
@@ -77,13 +86,30 @@ class MineLogic extends GetxController {
         return;
       }
       QQLogin.appId = appId;
+      // ★ 全屏阻塞：等 QQ 授权期间不允许返回/切页，避免回调打到已销毁的页面
+      BlockingDialog.show(text: '正在打开 QQ 授权…', sub: '授权完成会自动回到 App，请不要离开本页面');
       final r = await QQLogin.login();
+      BlockingDialog.hide();
       if (r == null) return; // 用户取消
-      await _userService.bindQQ(openid: r.openid, accessToken: r.accessToken);
+      if (!isClosed) {
+        BlockingDialog.show(text: '正在绑定…');
+      }
+      try {
+        await _userService.bindQQ(openid: r.openid, accessToken: r.accessToken);
+      } finally {
+        BlockingDialog.hide();
+      }
+      // 页面已销毁（用户在等待时被路由带走）→ 只刷新数据，不弹提示
+      if (isClosed) return;
       ToastUtil.success('绑定成功，以后 QQ 一键登录直接进本账号');
       await load();
     } catch (e) {
+      BlockingDialog.hide();
+      if (isClosed) return;
       ToastUtil.error(ErrText.of(e));
+    } finally {
+      BlockingDialog.hide();
+      _binding = false;
     }
   }
 
@@ -150,7 +176,12 @@ class MineLogic extends GetxController {
         return;
       }
     }
-    _clearToGuest();
+    // ★ 1020（反馈 #2）：只有「确实没登录」才清空为游客。
+    //   绑定 QQ / 刷新资料时若网络抖动导致 refreshProfile 返回 null，
+    //   之前会把已登录账号清成游客 → 用户看到「绑定完变回未登录」的未知问题。
+    if (!_userService.isLoggedIn) {
+      _clearToGuest();
+    }
     update();
   }
 
@@ -374,7 +405,7 @@ class MineLogic extends GetxController {
   /// 加入 QQ 通知群
   /// ★ 1014 修复：原实现只复制链接、不跳转（用户反馈「点击是链接已复制」）。
   ///   现在与首页一致：解析群号 → mqqapi 直达加群界面 → 失败兜底开网页。
-  void joinGroup() {
+  Future<void> joinGroup() async {
     final cached = SoftService.instance.cachedConfig;
     final groupUrl = cached?.feedbackGroup ?? '';
     if (groupUrl.isEmpty) {
@@ -386,17 +417,14 @@ class MineLogic extends GetxController {
       JumpUtil.openUrl(groupUrl);
       return;
     }
-    // 2) 从分享链接里解析群号 → 直达加群界面
-    final code = _extractGroupCode(groupUrl);
+    // 2) 本地解析群号；解析不到再问服务端（qm.qq.com 短链必须服务端抓页面）
+    var code = _extractGroupCode(groupUrl);
+    code ??= await SoftService.instance.resolveQqGroup(groupUrl);
     if (code != null && code.isNotEmpty) {
-      JumpUtil.joinQQGroup(code);
-      // 唤起失败（未装 QQ 等）2 秒后兜底用网页打开
-      Future.delayed(const Duration(seconds: 2), () {
-        JumpUtil.openUrl(groupUrl);
-      });
-      return;
+      final ok = await JumpUtil.joinQQGroup(code);
+      if (ok) return;
     }
-    // 3) 其他链接 → 网页打开
+    // 3) 兜底 → 网页打开
     JumpUtil.openUrl(groupUrl);
   }
 

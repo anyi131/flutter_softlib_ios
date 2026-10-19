@@ -38,9 +38,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
       builder: (logic) {
         List<ReportData>? reports = logic.reports;
         if (logic.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(strokeWidth: 3),
-          );
+          return const Center(child: CircularProgressIndicator(strokeWidth: 3));
         }
         if (reports == null || reports.isEmpty) {
           return Center(
@@ -74,8 +72,8 @@ class _ReportListWidgetState extends State<ReportListWidget>
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (_, index) {
               ReportData report = reports[index];
-              final tpl = SoftService
-                      .instance.cachedConfig?.uiConfig.tipsTemplate ??
+              final tpl =
+                  SoftService.instance.cachedConfig?.uiConfig.tipsTemplate ??
                   'card';
               return switch (tpl) {
                 'compact' => _buildCompact(context, report, logic),
@@ -141,10 +139,8 @@ class _ReportListWidgetState extends State<ReportListWidget>
                         ),
                       ),
                     ),
-                    errorWidget: (context, url, error) => Image.asset(
-                      Assets.imagesSucceed,
-                      fit: BoxFit.cover,
-                    ),
+                    errorWidget: (context, url, error) =>
+                        Image.asset(Assets.imagesSucceed, fit: BoxFit.cover),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -216,7 +212,10 @@ class _ReportListWidgetState extends State<ReportListWidget>
 
   /// v52m/v52t：紧凑单行
   Widget _buildCompact(
-      BuildContext context, ReportData report, ReportListLogic logic) {
+    BuildContext context,
+    ReportData report,
+    ReportListLogic logic,
+  ) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final ts = report.createtime ?? 0;
@@ -255,12 +254,16 @@ class _ReportListWidgetState extends State<ReportListWidget>
                 ),
               ),
             ),
-            Text(dt,
-                style: TextStyle(
-                    fontSize: 10.5, color: isDark ? C.t3 : C.lt3)),
+            Text(
+              dt,
+              style: TextStyle(fontSize: 10.5, color: isDark ? C.t3 : C.lt3),
+            ),
             const SizedBox(width: 4),
-            Icon(Icons.chevron_right_rounded,
-                size: 16, color: isDark ? C.t3 : C.lt3),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 16,
+              color: isDark ? C.t3 : C.lt3,
+            ),
           ],
         ),
       ),
@@ -269,7 +272,10 @@ class _ReportListWidgetState extends State<ReportListWidget>
 
   /// v52t：时间轴
   Widget _buildTimeline(
-      BuildContext context, ReportData report, ReportListLogic logic) {
+    BuildContext context,
+    ReportData report,
+    ReportListLogic logic,
+  ) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final ts = report.createtime ?? 0;
@@ -293,8 +299,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
                   ),
                 ),
                 Expanded(
-                  child:
-                      Container(width: 2, color: C.brand.withAlpha(60)),
+                  child: Container(width: 2, color: C.brand.withAlpha(60)),
                 ),
               ],
             ),
@@ -312,16 +317,20 @@ class _ReportListWidgetState extends State<ReportListWidget>
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w700,
-                            color: isDark ? C.t1 : C.lt1,
-                            height: 1.35),
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? C.t1 : C.lt1,
+                          height: 1.35,
+                        ),
                       ),
                       const SizedBox(height: 4),
-                      Text(dt,
-                          style: TextStyle(
-                              fontSize: 10.5,
-                              color: isDark ? C.t3 : C.lt3)),
+                      Text(
+                        dt,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          color: isDark ? C.t3 : C.lt3,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -335,7 +344,10 @@ class _ReportListWidgetState extends State<ReportListWidget>
 
   /// v52t：极简行
   Widget _buildMiniRow(
-      BuildContext context, ReportData report, ReportListLogic logic) {
+    BuildContext context,
+    ReportData report,
+    ReportListLogic logic,
+  ) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     return InkWell(
@@ -344,20 +356,25 @@ class _ReportListWidgetState extends State<ReportListWidget>
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 11),
         child: Row(
           children: [
-            Icon(Icons.flash_on_rounded,
-                size: 14, color: C.brand.withAlpha(200)),
+            Icon(
+              Icons.flash_on_rounded,
+              size: 14,
+              color: C.brand.withAlpha(200),
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 report.title ?? '',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 13, color: isDark ? C.t1 : C.lt1),
+                style: TextStyle(fontSize: 13, color: isDark ? C.t1 : C.lt1),
               ),
             ),
-            Icon(Icons.chevron_right_rounded,
-                size: 15, color: isDark ? C.t3 : C.lt3),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 15,
+              color: isDark ? C.t3 : C.lt3,
+            ),
           ],
         ),
       ),
@@ -366,7 +383,10 @@ class _ReportListWidgetState extends State<ReportListWidget>
 
   /// v52t：大图卡（无图退回经典卡）
   Widget _buildRich(
-      BuildContext context, ReportData report, ReportListLogic logic) {
+    BuildContext context,
+    ReportData report,
+    ReportListLogic logic,
+  ) {
     final img = (report.image ?? '').toString();
     if (img.isEmpty) return _buildItem(context, report);
     final theme = Theme.of(context);
@@ -394,10 +414,11 @@ class _ReportListWidgetState extends State<ReportListWidget>
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? C.t1 : C.lt1,
-                    height: 1.35),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? C.t1 : C.lt1,
+                  height: 1.35,
+                ),
               ),
             ),
           ],
@@ -406,16 +427,18 @@ class _ReportListWidgetState extends State<ReportListWidget>
     );
   }
 
-
   /// ★ v3.3.4 杂志卡：大图占满卡宽 + 图上叠标题 + 右下角时间胶囊
   /// 与其它模板的骨架差异：图是主体（不是缩略图），信息压在图上
   Widget _buildMagazine(
-      BuildContext context, ReportData report, ReportListLogic logic) {
+    BuildContext context,
+    ReportData report,
+    ReportListLogic logic,
+  ) {
     final isDark = context.isDark;
     final ts = report.createtime ?? 0;
     final dt = ts > 0
         ? '${DateTime.fromMillisecondsSinceEpoch(ts * 1000).month}/'
-            '${DateTime.fromMillisecondsSinceEpoch(ts * 1000).day}'
+              '${DateTime.fromMillisecondsSinceEpoch(ts * 1000).day}'
         : '';
     final img = report.image ?? '';
     return GestureDetector(
@@ -439,7 +462,9 @@ class _ReportListWidgetState extends State<ReportListWidget>
                   ),
                 )
               else
-                Container(decoration: BoxDecoration(gradient: Deco.brandGradient)),
+                Container(
+                  decoration: BoxDecoration(gradient: Deco.brandGradient),
+                ),
               // 底部渐隐让文字可读
               const DecoratedBox(
                 decoration: BoxDecoration(
@@ -519,12 +544,15 @@ class _ReportListWidgetState extends State<ReportListWidget>
   /// ★ v3.3.4 头条速览：超大标题 + 序号徽标 + 密度极高的单行摘要
   /// 与其它模板的骨架差异：完全无图、无卡，靠字重与间距分层（近新闻客户端头条区）
   Widget _buildHeadline(
-      BuildContext context, ReportData report, ReportListLogic logic) {
+    BuildContext context,
+    ReportData report,
+    ReportListLogic logic,
+  ) {
     final isDark = context.isDark;
     final ts = report.createtime ?? 0;
     final dt = ts > 0
         ? '${DateTime.fromMillisecondsSinceEpoch(ts * 1000).hour}:'
-            '${DateTime.fromMillisecondsSinceEpoch(ts * 1000).minute.toString().padLeft(2, '0')}'
+              '${DateTime.fromMillisecondsSinceEpoch(ts * 1000).minute.toString().padLeft(2, '0')}'
         : '';
     return GestureDetector(
       onTap: () => logic.goToReadPage(report),
@@ -613,7 +641,10 @@ class _ReportListWidgetState extends State<ReportListWidget>
 
   /// v52w：聊天流模板（头像圆点 + 气泡）
   Widget _buildChat(
-      BuildContext context, ReportData report, ReportListLogic logic) {
+    BuildContext context,
+    ReportData report,
+    ReportListLogic logic,
+  ) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final ts = report.createtime ?? 0;
@@ -627,8 +658,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
         children: [
           CircleAvatar(
             radius: 15,
-            child: Icon(Icons.campaign_rounded,
-                size: 15, color: Colors.white),
+            child: Icon(Icons.campaign_rounded, size: 15, color: Colors.white),
             backgroundColor: C.brand.withAlpha(200),
           ),
           const SizedBox(width: 9),
@@ -636,15 +666,18 @@ class _ReportListWidgetState extends State<ReportListWidget>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('线报速递 · $dt',
-                    style: TextStyle(
-                        fontSize: 10, color: isDark ? C.t3 : C.lt3)),
+                Text(
+                  '线报速递 · $dt',
+                  style: TextStyle(fontSize: 10, color: isDark ? C.t3 : C.lt3),
+                ),
                 const SizedBox(height: 3),
                 InkWell(
                   onTap: () => logic.goToReadPage(report),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 9),
+                      horizontal: 12,
+                      vertical: 9,
+                    ),
                     decoration: BoxDecoration(
                       color: C.brand.withAlpha(isDark ? 30 : 18),
                       borderRadius: BorderRadius.only(
@@ -657,9 +690,10 @@ class _ReportListWidgetState extends State<ReportListWidget>
                     child: Text(
                       report.title ?? '',
                       style: TextStyle(
-                          fontSize: 13,
-                          height: 1.4,
-                          color: isDark ? C.t1 : C.lt1),
+                        fontSize: 13,
+                        height: 1.4,
+                        color: isDark ? C.t1 : C.lt1,
+                      ),
                     ),
                   ),
                 ),
@@ -670,5 +704,4 @@ class _ReportListWidgetState extends State<ReportListWidget>
       ),
     );
   }
-
 }

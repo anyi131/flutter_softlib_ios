@@ -113,7 +113,12 @@ class _MusicHomePageState extends State<MusicHomePage> {
   // ── 顶部：返回 + 标题 + Tab ──
   Widget _topbar() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(context.pagePadding - 10, 6, context.pagePadding, 0),
+      padding: EdgeInsets.fromLTRB(
+        context.pagePadding - 10,
+        6,
+        context.pagePadding,
+        0,
+      ),
       child: Row(
         children: [
           AppPressable(
@@ -122,12 +127,21 @@ class _MusicHomePageState extends State<MusicHomePage> {
               width: 40,
               height: 40,
               alignment: Alignment.center,
-              child: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: context.t1),
+              child: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 18,
+                color: context.t1,
+              ),
             ),
           ),
           const SizedBox(width: 2),
-          Text(_tab == 0 ? '音乐' : '收藏夹',
-              style: Ty.h2.copyWith(color: context.t1, fontWeight: FontWeight.w900)),
+          Text(
+            _tab == 0 ? '音乐' : '收藏夹',
+            style: Ty.h2.copyWith(
+              color: context.t1,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
           const Spacer(),
           _tabChip(0, '首页'),
           const SizedBox(width: 8),
@@ -138,22 +152,24 @@ class _MusicHomePageState extends State<MusicHomePage> {
   }
 
   Widget _tabChip(int i, String label) => AppPressable(
-        onTap: () => setState(() => _tab = i),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-          decoration: BoxDecoration(
-            gradient: _tab == i ? Deco.brandGradient : null,
-            color: _tab == i ? null : C.brand.withAlpha(context.isDark ? 24 : 10),
-            borderRadius: BorderRadius.circular(R.full),
-          ),
-          child: Text(label,
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w800,
-                color: _tab == i ? Colors.white : C.brand,
-              )),
+    onTap: () => setState(() => _tab = i),
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      decoration: BoxDecoration(
+        gradient: _tab == i ? Deco.brandGradient : null,
+        color: _tab == i ? null : C.brand.withAlpha(context.isDark ? 24 : 10),
+        borderRadius: BorderRadius.circular(R.full),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12.5,
+          fontWeight: FontWeight.w800,
+          color: _tab == i ? Colors.white : C.brand,
         ),
-      );
+      ),
+    ),
+  );
 
   // ── 首页 ──
   Widget _homeView() {
@@ -162,7 +178,9 @@ class _MusicHomePageState extends State<MusicHomePage> {
       color: C.brand,
       child: ListView(
         padding: EdgeInsets.only(bottom: context.tabSpace + 90),
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
         children: [
           // 榜单横滑
           if (toplists.isNotEmpty) ...[
@@ -198,22 +216,37 @@ class _MusicHomePageState extends State<MusicHomePage> {
                                     fit: BoxFit.cover,
                                     memCacheWidth: 320,
                                     placeholder: (_, __) => Container(
-                                        width: Ad.w(context, 108), height: Ad.h(context, 100), color: C.brand.withAlpha(20)),
+                                      width: Ad.w(context, 108),
+                                      height: Ad.h(context, 100),
+                                      color: C.brand.withAlpha(20),
+                                    ),
                                     errorWidget: (_, __, ___) => Container(
                                       width: Ad.w(context, 108),
                                       height: Ad.h(context, 100),
                                       color: C.brand.withAlpha(20),
-                                      child: const Icon(Icons.music_note_rounded, size: 28),
+                                      child: const Icon(
+                                        Icons.music_note_rounded,
+                                        size: 28,
+                                      ),
                                     ),
                                   )
-                                : Container(width: Ad.w(context, 108), height: Ad.h(context, 100), color: C.brand.withAlpha(20)),
+                                : Container(
+                                    width: Ad.w(context, 108),
+                                    height: Ad.h(context, 100),
+                                    color: C.brand.withAlpha(20),
+                                  ),
                           ),
                           const SizedBox(height: 6),
-                          Text('${t['name'] ?? ''}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  fontSize: 12.5, fontWeight: FontWeight.w700, color: context.t1)),
+                          Text(
+                            '${t['name'] ?? ''}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: context.t1,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -250,41 +283,67 @@ class _MusicHomePageState extends State<MusicHomePage> {
                                     borderRadius: BorderRadius.circular(R.md),
                                     child: cover.startsWith('http')
                                         ? CachedNetworkImage(
-                                            imageUrl: SoftService.proxyImage(cover),
+                                            imageUrl: SoftService.proxyImage(
+                                              cover,
+                                            ),
                                             httpHeaders: const {
                                               'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
-                                              'Referer': 'https://music.163.com/',
+                                              'Referer':
+                                                  'https://music.163.com/',
                                             },
                                             width: w,
                                             height: w,
                                             fit: BoxFit.cover,
                                             memCacheWidth: 480,
                                             placeholder: (_, __) => Container(
-                                                width: w, height: w, color: C.brand.withAlpha(20)),
-                                            errorWidget: (_, __, ___) => Container(
-                                                width: w, height: w, color: C.brand.withAlpha(20)),
+                                              width: w,
+                                              height: w,
+                                              color: C.brand.withAlpha(20),
+                                            ),
+                                            errorWidget: (_, __, ___) =>
+                                                Container(
+                                                  width: w,
+                                                  height: w,
+                                                  color: C.brand.withAlpha(20),
+                                                ),
                                           )
-                                        : Container(width: w, height: w, color: C.brand.withAlpha(20)),
+                                        : Container(
+                                            width: w,
+                                            height: w,
+                                            color: C.brand.withAlpha(20),
+                                          ),
                                   ),
                                   if (cnt > 0)
                                     Positioned(
                                       right: 6,
                                       top: 6,
                                       child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 7,
+                                          vertical: 3,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: Colors.black.withAlpha(130),
-                                          borderRadius: BorderRadius.circular(R.full),
+                                          borderRadius: BorderRadius.circular(
+                                            R.full,
+                                          ),
                                         ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            const Icon(Icons.play_arrow_rounded,
-                                                size: 11, color: Colors.white),
+                                            const Icon(
+                                              Icons.play_arrow_rounded,
+                                              size: 11,
+                                              color: Colors.white,
+                                            ),
                                             const SizedBox(width: 2),
-                                            Text(_fmtCount(cnt),
-                                                style: const TextStyle(
-                                                    fontSize: 10, color: Colors.white)),
+                                            Text(
+                                              _fmtCount(cnt),
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                color: Colors.white,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -292,11 +351,16 @@ class _MusicHomePageState extends State<MusicHomePage> {
                                 ],
                               ),
                               const SizedBox(height: 7),
-                              Text('${p['name'] ?? ''}',
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 12.5, height: 1.35, color: context.t1)),
+                              Text(
+                                '${p['name'] ?? ''}',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  height: 1.35,
+                                  color: context.t1,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -340,18 +404,28 @@ class _MusicHomePageState extends State<MusicHomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.favorite_border_rounded, size: 46, color: context.t3),
+                Icon(
+                  Icons.favorite_border_rounded,
+                  size: 46,
+                  color: context.t3,
+                ),
                 const SizedBox(height: 12),
                 Text('还没有收藏的歌曲', style: Ty.h3.copyWith(color: context.t1)),
                 const SizedBox(height: 6),
-                Text('在歌曲右侧点心形即可收藏', style: Ty.tiny.copyWith(color: context.t3)),
+                Text(
+                  '在歌曲右侧点心形即可收藏',
+                  style: Ty.tiny.copyWith(color: context.t3),
+                ),
               ],
             ),
           );
         }
         return ListView(
           padding: EdgeInsets.only(
-              left: context.pagePadding, right: context.pagePadding, bottom: context.tabSpace + 90),
+            left: context.pagePadding,
+            right: context.pagePadding,
+            bottom: context.tabSpace + 90,
+          ),
           children: list.map<Widget>((s) => _songTile(s, list)).toList(),
         );
       },
@@ -388,8 +462,11 @@ class _MusicHomePageState extends State<MusicHomePage> {
                         height: 46,
                         fit: BoxFit.cover,
                         memCacheWidth: 160,
-                        placeholder: (_, __) =>
-                            Container(width: 46, height: 46, color: C.brand.withAlpha(20)),
+                        placeholder: (_, __) => Container(
+                          width: 46,
+                          height: 46,
+                          color: C.brand.withAlpha(20),
+                        ),
                         errorWidget: (_, __, ___) => Container(
                           width: 46,
                           height: 46,
@@ -409,16 +486,23 @@ class _MusicHomePageState extends State<MusicHomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w700, color: context.t1)),
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: context.t1,
+                      ),
+                    ),
                     const SizedBox(height: 3),
-                    Text(artist,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Ty.tiny.copyWith(color: context.t3)),
+                    Text(
+                      artist,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Ty.tiny.copyWith(color: context.t3),
+                    ),
                   ],
                 ),
               ),
@@ -434,7 +518,9 @@ class _MusicHomePageState extends State<MusicHomePage> {
                   child: FutureBuilder<bool>(
                     future: MusicSvc.isFav('${s['id'] ?? ''}'),
                     builder: (c, snap) => Icon(
-                      snap.data == true ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                      snap.data == true
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
                       size: 19,
                       color: snap.data == true ? C.danger : context.t3,
                     ),
@@ -446,8 +532,15 @@ class _MusicHomePageState extends State<MusicHomePage> {
                 child: Container(
                   width: 34,
                   height: 34,
-                  decoration: BoxDecoration(gradient: Deco.brandGradient, shape: BoxShape.circle),
-                  child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
+                  decoration: BoxDecoration(
+                    gradient: Deco.brandGradient,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
               ),
             ],
@@ -458,20 +551,34 @@ class _MusicHomePageState extends State<MusicHomePage> {
   }
 
   Widget _sectionTitle(String t) => Padding(
-        padding: EdgeInsets.fromLTRB(context.pagePadding, 20, context.pagePadding, 11),
-        child: Row(
-          children: [
-            Container(
-              width: 3.5,
-              height: 15,
-              decoration: BoxDecoration(
-                  color: C.brand, borderRadius: BorderRadius.circular(2)),
-            ),
-            const SizedBox(width: 8),
-            Text(t, style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w900, color: context.t1)),
-          ],
+    padding: EdgeInsets.fromLTRB(
+      context.pagePadding,
+      20,
+      context.pagePadding,
+      11,
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 3.5,
+          height: 15,
+          decoration: BoxDecoration(
+            color: C.brand,
+            borderRadius: BorderRadius.circular(2),
+          ),
         ),
-      );
+        const SizedBox(width: 8),
+        Text(
+          t,
+          style: TextStyle(
+            fontSize: 15.5,
+            fontWeight: FontWeight.w900,
+            color: context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 
   // ── 迷你播放条 ──
   Widget _miniBar() {
@@ -480,13 +587,22 @@ class _MusicHomePageState extends State<MusicHomePage> {
     return AppPressable(
       onTap: () => _play(currentList, s),
       child: Container(
-        margin: EdgeInsets.fromLTRB(context.pagePadding, 0, context.pagePadding, 8),
+        margin: EdgeInsets.fromLTRB(
+          context.pagePadding,
+          0,
+          context.pagePadding,
+          8,
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: context.isDark ? const Color(0xFF1E1E22) : Colors.white,
           borderRadius: BorderRadius.circular(R.full),
           boxShadow: [
-            BoxShadow(color: Colors.black.withAlpha(context.isDark ? 60 : 24), blurRadius: 18, offset: const Offset(0, 6)),
+            BoxShadow(
+              color: Colors.black.withAlpha(context.isDark ? 60 : 24),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
           ],
         ),
         child: Row(
@@ -499,26 +615,40 @@ class _MusicHomePageState extends State<MusicHomePage> {
                       width: 38,
                       height: 38,
                       fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) =>
-                          Container(width: 38, height: 38, color: C.brand.withAlpha(30)),
+                      errorWidget: (_, __, ___) => Container(
+                        width: 38,
+                        height: 38,
+                        color: C.brand.withAlpha(30),
+                      ),
                     )
                   : Container(
-                      width: 38, height: 38, color: C.brand.withAlpha(30),
-                      child: const Icon(Icons.music_note_rounded, size: 18)),
+                      width: 38,
+                      height: 38,
+                      color: C.brand.withAlpha(30),
+                      child: const Icon(Icons.music_note_rounded, size: 18),
+                    ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${s['name'] ?? ''}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: context.t1)),
-                  Text('${s['artist'] ?? ''}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Ty.tiny.copyWith(color: context.t3)),
+                  Text(
+                    '${s['name'] ?? ''}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: context.t1,
+                    ),
+                  ),
+                  Text(
+                    '${s['artist'] ?? ''}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Ty.tiny.copyWith(color: context.t3),
+                  ),
                 ],
               ),
             ),
@@ -527,8 +657,15 @@ class _MusicHomePageState extends State<MusicHomePage> {
             Container(
               width: 38,
               height: 38,
-              decoration: BoxDecoration(gradient: Deco.brandGradient, shape: BoxShape.circle),
-              child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
+              decoration: BoxDecoration(
+                gradient: Deco.brandGradient,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.play_arrow_rounded,
+                color: Colors.white,
+                size: 22,
+              ),
             ),
             const SizedBox(width: 12),
             Icon(Icons.skip_next_rounded, size: 24, color: context.t2),
@@ -539,20 +676,23 @@ class _MusicHomePageState extends State<MusicHomePage> {
   }
 
   Widget _errView() => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.cloud_off_rounded, size: 44, color: context.t3),
-            const SizedBox(height: 12),
-            Text(err, style: Ty.h3.copyWith(color: context.t1)),
-            const SizedBox(height: 18),
-            ToolButton(label: '重试', icon: Icons.refresh_rounded, onPressed: _load),
-          ],
-        ),
-      );
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.cloud_off_rounded, size: 44, color: context.t3),
+        const SizedBox(height: 12),
+        Text(err, style: Ty.h3.copyWith(color: context.t1)),
+        const SizedBox(height: 18),
+        ToolButton(label: '重试', icon: Icons.refresh_rounded, onPressed: _load),
+      ],
+    ),
+  );
 
   // ── 播放 ──
-  Future<void> _play(List<Map<String, dynamic>> list, Map<String, dynamic> song) async {
+  Future<void> _play(
+    List<Map<String, dynamic>> list,
+    Map<String, dynamic> song,
+  ) async {
     final id = '${song['id'] ?? ''}';
     if (id.isEmpty) return;
     ToastUtil.info('正在获取播放地址…');
@@ -568,38 +708,45 @@ class _MusicHomePageState extends State<MusicHomePage> {
         currentList = list;
       });
       final idx = list.indexWhere((e) => '${e['id']}' == id);
-      Get.to(() => ToolPlayerPage(
-            url: url,
-            title: '${song['name'] ?? ''}',
-            subtitle: '${song['artist'] ?? ''}',
-            cover: '${song['cover'] ?? ''}',
-            isAudio: true,
-            playlist: <(String, String)>[
-              for (final e in list) ('${e['name'] ?? ''}', '${e['artist'] ?? ''}'),
-            ],
-            initialIndex: idx < 0 ? 0 : idx,
-          ));
+      Get.to(
+        () => ToolPlayerPage(
+          url: url,
+          title: '${song['name'] ?? ''}',
+          subtitle: '${song['artist'] ?? ''}',
+          cover: '${song['cover'] ?? ''}',
+          isAudio: true,
+          playlist: <(String, String)>[
+            for (final e in list)
+              ('${e['name'] ?? ''}', '${e['artist'] ?? ''}'),
+          ],
+          initialIndex: idx < 0 ? 0 : idx,
+        ),
+      );
     } catch (e) {
       ToastUtil.error('播放失败：$e');
     }
   }
 
   void _openToplist(Map<String, dynamic> t) {
-    Get.to(() => MusicListPage(
-          title: '${t['name'] ?? ''}',
-          cover: '${t['cover'] ?? ''}',
-          type: 'toplist',
-          id: '${t['id'] ?? ''}',
-        ));
+    Get.to(
+      () => MusicListPage(
+        title: '${t['name'] ?? ''}',
+        cover: '${t['cover'] ?? ''}',
+        type: 'toplist',
+        id: '${t['id'] ?? ''}',
+      ),
+    );
   }
 
   void _openPlaylist(Map<String, dynamic> p) {
-    Get.to(() => MusicListPage(
-          title: '${p['name'] ?? ''}',
-          cover: '${p['cover'] ?? ''}',
-          type: 'playlist',
-          id: '${p['id'] ?? ''}',
-        ));
+    Get.to(
+      () => MusicListPage(
+        title: '${p['name'] ?? ''}',
+        cover: '${p['cover'] ?? ''}',
+        type: 'playlist',
+        id: '${p['id'] ?? ''}',
+      ),
+    );
   }
 
   static String _fmtCount(int n) {
@@ -679,7 +826,12 @@ class _MusicListPageState extends State<MusicListPage> {
               children: [
                 // 头部
                 Padding(
-                  padding: EdgeInsets.fromLTRB(context.pagePadding - 10, 6, context.pagePadding, 0),
+                  padding: EdgeInsets.fromLTRB(
+                    context.pagePadding - 10,
+                    6,
+                    context.pagePadding,
+                    0,
+                  ),
                   child: Row(
                     children: [
                       AppPressable(
@@ -688,15 +840,24 @@ class _MusicListPageState extends State<MusicListPage> {
                           width: 40,
                           height: 40,
                           alignment: Alignment.center,
-                          child: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: context.t1),
+                          child: Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 18,
+                            color: context.t1,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 2),
                       Expanded(
-                        child: Text(widget.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Ty.h2.copyWith(color: context.t1, fontWeight: FontWeight.w900)),
+                        child: Text(
+                          widget.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Ty.h2.copyWith(
+                            color: context.t1,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -704,7 +865,12 @@ class _MusicListPageState extends State<MusicListPage> {
                 // 歌单信息
                 if (widget.cover.startsWith('http'))
                   Padding(
-                    padding: EdgeInsets.fromLTRB(context.pagePadding, 10, context.pagePadding, 0),
+                    padding: EdgeInsets.fromLTRB(
+                      context.pagePadding,
+                      10,
+                      context.pagePadding,
+                      0,
+                    ),
                     child: Row(
                       children: [
                         ClipRRect(
@@ -726,15 +892,20 @@ class _MusicListPageState extends State<MusicListPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('共 ${list.length} 首',
-                                  style: Ty.small.copyWith(color: context.t3)),
+                              Text(
+                                '共 ${list.length} 首',
+                                style: Ty.small.copyWith(color: context.t3),
+                              ),
                               const SizedBox(height: 10),
                               AppPressable(
                                 onTap: () {
                                   if (list.isNotEmpty) _playFirst();
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 18,
+                                    vertical: 9,
+                                  ),
                                   decoration: BoxDecoration(
                                     gradient: Deco.brandGradient,
                                     borderRadius: BorderRadius.circular(R.full),
@@ -742,13 +913,20 @@ class _MusicListPageState extends State<MusicListPage> {
                                   child: const Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(Icons.play_arrow_rounded, size: 17, color: Colors.white),
+                                      Icon(
+                                        Icons.play_arrow_rounded,
+                                        size: 17,
+                                        color: Colors.white,
+                                      ),
                                       SizedBox(width: 4),
-                                      Text('播放全部',
-                                          style: TextStyle(
-                                              fontSize: 12.5,
-                                              fontWeight: FontWeight.w800,
-                                              color: Colors.white)),
+                                      Text(
+                                        '播放全部',
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -764,12 +942,18 @@ class _MusicListPageState extends State<MusicListPage> {
                   child: loading
                       ? const Center(child: CircularProgressIndicator())
                       : list.isEmpty
-                      ? Center(child: Text(err, style: Ty.small.copyWith(color: context.t3)))
+                      ? Center(
+                          child: Text(
+                            err,
+                            style: Ty.small.copyWith(color: context.t3),
+                          ),
+                        )
                       : ListView.builder(
                           padding: EdgeInsets.only(
-                              left: context.pagePadding,
-                              right: context.pagePadding,
-                              bottom: context.tabSpace + 20),
+                            left: context.pagePadding,
+                            right: context.pagePadding,
+                            bottom: context.tabSpace + 20,
+                          ),
                           itemCount: list.length,
                           itemBuilder: (c, i) => _row(list[i], i),
                         ),
@@ -798,11 +982,14 @@ class _MusicListPageState extends State<MusicListPage> {
             children: [
               SizedBox(
                 width: 24,
-                child: Text('${i + 1}',
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: i < 3 ? C.danger : context.t3)),
+                child: Text(
+                  '${i + 1}',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: i < 3 ? C.danger : context.t3,
+                  ),
+                ),
               ),
               ClipRRect(
                 borderRadius: BorderRadius.circular(R.sm),
@@ -813,26 +1000,40 @@ class _MusicListPageState extends State<MusicListPage> {
                         height: 44,
                         fit: BoxFit.cover,
                         memCacheWidth: 140,
-                        errorWidget: (_, __, ___) =>
-                            Container(width: 44, height: 44, color: C.brand.withAlpha(20)),
+                        errorWidget: (_, __, ___) => Container(
+                          width: 44,
+                          height: 44,
+                          color: C.brand.withAlpha(20),
+                        ),
                       )
-                    : Container(width: 44, height: 44, color: C.brand.withAlpha(20)),
+                    : Container(
+                        width: 44,
+                        height: 44,
+                        color: C.brand.withAlpha(20),
+                      ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${s['name'] ?? ''}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 13.5, fontWeight: FontWeight.w700, color: context.t1)),
+                    Text(
+                      '${s['name'] ?? ''}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: context.t1,
+                      ),
+                    ),
                     const SizedBox(height: 3),
-                    Text('${s['artist'] ?? ''}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Ty.tiny.copyWith(color: context.t3)),
+                    Text(
+                      '${s['artist'] ?? ''}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Ty.tiny.copyWith(color: context.t3),
+                    ),
                   ],
                 ),
               ),
@@ -859,17 +1060,20 @@ class _MusicListPageState extends State<MusicListPage> {
       }
       _MusicHomePageState.current = s;
       _MusicHomePageState.currentList = list;
-      Get.to(() => ToolPlayerPage(
-            url: url,
-            title: '${s['name'] ?? ''}',
-            subtitle: '${s['artist'] ?? ''}',
-            cover: '${s['cover'] ?? ''}',
-            isAudio: true,
-            playlist: <(String, String)>[
-              for (final e in list) ('${e['name'] ?? ''}', '${e['artist'] ?? ''}'),
-            ],
-            initialIndex: i,
-          ));
+      Get.to(
+        () => ToolPlayerPage(
+          url: url,
+          title: '${s['name'] ?? ''}',
+          subtitle: '${s['artist'] ?? ''}',
+          cover: '${s['cover'] ?? ''}',
+          isAudio: true,
+          playlist: <(String, String)>[
+            for (final e in list)
+              ('${e['name'] ?? ''}', '${e['artist'] ?? ''}'),
+          ],
+          initialIndex: i,
+        ),
+      );
     } catch (e) {
       ToastUtil.error('播放失败');
     }

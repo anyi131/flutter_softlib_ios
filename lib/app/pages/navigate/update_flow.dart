@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import '../../utils/sound_util.dart';
 import '../../utils/lzy_local_parser.dart';
+
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -166,7 +168,8 @@ class _UpdateCardState extends State<_UpdateCard> {
     final lower = u.toLowerCase();
 
     // ── 蓝奏云 / 分享页 ──
-    final isShare = lower.contains('lanzou') ||
+    final isShare =
+        lower.contains('lanzou') ||
         lower.contains('lzy') ||
         lower.contains('lanzo') ||
         lower.contains('/b0') ||
@@ -204,7 +207,8 @@ class _UpdateCardState extends State<_UpdateCard> {
       return;
     }
 
-    final looksFile = lower.endsWith('.apk') ||
+    final looksFile =
+        lower.endsWith('.apk') ||
         lower.endsWith('.ipa') ||
         lower.endsWith('.zip') ||
         lower.contains('/uploads/');
@@ -216,7 +220,8 @@ class _UpdateCardState extends State<_UpdateCard> {
   ///   返回 {title, url, size}；不是文件夹 / 没有 apk → null
   Future<Map<String, dynamic>?> _pickApkInFolder(String url) async {
     final lower = url.toLowerCase();
-    final looksFolder = lower.contains('/b0') ||
+    final looksFolder =
+        lower.contains('/b0') ||
         lower.contains('/b1') ||
         (lower.contains('lanzou') && !lower.contains('/i'));
     if (!looksFolder) return null;
@@ -227,20 +232,15 @@ class _UpdateCardState extends State<_UpdateCard> {
       final apks = list.where((e) {
         final t = e.title.toLowerCase();
         final u = e.url.toLowerCase();
-        return t.endsWith('.apk') ||
-            t.contains('.apk') ||
-            u.contains('.apk');
+        return t.endsWith('.apk') || t.contains('.apk') || u.contains('.apk');
       }).toList();
       final pool = apks.isNotEmpty ? apks : list;
       // 按大小挑最大
-      pool.sort((a, b) => _parseSizeText(b.size)
-          .compareTo(_parseSizeText(a.size)));
+      pool.sort(
+        (a, b) => _parseSizeText(b.size).compareTo(_parseSizeText(a.size)),
+      );
       final pick = pool.first;
-      return {
-        'title': pick.title,
-        'url': pick.url,
-        'size': pick.size,
-      };
+      return {'title': pick.title, 'url': pick.url, 'size': pick.size};
     } catch (_) {
       return null;
     }
@@ -280,7 +280,8 @@ class _UpdateCardState extends State<_UpdateCard> {
           int.tryParse('${r.headers.value('content-length') ?? ''}') ?? 0;
       final ct = '${r.headers.value('content-type') ?? ''}'.toLowerCase();
       final lower = url.toLowerCase();
-      final isFile = ct.contains('android') ||
+      final isFile =
+          ct.contains('android') ||
           ct.contains('octet-stream') ||
           ct.contains('zip') ||
           ct.contains('ipa') ||
@@ -350,9 +351,7 @@ class _UpdateCardState extends State<_UpdateCard> {
           ? SoftService.lastParseError
           : LzyLocalParser.lastError;
       if (mounted) {
-        ToastUtil.info(
-          why.isEmpty ? '解析失败，改用浏览器下载' : '解析失败（$why），改用浏览器',
-        );
+        ToastUtil.info(why.isEmpty ? '解析失败，改用浏览器下载' : '解析失败（$why），改用浏览器');
       }
       _fallbackBrowser();
       return;

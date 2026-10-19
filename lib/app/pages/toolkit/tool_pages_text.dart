@@ -61,7 +61,10 @@ class _TextStatPageState extends State<TextStatPage> {
                 _r('数字个数', '$num'),
                 _r('单词数', '$words'),
                 _r('行数', '$lines'),
-                _r('段落数', '${t.split(RegExp(r'\n\s*\n')).where((e) => e.trim().isNotEmpty).length}'),
+                _r(
+                  '段落数',
+                  '${t.split(RegExp(r'\n\s*\n')).where((e) => e.trim().isNotEmpty).length}',
+                ),
               ],
             ),
           ),
@@ -71,14 +74,23 @@ class _TextStatPageState extends State<TextStatPage> {
   }
 
   Widget _r(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: C.brand)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            color: C.brand,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ② JSON 格式化 ───────────────
@@ -125,20 +137,41 @@ class _JsonPageState extends State<JsonPage> {
     return ToolScaffold(
       title: 'JSON 工具',
       subtitle: '格式化 / 压缩 / 校验',
-      
+
       child: Column(
         children: [
-          ToolField(controller: _in, label: 'JSON 原文', lines: 6, icon: Icons.data_object_rounded),
+          ToolField(
+            controller: _in,
+            label: 'JSON 原文',
+            lines: 6,
+            icon: Icons.data_object_rounded,
+          ),
           Row(
             children: [
-              Expanded(child: ToolButton(label: '格式化', icon: Icons.format_align_left_rounded, onPressed: () => _fmt(pretty: true))),
+              Expanded(
+                child: ToolButton(
+                  label: '格式化',
+                  icon: Icons.format_align_left_rounded,
+                  onPressed: () => _fmt(pretty: true),
+                ),
+              ),
               const SizedBox(width: 10),
-              Expanded(child: ToolButton(label: '压缩', icon: Icons.compress_rounded, outline: true, onPressed: () => _fmt(pretty: false))),
+              Expanded(
+                child: ToolButton(
+                  label: '压缩',
+                  icon: Icons.compress_rounded,
+                  outline: true,
+                  onPressed: () => _fmt(pretty: false),
+                ),
+              ),
             ],
           ),
           if (_msg.isNotEmpty) ...[
             const SizedBox(height: 10),
-            Text(_msg, style: Ty.tiny.copyWith(color: _ok ? C.success : C.danger)),
+            Text(
+              _msg,
+              style: Ty.tiny.copyWith(color: _ok ? C.success : C.danger),
+            ),
           ],
           const SizedBox(height: 10),
           ToolField(
@@ -180,17 +213,23 @@ class _UrlPageState extends State<UrlPage> {
     return ToolScaffold(
       title: 'URL 编码',
       subtitle: 'URLEncode / URLDecode',
-      
+
       child: Column(
         children: [
-          ToolField(controller: _in, label: '原文', lines: 4, icon: Icons.link_rounded),
+          ToolField(
+            controller: _in,
+            label: '原文',
+            lines: 4,
+            icon: Icons.link_rounded,
+          ),
           Row(
             children: [
               Expanded(
                 child: ToolButton(
                   label: '编码',
                   icon: Icons.lock_rounded,
-                  onPressed: () => setState(() => _out.text = Uri.encodeComponent(_in.text)),
+                  onPressed: () =>
+                      setState(() => _out.text = Uri.encodeComponent(_in.text)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -201,7 +240,9 @@ class _UrlPageState extends State<UrlPage> {
                   outline: true,
                   onPressed: () {
                     try {
-                      setState(() => _out.text = Uri.decodeComponent(_in.text.trim()));
+                      setState(
+                        () => _out.text = Uri.decodeComponent(_in.text.trim()),
+                      );
                     } catch (_) {
                       ToastUtil.error('不是合法的 URL 编码');
                     }
@@ -290,37 +331,63 @@ class _HashPageState extends State<HashPage> {
     return ToolScaffold(
       title: '哈希校验',
       subtitle: '文本摘要 / 校验码',
-      
+
       child: Column(
         children: [
-          ToolField(controller: _in, label: '输入文本', lines: 4, icon: Icons.tag_rounded),
-          ToolButton(label: '计算', icon: Icons.fingerprint_rounded, onPressed: _calc),
+          ToolField(
+            controller: _in,
+            label: '输入文本',
+            lines: 4,
+            icon: Icons.tag_rounded,
+          ),
+          ToolButton(
+            label: '计算',
+            icon: Icons.fingerprint_rounded,
+            onPressed: _calc,
+          ),
           if (res.isNotEmpty) ...[
             const SizedBox(height: 14),
             ToolCard(
               child: Column(
                 children: res.entries
-                    .map((e) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 7),
-                          child: Row(
-                            children: [
-                              SizedBox(width: Ad.w(context, 96), child: Text(e.key, style: Ty.small.copyWith(color: context.t3))),
-                              Expanded(
-                                child: SelectableText(
-                                  e.value,
-                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: context.t1, fontFamily: 'monospace'),
+                    .map(
+                      (e) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 7),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: Ad.w(context, 96),
+                              child: Text(
+                                e.key,
+                                style: Ty.small.copyWith(color: context.t3),
+                              ),
+                            ),
+                            Expanded(
+                              child: SelectableText(
+                                e.value,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: context.t1,
+                                  fontFamily: 'monospace',
                                 ),
                               ),
-                              AppPressable(
-                                onTap: () {
-                                  Clipboard.setData(ClipboardData(text: e.value));
-                                  ToastUtil.success('已复制');
-                                },
-                                child: Icon(Icons.copy_rounded, size: 16, color: context.t3),
+                            ),
+                            AppPressable(
+                              onTap: () {
+                                Clipboard.setData(ClipboardData(text: e.value));
+                                ToastUtil.success('已复制');
+                              },
+                              child: Icon(
+                                Icons.copy_rounded,
+                                size: 16,
+                                color: context.t3,
                               ),
-                            ],
-                          ),
-                        ))
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
                     .toList(),
               ),
             ),
@@ -377,7 +444,11 @@ class _RegexPageState extends State<RegexPage> {
         children: [
           ToolField(controller: _re, label: '正则表达式', icon: Icons.code_rounded),
           ToolField(controller: _txt, label: '测试文本', lines: 4),
-          ToolButton(label: '运行匹配', icon: Icons.play_arrow_rounded, onPressed: _run),
+          ToolButton(
+            label: '运行匹配',
+            icon: Icons.play_arrow_rounded,
+            onPressed: _run,
+          ),
           if (err.isNotEmpty) ...[
             const SizedBox(height: 10),
             Text(err, style: Ty.small.copyWith(color: C.danger)),
@@ -388,12 +459,25 @@ class _RegexPageState extends State<RegexPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('匹配到 ${matches.length} 处', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                  Text(
+                    '匹配到 ${matches.length} 处',
+                    style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                  ),
                   const SizedBox(height: 8),
-                  ...matches.take(50).map((m) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 3),
-                        child: Text(m, style: Ty.small.copyWith(color: C.brand, fontFamily: 'monospace')),
-                      )),
+                  ...matches
+                      .take(50)
+                      .map(
+                        (m) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 3),
+                          child: Text(
+                            m,
+                            style: Ty.small.copyWith(
+                              color: C.brand,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                        ),
+                      ),
                 ],
               ),
             ),
@@ -428,7 +512,12 @@ class _RandStrPageState extends State<RandStrPage> {
     if (_symbol) pool += s;
     if (pool.isEmpty) return ToastUtil.error('至少选一种字符');
     final r = math.Random.secure();
-    setState(() => _out = List.generate(_len, (_) => pool[r.nextInt(pool.length)]).join());
+    setState(
+      () => _out = List.generate(
+        _len,
+        (_) => pool[r.nextInt(pool.length)],
+      ).join(),
+    );
   }
 
   @override
@@ -439,7 +528,10 @@ class _RandStrPageState extends State<RandStrPage> {
       scrollable: true,
       child: Column(
         children: [
-          Text('长度：$_len', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+          Text(
+            '长度：$_len',
+            style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+          ),
           Slider(
             value: _len.toDouble(),
             min: 4,
@@ -464,8 +556,15 @@ class _RandStrPageState extends State<RandStrPage> {
               child: ToolCard(
                 child: Column(
                   children: [
-                    SelectableText(_out,
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: C.brand, fontFamily: 'monospace')),
+                    SelectableText(
+                      _out,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: C.brand,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
                     const SizedBox(height: 10),
                     AppPressable(
                       onTap: () {
@@ -477,7 +576,10 @@ class _RandStrPageState extends State<RandStrPage> {
                         children: [
                           Icon(Icons.copy_rounded, size: 15, color: context.t3),
                           const SizedBox(width: 4),
-                          Text('复制', style: Ty.tiny.copyWith(color: context.t3)),
+                          Text(
+                            '复制',
+                            style: Ty.tiny.copyWith(color: context.t3),
+                          ),
                         ],
                       ),
                     ),
@@ -491,12 +593,12 @@ class _RandStrPageState extends State<RandStrPage> {
   }
 
   Widget _sw(String label, bool v, ValueChanged<bool> on) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Switch(value: v, activeThumbColor: C.brand, onChanged: on),
-          Text(label, style: Ty.small.copyWith(color: context.t2)),
-        ],
-      );
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Switch(value: v, activeThumbColor: C.brand, onChanged: on),
+      Text(label, style: Ty.small.copyWith(color: context.t2)),
+    ],
+  );
 }
 
 // ─────────────── ⑦ 随机数与抽签 ───────────────
@@ -546,21 +648,43 @@ class _RandNumPageState extends State<RandNumPage> {
     return ToolScaffold(
       title: '随机数 / 抽签',
       subtitle: '范围随机数、不重复抽签',
-      
+
       child: Column(
         children: [
           Row(
             children: [
-              Expanded(child: ToolField(controller: _min, label: '最小值', keyboard: TextInputType.number)),
+              Expanded(
+                child: ToolField(
+                  controller: _min,
+                  label: '最小值',
+                  keyboard: TextInputType.number,
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _max, label: '最大值', keyboard: TextInputType.number)),
+              Expanded(
+                child: ToolField(
+                  controller: _max,
+                  label: '最大值',
+                  keyboard: TextInputType.number,
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _n, label: '个数', keyboard: TextInputType.number)),
+              Expanded(
+                child: ToolField(
+                  controller: _n,
+                  label: '个数',
+                  keyboard: TextInputType.number,
+                ),
+              ),
             ],
           ),
           Row(
             children: [
-              Switch(value: _noRepeat, activeThumbColor: C.brand, onChanged: (v) => setState(() => _noRepeat = v)),
+              Switch(
+                value: _noRepeat,
+                activeThumbColor: C.brand,
+                onChanged: (v) => setState(() => _noRepeat = v),
+              ),
               Text('不重复（抽签用）', style: Ty.small.copyWith(color: context.t2)),
             ],
           ),
@@ -574,15 +698,26 @@ class _RandNumPageState extends State<RandNumPage> {
                   spacing: 8,
                   runSpacing: 8,
                   children: out
-                      .map<Widget>((n) => Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                            decoration: BoxDecoration(
-                              gradient: Deco.brandGradient,
-                              borderRadius: BorderRadius.circular(R.full),
+                      .map<Widget>(
+                        (n) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: Deco.brandGradient,
+                            borderRadius: BorderRadius.circular(R.full),
+                          ),
+                          child: Text(
+                            '$n',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
                             ),
-                            child: Text('$n',
-                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Colors.white)),
-                          ))
+                          ),
+                        ),
+                      )
                       .toList(),
                 ),
               ),
@@ -617,20 +752,27 @@ class _PalettePageState extends State<PalettePage> {
     final m = l - c / 2;
     double r = 0, g = 0, b = 0;
     if (h < 60) {
-      r = c; g = x;
+      r = c;
+      g = x;
     } else if (h < 120) {
-      r = x; g = c;
+      r = x;
+      g = c;
     } else if (h < 180) {
-      g = c; b = x;
+      g = c;
+      b = x;
     } else if (h < 240) {
-      g = x; b = c;
+      g = x;
+      b = c;
     } else if (h < 300) {
-      r = x; b = c;
+      r = x;
+      b = c;
     } else {
-      r = c; b = x;
+      r = c;
+      b = x;
     }
     int to(double v) => ((v + m) * 255).round().clamp(0, 255);
-    return '#${to(r).toRadixString(16).padLeft(2, '0')}${to(g).toRadixString(16).padLeft(2, '0')}${to(b).toRadixString(16).padLeft(2, '0')}'.toUpperCase();
+    return '#${to(r).toRadixString(16).padLeft(2, '0')}${to(g).toRadixString(16).padLeft(2, '0')}${to(b).toRadixString(16).padLeft(2, '0')}'
+        .toUpperCase();
   }
 
   void _gen(int mode) {
@@ -638,10 +780,14 @@ class _PalettePageState extends State<PalettePage> {
     if (h.length != 6) return ToastUtil.error('请输入 6 位 HEX 颜色');
     final v = int.tryParse(h, radix: 16);
     if (v == null) return ToastUtil.error('颜色格式不对');
-    final r = ((v >> 16) & 255) / 255, g = ((v >> 8) & 255) / 255, b = (v & 255) / 255;
+    final r = ((v >> 16) & 255) / 255,
+        g = ((v >> 8) & 255) / 255,
+        b = (v & 255) / 255;
     final mx = math.max(r, math.max(g, b)), mn = math.min(r, math.min(g, b));
     final l = (mx + mn) / 2;
-    final s = mx == mn ? 0.0 : (l > 0.5 ? (mx - mn) / (2 - mx - mn) : (mx - mn) / (mx + mn));
+    final s = mx == mn
+        ? 0.0
+        : (l > 0.5 ? (mx - mn) / (2 - mx - mn) : (mx - mn) / (mx + mn));
     double hue;
     if (mx == mn) {
       hue = 0;
@@ -684,7 +830,12 @@ class _PalettePageState extends State<PalettePage> {
       scrollable: true,
       child: Column(
         children: [
-          ToolField(controller: _base, label: '基准色 HEX', hint: '例：465CFF', icon: Icons.palette_rounded),
+          ToolField(
+            controller: _base,
+            label: '基准色 HEX',
+            hint: '例：465CFF',
+            icon: Icons.palette_rounded,
+          ),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -719,7 +870,12 @@ class _PalettePageState extends State<PalettePage> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Text(hex, style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                          Text(
+                            hex,
+                            style: Ty.small.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -734,16 +890,23 @@ class _PalettePageState extends State<PalettePage> {
   }
 
   Widget _btn(String label, VoidCallback onTap) => AppPressable(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-          decoration: BoxDecoration(
-            color: C.brand.withAlpha(context.isDark ? 30 : 14),
-            borderRadius: BorderRadius.circular(R.full),
-          ),
-          child: Text(label, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: C.brand)),
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: C.brand.withAlpha(context.isDark ? 30 : 14),
+        borderRadius: BorderRadius.circular(R.full),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12.5,
+          fontWeight: FontWeight.w700,
+          color: C.brand,
         ),
-      );
+      ),
+    ),
+  );
 }
 
 // ─────────────── ⑨ 占位文本生成 ───────────────
@@ -789,7 +952,10 @@ class _LoremPageState extends State<LoremPage> {
       scrollable: true,
       child: Column(
         children: [
-          Text('段落数：$_paras', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+          Text(
+            '段落数：$_paras',
+            style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+          ),
           Slider(
             value: _paras.toDouble(),
             min: 1,
@@ -797,7 +963,11 @@ class _LoremPageState extends State<LoremPage> {
             activeColor: C.brand,
             onChanged: (v) => setState(() => _paras = v.round()),
           ),
-          ToolButton(label: '生成文本', icon: Icons.text_snippet_rounded, onPressed: _gen),
+          ToolButton(
+            label: '生成文本',
+            icon: Icons.text_snippet_rounded,
+            onPressed: _gen,
+          ),
           if (_out.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 14),
@@ -805,7 +975,14 @@ class _LoremPageState extends State<LoremPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SelectableText(_out, style: TextStyle(fontSize: 13.5, height: 1.8, color: context.t1)),
+                    SelectableText(
+                      _out,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        height: 1.8,
+                        color: context.t1,
+                      ),
+                    ),
                     const SizedBox(height: 10),
                     AppPressable(
                       onTap: () {
@@ -817,7 +994,10 @@ class _LoremPageState extends State<LoremPage> {
                         children: [
                           Icon(Icons.copy_rounded, size: 15, color: context.t3),
                           const SizedBox(width: 4),
-                          Text('复制全文', style: Ty.tiny.copyWith(color: context.t3)),
+                          Text(
+                            '复制全文',
+                            style: Ty.tiny.copyWith(color: context.t3),
+                          ),
                         ],
                       ),
                     ),
@@ -853,7 +1033,7 @@ class _AsciiPageState extends State<AsciiPage> {
     return ToolScaffold(
       title: '字符编码',
       subtitle: '字符 ↔ ASCII / Unicode 码点',
-      
+
       child: Column(
         children: [
           ToolField(
@@ -868,21 +1048,36 @@ class _AsciiPageState extends State<AsciiPage> {
               child: Column(
                 children: s.runes
                     .take(30)
-                    .map((r) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 5),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 46,
-                                child: Text(String.fromCharCode(r),
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: C.brand)),
+                    .map(
+                      (r) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 46,
+                              child: Text(
+                                String.fromCharCode(r),
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: C.brand,
+                                ),
                               ),
-                              Expanded(child: Text('Unicode U+${r.toRadixString(16).toUpperCase().padLeft(4, '0')}',
-                                  style: Ty.small.copyWith(color: context.t1))),
-                              Text('十进制 $r', style: Ty.tiny.copyWith(color: context.t3)),
-                            ],
-                          ),
-                        ))
+                            ),
+                            Expanded(
+                              child: Text(
+                                'Unicode U+${r.toRadixString(16).toUpperCase().padLeft(4, '0')}',
+                                style: Ty.small.copyWith(color: context.t1),
+                              ),
+                            ),
+                            Text(
+                              '十进制 $r',
+                              style: Ty.tiny.copyWith(color: context.t3),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
                     .toList(),
               ),
             ),
@@ -891,14 +1086,33 @@ class _AsciiPageState extends State<AsciiPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('常用 ASCII', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                  '常用 ASCII',
+                  style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 14,
                   runSpacing: 8,
-                  children: ['A:65', 'Z:90', 'a:97', 'z:122', '0:48', '9:57', '空格:32', '换行:10', '制表:9']
-                      .map((e) => Text(e, style: Ty.tiny.copyWith(color: context.t3)))
-                      .toList(),
+                  children:
+                      [
+                            'A:65',
+                            'Z:90',
+                            'a:97',
+                            'z:122',
+                            '0:48',
+                            '9:57',
+                            '空格:32',
+                            '换行:10',
+                            '制表:9',
+                          ]
+                          .map(
+                            (e) => Text(
+                              e,
+                              style: Ty.tiny.copyWith(color: context.t3),
+                            ),
+                          )
+                          .toList(),
                 ),
               ],
             ),

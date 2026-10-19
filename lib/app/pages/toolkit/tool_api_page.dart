@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../utils/err_text.dart';
+
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
@@ -190,7 +192,17 @@ class _ApiToolPageState extends State<ApiToolPage> {
       }
     }
     // ② 常见正文键名
-    for (final k in const ['content', 'text', 'answer', 'message', 'msg', 'hitokoto', 'words', 'data', 'result']) {
+    for (final k in const [
+      'content',
+      'text',
+      'answer',
+      'message',
+      'msg',
+      'hitokoto',
+      'words',
+      'data',
+      'result',
+    ]) {
       final v = raw[k];
       if (v is String && v.trim().isNotEmpty) return {'content': v.trim()};
     }
@@ -217,7 +229,16 @@ class _ApiToolPageState extends State<ApiToolPage> {
     if (node is List && node.isNotEmpty) return node;
     if (node is Map) {
       // 优先常见键名
-      for (final k in ['list', 'items', 'data', 'content', 'result', 'rows', 'word_list', 'news']) {
+      for (final k in [
+        'list',
+        'items',
+        'data',
+        'content',
+        'result',
+        'rows',
+        'word_list',
+        'news',
+      ]) {
         final v = node[k];
         if (v is List && v.isNotEmpty) return v;
       }
@@ -310,15 +331,22 @@ class _ApiToolPageState extends State<ApiToolPage> {
                 color: i < 3 ? C.danger.withAlpha(30) : C.brand.withAlpha(20),
                 borderRadius: BorderRadius.circular(R.xs),
               ),
-              child: Text('${i + 1}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                    color: i < 3 ? C.danger : C.brand,
-                  )),
+              child: Text(
+                '${i + 1}',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  color: i < 3 ? C.danger : C.brand,
+                ),
+              ),
             ),
             const SizedBox(width: 10),
-            Expanded(child: Text('${m['__line']}', style: Ty.small.copyWith(color: context.t1, height: 1.6))),
+            Expanded(
+              child: Text(
+                '${m['__line']}',
+                style: Ty.small.copyWith(color: context.t1, height: 1.6),
+              ),
+            ),
           ],
         ),
       );
@@ -360,12 +388,14 @@ class _ApiToolPageState extends State<ApiToolPage> {
         children: [
           SizedBox(
             width: 26,
-            child: Text('${i + 1}',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                  color: i < 3 ? C.danger : context.t3,
-                )),
+            child: Text(
+              '${i + 1}',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                color: i < 3 ? C.danger : context.t3,
+              ),
+            ),
           ),
           if (img.isNotEmpty && img.startsWith('http')) ...[
             ClipRRect(
@@ -375,7 +405,8 @@ class _ApiToolPageState extends State<ApiToolPage> {
                 width: Ad.w(context, 62),
                 height: Ad.h(context, 62),
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox(width: 62, height: 62),
+                errorBuilder: (_, __, ___) =>
+                    const SizedBox(width: 62, height: 62),
               ),
             ),
             const SizedBox(width: 10),
@@ -384,25 +415,35 @@ class _ApiToolPageState extends State<ApiToolPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(t,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w700,
-                      color: context.t1,
-                      height: 1.45,
-                    )),
+                Text(
+                  t,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w700,
+                    color: context.t1,
+                    height: 1.45,
+                  ),
+                ),
                 if (sub.isNotEmpty) ...[
                   const SizedBox(height: 5),
-                  Text(sub,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Ty.tiny.copyWith(color: context.t3, height: 1.5)),
+                  Text(
+                    sub,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Ty.tiny.copyWith(color: context.t3, height: 1.5),
+                  ),
                 ],
                 if (extra.isNotEmpty) ...[
                   const SizedBox(height: 5),
-                  Text(extra, style: Ty.tiny.copyWith(color: C.brand, fontWeight: FontWeight.w700)),
+                  Text(
+                    extra,
+                    style: Ty.tiny.copyWith(
+                      color: C.brand,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -410,7 +451,11 @@ class _ApiToolPageState extends State<ApiToolPage> {
           if (link.startsWith('http'))
             Padding(
               padding: const EdgeInsets.only(left: 6),
-              child: Icon(Icons.chevron_right_rounded, size: 18, color: context.t3),
+              child: Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: context.t3,
+              ),
             ),
         ],
       ),
@@ -418,33 +463,37 @@ class _ApiToolPageState extends State<ApiToolPage> {
   }
 
   Widget _errorView() => Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.cloud_off_rounded, size: 44, color: context.t3),
-              const SizedBox(height: 12),
-              Text('接口暂时取不到数据', style: Ty.h3.copyWith(color: context.t1)),
-              const SizedBox(height: 8),
-              Text(err, textAlign: TextAlign.center, style: Ty.tiny.copyWith(color: context.t3)),
-              const SizedBox(height: 18),
-              ToolButton(label: '重试', icon: Icons.refresh_rounded, onPressed: load),
-            ],
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.cloud_off_rounded, size: 44, color: context.t3),
+          const SizedBox(height: 12),
+          Text('接口暂时取不到数据', style: Ty.h3.copyWith(color: context.t1)),
+          const SizedBox(height: 8),
+          Text(
+            err,
+            textAlign: TextAlign.center,
+            style: Ty.tiny.copyWith(color: context.t3),
           ),
-        ),
-      );
+          const SizedBox(height: 18),
+          ToolButton(label: '重试', icon: Icons.refresh_rounded, onPressed: load),
+        ],
+      ),
+    ),
+  );
 
   Widget _emptyView() => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.inbox_rounded, size: 44, color: context.t3),
-            const SizedBox(height: 12),
-            Text('暂无数据', style: Ty.h3.copyWith(color: context.t1)),
-            const SizedBox(height: 18),
-            ToolButton(label: '刷新', icon: Icons.refresh_rounded, onPressed: load),
-          ],
-        ),
-      );
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.inbox_rounded, size: 44, color: context.t3),
+        const SizedBox(height: 12),
+        Text('暂无数据', style: Ty.h3.copyWith(color: context.t1)),
+        const SizedBox(height: 18),
+        ToolButton(label: '刷新', icon: Icons.refresh_rounded, onPressed: load),
+      ],
+    ),
+  );
 }

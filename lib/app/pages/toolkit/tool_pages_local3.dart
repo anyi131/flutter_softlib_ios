@@ -45,12 +45,14 @@ class _BmrPageState extends State<BmrPage> {
     final w = double.tryParse(_w.text) ?? 65;
     final a = double.tryParse(_a.text) ?? 30;
     // Mifflin-St Jeor
-    final bmr = _male ? 10 * w + 6.25 * h - 5 * a + 5 : 10 * w + 6.25 * h - 5 * a - 161;
+    final bmr = _male
+        ? 10 * w + 6.25 * h - 5 * a + 5
+        : 10 * w + 6.25 * h - 5 * a - 161;
     final tdee = bmr * _mult[_act];
     return ToolScaffold(
       title: '热量计算',
       subtitle: '基础代谢 BMR / 每日消耗 TDEE',
-      
+
       child: Column(
         children: [
           ToolChips<bool>(
@@ -61,11 +63,32 @@ class _BmrPageState extends State<BmrPage> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: ToolField(controller: _h, label: '身高(cm)', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _h,
+                  label: '身高(cm)',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _w, label: '体重(kg)', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _w,
+                  label: '体重(kg)',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _a, label: '年龄', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _a,
+                  label: '年龄',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
             ],
           ),
           ToolChips<int>(
@@ -91,14 +114,23 @@ class _BmrPageState extends State<BmrPage> {
   }
 
   Widget _row(String k, String v, {bool big = false}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: big ? 19 : 15.5, fontWeight: FontWeight.w900, color: big ? C.brand : context.t1)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: big ? 19 : 15.5,
+            fontWeight: FontWeight.w900,
+            color: big ? C.brand : context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ② 睡眠计算 ───────────────
@@ -118,7 +150,7 @@ class _SleepPageState extends State<SleepPage> {
     return ToolScaffold(
       title: '睡眠计算',
       subtitle: '按 90 分钟睡眠周期推算起床时间',
-      
+
       child: Column(
         children: [
           ToolCard(
@@ -132,8 +164,14 @@ class _SleepPageState extends State<SleepPage> {
                 const SizedBox(width: 10),
                 Text('入睡时间', style: Ty.small.copyWith(color: context.t3)),
                 const Spacer(),
-                Text('${_t.hour.toString().padLeft(2, '0')}:${_t.minute.toString().padLeft(2, '0')}',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: C.brand)),
+                Text(
+                  '${_t.hour.toString().padLeft(2, '0')}:${_t.minute.toString().padLeft(2, '0')}',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    color: C.brand,
+                  ),
+                ),
               ],
             ),
           ),
@@ -142,7 +180,10 @@ class _SleepPageState extends State<SleepPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('建议起床时间（含 15 分钟入睡）', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                  '建议起床时间（含 15 分钟入睡）',
+                  style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 10),
                 ...[3, 4, 5, 6].map((n) {
                   final t = base.add(Duration(minutes: n * 90 + 15));
@@ -150,9 +191,20 @@ class _SleepPageState extends State<SleepPage> {
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Row(
                       children: [
-                        Expanded(child: Text('$n 个周期（${(n * 1.5).toStringAsFixed(1)} 小时）', style: Ty.small.copyWith(color: context.t3))),
-                        Text('${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}',
-                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: context.t1)),
+                        Expanded(
+                          child: Text(
+                            '$n 个周期（${(n * 1.5).toStringAsFixed(1)} 小时）',
+                            style: Ty.small.copyWith(color: context.t3),
+                          ),
+                        ),
+                        Text(
+                          '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                            color: context.t1,
+                          ),
+                        ),
                       ],
                     ),
                   );
@@ -183,13 +235,40 @@ class _IdCardPageState extends State<IdCardPage> {
   }
 
   static const _provinces = {
-    '11': '北京', '12': '天津', '13': '河北', '14': '山西', '15': '内蒙古',
-    '21': '辽宁', '22': '吉林', '23': '黑龙江', '31': '上海', '32': '江苏',
-    '33': '浙江', '34': '安徽', '35': '福建', '36': '江西', '37': '山东',
-    '41': '河南', '42': '湖北', '43': '湖南', '44': '广东', '45': '广西',
-    '46': '海南', '50': '重庆', '51': '四川', '52': '贵州', '53': '云南',
-    '54': '西藏', '61': '陕西', '62': '甘肃', '63': '青海', '64': '宁夏',
-    '65': '新疆', '71': '台湾', '81': '香港', '82': '澳门',
+    '11': '北京',
+    '12': '天津',
+    '13': '河北',
+    '14': '山西',
+    '15': '内蒙古',
+    '21': '辽宁',
+    '22': '吉林',
+    '23': '黑龙江',
+    '31': '上海',
+    '32': '江苏',
+    '33': '浙江',
+    '34': '安徽',
+    '35': '福建',
+    '36': '江西',
+    '37': '山东',
+    '41': '河南',
+    '42': '湖北',
+    '43': '湖南',
+    '44': '广东',
+    '45': '广西',
+    '46': '海南',
+    '50': '重庆',
+    '51': '四川',
+    '52': '贵州',
+    '53': '云南',
+    '54': '西藏',
+    '61': '陕西',
+    '62': '甘肃',
+    '63': '青海',
+    '64': '宁夏',
+    '65': '新疆',
+    '71': '台湾',
+    '81': '香港',
+    '82': '澳门',
   };
 
   @override
@@ -199,10 +278,15 @@ class _IdCardPageState extends State<IdCardPage> {
     String area = '', birth = '', sex = '', age = '';
     if (valid) {
       area = _provinces[s.substring(0, 2)] ?? '未知地区';
-      birth = '${s.substring(6, 10)}-${s.substring(10, 12)}-${s.substring(12, 14)}';
+      birth =
+          '${s.substring(6, 10)}-${s.substring(10, 12)}-${s.substring(12, 14)}';
       sex = (int.parse(s[16]) % 2 == 1) ? '男' : '女';
       try {
-        final b = DateTime(int.parse(s.substring(6, 10)), int.parse(s.substring(10, 12)), int.parse(s.substring(12, 14)));
+        final b = DateTime(
+          int.parse(s.substring(6, 10)),
+          int.parse(s.substring(10, 12)),
+          int.parse(s.substring(12, 14)),
+        );
         final n = DateTime.now();
         var a = n.year - b.year;
         if (n.month < b.month || (n.month == b.month && n.day < b.day)) a--;
@@ -234,24 +318,39 @@ class _IdCardPageState extends State<IdCardPage> {
                         _row('校验位', s.substring(17), ok: true),
                       ],
                     )
-                  : Text('格式不正确（应为 18 位，最后一位可为 X）', style: Ty.small.copyWith(color: C.danger)),
+                  : Text(
+                      '格式不正确（应为 18 位，最后一位可为 X）',
+                      style: Ty.small.copyWith(color: C.danger),
+                    ),
             ),
           const SizedBox(height: 12),
-          Text('说明：仅在本机按国标规则解析，不会上传任何信息。', style: Ty.tiny.copyWith(color: context.t3)),
+          Text(
+            '说明：仅在本机按国标规则解析，不会上传任何信息。',
+            style: Ty.tiny.copyWith(color: context.t3),
+          ),
         ],
       ),
     );
   }
 
   Widget _row(String k, String v, {bool ok = false}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 7),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800, color: ok ? C.success : context.t1)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 7),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: 15.5,
+            fontWeight: FontWeight.w800,
+            color: ok ? C.success : context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ④ AA 分摊 / 小费 ───────────────
@@ -284,16 +383,37 @@ class _SplitPageState extends State<SplitPage> {
     return ToolScaffold(
       title: 'AA 分摊',
       subtitle: '总价 / 人数 / 小费 → 每人多少',
-      
+
       child: Column(
         children: [
           Row(
             children: [
-              Expanded(child: ToolField(controller: _total, label: '总金额(元)', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _total,
+                  label: '总金额(元)',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _n, label: '人数', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _n,
+                  label: '人数',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _tip, label: '小费(%)', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _tip,
+                  label: '小费(%)',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
             ],
           ),
           ToolCard(
@@ -312,14 +432,23 @@ class _SplitPageState extends State<SplitPage> {
   }
 
   Widget _row(String k, String v, {bool big = false}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: big ? 20 : 15.5, fontWeight: FontWeight.w900, color: big ? C.brand : context.t1)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: big ? 20 : 15.5,
+            fontWeight: FontWeight.w900,
+            color: big ? C.brand : context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑤ 金额大写转换 ───────────────
@@ -409,8 +538,15 @@ class _MoneyPageState extends State<MoneyPage> {
               children: [
                 Text('大写金额', style: Ty.tiny.copyWith(color: context.t3)),
                 const SizedBox(height: 8),
-                SelectableText(convert(v),
-                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: C.brand, height: 1.5)),
+                SelectableText(
+                  convert(v),
+                  style: TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w900,
+                    color: C.brand,
+                    height: 1.5,
+                  ),
+                ),
                 const SizedBox(height: 10),
                 AppPressable(
                   onTap: () {
@@ -436,8 +572,14 @@ class _MoneyPageState extends State<MoneyPage> {
               children: [
                 Text('千分位格式', style: Ty.tiny.copyWith(color: context.t3)),
                 const SizedBox(height: 6),
-                SelectableText(_withComma(v),
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: context.t1)),
+                SelectableText(
+                  _withComma(v),
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: context.t1,
+                  ),
+                ),
               ],
             ),
           ),
@@ -487,7 +629,11 @@ class _DayCountPageState extends State<DayCountPage> {
       scrollable: true,
       child: Column(
         children: [
-          ToolField(controller: _name, label: '事件名称', icon: Icons.event_note_rounded),
+          ToolField(
+            controller: _name,
+            label: '事件名称',
+            icon: Icons.event_note_rounded,
+          ),
           ToolCard(
             onTap: () async {
               final r = await showDatePicker(
@@ -504,8 +650,14 @@ class _DayCountPageState extends State<DayCountPage> {
                 const SizedBox(width: 10),
                 Text('目标日期', style: Ty.small.copyWith(color: context.t3)),
                 const Spacer(),
-                Text('${_target.year}-${_target.month.toString().padLeft(2, '0')}-${_target.day.toString().padLeft(2, '0')}',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.t1)),
+                Text(
+                  '${_target.year}-${_target.month.toString().padLeft(2, '0')}-${_target.day.toString().padLeft(2, '0')}',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: context.t1,
+                  ),
+                ),
               ],
             ),
           ),
@@ -516,20 +668,39 @@ class _DayCountPageState extends State<DayCountPage> {
             decoration: BoxDecoration(
               gradient: Deco.brandGradient,
               borderRadius: BorderRadius.circular(R.lg),
-              boxShadow: [BoxShadow(color: C.brand.withAlpha(80), blurRadius: 22, offset: const Offset(0, 8))],
+              boxShadow: [
+                BoxShadow(
+                  color: C.brand.withAlpha(80),
+                  blurRadius: 22,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Column(
               children: [
-                Text(_name.text.isEmpty ? '目标日' : _name.text,
-                    style: const TextStyle(fontSize: 13, color: Colors.white70, fontWeight: FontWeight.w700)),
+                Text(
+                  _name.text.isEmpty ? '目标日' : _name.text,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   diff == 0 ? '就是今天' : (diff > 0 ? '$diff' : '${-diff}'),
-                  style: const TextStyle(fontSize: 46, fontWeight: FontWeight.w900, color: Colors.white, height: 1),
+                  style: const TextStyle(
+                    fontSize: 46,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    height: 1,
+                  ),
                 ),
                 const SizedBox(height: 4),
-                Text(diff == 0 ? '' : (diff > 0 ? '天后' : '天前'),
-                    style: const TextStyle(fontSize: 13, color: Colors.white70)),
+                Text(
+                  diff == 0 ? '' : (diff > 0 ? '天后' : '天前'),
+                  style: const TextStyle(fontSize: 13, color: Colors.white70),
+                ),
               ],
             ),
           ),
@@ -556,8 +727,19 @@ class _RomanPageState extends State<RomanPage> {
   }
 
   static const _m = [
-    (1000, 'M'), (900, 'CM'), (500, 'D'), (400, 'CD'), (100, 'C'), (90, 'XC'),
-    (50, 'L'), (40, 'XL'), (10, 'X'), (9, 'IX'), (5, 'V'), (4, 'IV'), (1, 'I'),
+    (1000, 'M'),
+    (900, 'CM'),
+    (500, 'D'),
+    (400, 'CD'),
+    (100, 'C'),
+    (90, 'XC'),
+    (50, 'L'),
+    (40, 'XL'),
+    (10, 'X'),
+    (9, 'IX'),
+    (5, 'V'),
+    (4, 'IV'),
+    (1, 'I'),
   ];
 
   static String toRoman(int n) {
@@ -578,7 +760,7 @@ class _RomanPageState extends State<RomanPage> {
     return ToolScaffold(
       title: '罗马数字',
       subtitle: '阿拉伯数字 ↔ 罗马数字（1-3999）',
-      
+
       child: Column(
         children: [
           ToolField(
@@ -593,8 +775,15 @@ class _RomanPageState extends State<RomanPage> {
               children: [
                 Text('罗马数字', style: Ty.tiny.copyWith(color: context.t3)),
                 const SizedBox(height: 8),
-                SelectableText(toRoman(n),
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: C.brand, letterSpacing: 2)),
+                SelectableText(
+                  toRoman(n),
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w900,
+                    color: C.brand,
+                    letterSpacing: 2,
+                  ),
+                ),
               ],
             ),
           ),
@@ -603,17 +792,30 @@ class _RomanPageState extends State<RomanPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('常用对照', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                  '常用对照',
+                  style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 8),
-                ...[1, 5, 10, 50, 100, 500, 1000].map((v) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 3),
-                      child: Row(
-                        children: [
-                          Expanded(child: Text('$v', style: Ty.tiny.copyWith(color: context.t3))),
-                          Text(toRoman(v), style: Ty.tiny.copyWith(fontWeight: FontWeight.w800)),
-                        ],
-                      ),
-                    )),
+                ...[1, 5, 10, 50, 100, 500, 1000].map(
+                  (v) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 3),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '$v',
+                            style: Ty.tiny.copyWith(color: context.t3),
+                          ),
+                        ),
+                        Text(
+                          toRoman(v),
+                          style: Ty.tiny.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -676,7 +878,10 @@ class _SizePageState extends State<SizePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('脚长测量建议', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                  '脚长测量建议',
+                  style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   '· 下午或晚上测量（脚会比早上略大）\n'
@@ -694,14 +899,23 @@ class _SizePageState extends State<SizePage> {
   }
 
   Widget _row(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 7),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: C.brand)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 7),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w900,
+            color: C.brand,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑨ 百公里油耗 ───────────────
@@ -734,16 +948,37 @@ class _FuelPageState extends State<FuelPage> {
     return ToolScaffold(
       title: '油耗计算',
       subtitle: '百公里油耗 / 每公里花费',
-      
+
       child: Column(
         children: [
           Row(
             children: [
-              Expanded(child: ToolField(controller: _km, label: '里程(km)', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _km,
+                  label: '里程(km)',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _l, label: '油量(L)', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _l,
+                  label: '油量(L)',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _price, label: '油价(元/L)', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _price,
+                  label: '油价(元/L)',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
             ],
           ),
           ToolCard(
@@ -761,14 +996,23 @@ class _FuelPageState extends State<FuelPage> {
   }
 
   Widget _row(String k, String v, {bool big = false}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: big ? 20 : 15.5, fontWeight: FontWeight.w900, color: big ? C.brand : context.t1)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: big ? 20 : 15.5,
+            fontWeight: FontWeight.w900,
+            color: big ? C.brand : context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑩ 随机密码加强版（口令短语） ───────────────
@@ -780,10 +1024,46 @@ class PassphrasePage extends StatefulWidget {
 
 class _PassphrasePageState extends State<PassphrasePage> {
   static const _words = [
-    'apple', 'river', 'cloud', 'tiger', 'music', 'stone', 'light', 'bread', 'green', 'happy',
-    'ocean', 'panda', 'silver', 'garden', 'rocket', 'winter', 'bamboo', 'planet', 'forest', 'candle',
-    'coffee', 'dragon', 'thunder', 'moon', 'sunset', 'island', 'falcon', 'honey', 'violet', 'pepper',
-    'orange', 'lemon', 'cactus', 'desert', 'marble', 'puzzle', 'shadow', 'breeze', 'ember', 'galaxy',
+    'apple',
+    'river',
+    'cloud',
+    'tiger',
+    'music',
+    'stone',
+    'light',
+    'bread',
+    'green',
+    'happy',
+    'ocean',
+    'panda',
+    'silver',
+    'garden',
+    'rocket',
+    'winter',
+    'bamboo',
+    'planet',
+    'forest',
+    'candle',
+    'coffee',
+    'dragon',
+    'thunder',
+    'moon',
+    'sunset',
+    'island',
+    'falcon',
+    'honey',
+    'violet',
+    'pepper',
+    'orange',
+    'lemon',
+    'cactus',
+    'desert',
+    'marble',
+    'puzzle',
+    'shadow',
+    'breeze',
+    'ember',
+    'galaxy',
   ];
   String _out = '';
   int _n = 4;
@@ -808,7 +1088,7 @@ class _PassphrasePageState extends State<PassphrasePage> {
     return ToolScaffold(
       title: '口令短语',
       subtitle: '好记又安全的密码（比乱码更好记）',
-      
+
       child: Column(
         children: [
           ToolChips<int>(
@@ -824,8 +1104,15 @@ class _PassphrasePageState extends State<PassphrasePage> {
                   onTap: () => setState(() => _cap = !_cap),
                   child: Row(
                     children: [
-                      Switch(value: _cap, activeThumbColor: C.brand, onChanged: (v) => setState(() => _cap = v)),
-                      Text('首字母大写', style: Ty.small.copyWith(color: context.t2)),
+                      Switch(
+                        value: _cap,
+                        activeThumbColor: C.brand,
+                        onChanged: (v) => setState(() => _cap = v),
+                      ),
+                      Text(
+                        '首字母大写',
+                        style: Ty.small.copyWith(color: context.t2),
+                      ),
                     ],
                   ),
                 ),
@@ -835,7 +1122,11 @@ class _PassphrasePageState extends State<PassphrasePage> {
                   onTap: () => setState(() => _num = !_num),
                   child: Row(
                     children: [
-                      Switch(value: _num, activeThumbColor: C.brand, onChanged: (v) => setState(() => _num = v)),
+                      Switch(
+                        value: _num,
+                        activeThumbColor: C.brand,
+                        onChanged: (v) => setState(() => _num = v),
+                      ),
                       Text('加数字', style: Ty.small.copyWith(color: context.t2)),
                     ],
                   ),
@@ -844,15 +1135,26 @@ class _PassphrasePageState extends State<PassphrasePage> {
             ],
           ),
           const SizedBox(height: 10),
-          ToolButton(label: '生成口令', icon: Icons.vpn_key_rounded, onPressed: _gen),
+          ToolButton(
+            label: '生成口令',
+            icon: Icons.vpn_key_rounded,
+            onPressed: _gen,
+          ),
           if (_out.isNotEmpty) ...[
             const SizedBox(height: 14),
             ToolCard(
               child: Column(
                 children: [
-                  SelectableText(_out,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: C.brand, height: 1.5)),
+                  SelectableText(
+                    _out,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w900,
+                      color: C.brand,
+                      height: 1.5,
+                    ),
+                  ),
                   const SizedBox(height: 10),
                   AppPressable(
                     onTap: () {

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';

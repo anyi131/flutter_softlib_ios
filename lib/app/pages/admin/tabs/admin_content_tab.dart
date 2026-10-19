@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
@@ -208,9 +209,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                     ToastUtil.success(v ? '已开启审核' : '已关闭审核');
                   } catch (e) {
                     setState(() => _reviewOn = !v);
-                    ToastUtil.error(
-                      ErrText.of(e),
-                    );
+                    ToastUtil.error(ErrText.of(e));
                   }
                 },
               ),
@@ -557,9 +556,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                     ToastUtil.success('已保存');
                     _load();
                   } catch (e) {
-                    ToastUtil.error(
-                      ErrText.of(e),
-                    );
+                    ToastUtil.error(ErrText.of(e));
                   }
                 },
                 child: const Text('保存'),

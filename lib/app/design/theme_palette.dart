@@ -110,15 +110,15 @@ class ThemePalette {
 
   /// 品牌渐变（按钮 / 渐变头图用）
   LinearGradient get gradient => LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [brand, accent],
-      );
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [brand, accent],
+  );
 
   /// 极光渐变（标题 ShaderMask 用，三色更长）
   LinearGradient get aurora => LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [brandBright, accent, brand],
-      );
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [brandBright, accent, brand],
+  );
 }

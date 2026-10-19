@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import '../../utils/safe_ctx.dart';
+
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -31,6 +33,7 @@ class _SplashPageState extends State<SplashPage> {
   int _left = 2;
   Timer? _timer;
   bool _entered = false;
+
   /// 启动诊断：显示当前卡点（release 可见）
   String _diag = 'boot:start';
 
@@ -53,7 +56,9 @@ class _SplashPageState extends State<SplashPage> {
     // ★ 本地开屏图 与 服务器配置 并行拉取（避免串行等待导致启动变慢）
     // v331b：整体兜底 8 秒——无论配置/权限/任何环节挂起，超时必进主界面
     final localFuture = LocalSplash.get().timeout(
-        const Duration(seconds: 5), onTimeout: () => '');
+      const Duration(seconds: 5),
+      onTimeout: () => '',
+    );
     final cfgFuture = SoftService.instance
         .fetchConfig(force: true) // ★ 1015：开屏模板等配置必须拿最新（原来走 10 分钟缓存）
         .timeout(const Duration(seconds: 8), onTimeout: () => null);
@@ -95,10 +100,11 @@ class _SplashPageState extends State<SplashPage> {
       }
       _timer = Timer.periodic(const Duration(seconds: 1), (t) {
         if (!mounted) return t.cancel();
-        if (mounted) setState(() {
-          _left--;
-          _diag = 'tick:$_left';
-        });
+        if (mounted)
+          setState(() {
+            _left--;
+            _diag = 'tick:$_left';
+          });
         if (_left <= 0) {
           t.cancel();
           _enter();
@@ -420,8 +426,7 @@ class _SplashPageState extends State<SplashPage> {
                   const SizedBox(height: 6),
                   Text(
                     _diag,
-                    style: const TextStyle(
-                        color: Colors.white70, fontSize: 10),
+                    style: const TextStyle(color: Colors.white70, fontSize: 10),
                   ),
                 ],
               ),
@@ -584,10 +589,7 @@ class _SplashPageState extends State<SplashPage> {
           child: const Text('查看详情'),
         ),
       if (!cfg.noticeForce)
-        FilledButton(
-          onPressed: () => SafeCtx.pop(),
-          child: const Text('我知道了'),
-        ),
+        FilledButton(onPressed: () => SafeCtx.pop(), child: const Text('我知道了')),
     ];
     final pageBg = dark ? C.bg1 : Colors.white;
     final cardBg = dark ? C.bg2 : Colors.white;
@@ -693,8 +695,7 @@ class _SplashPageState extends State<SplashPage> {
                             const SizedBox(width: 8),
                             if (!cfg.noticeForce)
                               FilledButton(
-                                onPressed: () =>
-                                    SafeCtx.pop(),
+                                onPressed: () => SafeCtx.pop(),
                                 style: FilledButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 20,
@@ -1366,8 +1367,7 @@ class _SplashPageState extends State<SplashPage> {
                               if (!cfg.noticeForce)
                                 Expanded(
                                   child: FilledButton(
-                                    onPressed: () =>
-                                        SafeCtx.pop(),
+                                    onPressed: () => SafeCtx.pop(),
                                     style: FilledButton.styleFrom(
                                       minimumSize: const Size(0, 44),
                                       shape: RoundedRectangleBorder(

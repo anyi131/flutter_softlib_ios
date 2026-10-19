@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import '../../utils/err_text.dart';
 
 import 'package:flutter/material.dart';
@@ -74,8 +75,7 @@ class _ResetPageState extends State<ResetPage> {
       });
     } catch (e) {
       if (!mounted) return;
-      setState(
-          () => _errServer = ErrText.of(e));
+      setState(() => _errServer = ErrText.of(e));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -93,8 +93,10 @@ class _ResetPageState extends State<ResetPage> {
       _errServer = '';
       if (email.isEmpty || !email.contains('@')) _errEmail = '请输入注册邮箱';
       if (code.isEmpty) _errCode = '请输入验证码';
-      if (pwd.length < 6) _errPwd = '密码至少 6 位';
-      else if (pwd != _pwd2.text) _errPwd = '两次输入的密码不一致';
+      if (pwd.length < 6)
+        _errPwd = '密码至少 6 位';
+      else if (pwd != _pwd2.text)
+        _errPwd = '两次输入的密码不一致';
     });
     if (_errEmail.isNotEmpty || _errCode.isNotEmpty || _errPwd.isNotEmpty) {
       return;
@@ -102,16 +104,18 @@ class _ResetPageState extends State<ResetPage> {
 
     setState(() => _loading = true);
     try {
-      await UserService.instance
-          .resetPassword(email: email, code: code, password: pwd);
+      await UserService.instance.resetPassword(
+        email: email,
+        code: code,
+        password: pwd,
+      );
       if (!mounted) return;
       ToastUtil.success('密码重置成功，请用新密码登录');
       // 回传账号，登录页自动填充（与注册页一致）
       Navigator.of(context).pop(email);
     } catch (e) {
       if (!mounted) return;
-      setState(
-          () => _errServer = ErrText.of(e));
+      setState(() => _errServer = ErrText.of(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -150,7 +154,8 @@ class _ResetPageState extends State<ResetPage> {
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2))
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : TextButton(
                         onPressed: _countdown > 0 ? null : _sendCode,
                         style: TextButton.styleFrom(
@@ -160,7 +165,9 @@ class _ResetPageState extends State<ResetPage> {
                         child: Text(
                           _countdown > 0 ? '${_countdown}s' : '获取验证码',
                           style: const TextStyle(
-                              fontSize: 12.5, fontWeight: FontWeight.w700),
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
               ),
@@ -184,18 +191,16 @@ class _ResetPageState extends State<ResetPage> {
               onSubmitted: _reset,
             ),
             AuthError(message: _errServer),
-            AuthButton(
-              label: '重置密码',
-              loading: _loading,
-              onPressed: _reset,
-            ),
+            AuthButton(label: '重置密码', loading: _loading, onPressed: _reset),
             const SizedBox(height: 10),
           ],
         ),
         const SizedBox(height: 16),
         Center(
-          child: Text('重置成功后将自动返回登录页',
-              style: Ty.tiny.copyWith(color: context.t3)),
+          child: Text(
+            '重置成功后将自动返回登录页',
+            style: Ty.tiny.copyWith(color: context.t3),
+          ),
         ),
       ],
     );

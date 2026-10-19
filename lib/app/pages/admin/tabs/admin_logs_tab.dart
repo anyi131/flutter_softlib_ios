@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
@@ -138,130 +139,128 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
           ),
         ),
         if (!_errMode) ...[
-        // 搜索 + 筛选
-        Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 40,
-                      child: TextField(
-                        onSubmitted: (v) {
-                          _kw = v.trim();
-                          _load(reset: true);
-                        },
-                        style: const TextStyle(fontSize: 14),
-                        decoration: InputDecoration(
-                          hintText: '搜索昵称 / IP / 设备',
-                          isDense: true,
-                          prefixIcon: const Icon(Icons.search, size: 18),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(R.md),
+          // 搜索 + 筛选
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 40,
+                        child: TextField(
+                          onSubmitted: (v) {
+                            _kw = v.trim();
+                            _load(reset: true);
+                          },
+                          style: const TextStyle(fontSize: 14),
+                          decoration: InputDecoration(
+                            hintText: '搜索昵称 / IP / 设备',
+                            isDense: true,
+                            prefixIcon: const Icon(Icons.search, size: 18),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(R.md),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    tooltip: '清理日志',
-                    icon: const Icon(
-                      Icons.cleaning_services_rounded,
-                      size: 20,
-                      color: C.warning,
+                    const SizedBox(width: 8),
+                    IconButton(
+                      tooltip: '清理日志',
+                      icon: const Icon(
+                        Icons.cleaning_services_rounded,
+                        size: 20,
+                        color: C.warning,
+                      ),
+                      onPressed: () async {
+                        // ★ 需求 #6：区分「清理30天前」和「清空全部」
+                        //   （以前只有 30 天前，用户点完发现最近日志还在，以为没清）
+                        final mode = await Get.dialog<String>(
+                          AlertDialog(
+                            title: const Text('清理日志'),
+                            content: const Text('请选择清理方式：'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Get.back(),
+                                child: const Text('取消'),
+                              ),
+                              TextButton(
+                                onPressed: () => Get.back(result: 'days'),
+                                child: const Text('清理 30 天前'),
+                              ),
+                              FilledButton(
+                                onPressed: () => Get.back(result: 'all'),
+                                child: Text(
+                                  '清空全部',
+                                  style: TextStyle(color: C.danger),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (mode == null) return;
+                        try {
+                          await _svc.clearOpLogs(days: 30, all: mode == 'all');
+                          ToastUtil.success(mode == 'all' ? '已清空全部日志' : '已清理');
+                          _load(reset: true);
+                        } catch (e) {
+                          ToastUtil.error(ErrText.of(e));
+                        }
+                      },
                     ),
-                    onPressed: () async {
-                      // ★ 需求 #6：区分「清理30天前」和「清空全部」
-                      //   （以前只有 30 天前，用户点完发现最近日志还在，以为没清）
-                      final mode = await Get.dialog<String>(
-                        AlertDialog(
-                          title: const Text('清理日志'),
-                          content: const Text('请选择清理方式：'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Get.back(),
-                              child: const Text('取消'),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 32,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: _actions.entries.map((e) {
+                      final sel = _action == e.key;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 7),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() => _action = e.key);
+                            _load(reset: true);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
                             ),
-                            TextButton(
-                              onPressed: () => Get.back(result: 'days'),
-                              child: const Text('清理 30 天前'),
+                            decoration: BoxDecoration(
+                              color: sel
+                                  ? C.brand
+                                  : (context.isDark
+                                        ? Colors.white.withAlpha(12)
+                                        : Colors.black.withAlpha(6)),
+                              borderRadius: BorderRadius.circular(R.full),
                             ),
-                            FilledButton(
-                              onPressed: () => Get.back(result: 'all'),
-                              child: Text(
-                                '清空全部',
-                                style: TextStyle(color: C.danger),
+                            child: Text(
+                              e.value,
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: sel
+                                    ? FontWeight.w800
+                                    : FontWeight.w500,
+                                color: sel ? Colors.white : context.t2,
                               ),
                             ),
-                          ],
+                          ),
                         ),
                       );
-                      if (mode == null) return;
-                      try {
-                        await _svc.clearOpLogs(days: 30, all: mode == 'all');
-                        ToastUtil.success(mode == 'all' ? '已清空全部日志' : '已清理');
-                        _load(reset: true);
-                      } catch (e) {
-                        ToastUtil.error(
-                          ErrText.of(e),
-                        );
-                      }
-                    },
+                    }).toList(),
                   ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 32,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: _actions.entries.map((e) {
-                    final sel = _action == e.key;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 7),
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() => _action = e.key);
-                          _load(reset: true);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: sel
-                                ? C.brand
-                                : (context.isDark
-                                      ? Colors.white.withAlpha(12)
-                                      : Colors.black.withAlpha(6)),
-                            borderRadius: BorderRadius.circular(R.full),
-                          ),
-                          child: Text(
-                            e.value,
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: sel
-                                  ? FontWeight.w800
-                                  : FontWeight.w500,
-                              color: sel ? Colors.white : context.t2,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
         ],
         if (_errMode)
           Expanded(
@@ -277,47 +276,46 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                           child: ListView.builder(
                             padding: const EdgeInsets.fromLTRB(14, 4, 14, 20),
                             itemCount: _errList.length,
-                            itemBuilder: (context, i) =>
-                                _errCard(_errList[i]),
+                            itemBuilder: (context, i) => _errCard(_errList[i]),
                           ),
                         )),
           ),
         if (!_errMode)
-        Expanded(
-          child: _loading
-              ? const LoadingState(text: '加载操作日志…')
-              : (_list.isEmpty
-                    ? const EmptyState(
-                        text: '暂无操作日志',
-                        hint: '用户登录、发帖、购买等操作会记录在这里',
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () => _load(reset: true),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(14, 4, 14, 20),
-                          itemCount: _list.length + (_hasMore ? 1 : 0),
-                          itemBuilder: (context, i) {
-                            if (i >= _list.length) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                child: Center(
-                                  child: TextButton(
-                                    onPressed: () {
-                                      _page++;
-                                      _load();
-                                    },
-                                    child: const Text('加载更多'),
+          Expanded(
+            child: _loading
+                ? const LoadingState(text: '加载操作日志…')
+                : (_list.isEmpty
+                      ? const EmptyState(
+                          text: '暂无操作日志',
+                          hint: '用户登录、发帖、购买等操作会记录在这里',
+                        )
+                      : RefreshIndicator(
+                          onRefresh: () => _load(reset: true),
+                          child: ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(14, 4, 14, 20),
+                            itemCount: _list.length + (_hasMore ? 1 : 0),
+                            itemBuilder: (context, i) {
+                              if (i >= _list.length) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
                                   ),
-                                ),
-                              );
-                            }
-                            return _logCard(_list[i]);
-                          },
-                        ),
-                      )),
-        ),
+                                  child: Center(
+                                    child: TextButton(
+                                      onPressed: () {
+                                        _page++;
+                                        _load();
+                                      },
+                                      child: const Text('加载更多'),
+                                    ),
+                                  ),
+                                );
+                              }
+                              return _logCard(_list[i]);
+                            },
+                          ),
+                        )),
+          ),
       ],
     );
   }
@@ -344,47 +342,48 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
               Row(
                 children: [
                   Expanded(
-                    child: Text('日志详情',
-                        style: Ty.h3.copyWith(fontSize: 15, color: context.t1)),
+                    child: Text(
+                      '日志详情',
+                      style: Ty.h3.copyWith(fontSize: 15, color: context.t1),
+                    ),
                   ),
                   Pill(_actions[action] ?? action, small: true),
                 ],
               ),
               const SizedBox(height: 12),
-              AdKvList(rows: [
-                ('用户', '${r['nickname'] ?? '游客'}（ID ${r['user_id'] ?? 0}）'),
-                ('行为', _actions[action] ?? action),
-                ('详情', '${r['detail'] ?? '-'}'),
-                // ★ 1016：下载类日志补全 —— 状态 / 解析方式 / App 版本 / 失败原因
-                if ('${r['dl_status'] ?? ''}'.isNotEmpty)
-                  (
-                    '下载状态',
-                    '${r['dl_status']}' == 'ok' ? '✓ 成功' : '✗ 失败',
-                  ),
-                if ('${r['dl_channel'] ?? ''}'.isNotEmpty)
-                  (
-                    '解析方式',
-                    switch ('${r['dl_channel']}') {
-                      'local' => '本地解析（客户端）',
-                      'api' => '自建解析接口',
-                      'server' => '服务端兜底解析',
-                      'direct' => '服务器直链（无解析）',
-                      'cache' => '缓存命中',
-                      _ => '${r['dl_channel']}',
-                    },
-                  ),
-                if ('${r['app_version'] ?? ''}'.isNotEmpty)
-                  ('App 版本', '${r['app_version']}'),
-                if ('${r['dl_status']}' == 'fail' &&
-                    '${r['dl_error'] ?? ''}'.isNotEmpty)
-                  ('失败原因', '${r['dl_error']}'),
-                ('时间', '${r['createtime_text'] ?? r['time_text'] ?? '-'}'),
-                ('IP', '${r['ip'] ?? '-'}'),
-                ('归属地', '${r['address'] ?? '-'}'),
-                ('设备', '${r['device'] ?? '-'}'),
-                ('系统', '${r['os'] ?? '-'}'),
-                if ('${r['ua'] ?? ''}'.isNotEmpty) ('UA', '${r['ua']}'),
-              ]),
+              AdKvList(
+                rows: [
+                  ('用户', '${r['nickname'] ?? '游客'}（ID ${r['user_id'] ?? 0}）'),
+                  ('行为', _actions[action] ?? action),
+                  ('详情', '${r['detail'] ?? '-'}'),
+                  // ★ 1016：下载类日志补全 —— 状态 / 解析方式 / App 版本 / 失败原因
+                  if ('${r['dl_status'] ?? ''}'.isNotEmpty)
+                    ('下载状态', '${r['dl_status']}' == 'ok' ? '✓ 成功' : '✗ 失败'),
+                  if ('${r['dl_channel'] ?? ''}'.isNotEmpty)
+                    (
+                      '解析方式',
+                      switch ('${r['dl_channel']}') {
+                        'local' => '本地解析（客户端）',
+                        'api' => '自建解析接口',
+                        'server' => '服务端兜底解析',
+                        'direct' => '服务器直链（无解析）',
+                        'cache' => '缓存命中',
+                        _ => '${r['dl_channel']}',
+                      },
+                    ),
+                  if ('${r['app_version'] ?? ''}'.isNotEmpty)
+                    ('App 版本', '${r['app_version']}'),
+                  if ('${r['dl_status']}' == 'fail' &&
+                      '${r['dl_error'] ?? ''}'.isNotEmpty)
+                    ('失败原因', '${r['dl_error']}'),
+                  ('时间', '${r['createtime_text'] ?? r['time_text'] ?? '-'}'),
+                  ('IP', '${r['ip'] ?? '-'}'),
+                  ('归属地', '${r['address'] ?? '-'}'),
+                  ('设备', '${r['device'] ?? '-'}'),
+                  ('系统', '${r['os'] ?? '-'}'),
+                  if ('${r['ua'] ?? ''}'.isNotEmpty) ('UA', '${r['ua']}'),
+                ],
+              ),
               const SizedBox(height: 14),
               SizedBox(
                 width: double.infinity,
@@ -407,7 +406,11 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: sel ? C.brand : (context.isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(6)),
+          color: sel
+              ? C.brand
+              : (context.isDark
+                    ? Colors.white.withAlpha(12)
+                    : Colors.black.withAlpha(6)),
           borderRadius: BorderRadius.circular(R.full),
         ),
         child: Text(
@@ -425,9 +428,18 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
   /// ★ 1016：错误日志卡片（点开看完整错误与堆栈）
   Widget _errCard(Map<String, dynamic> r) {
     final tag = '${r['tag'] ?? ''}';
-    final isCrash = ['crash', 'FlutterError', 'PlatformDispatcher', 'ErrorWidget', 'zone', 'startup'].contains(tag);
+    final isCrash = [
+      'crash',
+      'FlutterError',
+      'PlatformDispatcher',
+      'ErrorWidget',
+      'zone',
+      'startup',
+    ].contains(tag);
     final color = isCrash ? C.rose : C.warning;
-    final icon = isCrash ? Icons.bug_report_rounded : Icons.warning_amber_rounded;
+    final icon = isCrash
+        ? Icons.bug_report_rounded
+        : Icons.warning_amber_rounded;
     return AdCard(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -447,8 +459,10 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
               ),
               const SizedBox(width: 9),
               Expanded(
-                child: Text(tag,
-                    style: Ty.h3.copyWith(fontSize: 13.5, color: context.t1)),
+                child: Text(
+                  tag,
+                  style: Ty.h3.copyWith(fontSize: 13.5, color: context.t1),
+                ),
               ),
               Pill('${r['time_text'] ?? ''}', color: color, small: true),
             ],
@@ -458,7 +472,11 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
             '${r['error'] ?? ''}',
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            style: Ty.small.copyWith(fontSize: 12.5, color: context.t2, height: 1.45),
+            style: Ty.small.copyWith(
+              fontSize: 12.5,
+              color: context.t2,
+              height: 1.45,
+            ),
           ),
           const SizedBox(height: 6),
           Row(
@@ -473,8 +491,10 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                   style: Ty.tiny.copyWith(fontSize: 11, color: context.t3),
                 ),
               ),
-              Text('${r['ip'] ?? ''}',
-                  style: Ty.tiny.copyWith(fontSize: 11, color: context.t3)),
+              Text(
+                '${r['ip'] ?? ''}',
+                style: Ty.tiny.copyWith(fontSize: 11, color: context.t3),
+              ),
             ],
           ),
         ],
@@ -503,50 +523,74 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
               Row(
                 children: [
                   Expanded(
-                    child: Text('错误详情',
-                        style: Ty.h3.copyWith(fontSize: 15, color: context.t1)),
+                    child: Text(
+                      '错误详情',
+                      style: Ty.h3.copyWith(fontSize: 15, color: context.t1),
+                    ),
                   ),
                   Pill('${r['tag'] ?? ''}', small: true),
                 ],
               ),
               const SizedBox(height: 12),
-              AdKvList(rows: [
-                ('时间', '${r['time_text'] ?? '-'}'),
-                ('设备', '${r['device'] ?? '-'}'),
-                ('版本', '${r['version'] ?? '-'}'),
-                ('IP', '${r['ip'] ?? '-'}'),
-                ('用户ID', '${r['user_id'] ?? 0}'),
-              ]),
+              AdKvList(
+                rows: [
+                  ('时间', '${r['time_text'] ?? '-'}'),
+                  ('设备', '${r['device'] ?? '-'}'),
+                  ('版本', '${r['version'] ?? '-'}'),
+                  ('IP', '${r['ip'] ?? '-'}'),
+                  ('用户ID', '${r['user_id'] ?? 0}'),
+                ],
+              ),
               const SizedBox(height: 12),
-              Text('错误内容',
-                  style: Ty.small.copyWith(fontSize: 12, color: context.t3)),
+              Text(
+                '错误内容',
+                style: Ty.small.copyWith(fontSize: 12, color: context.t3),
+              ),
               const SizedBox(height: 4),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: context.isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
+                  color: context.isDark
+                      ? Colors.white.withAlpha(10)
+                      : Colors.black.withAlpha(5),
                   borderRadius: BorderRadius.circular(R.sm),
                 ),
-                child: SelectableText('${r['error'] ?? ''}',
-                    style: TextStyle(fontSize: 12, color: context.t1, height: 1.5)),
+                child: SelectableText(
+                  '${r['error'] ?? ''}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: context.t1,
+                    height: 1.5,
+                  ),
+                ),
               ),
               if ('${r['stack'] ?? ''}'.isNotEmpty) ...[
                 const SizedBox(height: 10),
-                Text('堆栈',
-                    style: Ty.small.copyWith(fontSize: 12, color: context.t3)),
+                Text(
+                  '堆栈',
+                  style: Ty.small.copyWith(fontSize: 12, color: context.t3),
+                ),
                 const SizedBox(height: 4),
                 Container(
                   width: double.infinity,
                   constraints: const BoxConstraints(maxHeight: 220),
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: context.isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
+                    color: context.isDark
+                        ? Colors.white.withAlpha(10)
+                        : Colors.black.withAlpha(5),
                     borderRadius: BorderRadius.circular(R.sm),
                   ),
                   child: SingleChildScrollView(
-                    child: SelectableText('${r['stack']}',
-                        style: TextStyle(fontSize: 11, color: context.t2, height: 1.45)),
+                    child: SelectableText(
+                      '${r['stack']}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: context.t2,
+                        height: 1.45,
+                      ),
+                    ),
                   ),
                 ),
               ],

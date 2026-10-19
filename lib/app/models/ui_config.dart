@@ -70,9 +70,9 @@ class UiConfig {
   final bool featureNotice; // 公告弹窗
   final bool featureReferral; // 首页推荐
   final bool featureCardRedeem; // 使用卡密
-  final bool featureCardShop;   // 卡密商城（购买卡密）
-  final bool featureShareApp;   // 分享软件
-  final bool featureQqGroup;    // QQ通知群
+  final bool featureCardShop; // 卡密商城（购买卡密）
+  final bool featureShareApp; // 分享软件
+  final bool featureQqGroup; // QQ通知群
   final bool featureReplaceSplash; // 替换开屏
 
   // ── 首页布局 ──
@@ -99,6 +99,9 @@ class UiConfig {
 
   // ── v54 界面模板体系 ──
   final String navTemplate; // 底部导航模板：classic/glass/float/dock/curve
+
+  /// 全局玻璃（Liquid Glass）档位：auto/off/low/medium/high
+  final String glassMode;
   final String
   adminTemplate; // 管理后台模板：light_card/dark_console/minimal/brand/desk
 
@@ -146,6 +149,7 @@ class UiConfig {
     this.inviteTemplate = 'classic',
     this.inviteShareText = '',
     this.navTemplate = 'classic',
+    this.glassMode = 'auto',
     this.adminTemplate = 'light_card',
     this.payNotice = const PayNoticeConfig(),
 
@@ -204,6 +208,8 @@ class UiConfig {
       inviteTemplate: _s(json['invite_template'], 'classic'),
       inviteShareText: _s(json['invite_share_text'], ''),
       navTemplate: _s(json['nav_template'], 'classic'),
+      // ★ 1020 全局玻璃档位：auto/off/low/medium/high（auto = 按设备能力自动）
+      glassMode: _s(json['glass_mode'], 'auto'),
       adminTemplate: _s(json['admin_template'], 'light_card'),
       payNotice: PayNoticeConfig.fromJson(
         json['pay_notice'] is Map ? (json['pay_notice'] as Map) : const {},
@@ -241,6 +247,7 @@ class UiConfig {
       inviteTemplate: base.inviteTemplate,
       inviteShareText: base.inviteShareText,
       navTemplate: base.navTemplate,
+      glassMode: base.glassMode,
       adminTemplate: base.adminTemplate,
       payNotice: base.payNotice,
       quickSign: base.quickSign,

@@ -44,13 +44,11 @@ class ThemeController extends GetxController {
     mode.value = m;
     try {
       final sp = await SharedPreferences.getInstance();
-      await sp.setString(
-          _key,
-          switch (m) {
-            ThemeMode.dark => 'dark',
-            ThemeMode.system => 'system',
-            _ => 'light',
-          });
+      await sp.setString(_key, switch (m) {
+        ThemeMode.dark => 'dark',
+        ThemeMode.system => 'system',
+        _ => 'light',
+      });
     } catch (_) {}
   }
 
@@ -75,8 +73,8 @@ class ThemeController extends GetxController {
   }
 
   String get label => switch (mode.value) {
-        ThemeMode.dark => '深色',
-        ThemeMode.system => '跟随系统',
-        _ => '浅色',
-      };
+    ThemeMode.dark => '深色',
+    ThemeMode.system => '跟随系统',
+    _ => '浅色',
+  };
 }

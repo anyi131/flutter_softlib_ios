@@ -48,11 +48,23 @@ class _BodyFatPageState extends State<BodyFatPage> {
     if (h > 0 && neck > 0 && waist > 0) {
       if (_male) {
         final d = waist - neck;
-        if (d > 0) bf = 495 / (1.0324 - 0.19077 * (math.log(d) / math.ln10) + 0.15456 * (math.log(h) / math.ln10)) - 450;
+        if (d > 0)
+          bf =
+              495 /
+                  (1.0324 -
+                      0.19077 * (math.log(d) / math.ln10) +
+                      0.15456 * (math.log(h) / math.ln10)) -
+              450;
       } else {
         final hip = waist * 1.25; // 近似
         final inner = waist + hip - neck;
-        if (inner > 0) bf = 495 / (1.29579 - 0.35004 * (math.log(inner) / math.ln10) + 0.22100 * (math.log(h) / math.ln10)) - 450;
+        if (inner > 0)
+          bf =
+              495 /
+                  (1.29579 -
+                      0.35004 * (math.log(inner) / math.ln10) +
+                      0.22100 * (math.log(h) / math.ln10)) -
+              450;
       }
     }
     // BMI
@@ -60,15 +72,31 @@ class _BodyFatPageState extends State<BodyFatPage> {
     String level = '';
     if (bf > 0) {
       if (_male) {
-        level = bf < 6 ? '偏低' : bf < 14 ? '运动员' : bf < 18 ? '健康' : bf < 25 ? '偏高' : '肥胖';
+        level = bf < 6
+            ? '偏低'
+            : bf < 14
+            ? '运动员'
+            : bf < 18
+            ? '健康'
+            : bf < 25
+            ? '偏高'
+            : '肥胖';
       } else {
-        level = bf < 14 ? '偏低' : bf < 21 ? '运动员' : bf < 25 ? '健康' : bf < 32 ? '偏高' : '肥胖';
+        level = bf < 14
+            ? '偏低'
+            : bf < 21
+            ? '运动员'
+            : bf < 25
+            ? '健康'
+            : bf < 32
+            ? '偏高'
+            : '肥胖';
       }
     }
     return ToolScaffold(
       title: '体脂率',
       subtitle: '美国海军法估算（需量围度）',
-      
+
       child: Column(
         children: [
           ToolChips<bool>(
@@ -79,45 +107,100 @@ class _BodyFatPageState extends State<BodyFatPage> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: ToolField(controller: _h, label: '身高 cm', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _h,
+                  label: '身高 cm',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _w, label: '体重 kg', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _w,
+                  label: '体重 kg',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
             ],
           ),
           Row(
             children: [
-              Expanded(child: ToolField(controller: _neck, label: '颈围 cm', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _neck,
+                  label: '颈围 cm',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: ToolField(controller: _waist, label: '腰围 cm', keyboard: TextInputType.number, onChanged: (_) => setState(() {}))),
+              Expanded(
+                child: ToolField(
+                  controller: _waist,
+                  label: '腰围 cm',
+                  keyboard: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
             ],
           ),
           ToolCard(
             child: Column(
               children: [
-                _r('体脂率', bf > 0 ? '${bf.toStringAsFixed(1)}%' : '—', big: true),
+                _r(
+                  '体脂率',
+                  bf > 0 ? '${bf.toStringAsFixed(1)}%' : '—',
+                  big: true,
+                ),
                 _r('评估', level.isEmpty ? '—' : level),
                 const Divider(height: 20),
                 _r('BMI', bmi > 0 ? bmi.toStringAsFixed(1) : '—'),
-                _r('BMI 评估', bmi <= 0 ? '—' : bmi < 18.5 ? '偏瘦' : bmi < 24 ? '正常' : bmi < 28 ? '偏胖' : '肥胖'),
+                _r(
+                  'BMI 评估',
+                  bmi <= 0
+                      ? '—'
+                      : bmi < 18.5
+                      ? '偏瘦'
+                      : bmi < 24
+                      ? '正常'
+                      : bmi < 28
+                      ? '偏胖'
+                      : '肥胖',
+                ),
               ],
             ),
           ),
           const SizedBox(height: 10),
-          Text('注：围度测量误差会影响结果，仅供趋势参考', style: Ty.tiny.copyWith(color: context.t3)),
+          Text(
+            '注：围度测量误差会影响结果，仅供趋势参考',
+            style: Ty.tiny.copyWith(color: context.t3),
+          ),
         ],
       ),
     );
   }
 
   Widget _r(String k, String v, {bool big = false}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: big ? 22 : 15.5, fontWeight: FontWeight.w900, color: big ? C.brand : context.t1)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: big ? 22 : 15.5,
+            fontWeight: FontWeight.w900,
+            color: big ? C.brand : context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ② 饮水量 ───────────────
@@ -166,17 +249,36 @@ class _WaterPageState extends State<WaterPage> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 24),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFF3AC0FF), Color(0xFF465CFF)]),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF3AC0FF), Color(0xFF465CFF)],
+              ),
               borderRadius: BorderRadius.circular(R.lg),
             ),
             child: Column(
               children: [
-                const Text('每日建议饮水', style: TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w700)),
+                const Text(
+                  '每日建议饮水',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const SizedBox(height: 6),
-                Text('${(total / 1000).toStringAsFixed(2)}',
-                    style: const TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
+                Text(
+                  '${(total / 1000).toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 42,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    height: 1,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                const Text('升', style: TextStyle(fontSize: 13, color: Colors.white70)),
+                const Text(
+                  '升',
+                  style: TextStyle(fontSize: 13, color: Colors.white70),
+                ),
               ],
             ),
           ),
@@ -196,14 +298,23 @@ class _WaterPageState extends State<WaterPage> {
   }
 
   Widget _r(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.t1)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+            color: context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ③ 孕期/预产期 ───────────────
@@ -247,8 +358,14 @@ class _PregnancyPageState extends State<PregnancyPage> {
                 const SizedBox(width: 10),
                 Text('末次月经', style: Ty.small.copyWith(color: context.t3)),
                 const Spacer(),
-                Text('${_last.year}-${_last.month.toString().padLeft(2, '0')}-${_last.day.toString().padLeft(2, '0')}',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.t1)),
+                Text(
+                  '${_last.year}-${_last.month.toString().padLeft(2, '0')}-${_last.day.toString().padLeft(2, '0')}',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: context.t1,
+                  ),
+                ),
               ],
             ),
           ),
@@ -257,17 +374,36 @@ class _PregnancyPageState extends State<PregnancyPage> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 22),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFFFF8BA7), Color(0xFFFF5C8A)]),
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFF8BA7), Color(0xFFFF5C8A)],
+              ),
               borderRadius: BorderRadius.circular(R.lg),
             ),
             child: Column(
               children: [
-                const Text('预产期', style: TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w700)),
+                const Text(
+                  '预产期',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const SizedBox(height: 6),
-                Text('${due.year}-${due.month.toString().padLeft(2, '0')}-${due.day.toString().padLeft(2, '0')}',
-                    style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w900, color: Colors.white, height: 1.2)),
+                Text(
+                  '${due.year}-${due.month.toString().padLeft(2, '0')}-${due.day.toString().padLeft(2, '0')}',
+                  style: const TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    height: 1.2,
+                  ),
+                ),
                 const SizedBox(height: 6),
-                Text('还有 $toDue 天', style: const TextStyle(fontSize: 13, color: Colors.white70)),
+                Text(
+                  '还有 $toDue 天',
+                  style: const TextStyle(fontSize: 13, color: Colors.white70),
+                ),
               ],
             ),
           ),
@@ -282,21 +418,33 @@ class _PregnancyPageState extends State<PregnancyPage> {
             ),
           ),
           const SizedBox(height: 10),
-          Text('注：按 280 天标准孕程估算，实际以医生判断为准', style: Ty.tiny.copyWith(color: context.t3)),
+          Text(
+            '注：按 280 天标准孕程估算，实际以医生判断为准',
+            style: Ty.tiny.copyWith(color: context.t3),
+          ),
         ],
       ),
     );
   }
 
   Widget _r(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800, color: context.t1)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: 15.5,
+            fontWeight: FontWeight.w800,
+            color: context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ④ 生理期预测 ───────────────
@@ -341,43 +489,89 @@ class _PeriodPageState extends State<PeriodPage> {
                 const SizedBox(width: 10),
                 Text('上次开始日', style: Ty.small.copyWith(color: context.t3)),
                 const Spacer(),
-                Text('${_last.year}-${_last.month.toString().padLeft(2, '0')}-${_last.day.toString().padLeft(2, '0')}',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.t1)),
+                Text(
+                  '${_last.year}-${_last.month.toString().padLeft(2, '0')}-${_last.day.toString().padLeft(2, '0')}',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: context.t1,
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 12),
-          Text('周期长度：$_cycle 天', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
-          Slider(value: _cycle.toDouble(), min: 21, max: 40, activeColor: C.brand, onChanged: (v) => setState(() => _cycle = v.round())),
-          Text('经期天数：$_dur 天', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
-          Slider(value: _dur.toDouble(), min: 2, max: 10, activeColor: C.brand, onChanged: (v) => setState(() => _dur = v.round())),
+          Text(
+            '周期长度：$_cycle 天',
+            style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+          ),
+          Slider(
+            value: _cycle.toDouble(),
+            min: 21,
+            max: 40,
+            activeColor: C.brand,
+            onChanged: (v) => setState(() => _cycle = v.round()),
+          ),
+          Text(
+            '经期天数：$_dur 天',
+            style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+          ),
+          Slider(
+            value: _dur.toDouble(),
+            min: 2,
+            max: 10,
+            activeColor: C.brand,
+            onChanged: (v) => setState(() => _dur = v.round()),
+          ),
           const SizedBox(height: 10),
           ToolCard(
             child: Column(
               children: [
-                _r('下次经期', '${next.month}月${next.day}日（${toNext}天后）', color: const Color(0xFFFF5C8A)),
+                _r(
+                  '下次经期',
+                  '${next.month}月${next.day}日（${toNext}天后）',
+                  color: const Color(0xFFFF5C8A),
+                ),
                 _r('排卵日', '${ovu.month}月${ovu.day}日'),
-                _r('易孕期', '${ovu.subtract(const Duration(days: 5)).month}月${ovu.subtract(const Duration(days: 5)).day}日 - ${ovu.add(const Duration(days: 1)).month}月${ovu.add(const Duration(days: 1)).day}日'),
-                _r('安全期', '${safeStart.month}月${safeStart.day}日 - ${safeEnd.month}月${safeEnd.day}日'),
+                _r(
+                  '易孕期',
+                  '${ovu.subtract(const Duration(days: 5)).month}月${ovu.subtract(const Duration(days: 5)).day}日 - ${ovu.add(const Duration(days: 1)).month}月${ovu.add(const Duration(days: 1)).day}日',
+                ),
+                _r(
+                  '安全期',
+                  '${safeStart.month}月${safeStart.day}日 - ${safeEnd.month}月${safeEnd.day}日',
+                ),
               ],
             ),
           ),
           const SizedBox(height: 10),
-          Text('注：个体差异大，安全期避孕不可靠，仅供参考', style: Ty.tiny.copyWith(color: context.t3)),
+          Text(
+            '注：个体差异大，安全期避孕不可靠，仅供参考',
+            style: Ty.tiny.copyWith(color: context.t3),
+          ),
         ],
       ),
     );
   }
 
   Widget _r(String k, String v, {Color? color}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v, style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: color ?? context.t1)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: 14.5,
+            fontWeight: FontWeight.w800,
+            color: color ?? context.t1,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑤ 记账本 ───────────────
@@ -404,7 +598,10 @@ class _BookkeepPageState extends State<BookkeepPage> {
     final v = double.tryParse(_amt.text);
     if (v == null || v <= 0) return ToastUtil.error('请输入金额');
     setState(() {
-      list.insert(0, ('${_type == 0 ? '支出' : '收入'} · ${_note.text.isEmpty ? '未备注' : _note.text}', _type == 0 ? -v : v));
+      list.insert(0, (
+        '${_type == 0 ? '支出' : '收入'} · ${_note.text.isEmpty ? '未备注' : _note.text}',
+        _type == 0 ? -v : v,
+      ));
       _amt.clear();
       _note.clear();
     });
@@ -412,12 +609,16 @@ class _BookkeepPageState extends State<BookkeepPage> {
 
   @override
   Widget build(BuildContext context) {
-    final income = list.where((e) => e.$2 > 0).fold<double>(0, (a, b) => a + b.$2);
-    final expense = -list.where((e) => e.$2 < 0).fold<double>(0, (a, b) => a + b.$2);
+    final income = list
+        .where((e) => e.$2 > 0)
+        .fold<double>(0, (a, b) => a + b.$2);
+    final expense = -list
+        .where((e) => e.$2 < 0)
+        .fold<double>(0, (a, b) => a + b.$2);
     return ToolScaffold(
       title: '简单记账',
       subtitle: '随手记录收支（本地，退出即清）',
-      
+
       child: Column(
         children: [
           ToolChips<int>(
@@ -430,10 +631,19 @@ class _BookkeepPageState extends State<BookkeepPage> {
             children: [
               Expanded(
                 flex: 2,
-                child: ToolField(controller: _amt, label: '金额', keyboard: const TextInputType.numberWithOptions(decimal: true)),
+                child: ToolField(
+                  controller: _amt,
+                  label: '金额',
+                  keyboard: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
-              Expanded(flex: 3, child: ToolField(controller: _note, label: '备注')),
+              Expanded(
+                flex: 3,
+                child: ToolField(controller: _note, label: '备注'),
+              ),
             ],
           ),
           ToolButton(label: '记一笔', icon: Icons.add_rounded, onPressed: _add),
@@ -456,27 +666,38 @@ class _BookkeepPageState extends State<BookkeepPage> {
                 children: list
                     .asMap()
                     .entries
-                    .map((e) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6),
-                          child: Row(
-                            children: [
-                              Expanded(child: Text(e.value.$1, style: Ty.small.copyWith(color: context.t1))),
-                              Text(
-                                '${e.value.$2 > 0 ? '+' : ''}${e.value.$2.toStringAsFixed(2)}',
-                                style: TextStyle(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w900,
-                                  color: e.value.$2 > 0 ? C.success : C.danger,
-                                ),
+                    .map(
+                      (e) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                e.value.$1,
+                                style: Ty.small.copyWith(color: context.t1),
                               ),
-                              const SizedBox(width: 8),
-                              AppPressable(
-                                onTap: () => setState(() => list.removeAt(e.key)),
-                                child: Icon(Icons.close_rounded, size: 16, color: context.t3),
+                            ),
+                            Text(
+                              '${e.value.$2 > 0 ? '+' : ''}${e.value.$2.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w900,
+                                color: e.value.$2 > 0 ? C.success : C.danger,
                               ),
-                            ],
-                          ),
-                        ))
+                            ),
+                            const SizedBox(width: 8),
+                            AppPressable(
+                              onTap: () => setState(() => list.removeAt(e.key)),
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 16,
+                                color: context.t3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
                     .toList(),
               ),
             ),
@@ -487,12 +708,15 @@ class _BookkeepPageState extends State<BookkeepPage> {
   }
 
   Widget _sum(String k, double v, Color c) => Column(
-        children: [
-          Text(k, style: Ty.tiny.copyWith(color: context.t3)),
-          const SizedBox(height: 4),
-          Text(v.toStringAsFixed(2), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: c)),
-        ],
-      );
+    children: [
+      Text(k, style: Ty.tiny.copyWith(color: context.t3)),
+      const SizedBox(height: 4),
+      Text(
+        v.toStringAsFixed(2),
+        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: c),
+      ),
+    ],
+  );
 }
 
 // ─────────────── ⑥ 银行卡校验 ───────────────
@@ -530,11 +754,18 @@ class _BankCardPageState extends State<BankCardPage> {
   }
 
   static const _banks = {
-    '9558': '工商银行', '6222': '工商银行', '6212': '工商银行',
-    '6225': '招商银行', '6214': '招商银行',
-    '6228': '农业银行', '6227': '建设银行', '6217': '建设银行',
-    '6216': '中国银行', '6221': '中国银行',
-    '6226': '民生银行', '6222|6225': '',
+    '9558': '工商银行',
+    '6222': '工商银行',
+    '6212': '工商银行',
+    '6225': '招商银行',
+    '6214': '招商银行',
+    '6228': '农业银行',
+    '6227': '建设银行',
+    '6217': '建设银行',
+    '6216': '中国银行',
+    '6221': '中国银行',
+    '6226': '民生银行',
+    '6222|6225': '',
   };
 
   String _bank(String d) {
@@ -582,7 +813,10 @@ class _BankCardPageState extends State<BankCardPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('说明', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                  '说明',
+                  style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 6),
                 Text(
                   '· 用国际通行的 Luhn 算法校验卡号是否合法\n'
@@ -614,19 +848,23 @@ class _BankCardPageState extends State<BankCardPage> {
   }
 
   Widget _r(String k, String v, {bool? ok}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Text(v,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: ok == null ? context.t1 : (ok ? C.success : C.danger),
-                )),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Text(
+          v,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+            color: ok == null ? context.t1 : (ok ? C.success : C.danger),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑦ 手机号归属地（本地号段） ───────────────
@@ -646,14 +884,43 @@ class _PhoneAreaPageState extends State<PhoneAreaPage> {
   }
 
   static const _carriers = {
-    '134': '移动', '135': '移动', '136': '移动', '137': '移动', '138': '移动',
-    '139': '移动', '147': '移动', '150': '移动', '151': '移动', '152': '移动',
-    '157': '移动', '158': '移动', '159': '移动', '178': '移动', '182': '移动',
-    '183': '移动', '184': '移动', '187': '移动', '188': '移动', '198': '移动',
-    '130': '联通', '131': '联通', '132': '联通', '155': '联通', '156': '联通',
-    '185': '联通', '186': '联通', '166': '联通', '176': '联通',
-    '133': '电信', '153': '电信', '173': '电信', '177': '电信', '180': '电信',
-    '181': '电信', '189': '电信', '199': '电信',
+    '134': '移动',
+    '135': '移动',
+    '136': '移动',
+    '137': '移动',
+    '138': '移动',
+    '139': '移动',
+    '147': '移动',
+    '150': '移动',
+    '151': '移动',
+    '152': '移动',
+    '157': '移动',
+    '158': '移动',
+    '159': '移动',
+    '178': '移动',
+    '182': '移动',
+    '183': '移动',
+    '184': '移动',
+    '187': '移动',
+    '188': '移动',
+    '198': '移动',
+    '130': '联通',
+    '131': '联通',
+    '132': '联通',
+    '155': '联通',
+    '156': '联通',
+    '185': '联通',
+    '186': '联通',
+    '166': '联通',
+    '176': '联通',
+    '133': '电信',
+    '153': '电信',
+    '173': '电信',
+    '177': '电信',
+    '180': '电信',
+    '181': '电信',
+    '189': '电信',
+    '199': '电信',
   };
 
   @override
@@ -681,7 +948,12 @@ class _PhoneAreaPageState extends State<PhoneAreaPage> {
                 children: [
                   _r('格式', valid ? '✓ 合法手机号' : '✗ 格式不正确', ok: valid),
                   _r('运营商', carrier),
-                  _r('号段', s.length >= 7 ? '${s.substring(0, 3)} · ${s.substring(3, 7)}' : '—'),
+                  _r(
+                    '号段',
+                    s.length >= 7
+                        ? '${s.substring(0, 3)} · ${s.substring(3, 7)}'
+                        : '—',
+                  ),
                   _r('归属地', '需联网查询（本工具离线仅判运营商）'),
                 ],
               ),
@@ -692,22 +964,26 @@ class _PhoneAreaPageState extends State<PhoneAreaPage> {
   }
 
   Widget _r(String k, String v, {bool? ok}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 7),
-        child: Row(
-          children: [
-            Expanded(child: Text(k, style: Ty.small.copyWith(color: context.t3))),
-            Flexible(
-              child: Text(v,
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w800,
-                    color: ok == null ? context.t1 : (ok ? C.success : C.danger),
-                  )),
-            ),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 7),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(k, style: Ty.small.copyWith(color: context.t3)),
         ),
-      );
+        Flexible(
+          child: Text(
+            v,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w800,
+              color: ok == null ? context.t1 : (ok ? C.success : C.danger),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────── ⑧ 密码强度检测 ───────────────
@@ -758,13 +1034,30 @@ class _PwdCheckPageState extends State<PwdCheckPage> {
       tips.add('加符号（如 !@#）');
     }
     // 常见弱密码
-    const weak = ['123456', 'password', 'qwerty', '111111', 'abc123', 'admin', '888888', '12345678'];
+    const weak = [
+      '123456',
+      'password',
+      'qwerty',
+      '111111',
+      'abc123',
+      'admin',
+      '888888',
+      '12345678',
+    ];
     if (weak.contains(s.toLowerCase())) {
       score = 1;
       tips.insert(0, '这是最常见的弱密码之一！');
     }
-    final level = score <= 2 ? '弱' : score <= 4 ? '中' : '强';
-    final color = score <= 2 ? C.danger : score <= 4 ? C.warning : C.success;
+    final level = score <= 2
+        ? '弱'
+        : score <= 4
+        ? '中'
+        : '强';
+    final color = score <= 2
+        ? C.danger
+        : score <= 4
+        ? C.warning
+        : C.success;
     return ToolScaffold(
       title: '密码强度',
       subtitle: '检测密码强度并给改进建议',
@@ -786,7 +1079,14 @@ class _PwdCheckPageState extends State<PwdCheckPage> {
                     children: [
                       Text('强度', style: Ty.small.copyWith(color: context.t3)),
                       const Spacer(),
-                      Text(level, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: color)),
+                      Text(
+                        level,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: color,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -802,7 +1102,10 @@ class _PwdCheckPageState extends State<PwdCheckPage> {
                   const SizedBox(height: 6),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: Text('得分 $score / 6', style: Ty.tiny.copyWith(color: context.t3)),
+                    child: Text(
+                      '得分 $score / 6',
+                      style: Ty.tiny.copyWith(color: context.t3),
+                    ),
                   ),
                 ],
               ),
@@ -813,17 +1116,29 @@ class _PwdCheckPageState extends State<PwdCheckPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('改进建议', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+                    Text(
+                      '改进建议',
+                      style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+                    ),
                     const SizedBox(height: 8),
-                    ...tips.map((t) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 3),
-                          child: Row(
-                            children: [
-                              Icon(Icons.arrow_right_rounded, size: 16, color: C.warning),
-                              Text(t, style: Ty.small.copyWith(color: context.t2)),
-                            ],
-                          ),
-                        )),
+                    ...tips.map(
+                      (t) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.arrow_right_rounded,
+                              size: 16,
+                              color: C.warning,
+                            ),
+                            Text(
+                              t,
+                              style: Ty.small.copyWith(color: context.t2),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

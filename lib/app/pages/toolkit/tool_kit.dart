@@ -228,6 +228,7 @@ class ToolCard extends StatelessWidget {
   final EdgeInsets? padding;
   final EdgeInsets? margin;
   final VoidCallback? onTap;
+
   /// ★ 1015：长按（图片保存等）
   final VoidCallback? onLongPress;
 

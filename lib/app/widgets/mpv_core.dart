@@ -54,20 +54,19 @@ class MpvValue {
     String? errorDescription,
     double? volume,
     double? playbackSpeed,
-  }) =>
-      MpvValue(
-        position: position ?? this.position,
-        duration: duration ?? this.duration,
-        isPlaying: isPlaying ?? this.isPlaying,
-        isBuffering: isBuffering ?? this.isBuffering,
-        isInitialized: isInitialized ?? this.isInitialized,
-        size: size ?? this.size,
-        aspectRatio: aspectRatio ?? this.aspectRatio,
-        hasError: hasError ?? this.hasError,
-        errorDescription: errorDescription ?? this.errorDescription,
-        volume: volume ?? this.volume,
-        playbackSpeed: playbackSpeed ?? this.playbackSpeed,
-      );
+  }) => MpvValue(
+    position: position ?? this.position,
+    duration: duration ?? this.duration,
+    isPlaying: isPlaying ?? this.isPlaying,
+    isBuffering: isBuffering ?? this.isBuffering,
+    isInitialized: isInitialized ?? this.isInitialized,
+    size: size ?? this.size,
+    aspectRatio: aspectRatio ?? this.aspectRatio,
+    hasError: hasError ?? this.hasError,
+    errorDescription: errorDescription ?? this.errorDescription,
+    volume: volume ?? this.volume,
+    playbackSpeed: playbackSpeed ?? this.playbackSpeed,
+  );
 }
 
 class MpvController {
@@ -78,8 +77,7 @@ class MpvController {
     Map<String, String> httpHeaders = const {},
     bool loop = false,
     bool autoPlay = true,
-  }) =>
-      MpvController._(uri.toString(), httpHeaders, loop, autoPlay);
+  }) => MpvController._(uri.toString(), httpHeaders, loop, autoPlay);
 
   factory MpvController.file(String path, {bool loop = false}) =>
       MpvController._(path, const {}, loop, true);
@@ -131,17 +129,21 @@ class MpvController {
     if (c == null || _disposed) return;
     try {
       final v = c.value;
-      _set(value.copyWith(
-        position: v.position,
-        duration: v.duration,
-        isPlaying: v.isPlaying,
-        isBuffering: v.isBuffering,
-        isInitialized: v.isInitialized,
-        size: v.size,
-        aspectRatio: (v.aspectRatio == 0 || v.aspectRatio.isNaN) ? 16 / 9 : v.aspectRatio,
-        hasError: v.hasError,
-        errorDescription: v.errorDescription ?? '',
-      ));
+      _set(
+        value.copyWith(
+          position: v.position,
+          duration: v.duration,
+          isPlaying: v.isPlaying,
+          isBuffering: v.isBuffering,
+          isInitialized: v.isInitialized,
+          size: v.size,
+          aspectRatio: (v.aspectRatio == 0 || v.aspectRatio.isNaN)
+              ? 16 / 9
+              : v.aspectRatio,
+          hasError: v.hasError,
+          errorDescription: v.errorDescription ?? '',
+        ),
+      );
     } catch (_) {}
   }
 
@@ -253,45 +255,50 @@ class VideoProgressIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final v = controller.value;
-    final total = v.duration.inMilliseconds == 0 ? 1 : v.duration.inMilliseconds;
+    final total = v.duration.inMilliseconds == 0
+        ? 1
+        : v.duration.inMilliseconds;
     final p = (v.position.inMilliseconds / total).clamp(0.0, 1.0);
-    return LayoutBuilder(builder: (c2, box) {
-      void seek(double dx) {
-        final r = (dx / box.maxWidth).clamp(0.0, 1.0);
-        controller.seekTo(Duration(milliseconds: (total * r).round()));
-      }
+    return LayoutBuilder(
+      builder: (c2, box) {
+        void seek(double dx) {
+          final r = (dx / box.maxWidth).clamp(0.0, 1.0);
+          controller.seekTo(Duration(milliseconds: (total * r).round()));
+        }
 
-      return GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapUp: allowScrubbing ? (d) => seek(d.localPosition.dx) : null,
-        onHorizontalDragUpdate:
-            allowScrubbing ? (d) => seek(d.localPosition.dx) : null,
-        child: Padding(
-          padding: padding,
-          child: Stack(
-            alignment: Alignment.centerLeft,
-            children: [
-              Container(
-                height: 3,
-                decoration: BoxDecoration(
-                  color: colors.backgroundColor,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              FractionallySizedBox(
-                widthFactor: p,
-                child: Container(
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapUp: allowScrubbing ? (d) => seek(d.localPosition.dx) : null,
+          onHorizontalDragUpdate: allowScrubbing
+              ? (d) => seek(d.localPosition.dx)
+              : null,
+          child: Padding(
+            padding: padding,
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                Container(
                   height: 3,
                   decoration: BoxDecoration(
-                    color: colors.playedColor,
+                    color: colors.backgroundColor,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              ),
-            ],
+                FractionallySizedBox(
+                  widthFactor: p,
+                  child: Container(
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: colors.playedColor,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 }

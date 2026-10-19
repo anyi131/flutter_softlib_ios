@@ -39,7 +39,8 @@ class SafeCtx {
         barrierLabel: '',
         pageBuilder: (ctx, _, __) => builder(ctx),
         transitionDuration: const Duration(milliseconds: 180),
-        transitionBuilder: (_, a, __, child) => FadeTransition(opacity: a, child: child),
+        transitionBuilder: (_, a, __, child) =>
+            FadeTransition(opacity: a, child: child),
       );
     } catch (_) {
       return null;

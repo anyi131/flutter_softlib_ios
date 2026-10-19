@@ -233,9 +233,7 @@ class _MaintainPageState extends State<MaintainPage>
                         width: on ? 18 : 6,
                         height: 6,
                         decoration: BoxDecoration(
-                          color: on
-                              ? C.brand
-                              : Colors.white.withAlpha(28),
+                          color: on ? C.brand : Colors.white.withAlpha(28),
                           borderRadius: BorderRadius.circular(R.full),
                         ),
                       );
@@ -609,11 +607,7 @@ class _MaintainPageState extends State<MaintainPage>
               // 编号列表
               ...List.generate(_restLines.isEmpty ? 3 : _restLines.length, (i) {
                 final txt = _restLines.isEmpty
-                    ? [
-                        '解析服务升级，支持更多平台',
-                        '下载通道扩容，下载更稳定',
-                        '维护完成后自动恢复',
-                      ][i]
+                    ? ['解析服务升级，支持更多平台', '下载通道扩容，下载更稳定', '维护完成后自动恢复'][i]
                     : _restLines[i];
                 return Container(
                   padding: const EdgeInsets.symmetric(vertical: 10),

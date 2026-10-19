@@ -1,7 +1,9 @@
 import 'dart:async';
+
 import '../../utils/safe_ctx.dart';
 import '../../utils/net_guard.dart';
 import '../../utils/sound_util.dart';
+
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
@@ -424,7 +426,8 @@ class AppDetailsLogic extends GetxController {
           }
         }
         if (newest != null &&
-            DateTime.now().difference(newest.statSync().modified).inMinutes <= 5) {
+            DateTime.now().difference(newest.statSync().modified).inMinutes <=
+                5) {
           f = newest;
         }
       }
@@ -460,7 +463,9 @@ class AppDetailsLogic extends GetxController {
       // ★ 1016：上报失败（后台「下载记录」可查）
       SoftService.instance.reportDownloadResult(
         appId: appIdInt,
-        title: (item?.title ?? '').isNotEmpty ? item!.title : (appInfo?.fileName ?? ''),
+        title: (item?.title ?? '').isNotEmpty
+            ? item!.title
+            : (appInfo?.fileName ?? ''),
         url: dowUrl,
         ok: false,
         error: '下载不完整：文件大小未达到预期（网络中断或源站限速）',
@@ -472,7 +477,9 @@ class AppDetailsLogic extends GetxController {
     // ★ 1016：上报成功（后台「下载记录」可查）
     SoftService.instance.reportDownloadResult(
       appId: appIdInt,
-      title: (item?.title ?? '').isNotEmpty ? item!.title : (appInfo?.fileName ?? ''),
+      title: (item?.title ?? '').isNotEmpty
+          ? item!.title
+          : (appInfo?.fileName ?? ''),
       url: dowUrl,
       ok: true,
     );
@@ -644,7 +651,8 @@ class AppDetailsLogic extends GetxController {
     }
     // ★ 1016：流量提醒 —— 移动网络下载大安装包前先确认
     try {
-      final expect = double.tryParse(
+      final expect =
+          double.tryParse(
             (appInfo?.fileSize ?? '').replaceAll(RegExp(r'[^0-9.]'), ''),
           ) ??
           0;
@@ -655,12 +663,26 @@ class AppDetailsLogic extends GetxController {
           final ok = await showDialog<bool>(
             context: ctx0,
             builder: (c) => AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: const Text('流量提醒', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-              content: Text(msg, style: const TextStyle(fontSize: 13, height: 1.6)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: const Text(
+                '流量提醒',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+              content: Text(
+                msg,
+                style: const TextStyle(fontSize: 13, height: 1.6),
+              ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
-                FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('继续下载')),
+                TextButton(
+                  onPressed: () => Navigator.pop(c, false),
+                  child: const Text('取消'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(c, true),
+                  child: const Text('继续下载'),
+                ),
               ],
             ),
           );
@@ -757,7 +779,11 @@ class AppDetailsLogic extends GetxController {
 
       // ② 外置/服务端解析（含票据、自建 API、后端兜底）
       // ★ 重试一次：解析偶发失败多半是临时网络抖动
-      for (var attempt = 0; attempt < 2 && (parseUrl == null || parseUrl.isEmpty); attempt++) {
+      for (
+        var attempt = 0;
+        attempt < 2 && (parseUrl == null || parseUrl.isEmpty);
+        attempt++
+      ) {
         try {
           parseUrl = await service.resolveLzy(target);
         } catch (e) {
@@ -776,10 +802,13 @@ class AppDetailsLogic extends GetxController {
         // ★ 1016：上报解析失败（后台「解析记录」可查原因与耗时）
         SoftService.reportParseResult(
           appId: appIdInt,
-          title: (item?.title ?? '').isNotEmpty ? item!.title : (appInfo?.fileName ?? ''),
+          title: (item?.title ?? '').isNotEmpty
+              ? item!.title
+              : (appInfo?.fileName ?? ''),
           rawUrl: originUrl,
           ok: false,
-          error: '[解析失效] ${SoftService.lastParseError.isEmpty ? '解析接口无返回' : SoftService.lastParseError}',
+          error:
+              '[解析失效] ${SoftService.lastParseError.isEmpty ? '解析接口无返回' : SoftService.lastParseError}',
           reqParams: 'url=$originUrl',
           respSnippet: SoftService.lastParseResp,
           channel: SoftService.lastParseChannel.isEmpty
@@ -793,7 +822,9 @@ class AppDetailsLogic extends GetxController {
       // ★ 1016：解析成功也记一笔（便于对比成功率）
       SoftService.reportParseResult(
         appId: appIdInt,
-        title: (item?.title ?? '').isNotEmpty ? item!.title : (appInfo?.fileName ?? ''),
+        title: (item?.title ?? '').isNotEmpty
+            ? item!.title
+            : (appInfo?.fileName ?? ''),
         rawUrl: originUrl,
         ok: true,
         reqParams: 'url=$originUrl',
@@ -908,14 +939,18 @@ class AppDetailsLogic extends GetxController {
         // ★ 1016：上报失败（后台「下载记录」可查）
         SoftService.instance.reportDownloadResult(
           appId: appIdInt,
-          title: (item?.title ?? '').isNotEmpty ? item!.title : (appInfo?.fileName ?? ''),
+          title: (item?.title ?? '').isNotEmpty
+              ? item!.title
+              : (appInfo?.fileName ?? ''),
           url: dowUrl,
           ok: false,
           // ★ 1016：失败原因细分 —— 后台一眼能判断是「解析问题」还是「网络问题」
           error: () {
             if (t0.status == DownloadTaskStatus.canceled) return '[用户取消] 下载被取消';
             final u = dowUrl.toLowerCase();
-            final isLzy = u.contains('lanzou') || u.contains('lzy') ||
+            final isLzy =
+                u.contains('lanzou') ||
+                u.contains('lzy') ||
                 u.contains('52yfx.cn/lzy');
             if (u.isEmpty) return '[解析失败] 下载地址为空（解析接口无返回）';
             if (isLzy) {

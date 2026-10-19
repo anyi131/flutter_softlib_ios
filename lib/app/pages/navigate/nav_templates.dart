@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../api/soft_service.dart';
 import '../../design/ui.dart';
 import 'navigate_logic.dart';
+import 'glass_elastic_bar.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 底部导航栏模板（v55）：classic / glass / float / dock / curve / liquid
@@ -40,6 +41,24 @@ class NavTemplates {
         return _curveBar(context, logic, inset);
       case 'liquid':
         return _liquidBar(context, logic, inset);
+      case 'liquid27':
+        // ★ 1020（反馈 #4）：iOS 27 Liquid Glass —— 弹性滑动胶囊 + 真实折射层
+        return GlassElasticBar.build(
+          context,
+          logic.labels
+              .map(
+                (d) => NavDest(
+                  label: d.label,
+                  icon: (d.icon as Icon).icon ?? Icons.circle_outlined,
+                  activeIcon:
+                      ((d.selectedIcon ?? d.icon) as Icon).icon ?? Icons.circle,
+                ),
+              )
+              .toList(),
+          logic.currentIndex,
+          logic.changePage,
+          inset,
+        );
       default:
         return _classicBar(context, logic, inset);
     }

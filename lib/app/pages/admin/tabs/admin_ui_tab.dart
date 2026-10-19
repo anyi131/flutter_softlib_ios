@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import '../../../utils/sound_util.dart';
 import '../../../utils/err_text.dart';
 
@@ -70,6 +71,9 @@ class _AdminUiTabState extends State<AdminUiTab> {
   String _inviteTemplate = 'classic';
   // v54：界面模板体系
   String _navTemplate = 'classic';
+
+  /// ★ 1020：全局玻璃档位（auto/off/low/medium/high）
+  String _glassMode = 'auto';
   String _adminTemplate = 'light_card';
   // v52w：邀请配置
   final _inviteScoreCtrl = TextEditingController();
@@ -161,6 +165,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _noticeTemplate = '${ui['notice_template'] ?? 'card'}';
         _inviteTemplate = '${ui['invite_template'] ?? 'classic'}';
         _navTemplate = '${ui['nav_template'] ?? 'classic'}';
+        _glassMode = '${ui['glass_mode'] ?? 'auto'}';
         _adminTemplate = '${ui['admin_template'] ?? 'light_card'}';
         // ★ 1014 修复：值实际存在 home.invite_score（保存时写这里），
         //   但原读取只看顶层 → 读不到就回退默认 50，
@@ -263,6 +268,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
           'invite_score': int.tryParse(_inviteScoreCtrl.text.trim()) ?? 50,
         },
         'nav_template': _navTemplate,
+        'glass_mode': _glassMode,
         'admin_template': _adminTemplate,
         'invite_share_text': _inviteShareCtrl.text.trim(),
         // ★ 需求3：支付弹窗文案（后台可配）
@@ -381,6 +387,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
             _card('公告弹窗模板', _noticeTemplatePicker()),
             _card('邀请页模板', _inviteTemplatePicker()),
             _card('底部导航栏模板', _navTemplatePicker()),
+            _card('全局玻璃质感（Liquid Glass）', _glassPicker()),
             _card('工具箱布局模板', _toolLayoutPicker()),
             _card('管理后台整体模板', _adminTemplatePicker()),
             _card('邀请配置', _inviteConfig()),
@@ -588,7 +595,13 @@ class _AdminUiTabState extends State<AdminUiTab> {
   }
 
   Widget _soundSwitches() {
-    Widget row(String t, String sub, bool on, ValueChanged<bool> cb, {bool disabled = false}) {
+    Widget row(
+      String t,
+      String sub,
+      bool on,
+      ValueChanged<bool> cb, {
+      bool disabled = false,
+    }) {
       return Opacity(
         opacity: disabled ? 0.45 : 1,
         child: Padding(
@@ -599,9 +612,21 @@ class _AdminUiTabState extends State<AdminUiTab> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(t, style: Ty.body.copyWith(fontSize: 13.5, color: context.t1)),
+                    Text(
+                      t,
+                      style: Ty.body.copyWith(
+                        fontSize: 13.5,
+                        color: context.t1,
+                      ),
+                    ),
                     if (sub.isNotEmpty)
-                      Text(sub, style: Ty.tiny.copyWith(fontSize: 11, color: context.t3)),
+                      Text(
+                        sub,
+                        style: Ty.tiny.copyWith(
+                          fontSize: 11,
+                          color: context.t3,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -636,8 +661,10 @@ class _AdminUiTabState extends State<AdminUiTab> {
           setState(() {});
         }, disabled: !SoundUtil.master),
         const SizedBox(height: 4),
-        Text('提示：音效跟随系统静音设置，静音后自动不响',
-            style: Ty.tiny.copyWith(fontSize: 11, color: context.t3)),
+        Text(
+          '提示：音效跟随系统静音设置，静音后自动不响',
+          style: Ty.tiny.copyWith(fontSize: 11, color: context.t3),
+        ),
       ],
     );
   }
@@ -1018,6 +1045,32 @@ class _AdminUiTabState extends State<AdminUiTab> {
     (v) => setState(() => _inviteTemplate = v),
   );
 
+  // ★ 1020：全局玻璃档位
+  Widget _glassPicker() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _chipRow(
+        const [
+          ('auto', '自动（推荐）'),
+          ('high', '全量玻璃'),
+          ('medium', '中度'),
+          ('low', '仅描边'),
+          ('off', '关闭'),
+        ],
+        _glassMode,
+        (v) => setState(() => _glassMode = v),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        '自动 = 按设备内存 / 系统版本自动选择：'
+        '低端机自动关模糊，中端只给导航栏和弹窗开模糊，'
+        '旗舰才给列表卡片开真模糊。'
+        '手动选高档也不会超过设备能力上限。',
+        style: TextStyle(fontSize: 11, height: 1.5, color: Colors.grey[600]),
+      ),
+    ],
+  );
+
   // v54：底部导航栏模板
   Widget _navTemplatePicker() => _chipRow(
     const [
@@ -1027,6 +1080,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
       ('dock', '纯图标Dock'),
       ('curve', '凹陷缺口FAB'),
       ('liquid', '液态玻璃'),
+      ('liquid27', 'iOS27液态玻璃'),
     ],
     _navTemplate,
     (v) => setState(() => _navTemplate = v),

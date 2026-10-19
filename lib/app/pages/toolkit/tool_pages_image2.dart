@@ -35,26 +35,31 @@ class _ImgRotatePageState extends State<ImgRotatePage> with ImgToolMixin {
   bool _flipV = false;
 
   Future<void> _go() => run(() async {
-        var im = img.decodeImage(srcBytes!);
-        if (im == null) return null;
-        if (_angle != 0) im = img.copyRotate(im, angle: _angle.toDouble());
-        if (_flipH) im = img.flipHorizontal(im);
-        if (_flipV) im = img.flipVertical(im);
-        return Uint8List.fromList(img.encodeJpg(im, quality: 92));
-      });
+    var im = img.decodeImage(srcBytes!);
+    if (im == null) return null;
+    if (_angle != 0) im = img.copyRotate(im, angle: _angle.toDouble());
+    if (_flipH) im = img.flipHorizontal(im);
+    if (_flipV) im = img.flipVertical(im);
+    return Uint8List.fromList(img.encodeJpg(im, quality: 92));
+  });
 
   @override
   Widget build(BuildContext context) {
     return ToolScaffold(
       title: '旋转翻转',
       subtitle: '任意角度旋转 / 水平垂直翻转',
-      
+
       child: Column(
         children: [
           pickerCard(),
           const SizedBox(height: 12),
           ToolChips<int>(
-            items: const [(0, '不旋转'), (90, '90°'), (180, '180°'), (270, '270°')],
+            items: const [
+              (0, '不旋转'),
+              (90, '90°'),
+              (180, '180°'),
+              (270, '270°'),
+            ],
             current: _angle,
             onPick: (v) => setState(() => _angle = v),
           ),
@@ -64,7 +69,11 @@ class _ImgRotatePageState extends State<ImgRotatePage> with ImgToolMixin {
               Expanded(
                 child: Row(
                   children: [
-                    Switch(value: _flipH, activeThumbColor: C.brand, onChanged: (v) => setState(() => _flipH = v)),
+                    Switch(
+                      value: _flipH,
+                      activeThumbColor: C.brand,
+                      onChanged: (v) => setState(() => _flipH = v),
+                    ),
                     Text('水平翻转', style: Ty.small.copyWith(color: context.t2)),
                   ],
                 ),
@@ -72,7 +81,11 @@ class _ImgRotatePageState extends State<ImgRotatePage> with ImgToolMixin {
               Expanded(
                 child: Row(
                   children: [
-                    Switch(value: _flipV, activeThumbColor: C.brand, onChanged: (v) => setState(() => _flipV = v)),
+                    Switch(
+                      value: _flipV,
+                      activeThumbColor: C.brand,
+                      onChanged: (v) => setState(() => _flipV = v),
+                    ),
                     Text('垂直翻转', style: Ty.small.copyWith(color: context.t2)),
                   ],
                 ),
@@ -80,7 +93,11 @@ class _ImgRotatePageState extends State<ImgRotatePage> with ImgToolMixin {
             ],
           ),
           const SizedBox(height: 12),
-          ToolButton(label: '应用', icon: Icons.rotate_right_rounded, onPressed: _go),
+          ToolButton(
+            label: '应用',
+            icon: Icons.rotate_right_rounded,
+            onPressed: _go,
+          ),
           previewCard(),
           saveBtn(),
         ],
@@ -101,8 +118,10 @@ class _ImgRoundPageState extends State<ImgRoundPage> with ImgToolMixin {
   bool _circle = false;
 
   // ★ 1015：改到后台 isolate
-  Future<void> _go() => run(() => ImgJob.run(ImgJobArgs(srcBytes!,
-      mode: 'round', a: _r, flag: _circle)));
+  Future<void> _go() => run(
+    () =>
+        ImgJob.run(ImgJobArgs(srcBytes!, mode: 'round', a: _r, flag: _circle)),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -118,14 +137,21 @@ class _ImgRoundPageState extends State<ImgRoundPage> with ImgToolMixin {
             children: [
               Row(
                 children: [
-                  Switch(value: _circle, activeThumbColor: C.brand, onChanged: (v) => setState(() => _circle = v)),
+                  Switch(
+                    value: _circle,
+                    activeThumbColor: C.brand,
+                    onChanged: (v) => setState(() => _circle = v),
+                  ),
                   Text('裁成圆形', style: Ty.small.copyWith(color: context.t2)),
                 ],
               ),
             ],
           ),
           if (!_circle) ...[
-            Text('圆角大小：${(_r * 100 / 400).round()}%', style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+            Text(
+              '圆角大小：${(_r * 100 / 400).round()}%',
+              style: Ty.small.copyWith(fontWeight: FontWeight.w800),
+            ),
             Slider(
               value: _r.toDouble(),
               min: 10,
@@ -134,7 +160,11 @@ class _ImgRoundPageState extends State<ImgRoundPage> with ImgToolMixin {
               onChanged: (v) => setState(() => _r = v.round()),
             ),
           ],
-          ToolButton(label: '应用', icon: Icons.rounded_corner_rounded, onPressed: _go),
+          ToolButton(
+            label: '应用',
+            icon: Icons.rounded_corner_rounded,
+            onPressed: _go,
+          ),
           previewCard(),
           saveBtn(),
         ],
@@ -154,8 +184,8 @@ class _ImgMosaicPageState extends State<ImgMosaicPage> with ImgToolMixin {
   int _block = 16;
 
   // ★ 1015：逐像素处理改到后台 isolate，否则大图会卡死界面
-  Future<void> _go() => run(() => ImgJob.run(ImgJobArgs(srcBytes!,
-      mode: 'mosaic', a: _block)));
+  Future<void> _go() =>
+      run(() => ImgJob.run(ImgJobArgs(srcBytes!, mode: 'mosaic', a: _block)));
 
   @override
   Widget build(BuildContext context) {
@@ -173,7 +203,11 @@ class _ImgMosaicPageState extends State<ImgMosaicPage> with ImgToolMixin {
             onPick: (v) => setState(() => _block = v),
           ),
           const SizedBox(height: 12),
-          ToolButton(label: '打马赛克', icon: Icons.grid_on_rounded, onPressed: _go),
+          ToolButton(
+            label: '打马赛克',
+            icon: Icons.grid_on_rounded,
+            onPressed: _go,
+          ),
           previewCard(),
           saveBtn(),
         ],
@@ -195,33 +229,46 @@ class _ImgAdjustPageState extends State<ImgAdjustPage> with ImgToolMixin {
   int _saturate = 0;
 
   Future<void> _go() => run(() async {
-        var im = img.decodeImage(srcBytes!);
-        if (im == null) return null;
-        if (_bright != 0) im = img.adjustColor(im, brightness: 1 + _bright / 100);
-        if (_contrast != 0) im = img.adjustColor(im, contrast: 1 + _contrast / 100);
-        if (_saturate != 0) im = img.adjustColor(im, saturation: 1 + _saturate / 100);
-        return Uint8List.fromList(img.encodeJpg(im, quality: 92));
-      });
+    var im = img.decodeImage(srcBytes!);
+    if (im == null) return null;
+    if (_bright != 0) im = img.adjustColor(im, brightness: 1 + _bright / 100);
+    if (_contrast != 0) im = img.adjustColor(im, contrast: 1 + _contrast / 100);
+    if (_saturate != 0)
+      im = img.adjustColor(im, saturation: 1 + _saturate / 100);
+    return Uint8List.fromList(img.encodeJpg(im, quality: 92));
+  });
 
-  Widget _slider(String label, int v, ValueChanged<int> onCh, {int min = -100, int max = 100}) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _slider(
+    String label,
+    int v,
+    ValueChanged<int> onCh, {
+    int min = -100,
+    int max = 100,
+  }) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
         children: [
-          Row(
-            children: [
-              Text(label, style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
-              const Spacer(),
-              Text('${v > 0 ? '+' : ''}$v', style: Ty.small.copyWith(color: C.brand, fontWeight: FontWeight.w800)),
-            ],
-          ),
-          Slider(
-            value: v.toDouble(),
-            min: min.toDouble(),
-            max: max.toDouble(),
-            activeColor: C.brand,
-            onChanged: (x) => setState(() => onCh(x.round())),
+          Text(label, style: Ty.small.copyWith(fontWeight: FontWeight.w800)),
+          const Spacer(),
+          Text(
+            '${v > 0 ? '+' : ''}$v',
+            style: Ty.small.copyWith(
+              color: C.brand,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ],
-      );
+      ),
+      Slider(
+        value: v.toDouble(),
+        min: min.toDouble(),
+        max: max.toDouble(),
+        activeColor: C.brand,
+        onChanged: (x) => setState(() => onCh(x.round())),
+      ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -263,22 +310,22 @@ class _ImgGrayPageState extends State<ImgGrayPage> with ImgToolMixin {
   int _mode = 0; // 0 灰度 1 黑白二值 2 复古
 
   Future<void> _go() => run(() async {
-        var im = img.decodeImage(srcBytes!);
-        if (im == null) return null;
-        im = img.grayscale(im);
-        if (_mode == 1) {
-          for (var y = 0; y < im.height; y++) {
-            for (var x = 0; x < im.width; x++) {
-              final p = im.getPixel(x, y);
-              final v = p.r > 128 ? 255 : 0;
-              im.setPixelRgb(x, y, v, v, v);
-            }
-          }
-        } else if (_mode == 2) {
-          im = img.sepia(im);
+    var im = img.decodeImage(srcBytes!);
+    if (im == null) return null;
+    im = img.grayscale(im);
+    if (_mode == 1) {
+      for (var y = 0; y < im.height; y++) {
+        for (var x = 0; x < im.width; x++) {
+          final p = im.getPixel(x, y);
+          final v = p.r > 128 ? 255 : 0;
+          im.setPixelRgb(x, y, v, v, v);
         }
-        return Uint8List.fromList(img.encodeJpg(im, quality: 92));
-      });
+      }
+    } else if (_mode == 2) {
+      im = img.sepia(im);
+    }
+    return Uint8List.fromList(img.encodeJpg(im, quality: 92));
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -296,7 +343,11 @@ class _ImgGrayPageState extends State<ImgGrayPage> with ImgToolMixin {
             onPick: (v) => setState(() => _mode = v),
           ),
           const SizedBox(height: 12),
-          ToolButton(label: '应用', icon: Icons.filter_b_and_w_rounded, onPressed: _go),
+          ToolButton(
+            label: '应用',
+            icon: Icons.filter_b_and_w_rounded,
+            onPressed: _go,
+          ),
           previewCard(),
           saveBtn(),
         ],
@@ -325,27 +376,35 @@ class _ImgResizePageState extends State<ImgResizePage> with ImgToolMixin {
   }
 
   Future<void> _go() => run(() async {
-        var im = img.decodeImage(srcBytes!);
-        if (im == null) return null;
-        final nw = int.tryParse(_w.text) ?? im.width;
-        final nh = _keep ? (nw * im.height / im.width).round() : (int.tryParse(_h.text) ?? im.height);
-        im = img.copyResize(im, width: nw, height: nh);
-        return Uint8List.fromList(img.encodeJpg(im, quality: 92));
-      });
+    var im = img.decodeImage(srcBytes!);
+    if (im == null) return null;
+    final nw = int.tryParse(_w.text) ?? im.width;
+    final nh = _keep
+        ? (nw * im.height / im.width).round()
+        : (int.tryParse(_h.text) ?? im.height);
+    im = img.copyResize(im, width: nw, height: nh);
+    return Uint8List.fromList(img.encodeJpg(im, quality: 92));
+  });
 
   @override
   Widget build(BuildContext context) {
     return ToolScaffold(
       title: '尺寸调整',
       subtitle: '缩放到指定宽高（可锁定比例）',
-      
+
       child: Column(
         children: [
           pickerCard(),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: ToolField(controller: _w, label: '宽度 px', keyboard: TextInputType.number)),
+              Expanded(
+                child: ToolField(
+                  controller: _w,
+                  label: '宽度 px',
+                  keyboard: TextInputType.number,
+                ),
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: ToolField(
@@ -358,12 +417,23 @@ class _ImgResizePageState extends State<ImgResizePage> with ImgToolMixin {
           ),
           Row(
             children: [
-              Switch(value: _keep, activeThumbColor: C.brand, onChanged: (v) => setState(() => _keep = v)),
-              Text('锁定宽高比（按宽度自动算高度）', style: Ty.small.copyWith(color: context.t2)),
+              Switch(
+                value: _keep,
+                activeThumbColor: C.brand,
+                onChanged: (v) => setState(() => _keep = v),
+              ),
+              Text(
+                '锁定宽高比（按宽度自动算高度）',
+                style: Ty.small.copyWith(color: context.t2),
+              ),
             ],
           ),
           const SizedBox(height: 8),
-          ToolButton(label: '缩放', icon: Icons.photo_size_select_large_rounded, onPressed: _go),
+          ToolButton(
+            label: '缩放',
+            icon: Icons.photo_size_select_large_rounded,
+            onPressed: _go,
+          ),
           previewCard(),
           saveBtn(),
         ],
@@ -432,7 +502,7 @@ class _ImgInfoPageState extends State<ImgInfoPage> with ImgToolMixin {
     return ToolScaffold(
       title: '图片信息',
       subtitle: '查看尺寸 / 格式 / 体积',
-      
+
       child: Column(
         children: [
           ToolCard(
@@ -445,8 +515,14 @@ class _ImgInfoPageState extends State<ImgInfoPage> with ImgToolMixin {
                 Icon(Icons.info_outline_rounded, size: 22, color: C.brand),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(srcBytes == null ? '点击选择图片' : '已选图片 · 点击重选',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.t1)),
+                  child: Text(
+                    srcBytes == null ? '点击选择图片' : '已选图片 · 点击重选',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: context.t1,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -456,15 +532,29 @@ class _ImgInfoPageState extends State<ImgInfoPage> with ImgToolMixin {
             ToolCard(
               child: Column(
                 children: facts.entries
-                    .map((e) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6),
-                          child: Row(
-                            children: [
-                              Expanded(child: Text(e.key, style: Ty.small.copyWith(color: context.t3))),
-                              Text(e.value, style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: context.t1)),
-                            ],
-                          ),
-                        ))
+                    .map(
+                      (e) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                e.key,
+                                style: Ty.small.copyWith(color: context.t3),
+                              ),
+                            ),
+                            Text(
+                              e.value,
+                              style: TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w800,
+                                color: context.t1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
                     .toList(),
               ),
             ),
@@ -474,7 +564,11 @@ class _ImgInfoPageState extends State<ImgInfoPage> with ImgToolMixin {
             ToolCard(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(R.md),
-                child: Image.memory(srcBytes!, height: 200, fit: BoxFit.contain),
+                child: Image.memory(
+                  srcBytes!,
+                  height: 200,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ],

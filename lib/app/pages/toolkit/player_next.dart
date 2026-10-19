@@ -76,7 +76,9 @@ class _VideoPageState extends State<VideoPage> {
     final host = Uri.tryParse(widget.url)?.host ?? '';
     final ref = host.contains('126.net')
         ? 'https://music.163.com/'
-        : (host.contains('lz') || host.contains('bfvvs')) ? 'https://$host/' : '';
+        : (host.contains('lz') || host.contains('bfvvs'))
+        ? 'https://$host/'
+        : '';
     final c = MpvController.networkUrl(
       Uri.parse(widget.url),
       httpHeaders: {
@@ -172,11 +174,16 @@ class _VideoPageState extends State<VideoPage> {
       await SystemChrome.setPreferredOrientations(
         isPortrait
             ? [DeviceOrientation.portraitUp]
-            : [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight],
+            : [
+                DeviceOrientation.landscapeLeft,
+                DeviceOrientation.landscapeRight,
+              ],
       );
     } else {
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
     }
   }
 
@@ -214,7 +221,9 @@ class _VideoPageState extends State<VideoPage> {
                   AspectRatio(
                     aspectRatio: ar <= 0 ? 16 / 9 : ar,
                     child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(14)),
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(14),
+                      ),
                       child: _stage(v, false),
                     ),
                   ),
@@ -232,23 +241,40 @@ class _VideoPageState extends State<VideoPage> {
         children: [
           IconButton(
             onPressed: () => Navigator.maybePop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
           ),
           Expanded(
-            child: Text(widget.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+            child: Text(
+              widget.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
           IconButton(
             onPressed: () {
               Clipboard.setData(ClipboardData(text: widget.url));
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('播放链接已复制'), behavior: SnackBarBehavior.floating),
+                const SnackBar(
+                  content: Text('播放链接已复制'),
+                  behavior: SnackBarBehavior.floating,
+                ),
               );
             },
-            icon: const Icon(Icons.ios_share_rounded, color: Colors.white70, size: 18),
+            icon: const Icon(
+              Icons.ios_share_rounded,
+              color: Colors.white70,
+              size: 18,
+            ),
           ),
         ],
       ),
@@ -262,10 +288,16 @@ class _VideoPageState extends State<VideoPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (widget.title.isNotEmpty)
-            Text(widget.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+            Text(
+              widget.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           const SizedBox(height: 10),
           Wrap(
             spacing: 7,
@@ -279,7 +311,14 @@ class _VideoPageState extends State<VideoPage> {
           ),
           if (widget.episodes.isNotEmpty) ...[
             const SizedBox(height: 20),
-            const Text('选集', style: TextStyle(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w600)),
+            const Text(
+              '选集',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
@@ -292,17 +331,30 @@ class _VideoPageState extends State<VideoPage> {
                       _boot();
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: e.$2 == widget.url ? C.brand.withAlpha(70) : Colors.white.withAlpha(14),
-                        borderRadius: BorderRadius.circular(9),
-                        border: Border.all(color: e.$2 == widget.url ? C.brand : Colors.transparent),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 13,
+                        vertical: 8,
                       ),
-                      child: Text(e.$1,
-                          style: TextStyle(
-                            color: e.$2 == widget.url ? Colors.white : Colors.white60,
-                            fontSize: 12.5,
-                          )),
+                      decoration: BoxDecoration(
+                        color: e.$2 == widget.url
+                            ? C.brand.withAlpha(70)
+                            : Colors.white.withAlpha(14),
+                        borderRadius: BorderRadius.circular(9),
+                        border: Border.all(
+                          color: e.$2 == widget.url
+                              ? C.brand
+                              : Colors.transparent,
+                        ),
+                      ),
+                      child: Text(
+                        e.$1,
+                        style: TextStyle(
+                          color: e.$2 == widget.url
+                              ? Colors.white
+                              : Colors.white60,
+                          fontSize: 12.5,
+                        ),
+                      ),
                     ),
                   ),
               ],
@@ -325,7 +377,10 @@ class _VideoPageState extends State<VideoPage> {
         children: [
           Icon(icon, size: 12, color: Colors.white54),
           const SizedBox(width: 4),
-          Text(text, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+          Text(
+            text,
+            style: const TextStyle(color: Colors.white70, fontSize: 11),
+          ),
         ],
       ),
     );
@@ -335,145 +390,189 @@ class _VideoPageState extends State<VideoPage> {
     if (_failed) return _errorView();
     if (!_ready || _c == null) return _loadingView();
 
-    return LayoutBuilder(builder: (ctx, box) {
-      return GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          if (!_controls) {
-            setState(() => _controls = true);
-            _armHide();
-          } else if (v?.isPlaying ?? false) {
-            setState(() => _controls = false);
-          }
-        },
-        onDoubleTapDown: (d) {
-          _seek(d.localPosition.dx < box.maxWidth / 2 ? -10 : 10);
-        },
-        onVerticalDragUpdate: (d) {
-          final up = d.delta.dy < 0;
-          final step = d.delta.dy.abs() / 220;
-          if (d.localPosition.dx > box.maxWidth / 2) {
-            _volume = (_volume + (up ? step : -step)).clamp(0.0, 1.0);
-            _c?.setVolume(_volume);
+    return LayoutBuilder(
+      builder: (ctx, box) {
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            if (!_controls) {
+              setState(() => _controls = true);
+              _armHide();
+            } else if (v?.isPlaying ?? false) {
+              setState(() => _controls = false);
+            }
+          },
+          onDoubleTapDown: (d) {
+            _seek(d.localPosition.dx < box.maxWidth / 2 ? -10 : 10);
+          },
+          onVerticalDragUpdate: (d) {
+            final up = d.delta.dy < 0;
+            final step = d.delta.dy.abs() / 220;
+            if (d.localPosition.dx > box.maxWidth / 2) {
+              _volume = (_volume + (up ? step : -step)).clamp(0.0, 1.0);
+              _c?.setVolume(_volume);
+              setState(() {
+                _hintType = 2;
+                _hintValue = _volume;
+                _hintOn = true;
+              });
+            } else {
+              setState(() {
+                _hintType = 1;
+                _hintValue = (_hintValue + (up ? step : -step)).clamp(
+                  0.05,
+                  1.0,
+                );
+                _hintOn = true;
+              });
+            }
+          },
+          onVerticalDragEnd: (_) => setState(() => _hintOn = false),
+          onHorizontalDragStart: (_) =>
+              setState(() => _seekPreview = v?.position ?? Duration.zero),
+          onHorizontalDragUpdate: (d) {
+            final base = _seekPreview ?? v?.position ?? Duration.zero;
+            final t =
+                base +
+                Duration(milliseconds: ((d.primaryDelta ?? 0) * 6).round());
             setState(() {
-              _hintType = 2;
-              _hintValue = _volume;
+              _seekPreview = t < Duration.zero ? Duration.zero : t;
+              _hintType = 3;
               _hintOn = true;
             });
-          } else {
+          },
+          onHorizontalDragEnd: (_) {
+            if (_seekPreview != null) _c?.seekTo(_seekPreview!);
             setState(() {
-              _hintType = 1;
-              _hintValue = (_hintValue + (up ? step : -step)).clamp(0.05, 1.0);
-              _hintOn = true;
+              _seekPreview = null;
+              _hintOn = false;
             });
-          }
-        },
-        onVerticalDragEnd: (_) => setState(() => _hintOn = false),
-        onHorizontalDragStart: (_) =>
-            setState(() => _seekPreview = v?.position ?? Duration.zero),
-        onHorizontalDragUpdate: (d) {
-          final base = _seekPreview ?? v?.position ?? Duration.zero;
-          final t = base + Duration(milliseconds: ((d.primaryDelta ?? 0) * 6).round());
-          setState(() {
-            _seekPreview = t < Duration.zero ? Duration.zero : t;
-            _hintType = 3;
-            _hintOn = true;
-          });
-        },
-        onHorizontalDragEnd: (_) {
-          if (_seekPreview != null) _c?.seekTo(_seekPreview!);
-          setState(() {
-            _seekPreview = null;
-            _hintOn = false;
-          });
-        },
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (v != null && v.isInitialized) MpvView(_c!),
-            if (_tapSide != 0)
-              Align(
-                alignment: _tapSide > 0 ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 26),
-                  padding: const EdgeInsets.all(13),
-                  decoration: BoxDecoration(color: Colors.black.withAlpha(120), shape: BoxShape.circle),
-                  child: Icon(
-                    _tapSide > 0 ? Icons.fast_forward_rounded : Icons.fast_rewind_rounded,
-                    color: Colors.white,
-                    size: 26,
+          },
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (v != null && v.isInitialized) MpvView(_c!),
+              if (_tapSide != 0)
+                Align(
+                  alignment: _tapSide > 0
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 26),
+                    padding: const EdgeInsets.all(13),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(120),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      _tapSide > 0
+                          ? Icons.fast_forward_rounded
+                          : Icons.fast_rewind_rounded,
+                      color: Colors.white,
+                      size: 26,
+                    ),
                   ),
                 ),
-              ),
-            if ((v?.isBuffering ?? false) && _ready)
-              const Center(
-                child: SizedBox(
-                  width: 34,
-                  height: 34,
-                  child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+              if ((v?.isBuffering ?? false) && _ready)
+                const Center(
+                  child: SizedBox(
+                    width: 34,
+                    height: 34,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              if (_hintOn && _hintType != 0)
+                Center(
+                  child: _hintType == 3
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withAlpha(185),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${_fmt(_seekPreview ?? Duration.zero)} / ${_fmt(v?.duration ?? Duration.zero)}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        )
+                      : Container(
+                          width: 92,
+                          height: 92,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withAlpha(170),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                _hintType == 1
+                                    ? Icons.light_mode_rounded
+                                    : Icons.volume_up_rounded,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                '${(_hintValue * 100).round()}%',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                ),
+              IgnorePointer(
+                ignoring: !_controls,
+                child: AnimatedOpacity(
+                  opacity: _controls ? 1 : 0,
+                  duration: const Duration(milliseconds: 200),
+                  child: _controlsLayer(v),
                 ),
               ),
-            if (_hintOn && _hintType != 0)
-              Center(
-                child: _hintType == 3
-                    ? Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withAlpha(185),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${_fmt(_seekPreview ?? Duration.zero)} / ${_fmt(v?.duration ?? Duration.zero)}',
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
-                        ),
-                      )
-                    : Container(
-                        width: 92,
-                        height: 92,
-                        decoration: BoxDecoration(color: Colors.black.withAlpha(170), shape: BoxShape.circle),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(_hintType == 1 ? Icons.light_mode_rounded : Icons.volume_up_rounded,
-                                color: Colors.white, size: 22),
-                            const SizedBox(height: 5),
-                            Text('${(_hintValue * 100).round()}%',
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
-                          ],
+              if (_hintOn && _hintType == 0)
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withAlpha(170),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        _hint,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-              ),
-            IgnorePointer(
-              ignoring: !_controls,
-              child: AnimatedOpacity(
-                opacity: _controls ? 1 : 0,
-                duration: const Duration(milliseconds: 200),
-                child: _controlsLayer(v),
-              ),
-            ),
-            if (_hintOn && _hintType == 0)
-              Align(
-                alignment: Alignment.topCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(170),
-                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text(_hint,
-                        style: const TextStyle(
-                            color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w600)),
                   ),
                 ),
-              ),
-          ],
-        ),
-      );
-    });
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _controlsLayer(MpvValue? v) {
@@ -482,7 +581,11 @@ class _VideoPageState extends State<VideoPage> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Colors.black.withAlpha(110), Colors.transparent, Colors.black.withAlpha(160)],
+          colors: [
+            Colors.black.withAlpha(110),
+            Colors.transparent,
+            Colors.black.withAlpha(160),
+          ],
           stops: const [0, 0.5, 1],
         ),
       ),
@@ -500,7 +603,9 @@ class _VideoPageState extends State<VideoPage> {
                 border: Border.all(color: Colors.white24),
               ),
               child: Icon(
-                (v?.isPlaying ?? false) ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                (v?.isPlaying ?? false)
+                    ? Icons.pause_rounded
+                    : Icons.play_arrow_rounded,
                 color: Colors.white,
                 size: 34,
               ),
@@ -515,11 +620,21 @@ class _VideoPageState extends State<VideoPage> {
                 _progress(v),
                 Row(
                   children: [
-                    Text(_fmt(v?.position ?? Duration.zero),
-                        style: const TextStyle(
-                            color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w600)),
-                    Text(' / ${_fmt(v?.duration ?? Duration.zero)}',
-                        style: TextStyle(color: Colors.white.withAlpha(140), fontSize: 11.5)),
+                    Text(
+                      _fmt(v?.position ?? Duration.zero),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      ' / ${_fmt(v?.duration ?? Duration.zero)}',
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(140),
+                        fontSize: 11.5,
+                      ),
+                    ),
                     const Spacer(),
                     _iconBtn(Icons.speed_rounded, '${_speed}x', _showSpeed),
                     _iconBtn(Icons.fullscreen_rounded, '', _toggleFullscreen),
@@ -549,7 +664,10 @@ class _VideoPageState extends State<VideoPage> {
             Icon(icon, size: 15, color: Colors.white),
             if (label.isNotEmpty) ...[
               const SizedBox(width: 4),
-              Text(label, style: const TextStyle(color: Colors.white, fontSize: 11.5)),
+              Text(
+                label,
+                style: const TextStyle(color: Colors.white, fontSize: 11.5),
+              ),
             ],
           ],
         ),
@@ -558,61 +676,74 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   Widget _progress(MpvValue? v) {
-    final total = (v?.duration.inMilliseconds ?? 0) == 0 ? 1 : v!.duration.inMilliseconds;
+    final total = (v?.duration.inMilliseconds ?? 0) == 0
+        ? 1
+        : v!.duration.inMilliseconds;
     final p = ((v?.position.inMilliseconds ?? 0) / total).clamp(0.0, 1.0);
     final b = 0.0; // video_player 不暴露精确缓冲区间
-    return LayoutBuilder(builder: (ctx, box) {
-      void seekTo(double dx) {
-        final r = (dx / box.maxWidth).clamp(0.0, 1.0);
-        _c?.seekTo(Duration(milliseconds: (total * r).round()));
-      }
+    return LayoutBuilder(
+      builder: (ctx, box) {
+        void seekTo(double dx) {
+          final r = (dx / box.maxWidth).clamp(0.0, 1.0);
+          _c?.seekTo(Duration(milliseconds: (total * r).round()));
+        }
 
-      return GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapUp: (d) => seekTo(d.localPosition.dx),
-        onHorizontalDragUpdate: (d) => seekTo(d.localPosition.dx),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: Stack(
-            alignment: Alignment.centerLeft,
-            children: [
-              Container(
-                height: 3,
-                decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(46), borderRadius: BorderRadius.circular(2)),
-              ),
-              FractionallySizedBox(
-                widthFactor: b,
-                child: Container(
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapUp: (d) => seekTo(d.localPosition.dx),
+          onHorizontalDragUpdate: (d) => seekTo(d.localPosition.dx),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                Container(
                   height: 3,
                   decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(90), borderRadius: BorderRadius.circular(2)),
-                ),
-              ),
-              FractionallySizedBox(
-                widthFactor: p,
-                child: Container(
-                  height: 3,
-                  decoration:
-                      BoxDecoration(color: C.brandBright, borderRadius: BorderRadius.circular(2)),
-                ),
-              ),
-              FractionallySizedBox(
-                widthFactor: p,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    width: 10,
-                    height: 10,
-                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                    color: Colors.white.withAlpha(46),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              ),
-            ],
+                FractionallySizedBox(
+                  widthFactor: b,
+                  child: Container(
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(90),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                FractionallySizedBox(
+                  widthFactor: p,
+                  child: Container(
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: C.brandBright,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                FractionallySizedBox(
+                  widthFactor: p,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   void _showSpeed() {
@@ -622,26 +753,38 @@ class _VideoPageState extends State<VideoPage> {
       builder: (c) => Container(
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration:
-            BoxDecoration(color: const Color(0xFF1A1D26), borderRadius: BorderRadius.circular(18)),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1D26),
+          borderRadius: BorderRadius.circular(18),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Padding(
               padding: EdgeInsets.only(bottom: 6),
-              child: Text('播放速度',
-                  style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
+              child: Text(
+                '播放速度',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
             for (final s in _speeds)
               ListTile(
                 dense: true,
-                title: Text('${s}x',
-                    style: TextStyle(
-                      color: s == _speed ? C.brandBright : Colors.white,
-                      fontSize: 14,
-                      fontWeight: s == _speed ? FontWeight.w700 : FontWeight.w400,
-                    )),
-                trailing: s == _speed ? Icon(Icons.check_rounded, size: 18, color: C.brandBright) : null,
+                title: Text(
+                  '${s}x',
+                  style: TextStyle(
+                    color: s == _speed ? C.brandBright : Colors.white,
+                    fontSize: 14,
+                    fontWeight: s == _speed ? FontWeight.w700 : FontWeight.w400,
+                  ),
+                ),
+                trailing: s == _speed
+                    ? Icon(Icons.check_rounded, size: 18, color: C.brandBright)
+                    : null,
                 onTap: () {
                   _c?.setPlaybackSpeed(s);
                   setState(() => _speed = s);
@@ -661,9 +804,11 @@ class _VideoPageState extends State<VideoPage> {
         fit: StackFit.expand,
         children: [
           if (widget.poster != null && widget.poster!.isNotEmpty)
-            Image.network(widget.poster!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+            Image.network(
+              widget.poster!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
           Container(color: Colors.black.withAlpha(150)),
           Center(
             child: Column(
@@ -672,14 +817,25 @@ class _VideoPageState extends State<VideoPage> {
                 const SizedBox(
                   width: 30,
                   height: 30,
-                  child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 14),
-                const Text('正在加载…', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                const Text(
+                  '正在加载…',
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                ),
                 if (_waitSec >= 8) ...[
                   const SizedBox(height: 6),
-                  Text('已等待 $_waitSec 秒，源站较慢',
-                      style: TextStyle(color: Colors.white.withAlpha(100), fontSize: 11.5)),
+                  Text(
+                    '已等待 $_waitSec 秒，源站较慢',
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(100),
+                      fontSize: 11.5,
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -700,16 +856,31 @@ class _VideoPageState extends State<VideoPage> {
             Container(
               width: 56,
               height: 56,
-              decoration: BoxDecoration(color: C.rose.withAlpha(30), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: C.rose.withAlpha(30),
+                shape: BoxShape.circle,
+              ),
               child: Icon(Icons.play_disabled_rounded, color: C.rose, size: 28),
             ),
             const SizedBox(height: 14),
-            const Text('播放失败',
-                style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+            const Text(
+              '播放失败',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text(_err,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12, height: 1.6)),
+            Text(
+              _err,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withAlpha(150),
+                fontSize: 12,
+                height: 1.6,
+              ),
+            ),
             const SizedBox(height: 20),
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -736,8 +907,14 @@ class _VideoPageState extends State<VideoPage> {
           color: c == Colors.white24 ? Colors.white.withAlpha(26) : c,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Text(t,
-            style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+        child: Text(
+          t,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }

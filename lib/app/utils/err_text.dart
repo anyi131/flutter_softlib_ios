@@ -41,7 +41,8 @@ class ErrText {
     }
 
     // ── 解析 ──
-    if (s.contains('FormatException') || s.contains('type ') && s.contains('is not a subtype')) {
+    if (s.contains('FormatException') ||
+        s.contains('type ') && s.contains('is not a subtype')) {
       return '数据格式异常，请稍后重试';
     }
 
@@ -50,7 +51,10 @@ class ErrText {
     if (s.contains('ENOSPC') || s.contains('No space left')) return '存储空间不足';
 
     // ── 业务提示：去掉 Exception: 前缀后若已是中文，直接展示 ──
-    var t = s.replaceFirst(RegExp(r'^(Exception|DioException|Error|FormatException):\s*'), '');
+    var t = s.replaceFirst(
+      RegExp(r'^(Exception|DioException|Error|FormatException):\s*'),
+      '',
+    );
     if (RegExp(r'[\u4e00-\u9fa5]').hasMatch(t)) {
       return t.length > 60 ? '${t.substring(0, 60)}…' : t;
     }
