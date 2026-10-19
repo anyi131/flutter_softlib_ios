@@ -123,7 +123,9 @@ class SoftService {
     bool force = false,
   }) async {
     final key = 'apps_${catId}_${keyword}_$provider';
-    if (!force) {
+    // ★ 1020：后台可关闭「列表缓存」（关闭后每次都走网络）
+    final cacheOn = cachedConfig?.uiConfig.featureApiCache ?? true;
+    if (!force && cacheOn) {
       final hit = _cache[key];
       if (hit != null && !hit.expired) return hit.data as List<AppItem>;
     }
@@ -847,9 +849,11 @@ extension ToolboxService on SoftService {
   /// 我的收藏
   Future<List<Map<String, dynamic>>> jzsFavList() async {
     try {
-      final r = await dio.get(
+      // ★ 1020 修复：服务端 user_by_token() 只读 POST body，
+      //   GET 把 token 放 URL 会被忽略 → 收藏永远是空的。改 POST。
+      final r = await dio.post(
         '/api/softlib/jzs/fav_list',
-        queryParameters: {'token': UserService.instance.token},
+        data: {'token': UserService.instance.token},
       );
       if (r.data is Map && r.data['code'] == 1) {
         final list = (r.data['data']?['list'] as List?) ?? [];
@@ -875,9 +879,9 @@ extension ToolboxService on SoftService {
   /// 使用历史
   Future<List<Map<String, dynamic>>> jzsHistory() async {
     try {
-      final r = await dio.get(
+      final r = await dio.post(
         '/api/softlib/jzs/history_list',
-        queryParameters: {'token': UserService.instance.token},
+        data: {'token': UserService.instance.token},
       );
       if (r.data is Map && r.data['code'] == 1) {
         final list = (r.data['data']?['list'] as List?) ?? [];

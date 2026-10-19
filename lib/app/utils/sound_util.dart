@@ -1,16 +1,17 @@
-import 'package:flutter/services.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// ★ 1016：轻音效（下载完成 / 签到成功 / 来消息 / 有新版本）
+/// 轻音效（下载完成 / 签到成功 / 来消息 / 有新版本）
 ///
-/// 设计要点（按需求）：
-///  · 4 个场景独立开关 + 1 个总开关（存本地，后台可覆盖默认值）
-///  · 尊重系统静音：优先用 **系统短音效**（HapticFeedback / SystemSound），
-///    不引入音频插件 —— 系统静音时自然不会响，零风险、零体积
-///  · 短促 <1s、不与下载通知音效重复
+/// ★★ 1020 重做（用户反馈「音效开启了也没用」）：
+///   原来根本没播音频 —— 只是 SystemSound.play(click) + 震动，
+///   而多数手机默认关闭「触摸提示音」，所以用户开了开关也听不到。
 ///
-/// 说明：没有用 audioplayers，是因为：① 引入插件 + 打包音频文件会增大体积；
-/// ② 系统静音语义由系统自己处理，不需要额外判断 AudioManager/AVAudioSession。
+///   现在：
+///     · 真实音频文件（assets/audio/*.wav，4 个共 47KB）
+///     · audioplayers 低延迟播放，每类独立实例（不抢彼此）
+///     · 系统静音/勿扰时自动不响（由系统音频会话决定）
+///     · 4 个场景独立开关 + 总开关，与后台配置一致
 class SoundUtil {
   SoundUtil._();
 
@@ -68,34 +69,69 @@ class SoundUtil {
   /// 下载完成：双击轻振动（系统会跟随静音设置）
   static Future<void> playDownload() async {
     if (!master || !download) return;
-    try {
-      await HapticFeedback.mediumImpact();
-      await SystemSound.play(SystemSoundType.click);
-    } catch (_) {}
+    _play('download');
   }
 
-  /// 签到成功：轻点击 + 轻振动
+  /// 签到成功
   static Future<void> playSign() async {
     if (!master || !sign) return;
-    try {
-      await SystemSound.play(SystemSoundType.click);
-      await HapticFeedback.lightImpact();
-    } catch (_) {}
+    _play('sign');
   }
 
   /// 来消息
   static Future<void> playMessage() async {
     if (!master || !message) return;
-    try {
-      await HapticFeedback.selectionClick();
-    } catch (_) {}
+    _play('message');
   }
 
-  /// 有新版本：提示音
+  /// 有新版本
   static Future<void> playUpdate() async {
     if (!master || !update) return;
-    try {
-      await SystemSound.play(SystemSoundType.alert);
-    } catch (_) {}
+    _play('update');
+  }
+
+  // ═══════════ 播放实现 ═══════════
+
+  static final Map<String, AudioPlayer> _players = {};
+  static bool _audioReady = false;
+
+  /// 首次播放时预热（避免第一次有延迟）
+  static Future<void> _warmUp() async {
+    if (_audioReady) return;
+    _audioReady = true;
+    for (final k in ['download', 'sign', 'message', 'update']) {
+      try {
+        final p = AudioPlayer();
+        await p.setReleaseMode(ReleaseMode.stop);
+        await p.setSource(AssetSource('audio/$k.wav'));
+        _players[k] = p;
+      } catch (_) {}
+    }
+  }
+
+  static void _play(String name) {
+    // 不 await：音效不应该阻塞任何业务逻辑
+    () async {
+      try {
+        await _warmUp();
+        final p = _players[name];
+        if (p == null) return;
+        await p.stop();
+        await p.resume();
+      } catch (_) {
+        // 静音 / 无音频设备 / 播放失败 —— 静默忽略，绝不影响主流程
+      }
+    }();
+  }
+
+  /// 释放（App 退出时）
+  static Future<void> dispose() async {
+    for (final p in _players.values) {
+      try {
+        await p.dispose();
+      } catch (_) {}
+    }
+    _players.clear();
+    _audioReady = false;
   }
 }

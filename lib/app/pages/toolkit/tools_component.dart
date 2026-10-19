@@ -15,6 +15,7 @@ import '../../design/ui.dart';
 import '../../api/user_service.dart';
 import '../../utils/err_text.dart';
 import '../../utils/jump_util.dart';
+import '../../utils/tool_ctx.dart';
 import '../../utils/toast_util.dart';
 import '../../widgets/tab_bottom_pad.dart';
 import 'tool_kit.dart';
@@ -1032,6 +1033,8 @@ class _ToolsComponentState extends State<ToolsComponent>
   void openTool(Map<String, dynamic> t) {
     final id = int.tryParse('${t['id']}') ?? 0;
     if (id > 0) _svc.addHistory(id);
+    // ★ 1020：记录当前打开的工具，供工具页顶栏显示收藏星标
+    ToolCtx.set(id, '${t['title'] ?? ''}');
     final kind = '${t['kind'] ?? ''}';
     final route = '${t['route'] ?? ''}';
     final title = '${t['title'] ?? ''}';
@@ -1249,6 +1252,10 @@ class _ToolSearchPageState extends State<ToolSearchPage> {
   }
 
   void _openTool(Map<String, dynamic> t) {
+    ToolCtx.set(
+      int.tryParse('${t['id']}') ?? 0,
+      '${t['title'] ?? ''}',
+    );
     final fn = toolRoute('${t['kind'] ?? ''}', route: '${t['route'] ?? ''}');
     if (fn != null) {
       fn(title: '${t['title'] ?? ''}', apiUrl: '${t['api_url'] ?? ''}');

@@ -4,7 +4,15 @@ import 'package:get/get.dart';
 import '../../design/adaptive.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../api/toolbox_service.dart';
+import '../../api/user_service.dart';
+import '../../utils/err_text.dart';
+import '../../utils/toast_util.dart';
 import '../../design/ui.dart';
+import '../../utils/tool_ctx.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 工具箱公共件（v3.3.4）：图标映射 + 页面骨架 + 卡片/按钮/输入框/胶囊
@@ -121,6 +129,10 @@ class ToolScaffold extends StatelessWidget {
   final List<Widget> actions;
   final bool scrollable;
 
+  /// ★ 1020：工具 ID。传了就自动在右上角显示收藏星标 ——
+  ///   之前只有工具箱列表有收藏，**点进工具用的时候没法收藏**。
+  final int? toolId;
+
   const ToolScaffold({
     super.key,
     required this.title,
@@ -128,6 +140,7 @@ class ToolScaffold extends StatelessWidget {
     this.subtitle,
     this.actions = const [],
     this.scrollable = false,
+    this.toolId,
   });
 
   @override
@@ -187,6 +200,8 @@ class ToolScaffold extends StatelessWidget {
                           ],
                         ),
                       ),
+                      // ★ 1020：优先用显式传入的 toolId，否则用全局当前工具
+                      if ((toolId ?? ToolCtx.id) > 0) _favBtn(context),
                       ...actions,
                     ],
                   ),
@@ -219,6 +234,76 @@ class ToolScaffold extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// 收藏按钮（工具页右上角）
+  ///
+  /// ★ 1020：工具打开后的页面也能收藏。
+  ///   状态用 FutureBuilder 拉取 + 本地刷新，避免整页改 Stateful。
+  Widget _favBtn(BuildContext context) {
+    return StatefulBuilder(
+      builder: (ctx, setLocal) {
+        return FutureBuilder<bool>(
+          future: _isFav(toolId ?? ToolCtx.id),
+          builder: (c2, snap) {
+            final fav = snap.data ?? false;
+            return GestureDetector(
+              onTap: () async {
+                final ok = await _toggleFav(toolId ?? ToolCtx.id);
+                if (ok != null) setLocal(() {});
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                margin: const EdgeInsets.only(right: 4),
+                child: Icon(
+                  fav ? Icons.star_rounded : Icons.star_border_rounded,
+                  size: 21,
+                  color: fav ? C.amber : context.t2,
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<bool> _isFav(int id) async {
+    try {
+      final sp = await SharedPreferences.getInstance();
+      final raw = sp.getStringList('tool_fav_ids') ?? const <String>[];
+      return raw.contains('$id');
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// 返回 true=操作成功（需要刷新 UI）
+  Future<bool?> _toggleFav(int id) async {
+    if (!UserService.instance.isLoggedIn) {
+      ToastUtil.info('登录后才能收藏');
+      return null;
+    }
+    try {
+      final on = await ToolboxService.instance.toggleFav(id);
+      // 同步本地缓存，让工具箱列表的星标一起变
+      final sp = await SharedPreferences.getInstance();
+      final raw = (sp.getStringList('tool_fav_ids') ?? const <String>[])
+          .toSet();
+      if (on) {
+        raw.add('$id');
+      } else {
+        raw.remove('$id');
+      }
+      await sp.setStringList('tool_fav_ids', raw.toList());
+      ToastUtil.success(on ? '已收藏' : '已取消收藏');
+      return true;
+    } catch (e) {
+      ToastUtil.error(ErrText.of(e));
+      return null;
+    }
   }
 }
 

@@ -13,6 +13,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../utils/app_action.dart';
 import '../../../utils/toast_util.dart';
 
 /// 用户管理（统计概览 + 筛选 + 分页 + 批量操作 + CSV 导出）
@@ -682,8 +683,11 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                       ? Icons.person_remove_alt_1_outlined
                       : Icons.admin_panel_settings_outlined,
                   onTap: () async {
-                    await _svc.setAdmin(id, !isAdmin);
-                    ToastUtil.success(isAdmin ? '已取消' : '已设为管理员');
+                    await AppAction.run(
+                      () => _svc.setAdmin(id, !isAdmin),
+                      loading: '处理中…',
+                      success: isAdmin ? '已取消管理员' : '已设为管理员',
+                    );
                     _load();
                   },
                 ),
@@ -692,8 +696,11 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                   icon: banned ? Icons.lock_open_rounded : Icons.block_rounded,
                   color: C.warning,
                   onTap: () async {
-                    await _svc.toggleUserStatus(id);
-                    ToastUtil.success(banned ? '已解禁' : '已禁用');
+                    await AppAction.run(
+                      () => _svc.toggleUserStatus(id),
+                      loading: '处理中…',
+                      success: banned ? '已解禁' : '已禁用',
+                    );
                     _load();
                   },
                 ),

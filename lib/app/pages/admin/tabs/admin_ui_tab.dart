@@ -54,6 +54,13 @@ class _AdminUiTabState extends State<AdminUiTab> {
   // ★ 1014：原来这几个入口写死常显，现补上后台开关
   bool _cardRedeem = true, _cardShop = true, _shareApp = true;
   bool _qqGroup = true, _replaceSplash = true;
+  // ★ 1020 新增功能开关
+  bool _wish = true;
+  bool _favorites = true;
+  bool _history = true;
+  bool _appFav = true;
+  bool _silentRetry = true;
+  bool _apiCache = true;
   // 列表样式
   String _listStyle = 'glass';
   // 更新弹窗模板（v52g #1）
@@ -152,6 +159,12 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _shareApp = '${feat['share_app'] ?? 1}' == '1';
         _qqGroup = '${feat['qq_group'] ?? 1}' == '1';
         _replaceSplash = '${feat['replace_splash'] ?? 1}' == '1';
+        _wish = '${feat['wish'] ?? 1}' == '1';
+        _favorites = '${feat['favorites'] ?? 1}' == '1';
+        _history = '${feat['history'] ?? 1}' == '1';
+        _appFav = '${feat['app_fav'] ?? 1}' == '1';
+        _silentRetry = '${feat['silent_retry'] ?? 1}' == '1';
+        _apiCache = '${feat['api_cache'] ?? 1}' == '1';
         _listStyle = '${home['list_style'] ?? cfg['app_ui_style'] ?? 'glass'}';
         _updateTemplate = '${ui['update_template'] ?? 'aurora'}';
         _homeTemplate = '${home['template'] ?? 'classic'}';
@@ -247,6 +260,12 @@ class _AdminUiTabState extends State<AdminUiTab> {
           'share_app': _shareApp ? 1 : 0,
           'qq_group': _qqGroup ? 1 : 0,
           'replace_splash': _replaceSplash ? 1 : 0,
+          'wish': _wish ? 1 : 0,
+          'favorites': _favorites ? 1 : 0,
+          'history': _history ? 1 : 0,
+          'app_fav': _appFav ? 1 : 0,
+          'silent_retry': _silentRetry ? 1 : 0,
+          'api_cache': _apiCache ? 1 : 0,
         },
         'update_template': _updateTemplate,
         'tips_template': _tipsTemplate,
@@ -714,6 +733,13 @@ class _AdminUiTabState extends State<AdminUiTab> {
       ('分享软件', _shareApp, (v) => _shareApp = v),
       ('QQ通知群', _qqGroup, (v) => _qqGroup = v),
       ('替换开屏', _replaceSplash, (v) => _replaceSplash = v),
+      // ★ 1020 新增功能
+      ('求软件', _wish, (v) => _wish = v),
+      ('我的收藏', _favorites, (v) => _favorites = v),
+      ('使用历史', _history, (v) => _history = v),
+      ('详情页收藏', _appFav, (v) => _appFav = v),
+      ('下载静默重试', _silentRetry, (v) => _silentRetry = v),
+      ('列表缓存', _apiCache, (v) => _apiCache = v),
     ];
     return Wrap(
       spacing: 9,
@@ -782,6 +808,8 @@ class _AdminUiTabState extends State<AdminUiTab> {
       ('dark', '暗黑'),
       ('minimal', '极简'),
       ('compact', '紧凑'),
+      ('aurora', '极光渐变'),
+      ('neon', '霓虹'),
     ],
     _detailStyle,
     (v) => setState(() => _detailStyle = v),

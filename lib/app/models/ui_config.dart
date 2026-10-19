@@ -75,6 +75,14 @@ class UiConfig {
   final bool featureQqGroup; // QQ通知群
   final bool featureReplaceSplash; // 替换开屏
 
+  // ── ★ 1020 新增功能开关 ──
+  final bool featureWish; // 求软件（需求投票）
+  final bool featureFavorites; // 我的收藏（软件+工具）
+  final bool featureHistory; // 使用历史
+  final bool featureAppFav; // 软件详情页收藏按钮
+  final bool featureSilentRetry; // 下载失败静默重试
+  final bool featureApiCache; // 接口列表缓存
+
   // ── 首页布局 ──
   final String listStyle; // glass / compact / grid / large / minimal
   final String homeBanner; // on / off
@@ -134,6 +142,12 @@ class UiConfig {
     this.featureShareApp = true,
     this.featureQqGroup = true,
     this.featureReplaceSplash = true,
+    this.featureWish = true,
+    this.featureFavorites = true,
+    this.featureHistory = true,
+    this.featureAppFav = true,
+    this.featureSilentRetry = true,
+    this.featureApiCache = true,
     this.listStyle = 'glass',
     this.homeBanner = 'on',
     this.homeNotice = 'on',
@@ -193,6 +207,12 @@ class UiConfig {
       featureShareApp: _b(feat['share_app'], true),
       featureQqGroup: _b(feat['qq_group'], true),
       featureReplaceSplash: _b(feat['replace_splash'], true),
+      featureWish: _b(feat['wish'], true),
+      featureFavorites: _b(feat['favorites'], true),
+      featureHistory: _b(feat['history'], true),
+      featureAppFav: _b(feat['app_fav'], true),
+      featureSilentRetry: _b(feat['silent_retry'], true),
+      featureApiCache: _b(feat['api_cache'], true),
       listStyle: _s(home['list_style'], 'glass'),
       homeBanner: _s(home['banner'], 'on'),
       homeNotice: _s(home['notice'], 'on'),
@@ -254,6 +274,24 @@ class UiConfig {
       quickVip: base.quickVip,
       quickService: base.quickService,
       quickUpdate: base.quickUpdate,
+      // ★ 1020：补全功能开关，避免 fromLegacy 把后台关闭的功能重置回默认值
+      featureCheckin: base.featureCheckin,
+      featureExchange: base.featureExchange,
+      featureDonateRank: base.featureDonateRank,
+      featureInvite: base.featureInvite,
+      featureNotice: base.featureNotice,
+      featureReferral: base.featureReferral,
+      featureCardRedeem: base.featureCardRedeem,
+      featureCardShop: base.featureCardShop,
+      featureShareApp: base.featureShareApp,
+      featureQqGroup: base.featureQqGroup,
+      featureReplaceSplash: base.featureReplaceSplash,
+      featureWish: base.featureWish,
+      featureFavorites: base.featureFavorites,
+      featureHistory: base.featureHistory,
+      featureAppFav: base.featureAppFav,
+      featureSilentRetry: base.featureSilentRetry,
+      featureApiCache: base.featureApiCache,
     );
   }
 

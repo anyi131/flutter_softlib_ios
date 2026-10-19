@@ -87,9 +87,9 @@ class _FavoritesPageState extends State<FavoritesPage>
 
   Future<List<Map<String, dynamic>>> _fetchTools() async {
     try {
-      final r = await _dio.get(
+      final r = await _dio.post(
         '/api/softlib/jzs/fav_list',
-        queryParameters: {'token': UserService.instance.token},
+        data: {'token': UserService.instance.token},
       );
       if (r.data is Map && r.data['code'] == 1) {
         final list = (r.data['data']?['list'] as List?) ?? [];

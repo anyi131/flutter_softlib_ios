@@ -212,25 +212,30 @@ class _AppSearchPageState extends State<AppSearchPage> {
                 ),
               ),
               const SizedBox(height: 22),
-              FilledButton.icon(
-                // ★ 1020：改为跳「求软件」页（带关键词预填），
-                //   原来的 Routes.message 是消息中心，用户点进去更懵
-                onPressed: () =>
-                    Get.toNamed(Routes.wish, arguments: {'keyword': _keyword}),
-                icon: const Icon(Icons.add_comment_rounded, size: 17),
-                label: const Text('求这个软件'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: C.brand,
-                  minimumSize: const Size(160, 44),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              // ★ 1020：后台关闭「求软件」时不显示该按钮
+              if (SoftService.instance.cachedConfig?.uiConfig.featureWish ??
+                  true)
+                FilledButton.icon(
+                  // ★ 1020：改为跳「求软件」页（带关键词预填），
+                  //   原来的 Routes.message 是消息中心，用户点进去更懵
+                  onPressed: () => Get.toNamed(
+                    Routes.wish,
+                    arguments: {'keyword': _keyword},
                   ),
-                  textStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                  icon: const Icon(Icons.add_comment_rounded, size: 17),
+                  label: const Text('求这个软件'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: C.brand,
+                    minimumSize: const Size(160, 44),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
               const SizedBox(height: 10),
               TextButton(
                 onPressed: () => Navigator.maybePop(context),

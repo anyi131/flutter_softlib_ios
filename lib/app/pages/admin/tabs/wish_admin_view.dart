@@ -5,6 +5,7 @@ import '../../../api/admin_service.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../utils/app_action.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';
 import '../admin_ui_kit.dart';
@@ -93,8 +94,11 @@ class _WishAdminViewState extends State<WishAdminView>
       note = ctrl.text.trim();
     }
     try {
-      await _svc.wishReview(id: id, status: status, note: note);
-      ToastUtil.success('已更新');
+      await AppAction.run(
+        () => _svc.wishReview(id: id, status: status, note: note),
+        loading: '处理中…',
+        success: '已更新',
+      );
       _load();
     } catch (e) {
       ToastUtil.error(ErrText.of(e));
@@ -121,8 +125,11 @@ class _WishAdminViewState extends State<WishAdminView>
     );
     if (ok != true) return;
     try {
-      await _svc.wishDelete(id);
-      ToastUtil.success('已删除');
+      await AppAction.run(
+        () => _svc.wishDelete(id),
+        loading: '删除中…',
+        success: '已删除',
+      );
       _load();
     } catch (e) {
       ToastUtil.error(ErrText.of(e));

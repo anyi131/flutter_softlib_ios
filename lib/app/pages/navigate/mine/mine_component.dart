@@ -1329,20 +1329,22 @@ class MineComponent extends StatelessWidget {
           C.rose,
           () => Get.toNamed(Routes.invite),
         ),
-      // ★ 1020（待办）：统一收藏夹 —— 软件 + 工具一个入口
-      _S(
-        '我的收藏',
-        Icons.star_rounded,
-        C.amber,
-        () => Get.toNamed(Routes.favorites),
-      ),
-      // ★ 1020（待办）：使用历史（可删除 / 批量清理）
-      _S(
-        '使用历史',
-        Icons.history_rounded,
-        C.violet,
-        () => Get.toNamed(Routes.history),
-      ),
+      // ★ 1020（待办）：统一收藏夹 —— 软件 + 工具一个入口（后台可关）
+      if (_uiCfg.featureFavorites)
+        _S(
+          '我的收藏',
+          Icons.star_rounded,
+          C.amber,
+          () => Get.toNamed(Routes.favorites),
+        ),
+      // ★ 1020（待办）：使用历史（可删除 / 批量清理，后台可关）
+      if (_uiCfg.featureHistory)
+        _S(
+          '使用历史',
+          Icons.history_rounded,
+          C.violet,
+          () => Get.toNamed(Routes.history),
+        ),
       _S(
         '充值余额',
         Icons.account_balance_wallet_rounded,

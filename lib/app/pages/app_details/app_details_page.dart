@@ -35,6 +35,8 @@ import '../../models/http/results/lzy_file_info_model.dart';
 import '../../routes/app_pages.dart';
 import '../../widgets/review/review_tab.dart';
 import 'app_details_logic.dart';
+import 'detail_aurora.dart';
+import 'detail_neon.dart';
 
 /// 软件详情页
 class AppDetailsPage extends StatefulWidget {
@@ -211,9 +213,220 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 : ReviewTab(appId: item?.id ?? 0),
           ),
         ];
+      // ★ 1020 新增第 6 套：极光版（不改动上面 5 套的任何逻辑）
+      case AppDetailStyle.aurora:
+        return _auroraBody(isDark, tabArea);
+      case AppDetailStyle.neon:
+        return _neonBody(isDark, tabArea);
       default:
         return [_hero(), const SizedBox(height: 14), _info(), ...tabArea];
     }
+  }
+
+  // ═══════════ 新增模板共用：取通用展示数据 ═══════════
+
+  ({String topLabel, String sizeText, String verText, List<String> shots})
+  _tplData() {
+    final it = item;
+    final info = logic.appInfo;
+    final isVipItem = it?.isVipItem ?? false;
+    final hasP = it?.hasPrice ?? false;
+    final priceTxt = it?.vipPrice ?? '';
+    final topLabel = hasP ? '¥$priceTxt 购买' : (isVipItem ? '会员专享' : '免费下载');
+    final sizeText = info?.fileSize ?? it?.size ?? '-';
+    final verText = it?.version ?? '';
+    final shots = (it?.screenshots ?? const <String>[])
+        .where((e) => e.isNotEmpty)
+        .toList();
+    return (
+      topLabel: topLabel,
+      sizeText: sizeText,
+      verText: verText,
+      shots: shots,
+    );
+  }
+
+  // ═══════════ 第 6 套：极光渐变 ═══════════
+
+  List<Widget> _auroraBody(bool isDark, List<Widget> tabArea) {
+    final it = item;
+    final info = logic.appInfo;
+    final d = _tplData();
+    final desc = (info?.fileDescription ?? it?.description ?? '').trim();
+
+    return [
+      // ① 渐变头图（含图标/标题/徽章）
+      DetailAurora.header(
+        context,
+        item: it,
+        iconUrl: info?.fileIcon ?? '',
+        topLabel: d.topLabel,
+        badges: [
+          if (d.sizeText != '-' && d.sizeText.isNotEmpty) ('size', d.sizeText),
+          if (d.verText.isNotEmpty) ('ver', 'v${d.verText}'),
+        ],
+      ),
+      const SizedBox(height: 0),
+      // ② 毛玻璃数据卡（紧贴头图，视觉上压在渐变上）
+      Transform.translate(
+        offset: const Offset(0, -18),
+        child: DetailAurora.statGlass(
+          cells: [
+            (d.sizeText, '安装包', DetailAurora.aBlue, DetailAurora.aBlue),
+            (
+              '${it?.downCount ?? 0}',
+              '下载',
+              DetailAurora.aMint,
+              DetailAurora.aMint,
+            ),
+            ('${it?.views ?? 0}', '浏览', DetailAurora.aCyan, DetailAurora.aCyan),
+            (
+              it?.ageRating ?? '16+',
+              '适龄',
+              DetailAurora.aPink,
+              DetailAurora.aPink,
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 4),
+      // ③ 截图
+      if (d.shots.isNotEmpty) ...[
+        DetailAurora.section(
+          context,
+          '应用截图',
+          trailing: Text(
+            '共 ${d.shots.length} 张',
+            style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3),
+          ),
+        ),
+        DetailAurora.screenshots(
+          context,
+          shots: d.shots,
+          onTap: (i) => _previewGallery(d.shots, i),
+        ),
+        const SizedBox(height: 22),
+      ],
+      // ④ 介绍
+      DetailAurora.section(
+        context,
+        '软件介绍',
+        trailing: DetailAurora.officialBadge(),
+      ),
+      _auroraDesc(desc, isDark),
+      ...tabArea,
+      const SizedBox(height: 22),
+      _recommend(),
+      _alsoLike(),
+    ];
+  }
+
+  Widget _auroraDesc(String desc, bool isDark) {
+    final text = desc.isEmpty ? '暂无详细介绍' : desc;
+    final needToggle = text.length > 120;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          text,
+          maxLines: _descExpanded ? null : 6,
+          overflow: _descExpanded ? null : TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 13.5,
+            height: 1.88,
+            color: isDark ? Colors.grey[300] : const Color(0xFF41454B),
+          ),
+        ),
+        if (needToggle) ...[
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: () => setState(() => _descExpanded = !_descExpanded),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _descExpanded ? '收起' : '展开全文',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: DetailAurora.aViolet,
+                  ),
+                ),
+                Icon(
+                  _descExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  size: 15,
+                  color: DetailAurora.aViolet,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  // ═══════════ 第 7 套：霓虹（深浅自适应）═══════════
+
+  List<Widget> _neonBody(bool isDark, List<Widget> tabArea) {
+    final it = item;
+    final info = logic.appInfo;
+    final d = _tplData();
+    final desc = (info?.fileDescription ?? it?.description ?? '').trim();
+    final dark = isDark;
+
+    return [
+      DetailNeon.header(
+        context,
+        item: it,
+        iconUrl: info?.fileIcon ?? '',
+        topLabel: d.topLabel,
+        sizeText: d.sizeText,
+        dark: dark,
+      ),
+      const SizedBox(height: 26),
+      DetailNeon.statBar(
+        context,
+        dark: dark,
+        cells: [
+          (d.sizeText, 'SIZE', DetailNeon.blue(dark)),
+          ('${it?.downCount ?? 0}', 'DOWN', DetailNeon.mint(dark)),
+          ('${it?.views ?? 0}', 'VIEW', DetailNeon.blue(dark)),
+          (it?.ageRating ?? '16+', 'AGE', DetailNeon.violet(dark)),
+        ],
+      ),
+      const SizedBox(height: 28),
+      if (d.shots.isNotEmpty) ...[
+        DetailNeon.section(
+          context,
+          '应用截图',
+          dark: dark,
+          trailing: Text(
+            '共 ${d.shots.length} 张',
+            style: Ty.tiny.copyWith(fontSize: 9.5, color: context.t3),
+          ),
+        ),
+        DetailNeon.screenshots(
+          context,
+          shots: d.shots,
+          dark: dark,
+          onTap: (i) => _previewGallery(d.shots, i),
+        ),
+        const SizedBox(height: 28),
+      ],
+      DetailNeon.section(
+        context,
+        '软件介绍',
+        dark: dark,
+        trailing: DetailNeon.officialBadge(dark),
+      ),
+      _auroraDesc(desc, isDark),
+      ...tabArea,
+      const SizedBox(height: 22),
+      _recommend(),
+      _alsoLike(),
+    ];
   }
 
   /// 顶部返回/分享（悬浮玻璃）
@@ -356,8 +569,10 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   ),
                 ),
                 const Spacer(),
-                // ★ 1020：收藏按钮（之前详情页根本没有收藏入口）
-                _favBtn(),
+                // ★ 1020：收藏按钮（后台可关，关闭时不占位）
+                if (SoftService.instance.cachedConfig?.uiConfig.featureAppFav ??
+                    true)
+                  _favBtn(),
                 const SizedBox(width: 8),
                 _topBtn(
                   Icons.ios_share_rounded,
@@ -412,16 +627,17 @@ class _AppDetailsPageState extends State<AppDetailsPage>
 
   Future<Set<int>> _loadFavIds() async {
     try {
-      final r = await Dio(
-        BaseOptions(
-          baseUrl: ApiHost.base,
-          connectTimeout: const Duration(seconds: 5),
-          receiveTimeout: const Duration(seconds: 8),
-        ),
-      ).post(
-        '/api/softlib/appfavids',
-        data: {'token': UserService.instance.token},
-      );
+      final r =
+          await Dio(
+            BaseOptions(
+              baseUrl: ApiHost.base,
+              connectTimeout: const Duration(seconds: 5),
+              receiveTimeout: const Duration(seconds: 8),
+            ),
+          ).post(
+            '/api/softlib/appfavids',
+            data: {'token': UserService.instance.token},
+          );
       if (r.data is Map && r.data['code'] == 1) {
         final list = (r.data['data']?['ids'] as List?) ?? [];
         return list.map((e) => (e as num).toInt()).toSet();
@@ -437,16 +653,17 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       return;
     }
     try {
-      final r = await Dio(
-        BaseOptions(
-          baseUrl: ApiHost.base,
-          connectTimeout: const Duration(seconds: 5),
-          receiveTimeout: const Duration(seconds: 8),
-        ),
-      ).post(
-        '/api/softlib/appfav',
-        data: {'app_id': id, 'token': UserService.instance.token},
-      );
+      final r =
+          await Dio(
+            BaseOptions(
+              baseUrl: ApiHost.base,
+              connectTimeout: const Duration(seconds: 5),
+              receiveTimeout: const Duration(seconds: 8),
+            ),
+          ).post(
+            '/api/softlib/appfav',
+            data: {'app_id': id, 'token': UserService.instance.token},
+          );
       if (r.data is Map && r.data['code'] == 1) {
         ToastUtil.success(currentlyOn ? '已取消收藏' : '已收藏，可在「我的收藏」查看');
         setState(() {

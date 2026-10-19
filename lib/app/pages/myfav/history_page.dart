@@ -42,9 +42,10 @@ class _HistoryPageState extends State<HistoryPage> {
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final r = await _dio.get(
+      // ★ 1020：服务端只认 POST body 里的 token
+      final r = await _dio.post(
         '/api/softlib/jzs/history_list',
-        queryParameters: {'token': UserService.instance.token},
+        data: {'token': UserService.instance.token},
       );
       if (r.data is Map && r.data['code'] == 1) {
         final list = (r.data['data']?['list'] as List?) ?? [];

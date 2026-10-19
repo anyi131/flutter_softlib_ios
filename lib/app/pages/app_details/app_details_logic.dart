@@ -1121,6 +1121,11 @@ class AppDetailsLogic extends GetxController {
 
   /// 下载失败时的入口：先尝试静默重连，全败才交给上层显示失败
   Future<bool> _trySilentRetry() async {
+    // ★ 1020：后台可关闭「下载静默重试」
+    if (SoftService.instance.cachedConfig?.uiConfig.featureSilentRetry ==
+        false) {
+      return false;
+    }
     if (_silentRetry >= _retryDelays.length) return false;
     final delay = _retryDelays[_silentRetry];
     _silentRetry++;

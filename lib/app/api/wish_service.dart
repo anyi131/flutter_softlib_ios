@@ -84,9 +84,9 @@ class WishService extends GetxService {
   /// 我提交的
   Future<List<Map<String, dynamic>>> mine({String token = ''}) async {
     try {
-      final r = await _dio.get(
+      final r = await _dio.post(
         '/api/softlib/wishmine',
-        queryParameters: {'token': token},
+        data: {'token': token},
       );
       if (r.data is Map && r.data['code'] == 1) {
         final list = (r.data['data']?['list'] as List?) ?? [];

@@ -52,6 +52,8 @@ enum AppDetailStyle {
   dark, // 暗黑（v52m）
   minimal, // 极简（无头图，v52m）
   compact, // 紧凑（矮条头图，v52m）
+  aurora, // ★ 1020 新增：极光渐变（四色网格渐变 + 毛玻璃数据卡）
+  neon, // ★ 1020 新增：霓虹（冷色发光线条，深浅自适应）
 }
 
 extension AppDetailStyleX on AppDetailStyle {
@@ -61,6 +63,8 @@ extension AppDetailStyleX on AppDetailStyle {
     AppDetailStyle.dark => '暗黑',
     AppDetailStyle.minimal => '极简',
     AppDetailStyle.compact => '紧凑',
+    AppDetailStyle.aurora => '极光渐变',
+    AppDetailStyle.neon => '霓虹',
   };
 }
 
@@ -90,6 +94,10 @@ AppDetailStyle parseDetailStyle(String? s) {
       return AppDetailStyle.minimal;
     case 'compact':
       return AppDetailStyle.compact;
+    case 'aurora':
+      return AppDetailStyle.aurora;
+    case 'neon':
+      return AppDetailStyle.neon;
     default:
       return AppDetailStyle.standard;
   }

@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import '../../../../generated/assets.dart';
 import '../../../config.dart';
 import '../../../api/soft_service.dart';
+import '../../../models/app_item.dart';
 import '../../../models/app_config.dart';
 import '../../../models/http/results/carousel_model.dart';
 import '../../../models/http/results/referral_model.dart';
@@ -62,11 +63,40 @@ class HomeLogic extends GetxController {
   }
 
   ///获取推荐
+  ///
+  /// ★ 1020 修复「首页最新推荐一片空白」：
+  ///   原来只读运营推荐位（fa_softlib_referral），该表为空时首页整块空白 ——
+  ///   但用户想看的是**软件列表**，不是运营推荐位。
+  ///   现在：推荐位为空 → 自动回退到软件列表（按下载量排序）。
   Future<void> getReferral() async {
     try {
       var referral = await httpApi.getReferral();
       if (referral.code == 1) {
         referrals = referral.data;
+      }
+      // ★ 推荐位没数据 → 用软件列表兜底
+      if (referrals == null || referrals!.isEmpty) {
+        final apps = await SoftService.instance.fetchApps();
+        if (apps.isNotEmpty) {
+          final sorted = List<AppItem>.from(apps)
+            ..sort((a, b) => b.downCount.compareTo(a.downCount));
+          referrals = sorted
+              .take(20)
+              .map(
+                (a) => ReferralData(
+                  type: 'app',
+                  image: a.icon,
+                  title: a.title,
+                  content: [
+                    if (a.size.isNotEmpty) a.size,
+                    if (a.version.isNotEmpty) 'v${a.version}',
+                    if (a.downCount > 0) '${a.downCount} 次下载',
+                  ].join(' · '),
+                  url: a.id.toString(),
+                ),
+              )
+              .toList();
+        }
       }
       update(['referral']);
     } catch (e) {
@@ -208,6 +238,14 @@ class HomeLogic extends GetxController {
 
   ///推荐点击
   void onReferralTap(ReferralData data) {
+    // ★ 1020：兜底列表里的「软件」类型 → 跳详情页
+    if (data.type == 'app') {
+      final id = int.tryParse(data.url ?? '') ?? 0;
+      if (id > 0) {
+        Get.toNamed(Routes.appDetails, arguments: {'appId': '$id'});
+      }
+      return;
+    }
     if (data.type == 'url') {
       if (data.url != null && data.url!.isNotEmpty) {
         JumpUtil.openUrl(data.url!);

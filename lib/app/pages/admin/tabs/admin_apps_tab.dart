@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import '../../../utils/app_action.dart';
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
@@ -103,7 +104,10 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
     );
     if (on == null || !mounted) return;
     try {
+      // ★ 1020：批量操作加 loading，避免用户以为没点上而反复点
+      AppAction.showLoading(on ? '正在置顶…' : '正在取消置顶…');
       final r = await _svc.appTop(ids: target, on: on);
+      AppAction.hideLoading();
       if (!mounted) return;
       setState(() {
         _selMode = false;
@@ -1018,17 +1022,16 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                     onPressed: () async {
                       if (t.text.trim().isEmpty) return;
                       Navigator.pop(dctx);
-                      try {
-                        await _svc.saveCat({
+                      final ok = await AppAction.act(
+                        () => _svc.saveCat({
                           'id': c?['id'] ?? 0,
                           'title': t.text.trim(),
                           'weigh': int.tryParse(w.text) ?? 0,
-                        });
-                        ToastUtil.success('已保存');
-                        await reload();
-                      } catch (e) {
-                        ToastUtil.error(ErrText.of(e));
-                      }
+                        }),
+                        loading: '保存中…',
+                        success: '已保存',
+                      );
+                      if (ok) await reload();
                     },
                     child: const Text('保存'),
                   ),

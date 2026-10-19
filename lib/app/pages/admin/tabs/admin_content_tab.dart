@@ -14,6 +14,7 @@ import '../../../api/admin_service.dart';
 import '../../../api/post_service.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../utils/app_action.dart';
 import '../../../utils/toast_util.dart';
 
 /// 内容管理：动态 / 评价 / 协议配置
@@ -306,8 +307,11 @@ class _AdminContentTabState extends State<AdminContentTab>
                     color: C.danger,
                   ),
                   onPressed: () async {
-                    await _svc.deletePost(int.tryParse('${p['id']}') ?? 0);
-                    ToastUtil.success('已删除');
+                    await AppAction.act(
+                      () => _svc.deletePost(int.tryParse('${p['id']}') ?? 0),
+                      loading: '删除中…',
+                      success: '已删除',
+                    );
                     _load();
                   },
                 ),
@@ -617,8 +621,12 @@ class _AdminContentTabState extends State<AdminContentTab>
                       color: C.danger,
                     ),
                     onPressed: () async {
-                      await _svc.deleteReview(int.tryParse('${r['id']}') ?? 0);
-                      ToastUtil.success('已删除');
+                      await AppAction.act(
+                        () =>
+                            _svc.deleteReview(int.tryParse('${r['id']}') ?? 0),
+                        loading: '删除中…',
+                        success: '已删除',
+                      );
                       _load();
                     },
                   ),
@@ -689,8 +697,11 @@ class _AdminContentTabState extends State<AdminContentTab>
                     color: C.danger,
                   ),
                   onPressed: () async {
-                    await _svc.deleteCat(int.tryParse('${c['id']}') ?? 0);
-                    ToastUtil.success('已删除');
+                    await AppAction.act(
+                      () => _svc.deleteCat(int.tryParse('${c['id']}') ?? 0),
+                      loading: '删除中…',
+                      success: '已删除',
+                    );
                     _load();
                   },
                 ),
@@ -802,8 +813,12 @@ class _AdminContentTabState extends State<AdminContentTab>
                     color: C.danger,
                   ),
                   onPressed: () async {
-                    await _svc.deleteCarousel(int.tryParse('${c['id']}') ?? 0);
-                    ToastUtil.success('已删除');
+                    await AppAction.act(
+                      () =>
+                          _svc.deleteCarousel(int.tryParse('${c['id']}') ?? 0),
+                      loading: '删除中…',
+                      success: '已删除',
+                    );
                     _load();
                   },
                 ),
@@ -1025,8 +1040,11 @@ class _AdminContentTabState extends State<AdminContentTab>
           IconButton(
             icon: const Icon(Icons.delete_outline, size: 19, color: C.danger),
             onPressed: () async {
-              await _svc.deleteReport(int.tryParse('${r['id']}') ?? 0);
-              ToastUtil.success('已删除');
+              await AppAction.act(
+                () => _svc.deleteReport(int.tryParse('${r['id']}') ?? 0),
+                loading: '删除中…',
+                success: '已删除',
+              );
               _load();
             },
           ),
@@ -1242,8 +1260,11 @@ class _AdminContentTabState extends State<AdminContentTab>
                     color: C.danger,
                   ),
                   onPressed: () async {
-                    await _svc.deleteSource(int.tryParse('${s['id']}') ?? 0);
-                    ToastUtil.success('已删除');
+                    await AppAction.act(
+                      () => _svc.deleteSource(int.tryParse('${s['id']}') ?? 0),
+                      loading: '删除中…',
+                      success: '已删除',
+                    );
                     _load();
                   },
                 ),
@@ -1574,8 +1595,12 @@ class _AdminContentTabState extends State<AdminContentTab>
                     color: C.danger,
                   ),
                   onPressed: () async {
-                    await _svc.deleteReferral(int.tryParse('${r['id']}') ?? 0);
-                    ToastUtil.success('已删除');
+                    await AppAction.act(
+                      () =>
+                          _svc.deleteReferral(int.tryParse('${r['id']}') ?? 0),
+                      loading: '删除中…',
+                      success: '已删除',
+                    );
                     _load();
                   },
                 ),
@@ -1786,8 +1811,11 @@ class _AdminContentTabState extends State<AdminContentTab>
                     color: C.danger,
                   ),
                   onPressed: () async {
-                    await _svc.deleteVersion(int.tryParse('${v['id']}') ?? 0);
-                    ToastUtil.success('已删除');
+                    await AppAction.act(
+                      () => _svc.deleteVersion(int.tryParse('${v['id']}') ?? 0),
+                      loading: '删除中…',
+                      success: '已删除',
+                    );
                     _load();
                   },
                 ),
@@ -1947,8 +1975,11 @@ class _AdminContentTabState extends State<AdminContentTab>
                     color: C.danger,
                   ),
                   onPressed: () async {
-                    await _svc.deleteCard(int.tryParse('${c['id']}') ?? 0);
-                    ToastUtil.success('已删除');
+                    await AppAction.act(
+                      () => _svc.deleteCard(int.tryParse('${c['id']}') ?? 0),
+                      loading: '删除中…',
+                      success: '已删除',
+                    );
                     _load();
                   },
                 ),

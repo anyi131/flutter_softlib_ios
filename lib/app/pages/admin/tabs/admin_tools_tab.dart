@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_action.dart';
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
@@ -796,13 +797,15 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                   'weigh': int.tryParse(weigh.text.trim()) ?? 0,
                   'enable_switch': on ? 1 : 0,
                 };
-                try {
-                  await _svc.saveJzsTool(data);
+                // ★ 1020：保存加 loading，避免点了没反应反复点
+                final ok = await AppAction.act(
+                  () => _svc.saveJzsTool(data),
+                  loading: '保存中…',
+                  success: '已保存',
+                );
+                if (ok) {
                   if (ctx.mounted) Navigator.pop(ctx);
-                  ToastUtil.success('已保存');
                   _load();
-                } catch (e) {
-                  ToastUtil.error(ErrText.of(e));
                 }
               },
               child: const Text('保存'),
