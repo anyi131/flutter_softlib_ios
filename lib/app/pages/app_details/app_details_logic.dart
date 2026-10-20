@@ -201,6 +201,51 @@ class AppDetailsLogic extends GetxController {
   /// 获取软件信息（双数据源）
   /// ★ 性能：先用列表页已带过来的数据立即渲染（秒开），
   ///   仅在关键信息缺失时才在后台静默补全，绝不阻塞首屏。
+  /// 路由参数变化后原地重新加载（同一个控制器实例内）
+  ///
+  /// ★★ 1020：GetX 在「详情页 → 详情页」时会复用路由与控制器，
+  ///   onInit 不会重跑，item 还是上一个软件的。
+  ///   页面在 build 时比对 appId，不一致就调这里重置状态。
+  Future<void> reloadWith(Map args) async {
+    final rawId = int.tryParse('${args['appId'] ?? 0}') ?? 0;
+    final it = args['item'];
+
+    // 清掉上一个软件的所有状态
+    item = null;
+    appIdInt = 0;
+    dowUrl = '';
+    appInfo = null;
+    isLoadingInfo = true;
+    msgError = null;
+    _silentRetry = 0;
+    _shownProgress = 0;
+    _uiPhase = phaseIdle;
+    _taskKey = '';
+
+    // 写入新参数
+    if (it is AppItem) {
+      item = it;
+      appIdInt = it.id;
+      dowUrl = it.url;
+      _taskKey = it.url.isNotEmpty
+          ? 'u_${it.url.hashCode.abs()}'
+          : (it.id > 0 ? 'i_${it.id}' : 'n_${it.title.hashCode.abs()}');
+    }
+    if (rawId > 0) appIdInt = rawId;
+    final rawUrl = args['dowUrl'];
+    if (rawUrl != null && '$rawUrl'.isNotEmpty && dowUrl.isEmpty) {
+      dowUrl = '$rawUrl';
+    }
+    if (_taskKey.isEmpty && dowUrl.isNotEmpty) {
+      _taskKey = 'u_${dowUrl.hashCode.abs()}';
+    }
+
+    update(['appInfo', 'share', 'download', 'review']);
+    if (appIdInt > 0) service.addAppView(appIdInt);
+    await getAppInfo();
+    await getTaskInfo();
+  }
+
   Future<void> getAppInfo() async {
     isLoadingInfo = true;
     update(['appInfo', 'share', 'download']);

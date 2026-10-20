@@ -66,8 +66,37 @@ class _AppDetailsPageState extends State<AppDetailsPage>
 
   AppItem? get item => logic.item;
 
+  /// 路由参数变了 → 原地重新加载（同一个控制器内完成）
+  void _syncRouteArgs() {
+    final args = Get.arguments;
+    if (args is! Map) return;
+    final want = int.tryParse('${args['appId'] ?? 0}') ?? 0;
+    if (want <= 0) return;
+    if (logic.appIdInt == want && logic.item != null) return;
+
+    // 放到帧后执行，避免在 build 期间改状态
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      // 页面本地状态也要重置（简介折叠 / 收藏星标）
+      setState(() {
+        _descExpanded = false;
+        _favIdsFuture = null;
+      });
+      await logic.reloadWith(args);
+      if (!mounted) return;
+      setState(() => _favIdsFuture = _loadFavIds());
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // ★★ 1020：详情页内跳转（精品推荐 / 你可能还喜欢）时，
+    //   GetX 会把同一个路由复用，控制器不重建、onInit 不再执行，
+    //   结果新页面还是旧软件的数据。
+    //   这里每次 build 比对「路由传入的 appId」和「控制器当前 appId」，
+    //   不一致就原地重新加载 —— 不依赖 GetX 的路由复用行为。
+    _syncRouteArgs();
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
