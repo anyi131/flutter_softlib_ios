@@ -596,7 +596,10 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             child: Row(
               children: [
                 _topBtn(Icons.arrow_back_ios_new_rounded, () => Get.back()),
-                const Spacer(),
+                // ★★ 1020：标题两侧各有一个 Spacer（各占 1 份弹性空间），
+                //   标题只能分到 1/3 宽度 → 永远显示成 "Tomato Vi..."。
+                //   改成固定小间距，让 Expanded 吃满剩余空间。
+                const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     item?.title ?? '软件详情',
@@ -606,7 +609,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                     style: Ty.h3.copyWith(color: context.t1, fontSize: 15),
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 4),
                 // ★ 1020：收藏按钮（后台可关，关闭时不占位）
                 if (SoftService.instance.cachedConfig?.uiConfig.featureAppFav ??
                     true)
