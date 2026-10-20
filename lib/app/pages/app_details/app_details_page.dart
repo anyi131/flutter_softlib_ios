@@ -1547,7 +1547,6 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   onTap: () => Get.offAndToNamed(
                     Routes.appDetails,
                     arguments: {'appId': a.id.toString(), 'item': a},
-                    preventDuplicates: false,
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6),
@@ -1717,7 +1716,6 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       onTap: () => Get.offAndToNamed(
         Routes.appDetails,
         arguments: {'appId': a.id.toString(), 'item': a},
-        preventDuplicates: false,
       ),
       child: Container(
         padding: const EdgeInsets.fromLTRB(8, 12, 8, 10),
