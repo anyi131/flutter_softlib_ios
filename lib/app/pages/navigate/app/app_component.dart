@@ -255,7 +255,11 @@ class _AppComponentState extends State<AppComponent> {
         //   规则：每次多放 15 条，直到放完为止。
         //   不能用 (page-1)*size 算偏移 —— 一旦某页恰好等于 15 条，
         //   会多发一次空请求，且刷新后 offset 可能错位导致「加载不全」。
-        final showCount = reset ? _size : (_apps.length + _size);
+        // ★ 1020：条数不多时（< 60）直接一次全放，避免「顶栏 42 个但只看到 15 个」
+        //   这种最容易让人困惑的情况。60 条以上才分批，控制首屏渲染压力。
+        final showCount = all.length < 60
+            ? all.length
+            : (reset ? _size : (_apps.length + _size));
         slice = all.length <= showCount ? all : all.sublist(0, showCount);
         hasMore = all.length > showCount;
         totalCount = all.length;
@@ -277,6 +281,19 @@ class _AppComponentState extends State<AppComponent> {
         _loadingMore = false;
         _hasMore = false;
       });
+    }
+  }
+
+  bool _autoLoading = false;
+
+  /// 滚动到底自动加载下一批（带去重，避免一次滚动触发多次）
+  Future<void> _loadMoreIfNeeded() async {
+    if (_autoLoading || _loading || _loadingMore || !_hasMore) return;
+    _autoLoading = true;
+    try {
+      await _load();
+    } finally {
+      _autoLoading = false;
     }
   }
 
@@ -567,78 +584,91 @@ class _AppComponentState extends State<AppComponent> {
         icon: _kw.isEmpty ? Icons.inbox_rounded : Icons.search_off_rounded,
       );
     }
-    return EasyRefresh(
-      controller: _refreshCtrl,
-      header: const MaterialHeader(),
-      footer: const MaterialFooter(),
-      onRefresh: () async {
-        await _load(reset: true, showLoading: false);
-        _refreshCtrl.finishRefresh();
-      },
-      onLoad: () async {
-        if (!_hasMore) {
-          _refreshCtrl.finishLoad(IndicatorResult.noMore);
-          return;
+    // ★★ 1020：滚动到底自动加载
+    //   原来只靠 EasyRefresh 的上拉手势 —— 首批 15 条如果一屏放得下，
+    //   用户根本滚不到底部，onLoad 永远不触发 → 看起来「加载不出来」，
+    //   但顶栏写着 42 个。现在加滚动监听，距离底部 200px 就自动取下一批。
+    return NotificationListener<ScrollNotification>(
+      onNotification: (n) {
+        if (n.metrics.maxScrollExtent <= 0) return false;
+        if (n.metrics.pixels >= n.metrics.maxScrollExtent - 200) {
+          _loadMoreIfNeeded();
         }
-        await _load();
-        _refreshCtrl.finishLoad(
-          _hasMore ? IndicatorResult.success : IndicatorResult.noMore,
-        );
+        return false;
       },
-      child: Obx(() {
-        final style = AppStyleController.instance.listStyle.value;
-        // ★ 需求 #9：三种列表样式（后台可切默认，用户可覆盖）
-        if (style == AppListStyle.grid) {
-          return GridView.builder(
+      child: EasyRefresh(
+        controller: _refreshCtrl,
+        header: const MaterialHeader(),
+        footer: const MaterialFooter(),
+        onRefresh: () async {
+          await _load(reset: true, showLoading: false);
+          _refreshCtrl.finishRefresh();
+        },
+        onLoad: () async {
+          if (!_hasMore) {
+            _refreshCtrl.finishLoad(IndicatorResult.noMore);
+            return;
+          }
+          await _load();
+          _refreshCtrl.finishLoad(
+            _hasMore ? IndicatorResult.success : IndicatorResult.noMore,
+          );
+        },
+        child: Obx(() {
+          final style = AppStyleController.instance.listStyle.value;
+          // ★ 需求 #9：三种列表样式（后台可切默认，用户可覆盖）
+          if (style == AppListStyle.grid) {
+            return GridView.builder(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              padding: EdgeInsets.fromLTRB(
+                context.pagePadding,
+                8,
+                context.pagePadding,
+                tabBottomPadding(context) + 12,
+              ),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.82,
+              ),
+              itemCount: _apps.length,
+              itemBuilder: (context, i) => RepaintBoundary(
+                key: ValueKey('g_${_apps[i].id}'),
+                child: AppStaggerIn(index: i, child: _gridCard(_apps[i])),
+              ),
+            );
+          }
+          return ListView.builder(
             physics: const AlwaysScrollableScrollPhysics(
               parent: BouncingScrollPhysics(),
             ),
-            padding: EdgeInsets.fromLTRB(
-              context.pagePadding,
-              8,
-              context.pagePadding,
-              tabBottomPadding(context) + 12,
+            padding: EdgeInsets.only(
+              top: 8,
+              bottom: tabBottomPadding(context) + 12,
             ),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 0.82,
-            ),
-            itemCount: _apps.length,
-            itemBuilder: (context, i) => RepaintBoundary(
-              key: ValueKey('g_${_apps[i].id}'),
-              child: AppStaggerIn(index: i, child: _gridCard(_apps[i])),
-            ),
+            itemCount: _apps.length + (_loadingMore ? 1 : 0),
+            itemBuilder: (context, i) {
+              if (i >= _apps.length) return _loadMoreFooter();
+              final a = _apps[i];
+              return RepaintBoundary(
+                key: ValueKey('l_${a.id}'),
+                child: AppStaggerIn(
+                  index: i,
+                  child: switch (style) {
+                    AppListStyle.compact => _compactCard(a),
+                    AppListStyle.large => _largeCard(a),
+                    AppListStyle.minimal => _minimalCard(a),
+                    _ => _card(a),
+                  },
+                ),
+              );
+            },
           );
-        }
-        return ListView.builder(
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(),
-          ),
-          padding: EdgeInsets.only(
-            top: 8,
-            bottom: tabBottomPadding(context) + 12,
-          ),
-          itemCount: _apps.length + (_loadingMore ? 1 : 0),
-          itemBuilder: (context, i) {
-            if (i >= _apps.length) return _loadMoreFooter();
-            final a = _apps[i];
-            return RepaintBoundary(
-              key: ValueKey('l_${a.id}'),
-              child: AppStaggerIn(
-                index: i,
-                child: switch (style) {
-                  AppListStyle.compact => _compactCard(a),
-                  AppListStyle.large => _largeCard(a),
-                  AppListStyle.minimal => _minimalCard(a),
-                  _ => _card(a),
-                },
-              ),
-            );
-          },
-        );
-      }),
+        }),
+      ),
     );
   }
 
