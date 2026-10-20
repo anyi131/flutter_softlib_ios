@@ -114,6 +114,20 @@ class SoftService {
   static final Map<String, _CacheEntry> _cache = {};
   static const _cacheTtl = Duration(minutes: 3);
 
+  /// 开屏图（后台可配：必应每日 / 随机竖图 / 自定义）
+  ///
+  /// 返回 {source, url, seconds, copyright}；url 为空表示走本地开屏兜底
+  Future<Map<String, dynamic>> fetchSplash() async {
+    try {
+      final r = await dio.get('/api/softlib/splash');
+      final d = r.data;
+      if (d is Map && d['data'] is Map) {
+        return Map<String, dynamic>.from(d['data'] as Map);
+      }
+    } catch (_) {}
+    return const {};
+  }
+
   /// 软件列表（catId=0 / keyword 为空表示全部）
   /// force=true 时跳过缓存
   Future<List<AppItem>> fetchApps({

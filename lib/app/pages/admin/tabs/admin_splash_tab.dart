@@ -45,7 +45,10 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   ];
 
   final imgCtrl = TextEditingController();
-  final secondsCtrl = TextEditingController(text: '2');
+
+  /// ★ 1020：开屏图来源（off / bing / random / custom）
+  String splashSource = 'off';
+  final secondsCtrl = TextEditingController(text: '3');
   final urlCtrl = TextEditingController();
   final titleCtrl = TextEditingController();
   final descCtrl = TextEditingController();
@@ -196,7 +199,8 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         maintainEnable = '${d['maintain_enable'] ?? 0}' == '1';
         _maintainTemplate = '${d['maintain_template'] ?? 'engineer'}';
         imgCtrl.text = '${d['splash_image'] ?? ''}';
-        secondsCtrl.text = '${d['splash_seconds'] ?? 2}';
+        splashSource = '${d['splash_source'] ?? 'off'}';
+        secondsCtrl.text = '${d['splash_seconds'] ?? 3}';
         urlCtrl.text = '${d['splash_url'] ?? ''}';
         titleCtrl.text = '${d['splash_title'] ?? ''}';
         descCtrl.text = '${d['splash_desc'] ?? ''}';
@@ -341,6 +345,9 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
       final splashPayload = {
         'splash_enable': splashEnable ? 1 : 0,
         'splash_image': imgCtrl.text.trim(),
+        'splash_source': splashSource,
+        'splash_custom_url': imgCtrl.text.trim(),
+        'splash_seconds': int.tryParse(secondsCtrl.text) ?? 3,
         'splash_seconds': int.tryParse(secondsCtrl.text) ?? 2,
         'splash_url': urlCtrl.text.trim(),
         'splash_title': titleCtrl.text.trim(),
@@ -565,8 +572,32 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
               splashEnable,
               (v) => setState(() => splashEnable = v),
             ),
-            _field('开屏图片 URL', imgCtrl),
-            _field('停留秒数（1-10）', secondsCtrl, keyboard: TextInputType.number),
+            // ★ 1020：开屏图来源（每日换图）
+            _chipRow(
+              const [
+                ('off', '不使用'),
+                ('bing', '必应每日'),
+                ('random', '随机竖图'),
+                ('custom', '自定义链接'),
+              ],
+              splashSource,
+              (v) => setState(() => splashSource = v),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(switch (splashSource) {
+                'bing' => '每天自动换成必应当日壁纸（已裁成手机竖图 1080×1920）',
+                'random' => '每次启动随机一张竖图（第三方图源，可能加载稍慢）',
+                'custom' => '使用下方「开屏图片 URL」里的地址',
+                _ => '不显示网络开屏图，仅用 App 内打包的开屏页',
+              }, style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3)),
+            ),
+            if (splashSource == 'custom') _field('开屏图片 URL', imgCtrl),
+            _field(
+              '停留秒数（1-10，默认 3）',
+              secondsCtrl,
+              keyboard: TextInputType.number,
+            ),
             _field('点击跳转网址（选填）', urlCtrl),
             _field('标题（选填）', titleCtrl),
             _field('副标题（选填）', descCtrl),
@@ -1227,6 +1258,52 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
       });
     });
     ToastUtil.info('已添加，请填写名称/面值/售价后点底部「保存全部配置」');
+  }
+
+  /// 选项胶囊（单选）—— 开屏来源等
+  Widget _chipRow(
+    List<(String, String)> opts,
+    String cur,
+    ValueChanged<String> onPick,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final o in opts)
+            GestureDetector(
+              onTap: () => onPick(o.$1),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: cur == o.$1
+                      ? C.brand.withAlpha(26)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: cur == o.$1
+                        ? C.brand.withAlpha(150)
+                        : context.t3.withAlpha(70),
+                  ),
+                ),
+                child: Text(
+                  o.$2,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: cur == o.$1 ? FontWeight.w700 : FontWeight.w500,
+                    color: cur == o.$1 ? C.brand : context.t2,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   Widget _card({required String title, required List<Widget> children}) {

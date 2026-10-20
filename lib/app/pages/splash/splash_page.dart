@@ -40,6 +40,10 @@ class _SplashPageState extends State<SplashPage> {
   /// 本地自定义开屏图路径（用户「替换开屏」选过才有）
   String _localSplash = '';
 
+  /// ★ 1020：后台配置的开屏网络图（必应每日 / 随机竖图 / 自定义）
+  ///   优先于本地开屏图；为空则回退本地图 → 再回退默认品牌页
+  String _netSplash = '';
+
   @override
   void initState() {
     super.initState();
@@ -67,11 +71,26 @@ class _SplashPageState extends State<SplashPage> {
       if (mounted && !_entered) _enter();
     });
 
+    // ★ 1020：开屏网络图与配置并行拉，不额外拖慢启动
+    final netFuture = SoftService.instance.fetchSplash().timeout(
+      const Duration(seconds: 3),
+      onTimeout: () => const {},
+    );
+
     _localSplash = await localFuture;
     if (mounted) setState(() => _diag = 'boot:local done');
     if (mounted && _localSplash.isNotEmpty) {
       setState(() {});
     }
+
+    // 网络开屏图（失败静默回退本地图）
+    try {
+      final sp = await netFuture;
+      final u = (sp['url'] ?? '').toString();
+      if (u.isNotEmpty && mounted) {
+        setState(() => _netSplash = u);
+      }
+    } catch (_) {}
 
     if (mounted) setState(() => _diag = 'boot:awaiting cfg');
     final cfg = await cfgFuture;
@@ -204,16 +223,7 @@ class _SplashPageState extends State<SplashPage> {
               ],
             ),
           ),
-          Expanded(
-            flex: 6,
-            child: _localSplash.isNotEmpty
-                ? Image.file(
-                    File(_localSplash),
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _defaultSplash(),
-                  )
-                : _defaultSplash(),
-          ),
+          Expanded(flex: 6, child: _splashImage()),
         ],
       );
     }
@@ -287,17 +297,7 @@ class _SplashPageState extends State<SplashPage> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(26),
-                child: SizedBox(
-                  width: 220,
-                  height: 300,
-                  child: _localSplash.isNotEmpty
-                      ? Image.file(
-                          File(_localSplash),
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _defaultSplash(),
-                        )
-                      : _defaultSplash(),
-                ),
+                child: SizedBox(width: 220, height: 300, child: _splashImage()),
               ),
             ),
             const SizedBox(height: 22),
@@ -319,14 +319,7 @@ class _SplashPageState extends State<SplashPage> {
       return Stack(
         fit: StackFit.expand,
         children: [
-          if (_localSplash.isNotEmpty)
-            Image.file(
-              File(_localSplash),
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _defaultSplash(),
-            )
-          else
-            _defaultSplash(),
+          _splashImage(),
           Positioned(
             left: 0,
             right: 0,
@@ -486,16 +479,7 @@ class _SplashPageState extends State<SplashPage> {
               padding: const EdgeInsets.symmetric(horizontal: 36),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
-                child: AspectRatio(
-                  aspectRatio: 4 / 3,
-                  child: _localSplash.isNotEmpty
-                      ? Image.file(
-                          File(_localSplash),
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _defaultSplash(),
-                        )
-                      : _defaultSplash(),
-                ),
+                child: AspectRatio(aspectRatio: 4 / 3, child: _splashImage()),
               ),
             ),
             const Spacer(),
@@ -525,14 +509,7 @@ class _SplashPageState extends State<SplashPage> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (_localSplash.isNotEmpty)
-          Image.file(
-            File(_localSplash),
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _defaultSplash(),
-          )
-        else
-          _defaultSplash(),
+        _splashImage(),
         if (title.isNotEmpty)
           Positioned(
             left: 0,
@@ -1578,6 +1555,37 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   /// 默认开屏（后台未设置图片时）
+  /// 开屏图：网络图 > 本地图 > 默认品牌页
+  Widget _splashImage() {
+    if (_netSplash.isNotEmpty) {
+      return CachedNetworkImage(
+        imageUrl: _netSplash,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        fadeInDuration: const Duration(milliseconds: 260),
+        placeholder: (_, __) => _localSplash.isNotEmpty
+            ? Image.file(File(_localSplash), fit: BoxFit.cover)
+            : _defaultSplash(),
+        errorWidget: (_, __, ___) => _localSplash.isNotEmpty
+            ? Image.file(
+                File(_localSplash),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _defaultSplash(),
+              )
+            : _defaultSplash(),
+      );
+    }
+    if (_localSplash.isNotEmpty) {
+      return Image.file(
+        File(_localSplash),
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _defaultSplash(),
+      );
+    }
+    return _defaultSplash();
+  }
+
   Widget _defaultSplash() {
     return Container(
       decoration: const BoxDecoration(

@@ -92,7 +92,7 @@ class AppConfig {
     this.feedbackUser = '',
     this.splashEnable = true,
     this.splashImage = '',
-    this.splashSeconds = 2,
+    this.splashSeconds = 3,
     this.splashUrl = '',
     this.splashTitle = '',
     this.splashDesc = '',
@@ -165,8 +165,9 @@ class AppConfig {
         ? _b(json['splash_enable'])
         : true,
     splashImage: _s(json['splash_image']),
+    // ★ 1020：默认 3 秒（原来 2 秒太短，来不及看清图）
     splashSeconds: _i(json['splash_seconds']) <= 0
-        ? 2
+        ? 3
         : _i(json['splash_seconds']),
     splashUrl: _s(json['splash_url']),
     splashTitle: _s(json['splash_title']),
