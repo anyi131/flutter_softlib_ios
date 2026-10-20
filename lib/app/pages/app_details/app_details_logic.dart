@@ -210,7 +210,17 @@ class AppDetailsLogic extends GetxController {
     //   原来 item==null && dowUrl 为空时直接 return，
     //   isLoadingInfo 永远为 true → 骨架屏转不停，页面打不开。
     //   现在：没有 item 但有 appId → 先按 id 拉一次详情再走后续流程。
-    if (item == null && appIdInt > 0) {
+    // ★★ 1020：以 args 里的 appId 为准。
+    //   即使 item 不为空，只要 id 和 appId 对不上（控制器复用、路由缓存、
+    //   列表项与点击项错位等情况），一律按 appId 重新拉取，
+    //   避免「点了 A 却显示 B」。
+    final idMismatch = item != null && appIdInt > 0 && item!.id != appIdInt;
+    if (idMismatch) {
+      item = null;
+      dowUrl = '';
+      _taskKey = '';
+    }
+    if ((item == null || idMismatch) && appIdInt > 0) {
       try {
         final fetched = await service.fetchAppDetail(id: appIdInt);
         if (fetched != null) {

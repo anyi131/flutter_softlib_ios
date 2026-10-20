@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
 import 'package:marquee/marquee.dart';
@@ -56,89 +57,138 @@ class _SplashPageState extends State<SplashPage> {
     super.dispose();
   }
 
+  /// 开始倒计时（可重复调用：会用新的剩余秒数覆盖）
+  void _startCountdown(int seconds) {
+    _timer?.cancel();
+    if (!mounted) return;
+    setState(() {
+      _left = seconds;
+      _diag = 'tick:$seconds';
+    });
+    if (seconds <= 0) {
+      _enter();
+      return;
+    }
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return t.cancel();
+      setState(() {
+        _left--;
+        _diag = 'tick:$_left';
+      });
+      if (_left <= 0) {
+        t.cancel();
+        _enter();
+      }
+    });
+  }
+
+  /// 启动流程
+  ///
+  /// ★★ 1020 启动提速（用户反馈「启动图太慢」）：
+  ///   原来必须等 config 接口返回（最多 8 秒）**之后**才开始倒计时，
+  ///   等于「网络耗时 + 展示时长」叠加，冷启动很慢。
+  ///   现在：
+  ///     1. 先用上次缓存的开屏图和秒数**立即开始倒计时**（零等待）
+  ///     2. 配置与图片在后台并行拉，回来只做「纠正」（改图/改时长/关开屏）
+  ///     3. 整体兜底从 8 秒收紧到「缓存秒数 + 3 秒」
   Future<void> _boot() async {
-    // ★ 本地开屏图 与 服务器配置 并行拉取（避免串行等待导致启动变慢）
-    // v331b：整体兜底 8 秒——无论配置/权限/任何环节挂起，超时必进主界面
-    final localFuture = LocalSplash.get().timeout(
-      const Duration(seconds: 5),
-      onTimeout: () => '',
-    );
-    final cfgFuture = SoftService.instance
-        .fetchConfig(force: true) // ★ 1015：开屏模板等配置必须拿最新（原来走 10 分钟缓存）
-        .timeout(const Duration(seconds: 8), onTimeout: () => null);
-    if (mounted) setState(() => _diag = 'boot:awaiting');
-    Future.delayed(const Duration(seconds: 8), () {
+    // ① 读上次缓存（同步读，几十毫秒）
+    String cachedUrl = '';
+    int cachedSec = 3;
+    try {
+      final sp = await SharedPreferences.getInstance();
+      cachedUrl = sp.getString('splash_net_url') ?? '';
+      cachedSec = sp.getInt('splash_sec') ?? 3;
+    } catch (_) {}
+    if (cachedSec < 1) cachedSec = 3;
+    if (cachedSec > 10) cachedSec = 10;
+
+    if (mounted && cachedUrl.isNotEmpty) {
+      setState(() => _netSplash = cachedUrl);
+    }
+
+    // ② 立刻开始倒计时，不等任何网络
+    _startCountdown(cachedSec);
+    _diag = 'boot:fast-start';
+
+    // ③ 兜底：缓存秒数 + 3 秒，无论如何进主界面
+    Future.delayed(Duration(seconds: cachedSec + 3), () {
       if (mounted && !_entered) _enter();
     });
 
-    // ★ 1020：开屏网络图与配置并行拉，不额外拖慢启动
-    final netFuture = SoftService.instance.fetchSplash().timeout(
+    // ④ 后台并行拉：本地图 / 配置 / 开屏图
+    final localFuture = LocalSplash.get().timeout(
       const Duration(seconds: 3),
+      onTimeout: () => '',
+    );
+    final cfgFuture = SoftService.instance
+        .fetchConfig(force: true)
+        .timeout(const Duration(seconds: 4), onTimeout: () => null);
+    final netFuture = SoftService.instance.fetchSplash().timeout(
+      const Duration(seconds: 4),
       onTimeout: () => const {},
     );
 
-    _localSplash = await localFuture;
-    if (mounted) setState(() => _diag = 'boot:local done');
-    if (mounted && _localSplash.isNotEmpty) {
-      setState(() {});
-    }
-
-    // 网络开屏图（失败静默回退本地图）
+    // 本地开屏图（只在没有网络图时才有意义）
     try {
-      final sp = await netFuture;
-      final u = (sp['url'] ?? '').toString();
-      if (u.isNotEmpty && mounted) {
-        setState(() => _netSplash = u);
+      final lp = await localFuture;
+      if (mounted && lp.isNotEmpty) {
+        _localSplash = lp;
+        if (_netSplash.isEmpty) setState(() {});
       }
     } catch (_) {}
 
-    if (mounted) setState(() => _diag = 'boot:awaiting cfg');
-    final cfg = await cfgFuture;
-    if (mounted) setState(() => _diag = 'boot:cfg done');
-    if (!mounted) return;
+    // ⑤ 网络开屏图回来 → 换图（不重启倒计时）
     try {
-      // 维护模式：直接显示维护页，不进入主界面
-      if (cfg != null && cfg.maintainEnable) {
-        if (mounted) setState(() => _diag = 'boot:maintain');
-        setState(() => _config = cfg);
+      final sp = await netFuture;
+      final u = (sp['url'] ?? '').toString();
+      if (mounted && u.isNotEmpty && u != _netSplash) {
+        setState(() => _netSplash = u);
+      }
+      if (u.isNotEmpty) {
+        try {
+          final s2 = await SharedPreferences.getInstance();
+          await s2.setString('splash_net_url', u);
+        } catch (_) {}
+      }
+    } catch (_) {}
+
+    // ⑥ 配置回来 → 纠正时长 / 关闭开屏 / 维护模式
+    try {
+      final cfg = await cfgFuture;
+      if (!mounted || _entered) return;
+      if (cfg == null) return;
+
+      if (cfg.maintainEnable) {
+        _timer?.cancel();
+        setState(() {
+          _config = cfg;
+          _diag = 'boot:maintain';
+        });
         return;
       }
 
-      final seconds = (cfg?.splashEnable ?? true)
-          ? (cfg?.splashSeconds ?? 2).clamp(1, 10)
-          : 0;
-      if (mounted) setState(() => _diag = 'boot:seconds=$seconds');
-      setState(() {
-        _config = cfg;
-        _left = seconds;
-      });
+      final on = cfg.splashEnable;
+      final cfgSec = (cfg.splashSeconds).clamp(1, 10);
+      _config = cfg;
 
-      if (seconds <= 0) {
+      // 缓存秒数，下次冷启动直接用
+      try {
+        final s2 = await SharedPreferences.getInstance();
+        await s2.setInt('splash_sec', cfgSec);
+      } catch (_) {}
+
+      if (!on) {
+        _timer?.cancel();
         _enter();
         return;
       }
-      _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-        if (!mounted) return t.cancel();
-        if (mounted)
-          setState(() {
-            _left--;
-            _diag = 'tick:$_left';
-          });
-        if (_left <= 0) {
-          t.cancel();
-          _enter();
-        }
-      });
-    } catch (e, st) {
-      // 异常直接显示在开屏页上，定位卡点
-      if (mounted) {
-        setState(() => _diag = 'ERR ${e.runtimeType}: $e'.substring(0, 140));
+      // 配置的时长比「剩余时间」还短 → 立即按新时长收尾
+      if (cfgSec < _left) {
+        _startCountdown(cfgSec);
       }
-      debugPrint('[Splash][FATAL] $e\n$st');
-      // 3 秒后仍然强制进入，不让用户卡死
-      Future.delayed(const Duration(seconds: 3), () {
-        if (mounted && !_entered) _enter();
-      });
+    } catch (e, st) {
+      debugPrint('[Splash][cfg] $e\n$st');
     }
   }
 
