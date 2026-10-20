@@ -1544,9 +1544,10 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               ...picks.map(
                 (a) => InkWell(
                   borderRadius: BorderRadius.circular(8),
-                  onTap: () => Get.offAndToNamed(
+                  onTap: () => Get.toNamed(
                     Routes.appDetails,
                     arguments: {'appId': a.id.toString(), 'item': a},
+                    preventDuplicates: false,
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6),
@@ -1704,20 +1705,38 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   Widget _recCard(AppItem a, {Color? accent}) {
     final dark = context.isDark;
     return GestureDetector(
-      onTap: () => Get.offAndToNamed(
+      // ★ 1020：改用 toNamed（push 新页面）。
+      //   offAndToNamed 在「详情页 → 另一个详情页」时会先移除当前页再压栈，
+      //   GetX 在这个时序上会丢参数 / 复用旧路由，表现为「点了没反应」。
+      //   toNamed 是纯 push，本仓库首页/应用页都用它，行为稳定。
+      onTap: () => Get.toNamed(
         Routes.appDetails,
         arguments: {'appId': a.id.toString(), 'item': a},
+        preventDuplicates: false,
       ),
       child: Container(
         padding: const EdgeInsets.fromLTRB(8, 12, 8, 10),
         decoration: BoxDecoration(
+          // ★ 1020：卡片跟随模板配色
           color: dark ? Colors.white.withAlpha(12) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: dark
-                ? Colors.white.withAlpha(14)
-                : Colors.black.withAlpha(6),
+            color: accent == null
+                ? (dark
+                      ? Colors.white.withAlpha(14)
+                      : Colors.black.withAlpha(6))
+                : accent.withAlpha(dark ? 70 : 46),
+            width: accent == null ? 1 : 1.1,
           ),
+          boxShadow: accent == null
+              ? null
+              : [
+                  BoxShadow(
+                    color: accent.withAlpha(dark ? 26 : 18),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -1727,9 +1746,11 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               height: 52,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
-                color: dark
-                    ? Colors.white.withAlpha(10)
-                    : const Color(0xFFF2F4F9),
+                color: accent == null
+                    ? (dark
+                          ? Colors.white.withAlpha(10)
+                          : const Color(0xFFF2F4F9))
+                    : accent.withAlpha(dark ? 26 : 14),
               ),
               clipBehavior: Clip.antiAlias,
               child: a.icon.isEmpty
