@@ -110,7 +110,26 @@ class _SplashPageState extends State<SplashPage> {
       setState(() => _netSplash = cachedUrl);
     }
 
-    // ② 立刻开始倒计时，不等任何网络
+    // ② 首次启动（没有缓存图）→ 先等接口最多 1.2 秒拿到图片地址，
+    //    否则会先显示渐变兜底、图回来时倒计时已经走完（用户看到的就是"没图"）。
+    //    有缓存图时零等待，直接开始倒计时。
+    if (cachedUrl.isEmpty) {
+      try {
+        final quick = await SoftService.instance.fetchSplash().timeout(
+          const Duration(milliseconds: 1200),
+        );
+        final u = (quick['url'] ?? '').toString();
+        if (u.isNotEmpty && mounted) {
+          setState(() => _netSplash = u);
+          try {
+            final sp0 = await SharedPreferences.getInstance();
+            await sp0.setString('splash_net_url', u);
+          } catch (_) {}
+        }
+      } catch (_) {}
+    }
+
+    // ③ 开始倒计时（此时要么已有图，要么确实没图）
     _startCountdown(cachedSec);
     _diag = 'boot:fast-start';
 

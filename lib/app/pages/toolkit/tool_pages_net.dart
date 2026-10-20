@@ -2,6 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../utils/err_text.dart';
 
+import 'package:dio/dio.dart';
+
+import '../../api/api_host.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -3211,18 +3215,47 @@ class _WallpaperPageState extends State<WallpaperPage> {
     _more();
   }
 
+  /// ★★ 1020：改走服务端代理
+  ///
+  /// 原来直接拼 `http://api.btstu.cn/...format=images`：
+  ///   ① 上游**只有 HTTP**，iOS ATS 与安卓 9+ 明文限制会直接拦掉 → 加载不出
+  ///   ② 每个格子拉的是 1.5MB 原图 → 9 格就要 13MB，极慢
+  /// 现在：/api/softlib/wallpaper 一次性返回 8 条，每条带缩略图地址（23KB）。
   Future<void> _more() async {
     if (_busy) return;
     setState(() => _busy = true);
-    final base =
-        'http://api.btstu.cn/sjbz/api.php?lx=${_cats[_cat].$1}&format=images';
-    final ts = DateTime.now().millisecondsSinceEpoch;
-    final add = List.generate(9, (i) => '$base&t=$ts$i');
-    if (!mounted) return;
-    setState(() {
-      _urls.addAll(add);
-      _busy = false;
-    });
+    try {
+      final r =
+          await Dio(
+            BaseOptions(
+              baseUrl: ApiHost.base,
+              connectTimeout: const Duration(seconds: 8),
+              receiveTimeout: const Duration(seconds: 20),
+            ),
+          ).get(
+            '/api/softlib/wallpaper',
+            queryParameters: {'n': 8, 'lx': _cats[_cat].$1},
+          );
+      final list = (r.data?['data']?['list'] as List?) ?? [];
+      final add = list
+          .map((e) {
+            final id = '${e['id'] ?? ''}';
+            return id.isEmpty
+                ? ''
+                : '${ApiHost.base}/api/softlib/wallpaperimg?id=$id&w=420';
+          })
+          .where((e) => e.isNotEmpty)
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        _urls.addAll(add);
+        _busy = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      ToastUtil.error('获取壁纸失败，请稍后重试');
+    }
   }
 
   @override
