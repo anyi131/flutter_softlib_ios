@@ -38,6 +38,7 @@ class DetailAurora {
     required String iconUrl,
     required String topLabel,
     required List<(String, String)> badges,
+    List<(String, String)> statCells = const [],
   }) {
     return Stack(
       children: [
@@ -227,10 +228,73 @@ class DetailAurora {
                   ),
                 ],
               ),
+              // ★ 1020 修复：数据条原来放在头图**外面**，
+              //   玻璃底 + 白字压在浅色页面上 → 几乎看不见，像被切了一半。
+              //   现在放进渐变内部，深色底上的玻璃效果和白色文字才成立。
+              if (statCells.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                _statRow(statCells),
+              ],
             ],
           ),
         ),
       ],
+    );
+  }
+
+  /// 头图内部的数据条（玻璃底 + 渐变数字）
+  static Widget _statRow(List<(String, String)> cells) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 4),
+          decoration: BoxDecoration(
+            color: Colors.white.withAlpha(30),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withAlpha(56)),
+          ),
+          child: Row(
+            children: [
+              for (int i = 0; i < cells.length; i++) ...[
+                if (i > 0)
+                  Container(
+                    width: 1,
+                    height: 26,
+                    color: Colors.white.withAlpha(42),
+                  ),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        cells[i].$1,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          height: 1,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        cells[i].$2,
+                        style: TextStyle(
+                          fontSize: 9,
+                          color: Colors.white.withAlpha(190),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 

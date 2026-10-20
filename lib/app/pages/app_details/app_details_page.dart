@@ -262,11 +262,12 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     required Widget Function(String title, Widget? trailing) sectionHeader,
     required Widget Function() officialBadge,
     required Widget Function() shotsWidget,
+    Color? accent,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _tabBarCard(isDark),
+        _tabBarCard(isDark, accent: accent),
         const SizedBox(height: 16),
         AnimatedBuilder(
           animation: _tab,
@@ -355,29 +356,15 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           if (d.sizeText != '-' && d.sizeText.isNotEmpty) ('size', d.sizeText),
           if (d.verText.isNotEmpty) ('ver', 'v${d.verText}'),
         ],
+        // ★ 1020：数据条画在头图渐变内部（深色底上白字才看得清）
+        statCells: [
+          (d.sizeText, '安装包'),
+          ('${it?.downCount ?? 0}', '下载'),
+          ('${it?.views ?? 0}', '浏览'),
+          (it?.ageRating ?? '16+', '适龄'),
+        ],
       ),
-      Transform.translate(
-        offset: const Offset(0, -18),
-        child: DetailAurora.statGlass(
-          cells: [
-            (d.sizeText, '安装包', DetailAurora.aBlue, DetailAurora.aBlue),
-            (
-              '${it?.downCount ?? 0}',
-              '下载',
-              DetailAurora.aMint,
-              DetailAurora.aMint,
-            ),
-            ('${it?.views ?? 0}', '浏览', DetailAurora.aCyan, DetailAurora.aCyan),
-            (
-              it?.ageRating ?? '16+',
-              '适龄',
-              DetailAurora.aPink,
-              DetailAurora.aPink,
-            ),
-          ],
-        ),
-      ),
-      const SizedBox(height: 6),
+      const SizedBox(height: 14),
       _newTplTabArea(
         context,
         isDark: isDark,
@@ -391,10 +378,11 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           shots: d.shots,
           onTap: (i) => _previewGallery(d.shots, i),
         ),
+        accent: DetailAurora.aViolet,
       ),
       const SizedBox(height: 24),
-      _recommend(),
-      _alsoLike(),
+      _recommend(accent: DetailAurora.aViolet),
+      _alsoLike(accent: DetailAurora.aViolet),
     ];
   }
 
@@ -442,10 +430,11 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           dark: dark,
           onTap: (i) => _previewGallery(d.shots, i),
         ),
+        accent: DetailNeon.mint(dark),
       ),
       const SizedBox(height: 24),
-      _recommend(),
-      _alsoLike(),
+      _recommend(accent: DetailNeon.mint(dark)),
+      _alsoLike(accent: DetailNeon.mint(dark)),
     ];
   }
 
@@ -1286,7 +1275,10 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     );
   }
 
-  Widget _tabBarCard(bool isDark) {
+  /// ★ 1020：支持传模板主色 —— 切模板时 Tab 指示条也跟着变，
+  ///   否则整页只有上半部分换肤，Tab 还是旧蓝。
+  Widget _tabBarCard(bool isDark, {Color? accent}) {
+    final ac = accent ?? C.brand;
     return Container(
       decoration: BoxDecoration(
         color: GlassTheme.enabled
@@ -1308,8 +1300,8 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               controller: _tab,
               indicatorSize: TabBarIndicatorSize.label,
               indicatorWeight: 2.5,
-              indicatorColor: C.brand,
-              labelColor: C.brand,
+              indicatorColor: ac,
+              labelColor: ac,
               unselectedLabelColor: Colors.grey[500],
               labelStyle: const TextStyle(
                 fontSize: 15,
@@ -1516,7 +1508,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   }
 
   /// 你可能还喜欢（极轻量，纯文字 + 16px 小图标）
-  Widget _alsoLike() {
+  Widget _alsoLike({Color? accent}) {
     _recFuture ??= _loadRecommend();
     return FutureBuilder<List<AppItem>>(
       future: _recFuture,
@@ -1535,7 +1527,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   Icon(
                     Icons.auto_awesome_outlined,
                     size: 13,
-                    color: context.t3,
+                    color: accent ?? context.t3,
                   ),
                   const SizedBox(width: 5),
                   Text(
@@ -1608,7 +1600,9 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   //   ② 卡片只有 58px 图标 + 11px 标题，没有分类/大小/版本，信息单薄
   //   ③ 图标为空时只剩一个灰方块，横向高度写死 118，长标题会溢出错位
   //   现在：同分类优先 → 不足再按「热门」补位 → 卡片信息完整、样式统一
-  Widget _recommend() {
+  /// ★ 1020：支持传模板配色 —— 切换模板时底部推荐区也要跟着变，
+  ///   否则整页「上新生、下半旧」，看起来只换了一半。
+  Widget _recommend({Color? accent}) {
     // 首次构建时惰性发起请求（推荐区在页面底部，前面内容先渲染）
     _recFuture ??= _loadRecommend();
     return FutureBuilder<List<AppItem>>(
@@ -1628,7 +1622,11 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   width: 3.5,
                   height: 15,
                   decoration: BoxDecoration(
-                    gradient: Deco.brandGradient,
+                    gradient: accent == null
+                        ? Deco.brandGradient
+                        : LinearGradient(
+                            colors: [accent, accent.withAlpha(150)],
+                          ),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1644,7 +1642,9 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                     vertical: 1.5,
                   ),
                   decoration: BoxDecoration(
-                    color: C.brand.withAlpha(context.isDark ? 40 : 18),
+                    color: (accent ?? C.brand).withAlpha(
+                      context.isDark ? 40 : 18,
+                    ),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -1652,7 +1652,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                     style: TextStyle(
                       fontSize: 9.5,
                       fontWeight: FontWeight.w700,
-                      color: C.brand,
+                      color: accent ?? C.brand,
                     ),
                   ),
                 ),
@@ -1667,7 +1667,8 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 padding: const EdgeInsets.symmetric(horizontal: 2),
                 itemCount: others.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 10),
-                itemBuilder: (context, i) => _recCard(others[i]),
+                itemBuilder: (context, i) =>
+                    _recCard(others[i], accent: accent),
               ),
             ),
           ],
@@ -1713,8 +1714,9 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   }
 
   /// 推荐卡：图标 + 名称 + 大小/版本 + 下载量
-  Widget _recCard(AppItem a) {
+  Widget _recCard(AppItem a, {Color? accent}) {
     final dark = context.isDark;
+    final ac = accent ?? C.brand;
     return GestureDetector(
       onTap: () => Get.offAndToNamed(
         Routes.appDetails,
@@ -1729,7 +1731,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             end: Alignment.bottomRight,
             colors: dark
                 ? [Colors.white.withAlpha(16), Colors.white.withAlpha(6)]
-                : [Colors.white, const Color(0xFFF6F8FF)],
+                : [Colors.white, ac.withAlpha(12)],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(

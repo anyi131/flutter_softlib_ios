@@ -258,7 +258,7 @@ class _HomeComponentState extends State<HomeComponent> {
           // 用兜底列表长度当「软件总数」（推荐位空时它就是软件列表）
           final total = logic.fallbackRefs?.length ?? 0;
           return Container(
-            height: 150 + MediaQuery.of(context).padding.top,
+            height: 168,
             decoration: BoxDecoration(gradient: Deco.brandGradient),
             child: Stack(
               children: [
@@ -317,10 +317,10 @@ class _HomeComponentState extends State<HomeComponent> {
                     ],
                   ),
                 ),
-                // 右上角两个圆按钮
+                // 右上角两个圆按钮（同样不加 padding.top）
                 Positioned(
                   right: context.pagePadding - 6,
-                  top: MediaQuery.of(context).padding.top + 8,
+                  top: 10,
                   child: Row(
                     children: [
                       if (logic.configData?.groupBtnOn != false)
@@ -408,9 +408,11 @@ class _HomeComponentState extends State<HomeComponent> {
               ),
             ),
             // 右上角两个圆按钮（悬浮在图上）
+            // ★ 1020 修复错位：首页外层已有 SafeArea，这里不能再加
+            //   MediaQuery.padding.top，否则被往下推一个状态栏高度。
             Positioned(
               right: context.pagePadding - 6,
-              top: MediaQuery.of(context).padding.top + 8,
+              top: 10,
               child: Row(
                 children: [
                   if (logic.configData?.groupBtnOn != false)
@@ -481,6 +483,92 @@ class _HomeComponentState extends State<HomeComponent> {
     );
   }
 
+  /// 紧凑横排软件卡（图标 + 标题 + 信息）
+  ///
+  /// ★ 1020：兜底列表没有封面大图，用这个样式比硬拉图标好看得多。
+  Widget _appRowCard(HomeLogic logic, dynamic d) {
+    final img = (d.image ?? '').toString();
+    final id = int.tryParse((d.url ?? '').toString()) ?? 0;
+    return GestureDetector(
+      onTap: id > 0
+          ? () => Get.toNamed(Routes.appDetails, arguments: {'appId': '$id'})
+          : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        decoration: BoxDecoration(
+          color: context.cardBg,
+          borderRadius: BorderRadius.circular(R.lg),
+          border: Border.all(
+            color: context.isDark
+                ? Colors.white.withAlpha(12)
+                : Colors.black.withAlpha(6),
+          ),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: img.isEmpty
+                  ? Container(
+                      width: 54,
+                      height: 54,
+                      color: C.brand.withAlpha(20),
+                      child: Icon(Icons.android, color: C.brand, size: 24),
+                    )
+                  : CachedNetworkImage(
+                      imageUrl: img,
+                      width: 54,
+                      height: 54,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 160,
+                      placeholder: (_, __) => Container(
+                        width: 54,
+                        height: 54,
+                        color: C.brand.withAlpha(14),
+                      ),
+                      errorWidget: (_, __, ___) => Container(
+                        width: 54,
+                        height: 54,
+                        color: C.brand.withAlpha(20),
+                        child: Icon(Icons.android, color: C.brand, size: 24),
+                      ),
+                    ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    d.title ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: context.t1,
+                    ),
+                  ),
+                  if ((d.content ?? '').isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      d.content!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Ty.tiny.copyWith(fontSize: 11, color: context.t3),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, size: 20, color: context.t3),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 单列全宽图文卡（区别于双列网格）
   Widget _magazineList() {
     return GetBuilder<HomeLogic>(
@@ -496,6 +584,15 @@ class _HomeComponentState extends State<HomeComponent> {
             itemCount: list.length,
             itemBuilder: (context, i) {
               final d = list[i];
+              // ★★ 1020：兜底列表（type=app）用**紧凑横排卡**。
+              //   原来把 56px 的方形 App 图标拉成 150px 通栏大图 →
+              //   又糊又难看（用户截图实锤）。
+              if (d.type == 'app') {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _appRowCard(logic, d),
+                );
+              }
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: GestureDetector(
