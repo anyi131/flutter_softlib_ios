@@ -342,94 +342,103 @@ class _HomeComponentState extends State<HomeComponent> {
           );
         }
 
-        return Stack(
-          children: [
-            // 全宽大图
-            SizedBox(
-              height: 268,
-              width: double.infinity,
-              child: img.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: img,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 1000,
-                      placeholder: (_, __) => Container(color: context.cardBg),
-                      errorWidget: (_, __, ___) => Container(
+        return ClipRRect(
+          // ★ 1020：头图底部收圆角，不再是生硬的方块贴边
+          borderRadius: const BorderRadius.vertical(
+            bottom: Radius.circular(26),
+          ),
+          child: Stack(
+            children: [
+              // 全宽大图
+              SizedBox(
+                height: 232,
+                width: double.infinity,
+                child: img.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: img,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 1000,
+                        placeholder: (_, __) =>
+                            Container(color: context.cardBg),
+                        errorWidget: (_, __, ___) => Container(
+                          decoration: BoxDecoration(
+                            gradient: Deco.brandGradient,
+                          ),
+                        ),
+                      )
+                    : Container(
                         decoration: BoxDecoration(gradient: Deco.brandGradient),
                       ),
-                    )
-                  : Container(
-                      decoration: BoxDecoration(gradient: Deco.brandGradient),
+              ),
+              // 底部渐隐
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 150,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [Color(0xE6000000), Color(0x00000000)],
                     ),
-            ),
-            // 底部渐隐
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 150,
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [Color(0xE6000000), Color(0x00000000)],
                   ),
                 ),
               ),
-            ),
-            // 标题压在图上
-            Positioned(
-              left: context.pagePadding,
-              right: context.pagePadding,
-              bottom: 26,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
+              // 标题压在图上
+              Positioned(
+                left: context.pagePadding,
+                right: context.pagePadding,
+                bottom: 26,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    sub,
-                    style: TextStyle(
-                      color: Colors.white.withAlpha(200),
-                      fontSize: 12.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // 右上角两个圆按钮（悬浮在图上）
-            // ★ 1020 修复错位：首页外层已有 SafeArea，这里不能再加
-            //   MediaQuery.padding.top，否则被往下推一个状态栏高度。
-            Positioned(
-              right: context.pagePadding - 6,
-              top: 10,
-              child: Row(
-                children: [
-                  if (logic.configData?.groupBtnOn != false)
-                    _circleBtnGlass(Icons.group_add_outlined, () {
-                      logic.joinGroup();
-                    }),
-                  if (logic.configData?.userBtnOn != false) ...[
-                    const SizedBox(width: 8),
-                    _circleBtnGlass(
-                      Icons.support_agent_outlined,
-                      () => logic.joinUser(),
+                    const SizedBox(height: 6),
+                    Text(
+                      sub,
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(200),
+                        fontSize: 12.5,
+                      ),
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+              // 右上角两个圆按钮（悬浮在图上）
+              // ★ 1020 修复错位：首页外层已有 SafeArea，这里不能再加
+              //   MediaQuery.padding.top，否则被往下推一个状态栏高度。
+              Positioned(
+                right: context.pagePadding - 6,
+                top: 10,
+                child: Row(
+                  children: [
+                    if (logic.configData?.groupBtnOn != false)
+                      _circleBtnGlass(Icons.group_add_outlined, () {
+                        logic.joinGroup();
+                      }),
+                    if (logic.configData?.userBtnOn != false) ...[
+                      const SizedBox(width: 8),
+                      _circleBtnGlass(
+                        Icons.support_agent_outlined,
+                        () => logic.joinUser(),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -1504,7 +1513,7 @@ class _HomeComponentState extends State<HomeComponent> {
     return Padding(
       padding: EdgeInsets.fromLTRB(
         context.pagePadding,
-        18,
+        14,
         context.pagePadding,
         0,
       ),

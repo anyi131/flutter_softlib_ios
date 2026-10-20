@@ -1616,6 +1616,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ★ 1020：标题 + 副标题（去掉「同类应用」小徽章，更干净）
             Row(
               children: [
                 Container(
@@ -1635,41 +1636,27 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   '精品推荐',
                   style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800),
                 ),
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 1.5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: (accent ?? C.brand).withAlpha(
-                      context.isDark ? 40 : 18,
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    _recSameCat ? '同类应用' : '大家都在用',
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w700,
-                      color: accent ?? C.brand,
-                    ),
-                  ),
-                ),
               ],
             ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 152,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                clipBehavior: Clip.none,
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                itemCount: others.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
-                itemBuilder: (context, i) =>
-                    _recCard(others[i], accent: accent),
+            const SizedBox(height: 4),
+            Text(
+              '为你精选更多实用应用',
+              style: TextStyle(fontSize: 11.5, color: Colors.grey[500]),
+            ),
+            const SizedBox(height: 12),
+            // ★ 1020：改成九宫格（3 列）卡片，不再横向滑动
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: others.length > 9 ? 9 : others.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 0.92,
               ),
+              itemBuilder: (context, i) => _recCard(others[i], accent: accent),
             ),
           ],
         );
@@ -1713,102 +1700,63 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     return list.take(8).toList();
   }
 
-  /// 推荐卡：图标 + 名称 + 大小/版本 + 下载量
+  /// 推荐卡（九宫格单元）：浅底圆角卡 + 图标 + 两行名称
   Widget _recCard(AppItem a, {Color? accent}) {
     final dark = context.isDark;
-    final ac = accent ?? C.brand;
     return GestureDetector(
       onTap: () => Get.offAndToNamed(
         Routes.appDetails,
         arguments: {'appId': a.id.toString(), 'item': a},
       ),
       child: Container(
-        width: 96,
-        padding: const EdgeInsets.fromLTRB(8, 10, 8, 9),
+        padding: const EdgeInsets.fromLTRB(8, 12, 8, 10),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: dark
-                ? [Colors.white.withAlpha(16), Colors.white.withAlpha(6)]
-                : [Colors.white, ac.withAlpha(12)],
-          ),
+          color: dark ? Colors.white.withAlpha(12) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: dark ? Colors.white10 : Colors.black.withAlpha(7),
+            color: dark
+                ? Colors.white.withAlpha(14)
+                : Colors.black.withAlpha(6),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF2C3550).withAlpha(dark ? 40 : 12),
-              blurRadius: 14,
-              offset: const Offset(0, 5),
-            ),
-          ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(13),
-              child: CachedNetworkImage(
-                imageUrl: a.icon,
-                width: 52,
-                height: 52,
-                fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
-                  width: 52,
-                  height: 52,
-                  color: C.brand.withAlpha(20),
-                ),
-                errorWidget: (_, __, ___) => Container(
-                  width: 52,
-                  height: 52,
-                  color: C.brand.withAlpha(20),
-                  child: Icon(Icons.android, color: C.brand, size: 24),
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                color: dark
+                    ? Colors.white.withAlpha(10)
+                    : const Color(0xFFF2F4F9),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: a.icon.isEmpty
+                  ? Icon(Icons.android, color: C.brand, size: 24)
+                  : CachedNetworkImage(
+                      imageUrl: a.icon,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 160,
+                      placeholder: (_, __) => const SizedBox.shrink(),
+                      errorWidget: (_, __, ___) =>
+                          Icon(Icons.android, color: C.brand, size: 24),
+                    ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: Text(
+                a.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  height: 1.3,
+                  fontWeight: FontWeight.w500,
+                  color: context.t2,
                 ),
               ),
-            ),
-            const SizedBox(height: 7),
-            Text(
-              a.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-                color: context.t1,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              [
-                if (a.size.isNotEmpty) a.size,
-                if (a.version.isNotEmpty) 'v${a.version}',
-              ].join(' · '),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Ty.tiny.copyWith(fontSize: 9, color: context.t3),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.download_rounded,
-                  size: 10,
-                  color: C.mint.withAlpha(220),
-                ),
-                const SizedBox(width: 2),
-                Text(
-                  _fmtCount(a.downCount),
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    color: C.mint.withAlpha(230),
-                  ),
-                ),
-              ],
             ),
           ],
         ),
