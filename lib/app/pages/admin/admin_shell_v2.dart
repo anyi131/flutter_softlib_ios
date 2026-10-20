@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../design/adaptive.dart';
 import '../../design/ui.dart';
 import '../../design/app_anim.dart';
+import 'admin_save_bus.dart';
 import 'admin_ui_kit.dart';
 import 'admin_preview.dart';
 
@@ -152,6 +153,29 @@ class _AdminShellV2State extends State<AdminShellV2> {
   Widget _lightCard(Widget body, (String, IconData, String) cur) {
     return Scaffold(
       backgroundColor: _bg,
+      floatingActionButton: ValueListenableBuilder<bool>(
+        valueListenable: AdminSaveBus.saving,
+        builder: (_, busy, __) {
+          if (AdminSaveBus.handler == null) return const SizedBox.shrink();
+          return FloatingActionButton.extended(
+            heroTag: null,
+            onPressed: busy ? null : AdminSaveBus.run,
+            backgroundColor: C.brand,
+            foregroundColor: Colors.white,
+            icon: busy
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.save_rounded, size: 18),
+            label: Text(busy ? '保存中' : '保存'),
+          );
+        },
+      ),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -189,6 +213,29 @@ class _AdminShellV2State extends State<AdminShellV2> {
   Widget _darkConsole(Widget body, (String, IconData, String) cur) {
     return Scaffold(
       backgroundColor: _bg,
+      floatingActionButton: ValueListenableBuilder<bool>(
+        valueListenable: AdminSaveBus.saving,
+        builder: (_, busy, __) {
+          if (AdminSaveBus.handler == null) return const SizedBox.shrink();
+          return FloatingActionButton.extended(
+            heroTag: null,
+            onPressed: busy ? null : AdminSaveBus.run,
+            backgroundColor: C.brand,
+            foregroundColor: Colors.white,
+            icon: busy
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.save_rounded, size: 18),
+            label: Text(busy ? '保存中' : '保存'),
+          );
+        },
+      ),
       body: SafeArea(
         bottom: false,
         child: Row(
@@ -330,6 +377,29 @@ class _AdminShellV2State extends State<AdminShellV2> {
   Widget _minimal(Widget body, (String, IconData, String) cur) {
     return Scaffold(
       backgroundColor: _bg,
+      floatingActionButton: ValueListenableBuilder<bool>(
+        valueListenable: AdminSaveBus.saving,
+        builder: (_, busy, __) {
+          if (AdminSaveBus.handler == null) return const SizedBox.shrink();
+          return FloatingActionButton.extended(
+            heroTag: null,
+            onPressed: busy ? null : AdminSaveBus.run,
+            backgroundColor: C.brand,
+            foregroundColor: Colors.white,
+            icon: busy
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.save_rounded, size: 18),
+            label: Text(busy ? '保存中' : '保存'),
+          );
+        },
+      ),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -399,6 +469,29 @@ class _AdminShellV2State extends State<AdminShellV2> {
   Widget _brand(Widget body, (String, IconData, String) cur) {
     return Scaffold(
       backgroundColor: _bg,
+      floatingActionButton: ValueListenableBuilder<bool>(
+        valueListenable: AdminSaveBus.saving,
+        builder: (_, busy, __) {
+          if (AdminSaveBus.handler == null) return const SizedBox.shrink();
+          return FloatingActionButton.extended(
+            heroTag: null,
+            onPressed: busy ? null : AdminSaveBus.run,
+            backgroundColor: C.brand,
+            foregroundColor: Colors.white,
+            icon: busy
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.save_rounded, size: 18),
+            label: Text(busy ? '保存中' : '保存'),
+          );
+        },
+      ),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -604,6 +697,29 @@ class _AdminShellV2State extends State<AdminShellV2> {
   Widget _desk(Widget body, (String, IconData, String) cur) {
     return Scaffold(
       backgroundColor: _bg,
+      floatingActionButton: ValueListenableBuilder<bool>(
+        valueListenable: AdminSaveBus.saving,
+        builder: (_, busy, __) {
+          if (AdminSaveBus.handler == null) return const SizedBox.shrink();
+          return FloatingActionButton.extended(
+            heroTag: null,
+            onPressed: busy ? null : AdminSaveBus.run,
+            backgroundColor: C.brand,
+            foregroundColor: Colors.white,
+            icon: busy
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.save_rounded, size: 18),
+            label: Text(busy ? '保存中' : '保存'),
+          );
+        },
+      ),
       body: SafeArea(
         bottom: false,
         child: Column(

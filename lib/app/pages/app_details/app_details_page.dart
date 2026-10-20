@@ -1544,7 +1544,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               ...picks.map(
                 (a) => InkWell(
                   borderRadius: BorderRadius.circular(8),
-                  onTap: () => Get.toNamed(
+                  onTap: () => Get.offAndToNamed(
                     Routes.appDetails,
                     arguments: {'appId': a.id.toString(), 'item': a},
                     preventDuplicates: false,
@@ -1709,7 +1709,12 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       //   offAndToNamed 在「详情页 → 另一个详情页」时会先移除当前页再压栈，
       //   GetX 在这个时序上会丢参数 / 复用旧路由，表现为「点了没反应」。
       //   toNamed 是纯 push，本仓库首页/应用页都用它，行为稳定。
-      onTap: () => Get.toNamed(
+      // ★★ 必须用 offAndToNamed：toNamed 是 push，
+      //   旧详情页还活着 → 它的控制器没被销毁 →
+      //   Get.lazyPut 直接返回同一个控制器，onInit 不重跑 →
+      //   新页面拿到的还是旧 item（就是「点了还是原来的软件」）。
+      //   offAndToNamed 会移除旧页面、销毁控制器，配合 fenix 重建。
+      onTap: () => Get.offAndToNamed(
         Routes.appDetails,
         arguments: {'appId': a.id.toString(), 'item': a},
         preventDuplicates: false,

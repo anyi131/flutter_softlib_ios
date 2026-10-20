@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../admin_save_bus.dart';
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
@@ -138,10 +139,13 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   void initState() {
     super.initState();
     _load();
+    // ★ 1020：把保存方法登记给外壳，右下角就会出现悬浮保存按钮
+    AdminSaveBus.register(_save);
   }
 
   @override
   void dispose() {
+    AdminSaveBus.clear();
     imgCtrl.dispose();
     secondsCtrl.dispose();
     urlCtrl.dispose();
