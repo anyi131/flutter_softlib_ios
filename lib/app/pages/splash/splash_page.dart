@@ -3,6 +3,7 @@ import 'dart:async';
 import '../../utils/safe_ctx.dart';
 
 import 'dart:io';
+import 'dart:ui' show ImageFilter;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -232,6 +233,254 @@ class _SplashPageState extends State<SplashPage> {
         'fullscreen';
     final title = cfg?.splashTitle ?? '';
     final desc = cfg?.splashDesc ?? '';
+
+    // ★★ 1020 开屏重构：配置了网络图时，按模板给 3 种不同版式。
+    //   原来 7 个模板里有的根本没有图片槽位，这里统一收敛成 3 套可用样式：
+    //     fullscreen / poster_center  → A 全屏沉浸
+    //     brand_bar / banner          → B 底部品牌条
+    //     fade / split / greeting     → C 居中玻璃卡
+    if (_netSplash.isNotEmpty) {
+      final style = switch (tpl) {
+        'fullscreen' || 'poster_center' => 'A',
+        'brand_bar' || 'banner' => 'B',
+        _ => 'C',
+      };
+      final brandTitle = title.isEmpty ? '安逸软件汇' : title;
+      final brandDesc = desc.isEmpty ? '优质软件 · 持续更新' : desc;
+
+      // 右上角倒计时
+      Widget countdown() => Positioned(
+        right: 20,
+        top: MediaQuery.of(context).padding.top + 12,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.black.withAlpha(90),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: Colors.white.withAlpha(60)),
+          ),
+          child: Text(
+            '$_left s',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      );
+
+      if (style == 'A') {
+        // ── A 全屏沉浸：图铺满 + 底部左侧文案 ──
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            _splashImage(),
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0x66000000),
+                    Color(0x22000000),
+                    Color(0xCC000000),
+                  ],
+                  stops: [0.0, 0.45, 1.0],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 28,
+              right: 28,
+              bottom: 96,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    brandTitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      height: 1.25,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    brandDesc,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(210),
+                      fontSize: 13.5,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (_left > 0) countdown(),
+          ],
+        );
+      }
+
+      if (style == 'B') {
+        // ── B 底部品牌条：图铺满 + 底部渐变条（图标 + 名称）──
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            _splashImage(),
+            // 顶轻微压暗
+            Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                height: 160,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0x66000000), Color(0x00000000)],
+                  ),
+                ),
+              ),
+            ),
+            // 底部品牌条
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(
+                  24,
+                  34,
+                  24,
+                  MediaQuery.of(context).padding.bottom + 34,
+                ),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0x00000000), Color(0xE6000000)],
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Image.asset(
+                        Assets.imagesApp,
+                        width: 44,
+                        height: 44,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            brandTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            brandDesc,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white.withAlpha(190),
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (_left > 0) countdown(),
+          ],
+        );
+      }
+
+      // ── C 居中玻璃卡：模糊图打底 + 居中卡片 ──
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          _splashImage(),
+          ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: Container(color: Colors.black.withAlpha(90)),
+            ),
+          ),
+          Center(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 44),
+              padding: const EdgeInsets.fromLTRB(26, 30, 26, 28),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(22),
+                borderRadius: BorderRadius.circular(26),
+                border: Border.all(color: Colors.white.withAlpha(50)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.asset(
+                      Assets.imagesApp,
+                      width: 72,
+                      height: 72,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    brandTitle,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    brandDesc,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(190),
+                      fontSize: 12.5,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_left > 0) countdown(),
+        ],
+      );
+    }
 
     if (tpl == 'split') {
       // v52t：左右分栏（左文字/logo，右图）

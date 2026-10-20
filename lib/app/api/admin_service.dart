@@ -103,6 +103,12 @@ class AdminService {
     return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
   }
 
+  /// 开屏接口自测（后台「测试」按钮）
+  Future<Map<String, dynamic>> splashTest() async {
+    final m = await _post('splash_test');
+    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+  }
+
   /// ★ 1020：积分排行榜（仅后台，用户明确要求不在 App 公开）
   Future<Map<String, dynamic>> scoreRank({
     int days = 30,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../admin_save_bus.dart';
+import '../../../utils/app_action.dart';
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
@@ -344,6 +345,99 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
     }
   }
 
+  /// 测试开屏接口：显示来源、真实地址、HTTP 状态、字节数、耗时，并预览图片
+  Future<void> _testSplash() async {
+    AppAction.showLoading('正在测试…');
+    try {
+      final r = await AdminService.instance.splashTest();
+      AppAction.hideLoading();
+      if (!mounted) return;
+      final ok = r['ok'] == true;
+      final proxy = '${r['proxy'] ?? ''}';
+      showDialog<void>(
+        context: context,
+        builder: (c) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                ok ? Icons.check_circle_rounded : Icons.error_rounded,
+                color: ok ? C.success : C.danger,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(ok ? '接口正常' : '接口异常', style: const TextStyle(fontSize: 16)),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _kv('来源', '${r['source'] ?? '-'}'),
+                _kv('时长', '${r['seconds'] ?? '-'} 秒'),
+                _kv('HTTP', '${r['http'] ?? '-'}'),
+                _kv('大小', '${r['bytes'] ?? 0} 字节'),
+                _kv('耗时', '${r['ms'] ?? 0} ms'),
+                _kv('类型', '${r['type'] ?? '-'}'),
+                if (proxy.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    '实际请求地址',
+                    style: TextStyle(fontSize: 10.5, color: context.t3),
+                  ),
+                  SelectableText(proxy, style: const TextStyle(fontSize: 10.5)),
+                ],
+                if (ok && proxy.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      proxy,
+                      height: 200,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const SizedBox(
+                        height: 40,
+                        child: Center(child: Text('预览加载失败')),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c),
+              child: const Text('关闭'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      AppAction.hideLoading();
+      ToastUtil.error(ErrText.of(e));
+    }
+  }
+
+  Widget _kv(String k, String v) => Padding(
+    padding: const EdgeInsets.only(bottom: 4),
+    child: Row(
+      children: [
+        SizedBox(
+          width: 52,
+          child: Text(k, style: TextStyle(fontSize: 11.5, color: context.t3)),
+        ),
+        Expanded(
+          child: Text(v, style: TextStyle(fontSize: 12, color: context.t1)),
+        ),
+      ],
+    ),
+  );
+
   Future<void> _save() async {
     try {
       final splashPayload = {
@@ -597,6 +691,18 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
               }, style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3)),
             ),
             if (splashSource == 'custom') _field('开屏图片 URL', imgCtrl),
+            // ★ 1020：接口自测 —— 一键验证「图片到底能不能取到」
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _testSplash,
+                  icon: const Icon(Icons.network_check_rounded, size: 17),
+                  label: const Text('测试开屏接口'),
+                ),
+              ),
+            ),
             _field(
               '停留秒数（1-10，默认 3）',
               secondsCtrl,

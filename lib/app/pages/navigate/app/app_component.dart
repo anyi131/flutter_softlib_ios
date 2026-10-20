@@ -40,6 +40,10 @@ class _AppComponentState extends State<AppComponent> {
 
   List<AppCat> _cats = [];
   List<AppItem> _apps = [];
+
+  /// ★ 1020：真实总数（分页时 _apps 只是已加载的部分，
+  ///   原来顶栏用它当「共 N 个」，切分类回来数字就不对了）
+  int _total = 0;
   int _cat = 0;
   bool _loading = true;
 
@@ -238,6 +242,7 @@ class _AppComponentState extends State<AppComponent> {
           } else {
             _apps.addAll(slice);
           }
+          _total = src.length; // 文件夹模式能拿到完整条数
           _hasMore = hasMore;
           _loading = false;
           _loadingMore = false;
@@ -258,6 +263,8 @@ class _AppComponentState extends State<AppComponent> {
         } else {
           _apps.addAll(slice);
         }
+        // 分页模式拿不到总数，用「已加载 + 是否还有更多」表达
+        _total = _hasMore || hasMore ? _apps.length : _apps.length;
         _hasMore = hasMore;
         if (hasMore) _page++;
         _loading = false;
@@ -357,7 +364,9 @@ class _AppComponentState extends State<AppComponent> {
     return Padding(
       padding: EdgeInsets.fromLTRB(context.pagePadding, 14, 12, 2),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        // ★ 1020：右侧两个圆形按钮改为与标题区垂直居中，
+        //   原来 start 对齐 + 图标偏大会显得「错位」
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: Column(
@@ -365,12 +374,14 @@ class _AppComponentState extends State<AppComponent> {
               children: [
                 Text('软件库', style: Ty.display.copyWith(color: context.t1)),
                 const SizedBox(height: 5),
-                Text(
-                  _kw.isEmpty
-                      ? '为你精选 · 综合软件合集 · 共 ${_apps.length} 个'
-                      : '搜索「$_kw」· 共 ${_apps.length} 个',
-                  style: Ty.small.copyWith(color: context.t3),
-                ),
+                Text(() {
+                  // ★ 1020：有更多未加载时显示「N+」，避免切分类后数字看起来变少
+                  final n = _total > 0 ? _total : _apps.length;
+                  final shown = _hasMore ? '$n+' : '$n';
+                  return _kw.isEmpty
+                      ? '为你精选 · 综合软件合集 · 共 $shown 个'
+                      : '搜索「$_kw」· 共 $shown 个';
+                }(), style: Ty.small.copyWith(color: context.t3)),
               ],
             ),
           ),
