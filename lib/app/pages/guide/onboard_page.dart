@@ -24,7 +24,9 @@ class _OnboardPageState extends State<OnboardPage> {
   final _pc = PageController();
   int _i = 0;
 
-  static const _pages = [
+  // ★ C.brand 等是 static var，不能进 const 列表 → 改为 getter
+  static List<({IconData icon, Color color, String title, String desc})>
+  get _pages => [
     (
       icon: Icons.search_rounded,
       color: C.brand,
