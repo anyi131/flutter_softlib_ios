@@ -239,6 +239,61 @@ class _SplashPageState extends State<SplashPage> {
           : h < 18
           ? '下午好'
           : '晚上好';
+      // ★★ 1020：问候模板原来**完全没有图片**（只有渐变+文字），
+      //   后台配了必应/随机图也看不到 —— 这就是「保存了不生效」。
+      //   现在：有网络图 → 图片打底 + 深色蒙层；没有 → 回退渐变。
+      if (_netSplash.isNotEmpty) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            _splashImage(),
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0x99000000), Color(0xCC000000)],
+                ),
+              ),
+            ),
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    greet,
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(190),
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  if (desc.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      desc,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(200),
+                        fontSize: 13.5,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        );
+      }
       return Container(
         decoration: BoxDecoration(gradient: C.brandGradient),
         alignment: Alignment.center,
