@@ -196,7 +196,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     bool active = false,
     String? tip,
   }) {
-    return GestureDetector(
+    return AppPressable(
       onTap: f,
       child: Tooltip(
         message: tip ?? '',
@@ -294,7 +294,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
         separatorBuilder: (_, __) => const SizedBox(width: 7),
         itemBuilder: (_, i) {
           final sel = _filter == items[i].$1;
-          return GestureDetector(
+          return AppPressable(
             onTap: () => _switchFilter(items[i].$1),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -370,7 +370,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                 ),
                 const Spacer(),
                 if (n > 0)
-                  GestureDetector(
+                  AppPressable(
                     onTap: () => setState(_selected.clear),
                     child: Text('清空', style: Ty.tiny.copyWith(color: C.danger)),
                   ),
@@ -884,7 +884,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                         runSpacing: 8,
                         children: [1, 7, 30, 90, 365].map((n) {
                           final sel = dayCtrl.text == '$n';
-                          return GestureDetector(
+                          return AppPressable(
                             onTap: () => setD(() => dayCtrl.text = '$n'),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -1339,7 +1339,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     ValueChanged<String> onTap,
   ) {
     final sel = cur == value;
-    return GestureDetector(
+    return AppPressable(
       onTap: () => onTap(value),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -1685,7 +1685,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                       ),
                     ),
                   ),
-                  GestureDetector(
+                  AppPressable(
                     onTap: () => _forceUnbindQq(u),
                     child: Container(
                       padding: const EdgeInsets.symmetric(

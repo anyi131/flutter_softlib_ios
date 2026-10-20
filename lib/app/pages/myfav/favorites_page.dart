@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../design/app_anim.dart';
 import '../../api/api_host.dart';
 import '../../api/user_service.dart';
 import '../../design/adaptive.dart';
@@ -194,7 +195,7 @@ class _FavoritesPageState extends State<FavoritesPage>
       ),
       child: Row(
         children: [
-          GestureDetector(
+          AppPressable(
             onTap: () => Get.back(),
             child: Icon(
               Icons.arrow_back_ios_new_rounded,
@@ -463,7 +464,7 @@ class _FavoritesPageState extends State<FavoritesPage>
           child: const Icon(Icons.delete_rounded, color: Colors.white),
         ),
         onDismissed: (_) => onUnfav(),
-        child: GestureDetector(
+        child: AppPressable(
           onTap: onTap,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
@@ -508,7 +509,7 @@ class _FavoritesPageState extends State<FavoritesPage>
                     ],
                   ),
                 ),
-                GestureDetector(
+                AppPressable(
                   onTap: onUnfav,
                   child: Padding(
                     padding: const EdgeInsets.all(4),

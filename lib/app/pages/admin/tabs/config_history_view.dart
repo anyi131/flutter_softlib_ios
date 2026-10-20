@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../design/app_anim.dart';
 import '../../../api/admin_service.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
@@ -313,7 +314,7 @@ class _ConfigHistoryViewState extends State<ConfigHistoryView> {
                 ],
               ),
             ),
-            GestureDetector(
+            AppPressable(
               onTap: () => _rollback(v),
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -335,7 +336,7 @@ class _ConfigHistoryViewState extends State<ConfigHistoryView> {
                 ),
               ),
             ),
-            GestureDetector(
+            AppPressable(
               onTap: () => _delete(v),
               child: Padding(
                 padding: const EdgeInsets.only(left: 6),

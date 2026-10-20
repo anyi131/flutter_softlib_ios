@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import '../../design/app_anim.dart';
 import '../../utils/err_text.dart';
 
 import 'dart:ui';
@@ -176,7 +177,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
     );
   }
 
-  Widget _topBtn(IconData i, VoidCallback f) => GestureDetector(
+  Widget _topBtn(IconData i, VoidCallback f) => AppPressable(
     onTap: f,
     child: Container(
       width: 36,
@@ -358,7 +359,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
             for (final img in p.images)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: GestureDetector(
+                child: AppPressable(
                   onTap: () => _preview(img),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(R.sm),
@@ -555,7 +556,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                       runSpacing: 6,
                       children: (c['images'] as List)
                           .map(
-                            (u) => GestureDetector(
+                            (u) => AppPressable(
                               onTap: () => _preview('$u'),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(R.xs),
@@ -620,7 +621,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                       ),
                     ],
                     const SizedBox(width: 12),
-                    GestureDetector(
+                    AppPressable(
                       onTap: () => _startReply(c),
                       child: Text(
                         '回复',
@@ -633,7 +634,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     ),
                     if (canDel) ...[
                       const SizedBox(width: 12),
-                      GestureDetector(
+                      AppPressable(
                         onTap: () => _deleteComment(c),
                         child: Text(
                           '删除',
@@ -922,7 +923,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   Row(
                     children: [
                       // 图片
-                      GestureDetector(
+                      AppPressable(
                         onTap: pickImage,
                         child: Container(
                           padding: const EdgeInsets.all(8),
@@ -934,7 +935,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                         ),
                       ),
                       // 表情
-                      GestureDetector(
+                      AppPressable(
                         onTap: () => setSheet(() => showEmoji = !showEmoji),
                         child: Container(
                           padding: const EdgeInsets.all(8),
@@ -1007,7 +1008,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
         child: Row(
           children: [
             Expanded(
-              child: GestureDetector(
+              child: AppPressable(
                 onTap: () => _openComposer(),
                 child: Container(
                   height: 42,
@@ -1034,7 +1035,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
               ),
             ),
             const SizedBox(width: 8),
-            GestureDetector(
+            AppPressable(
               onTap: () => _openComposer(),
               child: Container(
                 width: 46,
@@ -1108,7 +1109,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
   void _preview(String url) {
     showDialog(
       context: context,
-      builder: (_) => GestureDetector(
+      builder: (_) => AppPressable(
         onTap: Get.back,
         child: Container(
           color: Colors.black.withAlpha(220),

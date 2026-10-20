@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../design/app_anim.dart';
 import '../../api/user_service.dart';
 import '../../api/wish_service.dart';
 import '../../design/adaptive.dart';
@@ -349,7 +350,7 @@ class _WishPageState extends State<WishPage> {
         children: [
           Row(
             children: [
-              GestureDetector(
+              AppPressable(
                 onTap: () => Get.back(),
                 child: Icon(
                   Icons.arrow_back_ios_new_rounded,
@@ -479,7 +480,7 @@ class _WishPageState extends State<WishPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 投票按钮
-            GestureDetector(
+            AppPressable(
               onTap: () => _vote(w),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),

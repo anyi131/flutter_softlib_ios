@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../../design/app_anim.dart';
 import '../../utils/safe_ctx.dart';
 
 import 'dart:io';
@@ -18,6 +19,7 @@ import '../../design/ui.dart';
 import '../../api/user_service.dart';
 import '../../models/app_config.dart';
 import '../../routes/app_pages.dart';
+import '../guide/onboard_page.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/local_splash.dart';
 import 'maintain_page.dart';
@@ -193,12 +195,24 @@ class _SplashPageState extends State<SplashPage> {
     }
   }
 
+  /// 跳转：首次使用 → 引导页；否则 → 首页
+  Future<void> _goNext() async {
+    bool need = false;
+    try {
+      need = await shouldShowOnboard();
+    } catch (_) {}
+    if (!mounted) return;
+    Navigator.of(context)
+        .pushReplacementNamed(need ? Routes.onboard : Routes.index);
+  }
+
   /// 进入主界面（并弹出公告）
   void _enter() {
     if (_entered || !mounted) return;
     _entered = true;
     if (mounted) setState(() => _diag = 'enter:navigating');
-    Navigator.of(context).pushReplacementNamed(Routes.index);
+    // ★ 1020：首次启动先进引导（3 屏讲清下载流程），之后再进首页
+    _goNext();
     final cfg = _config;
     // v52p #11：后台功能开关 notice=0 → 启动公告也不弹
     final noticeOn =
@@ -1825,7 +1839,7 @@ class _SplashPageState extends State<SplashPage> {
                             ),
                           const Spacer(),
                           if (!cfg.noticeForce)
-                            GestureDetector(
+                            AppPressable(
                               onTap: () => SafeCtx.pop(),
                               child: Text(
                                 '知道了',

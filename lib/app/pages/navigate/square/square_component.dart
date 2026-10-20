@@ -203,7 +203,7 @@ class _SquareComponentState extends State<SquareComponent> {
         itemBuilder: (context, i) {
           final c = _cats[i];
           final sel = _currentCat == c.id;
-          return GestureDetector(
+          return AppPressable(
             onTap: () => _switchCat(c.id),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 170),
@@ -661,7 +661,7 @@ class _SquareComponentState extends State<SquareComponent> {
     ValueChanged<String> onTap,
   ) {
     final sel = cur == value;
-    return GestureDetector(
+    return AppPressable(
       onTap: () => onTap(value),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
@@ -787,7 +787,7 @@ class _SquareComponentState extends State<SquareComponent> {
                       itemBuilder: (_, i) {
                         final c = _cats.where((e) => e.id != 0).toList()[i];
                         final sel = catId == c.id;
-                        return GestureDetector(
+                        return AppPressable(
                           onTap: () => setSheet(() => catId = c.id),
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12),

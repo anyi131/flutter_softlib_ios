@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../design/app_anim.dart';
 import '../../utils/err_text.dart';
 
 import 'package:get/get.dart';
@@ -242,7 +243,7 @@ class _MessagePageState extends State<MessagePage> {
                       ),
                     ),
                     const Spacer(),
-                    GestureDetector(
+                    AppPressable(
                       onTap: () => _delete(m),
                       child: Text(
                         '删除',
@@ -276,7 +277,7 @@ class _MessagePageState extends State<MessagePage> {
         ),
         child: Row(
           children: [
-            GestureDetector(
+            AppPressable(
               onTap: Get.back,
               child: Container(
                 width: 36,
@@ -299,7 +300,7 @@ class _MessagePageState extends State<MessagePage> {
               style: Ty.h3.copyWith(color: context.t1, fontSize: 15),
             ),
             const Spacer(),
-            GestureDetector(
+            AppPressable(
               onTap: unread > 0 ? _markAllRead : null,
               child: SizedBox(
                 width: 36,

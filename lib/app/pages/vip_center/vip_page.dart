@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../design/app_anim.dart';
 import '../../utils/err_text.dart';
 
 import 'package:get/get.dart';
@@ -148,7 +149,7 @@ class _VipPageState extends State<VipPage> {
           Positioned(
             top: topInset + 4,
             left: 12,
-            child: GestureDetector(
+            child: AppPressable(
               onTap: () => Get.back(),
               child: Container(
                 width: 36,
@@ -329,7 +330,7 @@ class _VipPageState extends State<VipPage> {
     final plan = _plans[index];
     final selected = _selectedPlan == index;
     final popular = index == 1; // 中间档 = 最受欢迎
-    return GestureDetector(
+    return AppPressable(
       onTap: () => setState(() => _selectedPlan = index),
       child: Transform.scale(
         // 中间档视觉放大（Transform 不参与布局计算，不会触发重排循环）

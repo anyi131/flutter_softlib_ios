@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../../../design/app_anim.dart';
 import '../../../api/soft_service.dart';
 import '../../../models/ui_config.dart';
 import '../../../design/adaptive.dart';
@@ -61,7 +62,7 @@ class AuthScaffold extends StatelessWidget {
 
   Widget _backBtn(BuildContext context, {Color? fg}) {
     if (!showBack) return const SizedBox(width: 38, height: 38);
-    return GestureDetector(
+    return AppPressable(
       onTap: () => Navigator.of(context).maybePop(),
       child: Container(
         width: 38,
@@ -638,7 +639,7 @@ class AuthField extends StatelessWidget {
                 ),
               ),
               if (onToggleObscure != null)
-                GestureDetector(
+                AppPressable(
                   onTap: onToggleObscure,
                   child: Icon(
                     obscure

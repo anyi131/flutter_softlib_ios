@@ -17,6 +17,7 @@ abstract class Routes {
   static const wish = _Paths.wish;
   static const favorites = _Paths.favorites;
   static const history = _Paths.history;
+  static const onboard = _Paths.onboard;
   static const payWeb = _Paths.payWeb;
   static const urlWebview = _Paths.urlWebview;
   static const cardShop = _Paths.cardShop;
@@ -46,6 +47,7 @@ abstract class _Paths {
   static const wish = '/wish';
   static const favorites = '/favorites';
   static const history = '/history';
+  static const onboard = '/onboard';
   static const payWeb = '/payWeb';
   static const urlWebview = '/urlWebview';
   static const cardShop = '/cardShop';

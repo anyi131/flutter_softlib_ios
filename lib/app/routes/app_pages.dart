@@ -23,6 +23,7 @@ import 'package:flutter_softlib/app/pages/navigate/mine/invite_page.dart';
 import 'package:flutter_softlib/app/pages/message/message_page.dart';
 import 'package:flutter_softlib/app/pages/taskcenter/task_page.dart';
 import 'package:flutter_softlib/app/pages/wishlist/wish_page.dart';
+import 'package:flutter_softlib/app/pages/guide/onboard_page.dart';
 import 'package:flutter_softlib/app/pages/myfav/favorites_page.dart';
 import 'package:flutter_softlib/app/pages/myfav/history_page.dart';
 import 'package:get/get.dart';
@@ -48,6 +49,11 @@ class AppPages {
     GetPage(name: _Paths.favorites, page: () => const FavoritesPage()),
     // ★ 1020：使用历史（可删除 / 批量清理）
     GetPage(name: _Paths.history, page: () => const HistoryPage()),
+    // ★ 1020：首次启动引导（只显示一次）
+    GetPage(
+      name: _Paths.onboard,
+      page: () => const OnboardPage(nextRoute: _Paths.index),
+    ),
     // ★ 1020：求软件 / 需求投票
     GetPage(
       name: _Paths.wish,

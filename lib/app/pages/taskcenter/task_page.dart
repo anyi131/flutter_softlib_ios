@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../../design/app_anim.dart';
 import '../../utils/err_text.dart';
 
 import 'dart:io';
@@ -224,7 +225,7 @@ class _TaskPageState extends State<TaskPage> {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
       child: Row(
         children: [
-          GestureDetector(
+          AppPressable(
             onTap: () => Navigator.pop(context),
             child: Container(
               width: 38,
@@ -508,7 +509,7 @@ class _TaskPageState extends State<TaskPage> {
   Widget _inviteBtn() {
     final url = _s('invite_url');
     if (url.isEmpty) return const SizedBox.shrink();
-    return GestureDetector(
+    return AppPressable(
       onTap: () => JumpUtil.openUrl(url),
       child: Container(
         height: 44,
@@ -643,7 +644,7 @@ class _TaskPageState extends State<TaskPage> {
           ),
         ),
         const SizedBox(height: 8),
-        GestureDetector(
+        AppPressable(
           onTap: _pickShot,
           child: Container(
             height: _shotUrl.isEmpty ? 46 : null,
@@ -857,7 +858,7 @@ class _TaskPageState extends State<TaskPage> {
                 ),
               ),
               if (_applyState == 1)
-                GestureDetector(
+                AppPressable(
                   onTap: () => Get.toNamed('/message'),
                   child: Container(
                     padding: const EdgeInsets.symmetric(

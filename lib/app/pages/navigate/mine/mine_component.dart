@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 
+import '../../../design/app_anim.dart';
 import '../../../utils/safe_ctx.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
@@ -89,7 +90,7 @@ class MineComponent extends StatelessWidget {
       children: [
         Text('我的', style: Ty.display.copyWith(color: context.t1)),
         const Spacer(),
-        GestureDetector(
+        AppPressable(
           onTap: () => Get.find<NavigateLogic>().changePage(0),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
@@ -121,7 +122,7 @@ class MineComponent extends StatelessWidget {
     final logged = logic.isLoggedIn;
     return Row(
       children: [
-        GestureDetector(
+        AppPressable(
           onTap: () => logged ? logic.openProfileEdit() : logic.openLogin(),
           child: Container(
             width: 58,
@@ -707,7 +708,7 @@ class MineComponent extends StatelessWidget {
   // ═══════ v3.3.4 新增：sidebar 模板的左栏元件 ═══════
   Widget _sideAvatar(BuildContext context, MineLogic logic) {
     final logged = logic.isLoggedIn;
-    return GestureDetector(
+    return AppPressable(
       onTap: () => logged ? logic.openProfileEdit() : logic.openLogin(),
       child: Container(
         width: 88,
@@ -848,7 +849,7 @@ class MineComponent extends StatelessWidget {
     return Row(
       children: [
         // 头像 + 光晕环
-        GestureDetector(
+        AppPressable(
           onTap: () => logged ? logic.openProfileEdit() : logic.openLogin(),
           child: Container(
             padding: const EdgeInsets.all(2.5),
@@ -1437,7 +1438,7 @@ class MineComponent extends StatelessWidget {
   }
 
   Widget _gridCell(BuildContext context, _S s) {
-    return GestureDetector(
+    return AppPressable(
       onTap: s.onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),

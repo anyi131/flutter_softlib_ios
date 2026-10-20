@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../../../design/app_anim.dart';
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
@@ -472,13 +473,13 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                   style: Ty.tiny.copyWith(color: C.brand),
                 ),
                 const SizedBox(width: 8),
-                GestureDetector(
+                AppPressable(
                   onTap: () => setState(_selected.clear),
                   child: Text('清空', style: Ty.tiny.copyWith(color: C.danger)),
                 ),
                 const SizedBox(width: 10),
               ],
-              GestureDetector(
+              AppPressable(
                 onTap: _selectAllMatched,
                 child: Text(
                   '全选本页',
@@ -502,7 +503,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               ])
                 Padding(
                   padding: const EdgeInsets.only(right: 6),
-                  child: GestureDetector(
+                  child: AppPressable(
                     onTap: () => setState(() => _libFilter = f.$1),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -533,7 +534,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                   ),
                 ),
               const Spacer(),
-              GestureDetector(
+              AppPressable(
                 onTap: () => _annotateLib(_items),
                 child: Row(
                   children: [
@@ -1236,7 +1237,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                 _miniStat('总数', _total, C.brand),
                 const Spacer(),
                 if (_running)
-                  GestureDetector(
+                  AppPressable(
                     onTap: _finishFromLog,
                     child: Text(
                       '立即取结果',
@@ -1337,7 +1338,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                     ),
                   ),
                   const Spacer(),
-                  GestureDetector(
+                  AppPressable(
                     onTap: _retryFailed,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -1400,7 +1401,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                         ),
                       ),
                       const SizedBox(width: 6),
-                      GestureDetector(
+                      AppPressable(
                         onTap: () => _retryOne(r),
                         child: Padding(
                           padding: const EdgeInsets.only(top: 2),

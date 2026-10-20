@@ -159,7 +159,7 @@ class _InvitePageState extends State<InvitePage> {
       ),
       child: Row(
         children: [
-          GestureDetector(
+          AppPressable(
             onTap: () => Get.back(),
             child: Container(
               width: 38,
@@ -179,7 +179,7 @@ class _InvitePageState extends State<InvitePage> {
             ),
           ),
           const Spacer(),
-          GestureDetector(
+          AppPressable(
             onTap: _load,
             child: Container(
               width: 38,

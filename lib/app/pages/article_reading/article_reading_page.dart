@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
+import '../../design/app_anim.dart';
 import 'article_reading_logic.dart';
 
 class ArticleReadingPage extends StatelessWidget {
@@ -135,7 +136,7 @@ class ArticleReadingPage extends StatelessWidget {
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             right: 16,
-            child: GestureDetector(
+            child: AppPressable(
               onTap: logic.hideImagePreview,
               child: Container(
                 padding: const EdgeInsets.all(8),

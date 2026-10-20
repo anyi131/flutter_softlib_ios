@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../design/app_anim.dart';
 import '../../utils/err_text.dart';
 
 import 'package:get/get.dart';
@@ -302,7 +303,7 @@ class _RechargePageState extends State<RechargePage> {
     final sel = _payType == value;
     final ok = _methods[value] == true;
     return Expanded(
-      child: GestureDetector(
+      child: AppPressable(
         onTap: ok ? () => setState(() => _payType = value) : null,
         child: Opacity(
           opacity: ok ? 1 : 0.4,
@@ -347,7 +348,7 @@ class _RechargePageState extends State<RechargePage> {
         ),
         child: Row(
           children: [
-            GestureDetector(
+            AppPressable(
               onTap: Get.back,
               child: Container(
                 width: 36,

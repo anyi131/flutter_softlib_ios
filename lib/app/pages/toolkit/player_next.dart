@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../design/app_anim.dart';
 import '../../design/ui.dart';
 import '../../widgets/mpv_core.dart';
 
@@ -592,7 +593,7 @@ class _VideoPageState extends State<VideoPage> {
       child: Column(
         children: [
           const Spacer(),
-          GestureDetector(
+          AppPressable(
             onTap: _togglePlay,
             child: Container(
               width: 62,
@@ -649,7 +650,7 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   Widget _iconBtn(IconData icon, String label, VoidCallback onTap) {
-    return GestureDetector(
+    return AppPressable(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(left: 6),
@@ -899,7 +900,7 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   Widget _actionBtn(String t, Color c, VoidCallback onTap) {
-    return GestureDetector(
+    return AppPressable(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),

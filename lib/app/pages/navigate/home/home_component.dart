@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:marquee/marquee.dart';
 
+import '../../../design/app_anim.dart';
 import '../../../../generated/assets.dart';
 import '../../../api/soft_service.dart';
 import '../../../models/ui_config.dart';
@@ -57,15 +58,108 @@ class _HomeComponentState extends State<HomeComponent> {
   /// v52i #4：首页两套模板（后台「界面」Tab home.template 可切）
   Widget _homeBody() {
     // v52q：监听 configVersion —— 后台保存后本页立即重建
-    return Obx(() => _homeBodyInner(SoftService.instance.configVersion.value));
+    // ★★ 1020：模板渲染兜底 —— 当前模板构建抛异常时，自动降级到「经典」，
+    //   而不是整页白屏/红屏（之前某个模板一用就崩，用户只看到空白）。
+    return Obx(() {
+      try {
+        return _homeBodyInner(SoftService.instance.configVersion.value);
+      } catch (e, st) {
+        debugPrint('[Home] 模板渲染异常，降级到 classic: $e\n$st');
+        try {
+          return _fallbackBody();
+        } catch (e2) {
+          return const Center(child: Text('页面加载失败，请下拉刷新'));
+        }
+      }
+    });
+  }
+
+  /// 兜底骨架（只用最基础组件，确保不会二次崩溃）
+  Widget _fallbackBody() {
+    final logic = Get.find<HomeLogic>();
+    final list = _displayRefs(logic) ?? const [];
+    return RefreshIndicator(
+      onRefresh: () async {
+        await Future.wait([
+          logic.getConfig(),
+          logic.getCarouselSlider(),
+          logic.getReferral(),
+        ]);
+      },
+      color: C.brand,
+      child: ListView.builder(
+        padding: EdgeInsets.fromLTRB(
+          context.pagePadding,
+          16,
+          context.pagePadding,
+          context.tabSpace + 40,
+        ),
+        itemCount: list.length + 1,
+        itemBuilder: (c, i) {
+          if (i == 0) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text('软件库', style: Ty.display.copyWith(color: context.t1)),
+            );
+          }
+          final d = list[i - 1];
+          final id = int.tryParse('${d.url}') ?? 0;
+          return ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: (d.image ?? '').isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: d.image!,
+                        fit: BoxFit.cover,
+                        errorWidget: (_, __, ___) =>
+                            Icon(Icons.android, color: C.brand),
+                      )
+                    : Icon(Icons.android, color: C.brand),
+              ),
+            ),
+            title: Text(
+              d.title ?? '',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              d.content ?? '',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: Icon(Icons.chevron_right_rounded, color: context.t3),
+            onTap: id > 0
+                ? () => Get.toNamed(
+                    Routes.appDetails,
+                    arguments: {'appId': '$id'},
+                  )
+                : null,
+          );
+        },
+      ),
+    );
   }
 
   Widget _homeBodyInner(int _) {
     final uiCfg =
         SoftService.instance.cachedConfig?.uiConfig ?? const UiConfig();
     final tpl = uiCfg.homeTemplate;
+    // ★ 1020：统一空状态 —— 任何模板在「无任何软件」时都给明确提示，
+    //   而不是一片空白（半成品最常见的问题）。
     final tail = SliverToBoxAdapter(
-      child: SizedBox(height: context.tabSpace + 40),
+      child: Column(
+        children: [
+          if (_isEmptyData())
+            _emptyHint()
+          else
+            SizedBox(height: context.tabSpace + 40),
+          if (_isEmptyData()) SizedBox(height: context.tabSpace + 20),
+        ],
+      ),
     );
 
     // ★ v3.3.4 首页模板体系重做：
@@ -221,6 +315,57 @@ class _HomeComponentState extends State<HomeComponent> {
   //  v3.3.4 新增骨架：magazine / gridwall / immersive / drawer /
   //                    minimal / store
   // ═══════════════════════════════════════════════════════════════
+
+  /// 是否完全没有内容（推荐位与兜底都为空）
+  bool _isEmptyData() {
+    if (!Get.isRegistered<HomeLogic>()) return false;
+    final logic = Get.find<HomeLogic>();
+    final a = logic.referrals;
+    final b = logic.fallbackRefs;
+    return (a == null || a.isEmpty) && (b == null || b.isEmpty);
+  }
+
+  /// 统一空状态提示
+  Widget _emptyHint() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        context.pagePadding,
+        48,
+        context.pagePadding,
+        20,
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 76,
+            height: 76,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  C.brand.withAlpha(context.isDark ? 50 : 26),
+                  C.accent.withAlpha(context.isDark ? 30 : 14),
+                ],
+              ),
+            ),
+            alignment: Alignment.center,
+            child: Icon(Icons.widgets_outlined, size: 32, color: C.brand),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            '暂时没有内容',
+            style: TextStyle(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w800,
+              color: context.t1,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text('下拉刷新试试，或稍后再来看看', style: Ty.small.copyWith(color: context.t3)),
+        ],
+      ),
+    );
+  }
 
   /// 列表展示用：优先真实推荐位，没有就用软件兜底
   List<dynamic>? _displayRefs(HomeLogic logic) {
@@ -445,7 +590,7 @@ class _HomeComponentState extends State<HomeComponent> {
   }
 
   Widget _circleBtnGlass(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
+    return AppPressable(
       onTap: onTap,
       child: Container(
         width: 38,
@@ -604,7 +749,7 @@ class _HomeComponentState extends State<HomeComponent> {
               }
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: GestureDetector(
+                child: AppPressable(
                   onTap: () => logic.onReferralTap(d),
                   child: Container(
                     decoration: BoxDecoration(
@@ -723,7 +868,7 @@ class _HomeComponentState extends State<HomeComponent> {
             ),
             delegate: SliverChildBuilderDelegate((context, i) {
               final d = list[i];
-              return GestureDetector(
+              return AppPressable(
                 onTap: () => logic.onReferralTap(d),
                 child: Column(
                   children: [
@@ -1184,7 +1329,7 @@ class _HomeComponentState extends State<HomeComponent> {
 
   /// 内联搜索框（store 模板专用，与 _search() 的独立搜索区不同）
   Widget _searchInline() {
-    return GestureDetector(
+    return AppPressable(
       onTap: () => Get.toNamed(Routes.appSearch),
       child: Container(
         height: 42,
@@ -1303,7 +1448,7 @@ class _HomeComponentState extends State<HomeComponent> {
               final d = list[i];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 9),
-                child: GestureDetector(
+                child: AppPressable(
                   onTap: () => logic.onReferralTap(d),
                   child: Container(
                     padding: const EdgeInsets.all(11),
@@ -1489,7 +1634,7 @@ class _HomeComponentState extends State<HomeComponent> {
   }
 
   Widget _circleBtn(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
+    return AppPressable(
       onTap: onTap,
       child: Container(
         width: 42,
@@ -1580,7 +1725,7 @@ class _HomeComponentState extends State<HomeComponent> {
         children: items
             .map(
               (it) => Expanded(
-                child: GestureDetector(
+                child: AppPressable(
                   onTap: it.$2,
                   child: Column(
                     children: [
@@ -1639,7 +1784,7 @@ class _HomeComponentState extends State<HomeComponent> {
                 itemCount: list.length,
                 itemBuilder: (context, i, _) {
                   final item = list[i];
-                  return GestureDetector(
+                  return AppPressable(
                     onTap: () => logic.onCarouselTap(item),
                     child: Container(
                       decoration: BoxDecoration(
@@ -1914,7 +2059,7 @@ class _HomeComponentState extends State<HomeComponent> {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: GestureDetector(
+            child: AppPressable(
               onTap: () => logic.onReferralTap(d),
               child: Container(
                 padding: const EdgeInsets.all(12),

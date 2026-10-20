@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../design/app_anim.dart';
 import '../../utils/err_text.dart';
 
 import 'package:flutter/services.dart';
@@ -191,7 +192,7 @@ class _CardShopPageState extends State<CardShopPage>
               ],
             ),
           ),
-          GestureDetector(
+          AppPressable(
             onTap: () => Get.toNamed('/recharge'),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
@@ -284,7 +285,7 @@ class _CardShopPageState extends State<CardShopPage>
                   style: Ty.h3.copyWith(fontSize: 17, color: accent),
                 ),
                 const SizedBox(height: 6),
-                GestureDetector(
+                AppPressable(
                   onTap: canBuy ? () => _buy(g) : null,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -421,7 +422,7 @@ class _CardShopPageState extends State<CardShopPage>
               ],
               const Spacer(),
               if (!used)
-                GestureDetector(
+                AppPressable(
                   onTap: () => _redeem(code),
                   child: Container(
                     padding: const EdgeInsets.symmetric(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../design/app_anim.dart';
 import '../../api/pay_service.dart';
 import '../../api/user_service.dart';
 import '../../design/kit.dart';
@@ -152,7 +153,7 @@ class _PayWebPageState extends State<PayWebPage> {
             color: context.isDark ? C.bg1 : Colors.white,
             child: Row(
               children: [
-                GestureDetector(
+                AppPressable(
                   onTap: () => Get.back(),
                   child: Container(
                     width: 34,

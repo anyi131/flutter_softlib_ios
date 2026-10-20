@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../design/app_anim.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
@@ -410,7 +411,7 @@ class DetailNeon {
         clipBehavior: Clip.none,
         itemCount: shots.length,
         separatorBuilder: (_, __) => const SizedBox(width: 11),
-        itemBuilder: (c, i) => GestureDetector(
+        itemBuilder: (c, i) => AppPressable(
           onTap: () => onTap(i),
           child: Container(
             decoration: BoxDecoration(
@@ -458,7 +459,7 @@ class DetailNeon {
     required bool dark,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return AppPressable(
       onTap: onTap,
       child: Container(
         height: 54,

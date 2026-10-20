@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../design/app_anim.dart';
 import '../../api/admin_service.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
@@ -560,7 +561,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
                 ),
                 const SizedBox(width: 8),
                 // ★ 1020：点这里看全部在线用户（不再限制 8 个）
-                GestureDetector(
+                AppPressable(
                   onTap: () => Get.to(() => const OnlineUsersView()),
                   child: Row(
                     children: [
@@ -587,7 +588,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
             if (users.length > 8)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: GestureDetector(
+                child: AppPressable(
                   onTap: () => Get.to(() => const OnlineUsersView()),
                   child: Text(
                     '还有 ${users.length - 8} 人，点击查看全部 ›',

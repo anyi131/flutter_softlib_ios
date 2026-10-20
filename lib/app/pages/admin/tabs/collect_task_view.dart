@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../design/app_anim.dart';
 import '../admin_ui_kit.dart';
 import '../../../api/admin_service.dart';
 import '../../../design/adaptive.dart';
@@ -386,7 +387,7 @@ class _CollectTaskViewState extends State<CollectTaskView> {
   }
 
   Widget _typeChip(String t, bool sel, VoidCallback onTap) {
-    return GestureDetector(
+    return AppPressable(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),

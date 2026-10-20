@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../design/app_anim.dart';
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
@@ -637,7 +638,7 @@ class _CollectConfigViewState extends State<CollectConfigView> {
                 final v = '${o['value']}';
                 final on = (_values[name] ?? '') == v;
                 final lb = '${o['label'] ?? ''}';
-                return GestureDetector(
+                return AppPressable(
                   onTap: () => setState(() => _values[name] = v),
                   child: Container(
                     padding: const EdgeInsets.symmetric(

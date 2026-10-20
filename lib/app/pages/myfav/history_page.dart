@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../design/app_anim.dart';
 import '../../api/api_host.dart';
 import '../../api/user_service.dart';
 import '../../design/adaptive.dart';
@@ -209,7 +210,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   ),
                   child: Row(
                     children: [
-                      GestureDetector(
+                      AppPressable(
                         onTap: () => Get.back(),
                         child: Icon(
                           Icons.arrow_back_ios_new_rounded,
@@ -370,7 +371,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   ],
                 ),
               ),
-              GestureDetector(
+              AppPressable(
                 onTap: () => _deleteOne(h),
                 child: Padding(
                   padding: const EdgeInsets.all(6),

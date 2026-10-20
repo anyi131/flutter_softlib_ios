@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../design/app_anim.dart';
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
@@ -144,7 +145,7 @@ class _CollectStatsCardState extends State<CollectStatsCard> {
                   ],
                 ),
               ),
-              GestureDetector(
+              AppPressable(
                 onTap: _load,
                 child: Icon(Icons.refresh_rounded, size: 18, color: context.t3),
               ),

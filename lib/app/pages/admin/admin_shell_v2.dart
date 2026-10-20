@@ -272,7 +272,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                       itemCount: _items.length,
                       itemBuilder: (_, i) {
                         final on = i == _i;
-                        return GestureDetector(
+                        return AppPressable(
                           onTap: () => _go(i),
                           child: Container(
                             margin: const EdgeInsets.symmetric(
@@ -314,7 +314,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                       },
                     ),
                   ),
-                  GestureDetector(
+                  AppPressable(
                     onTap: widget.onRefresh,
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 14, top: 6),
@@ -427,7 +427,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                 separatorBuilder: (_, _) => const SizedBox(width: 18),
                 itemBuilder: (_, i) {
                   final on = i == _i;
-                  return GestureDetector(
+                  return AppPressable(
                     onTap: () => _go(i),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -533,7 +533,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                       ],
                     ),
                   ),
-                  GestureDetector(
+                  AppPressable(
                     onTap: widget.onRefresh,
                     child: Container(
                       width: 34,
@@ -581,7 +581,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
 
   Widget _bottomItem(int i, (String, IconData, String) cur) {
     final on = i == _i;
-    return GestureDetector(
+    return AppPressable(
       onTap: () => _go(i),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -604,7 +604,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
   /// 「更多」：弹出全部 12 项（底部导航的补充动线）
   Widget _moreItem((String, IconData, String) cur) {
     final inMore = _i >= 5;
-    return GestureDetector(
+    return AppPressable(
       onTap: _showMoreSheet,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -745,7 +745,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                 childAspectRatio: 0.86,
                 children: [
                   for (int i = 0; i < _items.length; i++)
-                    GestureDetector(
+                    AppPressable(
                       onTap: () => _go(i),
                       child: Container(
                         decoration: BoxDecoration(
@@ -829,7 +829,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
     );
   }
 
-  Widget _refreshBtn() => GestureDetector(
+  Widget _refreshBtn() => AppPressable(
     onTap: widget.onRefresh,
     child: Container(
       width: 38,
@@ -845,7 +845,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
 
   Widget _pill(int i) {
     final on = i == _i;
-    return GestureDetector(
+    return AppPressable(
       onTap: () => _go(i),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 170),

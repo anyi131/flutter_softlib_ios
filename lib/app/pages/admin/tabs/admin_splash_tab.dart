@@ -438,6 +438,60 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
     ),
   );
 
+  /// 保存校验结果提示
+  void _reportVerify(Map<String, dynamic> r) {
+    if (r['verified'] == true) {
+      ToastUtil.success('已保存（校验通过）');
+      return;
+    }
+    final missed = ((r['missed'] as List?) ?? []).map((e) => '$e').toList();
+    final n = (r['missed_count'] as num?)?.toInt() ?? missed.length;
+    Get.dialog<void>(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: C.warning, size: 20),
+            const SizedBox(width: 8),
+            const Text('有字段未生效', style: TextStyle(fontSize: 16)),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '共 $n 个字段没有写进服务器，可能是后台白名单未包含这些字段。',
+                style: const TextStyle(fontSize: 13, height: 1.6),
+              ),
+              if (missed.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: context.isDark
+                        ? Colors.black26
+                        : const Color(0xFFF5F7FC),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: SelectableText(
+                    missed.join('\n'),
+                    style: const TextStyle(fontSize: 11, height: 1.6),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('知道了')),
+        ],
+      ),
+    );
+  }
+
   Future<void> _save() async {
     try {
       final splashPayload = {
@@ -461,7 +515,10 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         'agreement': agreementCtrl.text,
         'privacy': privacyCtrl.text,
       };
-      await _svc.saveSplash(splashPayload);
+      // ★★ 1020：保存后自动校验 —— 服务端会读回文件比对，
+      //   有字段没写进去就立刻提示，不再出现「保存完又变回去」而无人知道。
+      final vr = await _svc.saveSplash(splashPayload);
+      _reportVerify(vr);
       // 支付配置（pay_key 留空表示不修改）
       final cfgPayload = {
         'pay_enabled': payEnable ? 1 : 0,
@@ -1257,7 +1314,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
                 small: true,
               ),
               const SizedBox(width: 6),
-              GestureDetector(
+              AppPressable(
                 onTap: () => setState(() => _cardGoods.removeAt(i)),
                 child: const Icon(
                   Icons.close_rounded,
@@ -1383,7 +1440,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         runSpacing: 8,
         children: [
           for (final o in opts)
-            GestureDetector(
+            AppPressable(
               onTap: () => onPick(o.$1),
               child: Container(
                 padding: const EdgeInsets.symmetric(

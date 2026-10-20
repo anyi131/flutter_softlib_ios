@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../../design/app_anim.dart';
 import '../../api/task_service.dart';
 import '../../utils/err_text.dart';
 
@@ -334,7 +335,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 ),
                 if (needToggle) ...[
                   const SizedBox(height: 8),
-                  GestureDetector(
+                  AppPressable(
                     onTap: () => setState(() => _descExpanded = !_descExpanded),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -638,7 +639,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         final favs = snap.data ?? <int>{};
         final id = item?.id ?? 0;
         final on = id > 0 && favs.contains(id);
-        return GestureDetector(
+        return AppPressable(
           onTap: () => _toggleFav(id, on),
           child: Container(
             width: 36,
@@ -718,7 +719,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     }
   }
 
-  Widget _topBtn(IconData i, VoidCallback f) => GestureDetector(
+  Widget _topBtn(IconData i, VoidCallback f) => AppPressable(
     onTap: f,
     child: Container(
       width: 36,
@@ -1411,7 +1412,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         ),
         if (desc.length > 120) ...[
           const SizedBox(height: 6),
-          GestureDetector(
+          AppPressable(
             onTap: () => setState(() => _descExpanded = !_descExpanded),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -1456,7 +1457,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               scrollDirection: Axis.horizontal,
               itemCount: shots.length,
               separatorBuilder: (_, __) => const SizedBox(width: 10),
-              itemBuilder: (context, i) => GestureDetector(
+              itemBuilder: (context, i) => AppPressable(
                 onTap: () => _previewGallery(shots, i),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(14),
@@ -2560,7 +2561,7 @@ class _GalleryDialogState extends State<_GalleryDialog> {
             right: 16,
             child: Row(
               children: [
-                GestureDetector(
+                AppPressable(
                   onTap: Get.back,
                   child: Container(
                     padding: const EdgeInsets.all(8),
@@ -2599,7 +2600,7 @@ class _GalleryDialogState extends State<_GalleryDialog> {
             left: 0,
             right: 0,
             child: Center(
-              child: GestureDetector(
+              child: AppPressable(
                 onTap: _save,
                 child: Container(
                   padding: const EdgeInsets.symmetric(

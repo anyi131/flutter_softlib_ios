@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
 
+import '../../design/app_anim.dart';
 import '../../api/soft_service.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
@@ -122,7 +123,7 @@ class _AgreementPageState extends State<AgreementPage> {
       ),
       child: Row(
         children: [
-          GestureDetector(
+          AppPressable(
             onTap: () => Get.back(),
             child: Container(
               width: 38,

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../../design/app_anim.dart';
 import '../../api/soft_service.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
@@ -184,7 +185,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
   );
 
   Widget _roundBtn(BuildContext context, IconData i, VoidCallback f) =>
-      GestureDetector(
+      AppPressable(
         onTap: f,
         child: Container(
           width: 40,
@@ -218,7 +219,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
           final sel = widget.tab.index == i;
-          return GestureDetector(
+          return AppPressable(
             onTap: () => onTab(i),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
@@ -359,7 +360,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                   separatorBuilder: (_, __) => const SizedBox(width: 8),
                   itemBuilder: (context, i) {
                     final sel = widget.tab.index == i;
-                    return GestureDetector(
+                    return AppPressable(
                       onTap: () => onTab(i),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 13),
@@ -415,7 +416,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
   }
 
   Widget _conBtn(BuildContext context, IconData i, VoidCallback f) =>
-      GestureDetector(
+      AppPressable(
         onTap: f,
         child: Container(
           width: 32,
@@ -461,7 +462,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                           ),
                         ),
                       ),
-                      GestureDetector(
+                      AppPressable(
                         onTap: widget.onRefresh,
                         child: Icon(
                           Icons.refresh_rounded,
@@ -489,7 +490,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                     separatorBuilder: (_, __) => const SizedBox(width: 20),
                     itemBuilder: (context, i) {
                       final sel = widget.tab.index == i;
-                      return GestureDetector(
+                      return AppPressable(
                         onTap: () => onTab(i),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -596,7 +597,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                           ],
                         ),
                       ),
-                      GestureDetector(
+                      AppPressable(
                         onTap: widget.onRefresh,
                         child: Container(
                           width: 36,
@@ -625,7 +626,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                     separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (context, i) {
                       final sel = widget.tab.index == i;
-                      return GestureDetector(
+                      return AppPressable(
                         onTap: () => onTab(i),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
@@ -745,7 +746,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                                     const SizedBox(height: 2),
                                 itemBuilder: (context, i) {
                                   final sel = widget.tab.index == i;
-                                  return GestureDetector(
+                                  return AppPressable(
                                     onTap: () => onTab(i),
                                     child: AnimatedContainer(
                                       duration: const Duration(
@@ -790,7 +791,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                                 },
                               ),
                             ),
-                            GestureDetector(
+                            AppPressable(
                               onTap: widget.onRefresh,
                               child: Icon(
                                 Icons.refresh_rounded,
@@ -829,7 +830,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                                 ),
                               ),
                             ),
-                            GestureDetector(
+                            AppPressable(
                               onTap: widget.onRefresh,
                               child: Container(
                                 width: 36,
@@ -866,7 +867,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                           separatorBuilder: (_, __) => const SizedBox(width: 6),
                           itemBuilder: (context, i) {
                             final sel = widget.tab.index == i;
-                            return GestureDetector(
+                            return AppPressable(
                               onTap: () => onTab(i),
                               child: Container(
                                 width: 56,

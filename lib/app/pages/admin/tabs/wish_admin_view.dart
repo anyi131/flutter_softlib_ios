@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../design/app_anim.dart';
 import '../../../api/admin_service.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
@@ -356,7 +357,7 @@ class _WishAdminViewState extends State<WishAdminView>
                   _btn('还原', C.amber, () => _review(w, 'pending')),
                 ],
                 const Spacer(),
-                GestureDetector(
+                AppPressable(
                   onTap: () => _delete(w),
                   child: Padding(
                     padding: const EdgeInsets.all(4),
@@ -375,7 +376,7 @@ class _WishAdminViewState extends State<WishAdminView>
     );
   }
 
-  Widget _btn(String label, Color c, VoidCallback onTap) => GestureDetector(
+  Widget _btn(String label, Color c, VoidCallback onTap) => AppPressable(
     onTap: onTap,
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),

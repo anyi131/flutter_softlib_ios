@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../design/app_anim.dart';
 import '../../api/api_host.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
@@ -128,7 +129,7 @@ class _QQLoginPageState extends State<QQLoginPage> {
               color: Colors.white,
               child: Row(
                 children: [
-                  GestureDetector(
+                  AppPressable(
                     onTap: Get.back,
                     child: Container(
                       width: 34,

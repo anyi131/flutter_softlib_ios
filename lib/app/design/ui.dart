@@ -106,6 +106,30 @@ class R {
   static const double full = 999;
 }
 
+/// ─────────── 间距（统一 4 的倍数，禁止页面内写魔法数字）───────────
+class G {
+  G._();
+  static const double xxs = 4;
+  static const double xs = 8;
+  static const double sm = 12;
+  static const double md = 16;
+  static const double lg = 20;
+  static const double xl = 24;
+  static const double xxl = 32;
+}
+
+/// ─────────── 字号（全站只用这 7 档）───────────
+class F {
+  F._();
+  static const double tiny = 11; // 角标、辅助说明
+  static const double small = 12; // 副标题、时间
+  static const double body = 13; // 正文
+  static const double medium = 14; // 强调正文、按钮
+  static const double title = 16; // 卡片标题、分区标题
+  static const double big = 20; // 页面标题
+  static const double display = 26; // 主视觉标题
+}
+
 /// ─────────── 玻璃 / 渐变 装饰 ───────────
 class Deco {
   Deco._();

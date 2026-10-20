@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../design/app_anim.dart';
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
+import 'api_doc_view.dart';
 import 'perf_monitor_view.dart';
 import 'collect_diag_views.dart';
 import 'score_rank_view.dart';
@@ -148,6 +150,10 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                 _modeTab2('解析记录', 3),
                 const SizedBox(width: 8),
                 _modeTab2('接口自测', 4),
+                const SizedBox(width: 8),
+                _modeTab2('接口文档', 5),
+                const SizedBox(width: 8),
+                _modeTab2('积分排行', 6),
               ],
             ),
           ),
@@ -160,6 +166,8 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
         else if (_mode == 4)
           const Expanded(child: CollectSelftestView())
         else if (_mode == 5)
+          const Expanded(child: ApiDocView())
+        else if (_mode == 6)
           const Expanded(child: ScoreRankView()),
         if (_mode == 0) ...[
           // 搜索 + 筛选
@@ -744,7 +752,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
   }
 
   Widget _modeTab(String label, bool sel, VoidCallback onTap) {
-    return GestureDetector(
+    return AppPressable(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),

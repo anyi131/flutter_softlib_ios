@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../design/app_anim.dart';
 import '../../design/adaptive.dart';
 import '../../design/ui.dart';
 import '../../design/kit.dart';
@@ -71,7 +72,7 @@ class _AdminLinkPreviewSheetState extends State<AdminLinkPreviewSheet> {
                   style: Ty.h3.copyWith(fontSize: 15, color: context.t1),
                 ),
               ),
-              GestureDetector(
+              AppPressable(
                 onTap: () => Navigator.pop(context),
                 child: Icon(Icons.close_rounded, size: 18, color: context.t3),
               ),
@@ -164,7 +165,7 @@ class _AdminLinkPreviewSheetState extends State<AdminLinkPreviewSheet> {
           ),
           if (_url.isNotEmpty) ...[
             const SizedBox(height: 8),
-            GestureDetector(
+            AppPressable(
               onTap: () => JumpUtil.openUrl(_url),
               child: Text(
                 '打开链接',

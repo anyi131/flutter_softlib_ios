@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../design/app_anim.dart';
 import '../../api/soft_service.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
@@ -100,7 +101,7 @@ class _AboutPageState extends State<AboutPage> {
   Widget _topBar() {
     return Row(
       children: [
-        GestureDetector(
+        AppPressable(
           onTap: () => Get.back(),
           child: Container(
             width: 38,

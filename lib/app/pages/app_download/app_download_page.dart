@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:get/get.dart';
 
+import '../../design/app_anim.dart';
 import '../../config.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
@@ -282,7 +283,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
       ),
       child: Row(
         children: [
-          GestureDetector(
+          AppPressable(
             onTap: () => Get.back(),
             child: Container(
               width: 38,
@@ -748,7 +749,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        GestureDetector(
+        AppPressable(
           onTap: onTap,
           child: Container(
             width: 38,

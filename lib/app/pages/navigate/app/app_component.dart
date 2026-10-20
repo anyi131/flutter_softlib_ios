@@ -225,6 +225,7 @@ class _AppComponentState extends State<AppComponent> {
       );
       List<AppItem> slice;
       bool hasMore;
+      int totalCount = 0;
       if (isFolderMode) {
         // ★ 文件夹模式：客户端一次性解析出全部（几百条），
         //   本地切片展示：首批 50 条，滚到底自动加载下一批，
@@ -250,21 +251,20 @@ class _AppComponentState extends State<AppComponent> {
         return;
       }
       {
-        final start = (_page - 1) * _size;
-        slice = start >= all.length
-            ? <AppItem>[]
-            : all.sublist(start, (start + _size).clamp(0, all.length));
-        hasMore = slice.length >= _size;
+        // ★★ 1020：接口一次返回全部（不是真分页），这里做「本地分批渲染」。
+        //   规则：每次多放 15 条，直到放完为止。
+        //   不能用 (page-1)*size 算偏移 —— 一旦某页恰好等于 15 条，
+        //   会多发一次空请求，且刷新后 offset 可能错位导致「加载不全」。
+        final showCount = reset ? _size : (_apps.length + _size);
+        slice = all.length <= showCount ? all : all.sublist(0, showCount);
+        hasMore = all.length > showCount;
+        totalCount = all.length;
       }
       if (!mounted) return;
       setState(() {
-        if (reset) {
-          _apps = slice;
-        } else {
-          _apps.addAll(slice);
-        }
-        // 分页模式拿不到总数，用「已加载 + 是否还有更多」表达
-        _total = _hasMore || hasMore ? _apps.length : _apps.length;
+        // slice 已经是「0..showCount」的完整前缀，直接整体替换
+        _apps = slice;
+        _total = totalCount > 0 ? totalCount : _apps.length;
         _hasMore = hasMore;
         if (hasMore) _page++;
         _loading = false;
@@ -375,12 +375,12 @@ class _AppComponentState extends State<AppComponent> {
                 Text('软件库', style: Ty.display.copyWith(color: context.t1)),
                 const SizedBox(height: 5),
                 Text(() {
-                  // ★ 1020：有更多未加载时显示「N+」，避免切分类后数字看起来变少
+                  // ★★ 1020：接口本来就返回全部数据，总数字段是准确的，
+                  //   不应该再显示「15+」这种猜测式表达（用户反馈看不懂）。
                   final n = _total > 0 ? _total : _apps.length;
-                  final shown = _hasMore ? '$n+' : '$n';
                   return _kw.isEmpty
-                      ? '为你精选 · 综合软件合集 · 共 $shown 个'
-                      : '搜索「$_kw」· 共 $shown 个';
+                      ? '为你精选 · 综合软件合集 · 共 $n 个'
+                      : '搜索「$_kw」· 共 $n 个';
                 }(), style: Ty.small.copyWith(color: context.t3)),
               ],
             ),
@@ -411,7 +411,7 @@ class _AppComponentState extends State<AppComponent> {
 
   Widget _circleBtn(IconData i, VoidCallback f) => Padding(
     padding: const EdgeInsets.only(left: 8),
-    child: GestureDetector(
+    child: AppPressable(
       onTap: f,
       child: Container(
         width: 42,
@@ -457,7 +457,7 @@ class _AppComponentState extends State<AppComponent> {
         itemBuilder: (context, i) {
           final c = _cats[i];
           final sel = _cat == c.id;
-          return GestureDetector(
+          return AppPressable(
             onTap: () => _switch(c.id),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),

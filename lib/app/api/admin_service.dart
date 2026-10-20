@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'api_host.dart';
 import 'user_service.dart';
 import '../utils/device_info_util.dart';
+import '../utils/json_safe.dart';
 
 /// 内嵌管理系统服务（需管理员账号登录）
 class AdminService {
@@ -77,13 +78,13 @@ class AdminService {
   /// ★ 1016：接口自测 —— 一键检测所有关键接口
   Future<Map<String, dynamic>> apiSelftest() async {
     final m = await _post('api_selftest');
-    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+    return J.map(m['data']);
   }
 
   /// ★ 1016：解析记录（蓝奏云解析成功/失败 + 原因 + 耗时）
   Future<Map<String, dynamic>> parseLogs({int page = 1}) async {
     final m = await _post('parse_logs', {'page': page});
-    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+    return J.map(m['data']);
   }
 
   /// ★ 1016：错误/崩溃日志（后台「日志 → 错误日志」）
@@ -100,13 +101,37 @@ class AdminService {
       'size': size,
       'kw': kw,
     });
-    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+    return J.map(m['data']);
+  }
+
+  /// 接口文档（自动扫描生成）
+  Future<Map<String, dynamic>> apiDoc() async {
+    final m = await _post('api_doc');
+    return J.map(m['data']);
+  }
+
+  /// 重新生成接口文档
+  Future<Map<String, dynamic>> apiDocRegen() async {
+    final m = await _post('api_doc_regen');
+    return J.map(m['data']);
+  }
+
+  /// 数据一致性审计
+  Future<Map<String, dynamic>> dataAudit() async {
+    final m = await _post('data_audit');
+    return J.map(m['data']);
+  }
+
+  /// 一键重算（清孤儿评价 + 同步评分）
+  Future<Map<String, dynamic>> dataFix() async {
+    final m = await _post('data_fix');
+    return J.map(m['data']);
   }
 
   /// 开屏接口自测（后台「测试」按钮）
   Future<Map<String, dynamic>> splashTest() async {
     final m = await _post('splash_test');
-    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+    return J.map(m['data']);
   }
 
   /// ★ 1020：积分排行榜（仅后台，用户明确要求不在 App 公开）
@@ -115,13 +140,13 @@ class AdminService {
     int limit = 50,
   }) async {
     final m = await _post('score_rank', {'days': days, 'limit': limit});
-    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+    return J.map(m['data']);
   }
 
   /// ★ 1020：性能监控汇总
   Future<Map<String, dynamic>> perfSummary({int days = 7}) async {
     final m = await _post('perf_summary', {'days': days});
-    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+    return J.map(m['data']);
   }
 
   /// 清理性能日志
@@ -134,7 +159,7 @@ class AdminService {
   /// 配置历史列表
   Future<List<Map<String, dynamic>>> configHistory() async {
     final m = await _post('config_history');
-    final d = (m['data'] as Map?) ?? {};
+    final d = J.map(m['data']);
     return ((d['list'] as List?) ?? [])
         .map((e) => Map<String, dynamic>.from(e as Map))
         .toList();
@@ -143,7 +168,7 @@ class AdminService {
   /// 查看某版本（含与当前配置的差异）
   Future<Map<String, dynamic>> configHistoryView(String file) async {
     final m = await _post('config_history_view', {'file': file});
-    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+    return J.map(m['data']);
   }
 
   /// 回滚到某版本
@@ -167,13 +192,13 @@ class AdminService {
     int page = 1,
   }) async {
     final m = await _post('qq_bindings', {'keyword': keyword, 'page': page});
-    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+    return J.map(m['data']);
   }
 
   /// ★ 1020（待办 #2）：需求投票（求软件）
   Future<Map<String, dynamic>> wishList({String status = 'all'}) async {
     final m = await _post('wish_admin_list', {'status': status});
-    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+    return J.map(m['data']);
   }
 
   Future<void> wishReview({
@@ -198,12 +223,12 @@ class AdminService {
     int limit = 20,
   }) async {
     final m = await _post('error_groups', {'days': days, 'limit': limit});
-    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+    return J.map(m['data']);
   }
 
   Future<Map<String, dynamic>> errorLogs({int page = 1, int size = 30}) async {
     final m = await _post('error_logs', {'page': page, 'size': size});
-    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+    return J.map(m['data']);
   }
 
   /// ★ 1016：版权梦配置统一入口
@@ -214,7 +239,7 @@ class AdminService {
     Map<String, dynamic> extra = const {},
   ]) async {
     final m = await _post('collect_ex', {...extra, 'sub': sub});
-    return Map<String, dynamic>.from((m['data'] as Map?) ?? {});
+    return J.map(m['data']);
   }
 
   /// ★ 1016：下载记录（成功/失败 + 失败原因）
@@ -640,14 +665,23 @@ class AdminService {
   Future<Map<String, dynamic>> splash() async =>
       Map<String, dynamic>.from((await _post('splash'))['data'] ?? {});
 
-  Future<void> saveSplash(Map<String, dynamic> data) async =>
-      _post('splash_save', data);
+  /// ★ 1020：返回校验结果 {verified, missed, missed_count}
+  Future<Map<String, dynamic>> saveSplash(Map<String, dynamic> data) async {
+    final m = await _post('splash_save', data);
+    final d = m['data'];
+    if (d is Map) return Map<String, dynamic>.from(d);
+    return {'verified': true, 'missed_count': 0};
+  }
 
   Future<Map<String, dynamic>> config() async =>
       Map<String, dynamic>.from((await _post('config'))['data'] ?? {});
 
-  Future<void> saveConfig(Map<String, dynamic> data) async =>
-      _post('config_save', data);
+  Future<Map<String, dynamic>> saveConfig(Map<String, dynamic> data) async {
+    final m = await _post('config_save', data);
+    final d = m['data'];
+    if (d is Map) return Map<String, dynamic>.from(d);
+    return {'verified': true, 'missed_count': 0};
+  }
 
   // ───────── 订单 ─────────
   Future<List<Map<String, dynamic>>> orders({

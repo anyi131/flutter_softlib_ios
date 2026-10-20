@@ -567,7 +567,7 @@ class _ToolsComponentState extends State<ToolsComponent>
               ),
               const Spacer(),
               if (compact)
-                GestureDetector(
+                AppPressable(
                   onTap: () => Get.to(() => const FavoritesPage(initialTab: 1)),
                   child: Row(
                     children: [
