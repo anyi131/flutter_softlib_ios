@@ -56,6 +56,9 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   // ── 支付配置 ──
   bool payEnable = false;
   bool qqOn = false;
+
+  /// ★ 1020：绑定 QQ 时是否用 QQ 昵称覆盖现有昵称
+  bool qqNickForce = true;
   bool qqKeySet = false;
   // ★ 1016：QQ 网页登录（网站应用）——移动应用 AppID 不能走网页授权（100008）
   bool qqWebKeySet = false;
@@ -203,6 +206,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         // 支付
         payEnable = '${cfg['pay_enabled'] ?? 1}' != '0';
         qqOn = '${cfg['qq_login_on'] ?? 1}' != '0';
+        qqNickForce = '${cfg['qq_nick_force'] ?? 1}' != '0';
         qqKeySet =
             '${cfg['qq_app_key_set']}' == 'true' ||
             '${cfg['qq_app_key_set'] ?? 1}' != '0';
@@ -379,6 +383,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         'pay_notify_buyer_on': payNotifyBuyerOn ? 1 : 0,
         // QQ 快捷登录（AppKey 留空表示不修改）
         'qq_login_on': qqOn ? 1 : 0,
+        'qq_nick_force': qqNickForce ? 1 : 0,
         'qq_app_id': qqAppIdCtrl.text.trim(),
         if (qqAppKeyCtrl.text.trim().isNotEmpty)
           'qq_app_key': qqAppKeyCtrl.text.trim(),
@@ -463,6 +468,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         feedGroupOn = '${cfg['feedback_group_on'] ?? 0}' != '0';
         // ★ 1015：QQ 登录相关也回读，避免「填了又变空」的错觉
         qqOn = '${cfg['qq_login_on'] ?? 1}' != '0';
+        qqNickForce = '${cfg['qq_nick_force'] ?? 1}' != '0';
         qqAppIdCtrl.text = '${cfg['qq_app_id'] ?? ''}';
         qqRedirectCtrl.text = '${cfg['qq_redirect'] ?? ''}';
         qqWebAppIdCtrl.text = '${cfg['qq_web_app_id'] ?? ''}';
@@ -934,6 +940,21 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
           title: 'QQ 快捷登录',
           children: [
             _switch('登录页显示 QQ 登录', qqOn, (v) => setState(() => qqOn = v)),
+            // ★ 1020：绑定 QQ 时是否用 QQ 昵称覆盖
+            _switch(
+              '绑定时同步 QQ 昵称（覆盖现有昵称）',
+              qqNickForce,
+              (v) => setState(() => qqNickForce = v),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                qqNickForce
+                    ? '开着：绑定后昵称和头像会变成 QQ 的。'
+                    : '关着：只覆盖「QQ用户xxxx」这类自动昵称，你自己起的名字保留。',
+                style: Ty.tiny.copyWith(fontSize: 10.5, color: context.t3),
+              ),
+            ),
             _field('QQ 互联 AppID', qqAppIdCtrl),
             _field(
               qqKeySet
