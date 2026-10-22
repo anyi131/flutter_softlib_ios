@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 
 import 'resolve_overlay.dart';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:get/get.dart';
 import 'package:open_filex/open_filex.dart';
@@ -29,6 +30,7 @@ import '../../models/app_item.dart';
 import '../../routes/app_pages.dart';
 import '../../models/http/results/lzy_file_info_model.dart';
 import '../../api/api_host.dart';
+import '../../utils/app_action.dart';
 import '../../api/soft_service.dart';
 import '../../api/user_service.dart';
 import '../../utils/apk_installer.dart';
@@ -1245,7 +1247,7 @@ class AppDetailsLogic extends GetxController {
               Get.back();
               _shownFailDialog = false;
               _silentRetry = 0; // 允许新一轮静默重试
-              await download();
+              await retryDownload();
             },
             child: const Text('重新下载'),
           ),

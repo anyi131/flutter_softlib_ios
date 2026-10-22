@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_softlib/app/database/database.dart' as db;
 import 'package:flutter_softlib/app/database/tables/download_task_table.dart';
@@ -15,6 +16,7 @@ import '../../utils/jump_util.dart';
 import 'package:flutter/services.dart';
 
 import '../../utils/app_action.dart';
+import '../../utils/download_dir.dart';
 import '../../api/soft_service.dart';
 import '../../api/user_service.dart';
 import '../../utils/apk_installer.dart';
@@ -291,7 +293,7 @@ class AppDownloadLogic extends GetxController {
         appIcon: dowInfo.appIcon ?? '',
       );
     } catch (_) {}
-    update(['${dowInfo.appId}']);
+    update(['${dowInfo?.appId}']);
   }
 
   /// 重试时的文件名（带时间戳，避免和旧文件冲突）
