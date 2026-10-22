@@ -1161,6 +1161,12 @@ class AppDetailsLogic extends GetxController {
           final recovered = await _trySilentRetry();
           if (recovered) return; // 已重新入队，轮询由新任务接管
         }
+        // ★★ 1020：静默重试也失败后，给用户两条出路，别只剩一句「下载失败」
+        //   （之前用户只能反复点，但用的是已过期的直链，永远失败）
+        if (t0.status == DownloadTaskStatus.failed && !_shownFailDialog) {
+          _shownFailDialog = true;
+          _showDownloadFailedSheet();
+        }
         // ★ 1016：上报失败（后台「下载记录」可查）
         SoftService.instance.reportDownloadResult(
           appId: appIdInt,
@@ -1188,6 +1194,64 @@ class AppDetailsLogic extends GetxController {
         );
       }
     });
+  }
+
+  bool _shownFailDialog = false;
+
+  /// 下载失败后的可选操作（重新解析下载 / 浏览器打开）
+  void _showDownloadFailedSheet() {
+    final origin = dowUrl.isNotEmpty ? dowUrl : (item?.url ?? '');
+    Get.dialog<void>(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text('下载没有完成', style: TextStyle(fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '下载中断了，通常是网络波动或源站限速。\n你可以重新获取地址再下一遍，或者直接用浏览器下载。',
+              style: TextStyle(fontSize: 13, height: 1.75),
+            ),
+            if (origin.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              SelectableText(
+                origin,
+                style: TextStyle(fontSize: 10.5, color: Colors.grey[600]),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('稍后')),
+          if (origin.isNotEmpty)
+            TextButton(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: origin));
+                ToastUtil.success('链接已复制');
+              },
+              child: const Text('复制链接'),
+            ),
+          if (origin.isNotEmpty)
+            TextButton(
+              onPressed: () {
+                Get.back();
+                JumpUtil.openUrl(origin);
+              },
+              child: const Text('浏览器打开'),
+            ),
+          FilledButton(
+            onPressed: () async {
+              Get.back();
+              _shownFailDialog = false;
+              _silentRetry = 0; // 允许新一轮静默重试
+              await download();
+            },
+            child: const Text('重新下载'),
+          ),
+        ],
+      ),
+    );
   }
 
   // ═══════════════ 静默重试（用户待办 #1）═══════════════
@@ -1322,18 +1386,55 @@ class AppDetailsLogic extends GetxController {
     update(['download']);
   }
 
+  /// 重试下载
+  ///
+  /// ★★ 1020：原来直接 FlutterDownloader.retry 复用**旧直链**，
+  ///   而蓝奏云直链几小时就过期 → 直链失效后点多少次重试都是同一个失败。
+  ///   现在先重新解析拿新直链，再新建任务；解析失败才退回原地重试。
   Future<void> retryDownload() async {
+    final origin = dowUrl.isNotEmpty ? dowUrl : (item?.url ?? '');
+    if (origin.isNotEmpty) {
+      AppAction.showLoading('正在重新获取下载地址…');
+      String? fresh;
+      try {
+        fresh = await service.resolveLzy(origin);
+      } catch (_) {}
+      AppAction.hideLoading();
+
+      if (fresh != null && fresh.isNotEmpty) {
+        // ★ 1020：解析已通过服务端鉴权（resolveLzy 内部走 /lzy/auth 发票据），
+        //   这里重新授予一次性令牌，否则 addDownload 会以「未通过校验」拦下。
+        _unlockToken = true;
+        // 删掉旧任务，用新直链重新入队
+        if (taskId != null && taskId!.isNotEmpty) {
+          try {
+            await FlutterDownloader.remove(
+              taskId: taskId!,
+              shouldDeleteContent: true,
+            );
+          } catch (_) {}
+        }
+        _shownFailDialog = false;
+        _silentRetry = 0;
+        await addDownload(
+          (appInfo?.fileName ?? item?.title ?? 'download'),
+          fresh,
+        );
+        return;
+      }
+    }
+
+    // 兜底：拿不到新直链 → 原地重试（至少能续上没下完的部分）
     if (taskId == null || taskId!.isEmpty) {
       ToastUtil.error('下载任务ID无效');
       return;
     }
-    String? taskIdTemp = await FlutterDownloader.retry(taskId: taskId!);
+    final taskIdTemp = await FlutterDownloader.retry(taskId: taskId!);
     if (taskIdTemp == null) {
-      ToastUtil.error('重试下载失败');
+      ToastUtil.error('重试失败，可尝试用浏览器打开原链接');
       return;
     }
     taskId = taskIdTemp;
-    // ★ 1012b：重试 → 重新进入 downloading 态，进度从 0 计
     _uiPhase = phaseDownloading;
     _shownProgress = 0;
     _explicitReset = false;
