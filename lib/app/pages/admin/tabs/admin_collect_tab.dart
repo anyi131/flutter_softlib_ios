@@ -16,6 +16,7 @@ import '../../../api/admin_service.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../utils/app_action.dart';
 import '../../../utils/toast_util.dart';
 import 'collect_account_card.dart';
 import 'collect_dirs_view.dart';
@@ -919,6 +920,48 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     if (_running) return;
     final failed = _failedResults;
     if (failed.isEmpty) return;
+
+    // ★★ 1020：重试前**先查一次站点日志**
+    //   失败大多是「查早了」而不是「真没上传成功」（站点写日志要 5~15 秒）。
+    //   如果日志里已经有链接，直接用，**不重新上传** ——
+    //   否则每点一次重试，蓝奏云就多一份重复文件（截图实锤：爱读小说 2 份）。
+    final names = failed.map((r) => '${r['name']}').toList();
+    List<Map<String, dynamic>> recovered = [];
+    try {
+      AppAction.showLoading('正在查找已上传的链接…');
+      final r = await _svc.collectResults(names, at: _taskAt);
+      AppAction.hideLoading();
+      recovered = ((r['results'] as List?) ?? [])
+          .map((e) => Map<String, dynamic>.from(e))
+          .where((e) => e['ok'] == true && '${e['url'] ?? ''}'.isNotEmpty)
+          .toList();
+    } catch (_) {
+      AppAction.hideLoading();
+    }
+    if (!mounted) return;
+
+    if (recovered.isNotEmpty) {
+      // 直接补回结果，不提交新任务
+      final mergedList = List<Map<String, dynamic>>.from(_results);
+      for (final f in recovered) {
+        final n = '${f['name']}';
+        final idx = mergedList.indexWhere((e) => '${e['name']}' == n);
+        if (idx >= 0) {
+          mergedList[idx] = f;
+        } else {
+          mergedList.add(f);
+        }
+      }
+      setState(() {
+        _results = mergedList;
+        _ok = mergedList.where(_isOk).length;
+        _fail = mergedList.where((x) => !_isOk(x)).length;
+      });
+      ToastUtil.success('已找回 ${recovered.length} 个链接，无需重新上传');
+      return;
+    }
+
+    // 日志里确实没有 → 才真正重新采集
     final apps = <Map<String, dynamic>>[];
     final failedNames = <String>{};
     for (final r in failed) {
@@ -1101,6 +1144,14 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     // ★ 先保住已经拿到的真实结果：站点 done 时会直接带 results，
     //   这些数据比「事后去日志反查」可靠得多，绝不能被覆盖成失败
     final known = _results.where(_isOk).toList();
+
+    // ★★ 1020 根因修复：查得太早
+    //   实测：站点显示「处理 [2/2]」时，第 2 个的结果要 5~15 秒后才写进日志页。
+    //   App 一看到「进度满」就立刻去查 → 最后一个软件必然「未找到链接」
+    //   （红果短剧、爱读小说、全能AI扫描王 全是这个原因）。
+    //   现在：先等 6 秒让站点落盘；若仍有失败项，再补查 2 次（间隔 6s / 12s）。
+    await Future<void>.delayed(const Duration(seconds: 6));
+
     try {
       final r = await _svc.collectResults(names, at: _taskAt);
       if (!mounted) return;
@@ -1152,7 +1203,38 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         });
         return;
       }
-      final list = merged.isEmpty ? fetched : merged;
+      var list = merged.isEmpty ? fetched : merged;
+
+      // ★ 1020：仍有失败项 → 再等一会补查 2 次（站点写日志有延迟）
+      for (var round = 1; round <= 2; round++) {
+        final stillFail = list
+            .where((x) => !_isOk(x) && '${x['name']}'.isNotEmpty)
+            .map((x) => '${x['name']}')
+            .toList();
+        if (stillFail.isEmpty) break;
+        await Future<void>.delayed(Duration(seconds: 6 * round));
+        if (!mounted) return;
+        try {
+          final r2 = await _svc.collectResults(stillFail, at: _taskAt);
+          final again = ((r2['results'] as List?) ?? [])
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+          var fixed = 0;
+          for (final f in again) {
+            if (!_isOk(f)) continue;
+            final n = '${f['name']}';
+            final idx = list.indexWhere((e) => '${e['name']}' == n);
+            if (idx >= 0) {
+              list[idx] = f;
+              fixed++;
+            }
+          }
+          if (fixed > 0) {
+            debugPrint('[Collect] 补查第 $round 次补回 $fixed 个');
+          }
+        } catch (_) {}
+      }
+
       setState(() {
         _running = false;
         _status = 'done';

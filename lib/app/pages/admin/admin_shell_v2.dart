@@ -153,26 +153,31 @@ class _AdminShellV2State extends State<AdminShellV2> {
   Widget _lightCard(Widget body, (String, IconData, String) cur) {
     return Scaffold(
       backgroundColor: _bg,
+      // ★ 1020：改为监听 visible（当前页有没有登记保存），
+      //   避免切到别的 Tab 后仍显示上一页的保存按钮、点下去执行错页面的保存。
       floatingActionButton: ValueListenableBuilder<bool>(
-        valueListenable: AdminSaveBus.saving,
-        builder: (_, busy, __) {
-          if (AdminSaveBus.handler == null) return const SizedBox.shrink();
-          return FloatingActionButton.extended(
-            heroTag: null,
-            onPressed: busy ? null : AdminSaveBus.run,
-            backgroundColor: C.brand,
-            foregroundColor: Colors.white,
-            icon: busy
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.save_rounded, size: 18),
-            label: Text(busy ? '保存中' : '保存'),
+        valueListenable: AdminSaveBus.visible,
+        builder: (_, show, __) {
+          if (!show) return const SizedBox.shrink();
+          return ValueListenableBuilder<bool>(
+            valueListenable: AdminSaveBus.saving,
+            builder: (_, busy, __) => FloatingActionButton.extended(
+              heroTag: null,
+              onPressed: busy ? null : AdminSaveBus.run,
+              backgroundColor: C.brand,
+              foregroundColor: Colors.white,
+              icon: busy
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.save_rounded, size: 18),
+              label: Text(busy ? '保存中' : '保存'),
+            ),
           );
         },
       ),
@@ -213,26 +218,31 @@ class _AdminShellV2State extends State<AdminShellV2> {
   Widget _darkConsole(Widget body, (String, IconData, String) cur) {
     return Scaffold(
       backgroundColor: _bg,
+      // ★ 1020：改为监听 visible（当前页有没有登记保存），
+      //   避免切到别的 Tab 后仍显示上一页的保存按钮、点下去执行错页面的保存。
       floatingActionButton: ValueListenableBuilder<bool>(
-        valueListenable: AdminSaveBus.saving,
-        builder: (_, busy, __) {
-          if (AdminSaveBus.handler == null) return const SizedBox.shrink();
-          return FloatingActionButton.extended(
-            heroTag: null,
-            onPressed: busy ? null : AdminSaveBus.run,
-            backgroundColor: C.brand,
-            foregroundColor: Colors.white,
-            icon: busy
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.save_rounded, size: 18),
-            label: Text(busy ? '保存中' : '保存'),
+        valueListenable: AdminSaveBus.visible,
+        builder: (_, show, __) {
+          if (!show) return const SizedBox.shrink();
+          return ValueListenableBuilder<bool>(
+            valueListenable: AdminSaveBus.saving,
+            builder: (_, busy, __) => FloatingActionButton.extended(
+              heroTag: null,
+              onPressed: busy ? null : AdminSaveBus.run,
+              backgroundColor: C.brand,
+              foregroundColor: Colors.white,
+              icon: busy
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.save_rounded, size: 18),
+              label: Text(busy ? '保存中' : '保存'),
+            ),
           );
         },
       ),
@@ -377,26 +387,31 @@ class _AdminShellV2State extends State<AdminShellV2> {
   Widget _minimal(Widget body, (String, IconData, String) cur) {
     return Scaffold(
       backgroundColor: _bg,
+      // ★ 1020：改为监听 visible（当前页有没有登记保存），
+      //   避免切到别的 Tab 后仍显示上一页的保存按钮、点下去执行错页面的保存。
       floatingActionButton: ValueListenableBuilder<bool>(
-        valueListenable: AdminSaveBus.saving,
-        builder: (_, busy, __) {
-          if (AdminSaveBus.handler == null) return const SizedBox.shrink();
-          return FloatingActionButton.extended(
-            heroTag: null,
-            onPressed: busy ? null : AdminSaveBus.run,
-            backgroundColor: C.brand,
-            foregroundColor: Colors.white,
-            icon: busy
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.save_rounded, size: 18),
-            label: Text(busy ? '保存中' : '保存'),
+        valueListenable: AdminSaveBus.visible,
+        builder: (_, show, __) {
+          if (!show) return const SizedBox.shrink();
+          return ValueListenableBuilder<bool>(
+            valueListenable: AdminSaveBus.saving,
+            builder: (_, busy, __) => FloatingActionButton.extended(
+              heroTag: null,
+              onPressed: busy ? null : AdminSaveBus.run,
+              backgroundColor: C.brand,
+              foregroundColor: Colors.white,
+              icon: busy
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.save_rounded, size: 18),
+              label: Text(busy ? '保存中' : '保存'),
+            ),
           );
         },
       ),
@@ -469,26 +484,31 @@ class _AdminShellV2State extends State<AdminShellV2> {
   Widget _brand(Widget body, (String, IconData, String) cur) {
     return Scaffold(
       backgroundColor: _bg,
+      // ★ 1020：改为监听 visible（当前页有没有登记保存），
+      //   避免切到别的 Tab 后仍显示上一页的保存按钮、点下去执行错页面的保存。
       floatingActionButton: ValueListenableBuilder<bool>(
-        valueListenable: AdminSaveBus.saving,
-        builder: (_, busy, __) {
-          if (AdminSaveBus.handler == null) return const SizedBox.shrink();
-          return FloatingActionButton.extended(
-            heroTag: null,
-            onPressed: busy ? null : AdminSaveBus.run,
-            backgroundColor: C.brand,
-            foregroundColor: Colors.white,
-            icon: busy
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.save_rounded, size: 18),
-            label: Text(busy ? '保存中' : '保存'),
+        valueListenable: AdminSaveBus.visible,
+        builder: (_, show, __) {
+          if (!show) return const SizedBox.shrink();
+          return ValueListenableBuilder<bool>(
+            valueListenable: AdminSaveBus.saving,
+            builder: (_, busy, __) => FloatingActionButton.extended(
+              heroTag: null,
+              onPressed: busy ? null : AdminSaveBus.run,
+              backgroundColor: C.brand,
+              foregroundColor: Colors.white,
+              icon: busy
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.save_rounded, size: 18),
+              label: Text(busy ? '保存中' : '保存'),
+            ),
           );
         },
       ),
@@ -697,26 +717,31 @@ class _AdminShellV2State extends State<AdminShellV2> {
   Widget _desk(Widget body, (String, IconData, String) cur) {
     return Scaffold(
       backgroundColor: _bg,
+      // ★ 1020：改为监听 visible（当前页有没有登记保存），
+      //   避免切到别的 Tab 后仍显示上一页的保存按钮、点下去执行错页面的保存。
       floatingActionButton: ValueListenableBuilder<bool>(
-        valueListenable: AdminSaveBus.saving,
-        builder: (_, busy, __) {
-          if (AdminSaveBus.handler == null) return const SizedBox.shrink();
-          return FloatingActionButton.extended(
-            heroTag: null,
-            onPressed: busy ? null : AdminSaveBus.run,
-            backgroundColor: C.brand,
-            foregroundColor: Colors.white,
-            icon: busy
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.save_rounded, size: 18),
-            label: Text(busy ? '保存中' : '保存'),
+        valueListenable: AdminSaveBus.visible,
+        builder: (_, show, __) {
+          if (!show) return const SizedBox.shrink();
+          return ValueListenableBuilder<bool>(
+            valueListenable: AdminSaveBus.saving,
+            builder: (_, busy, __) => FloatingActionButton.extended(
+              heroTag: null,
+              onPressed: busy ? null : AdminSaveBus.run,
+              backgroundColor: C.brand,
+              foregroundColor: Colors.white,
+              icon: busy
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.save_rounded, size: 18),
+              label: Text(busy ? '保存中' : '保存'),
+            ),
           );
         },
       ),

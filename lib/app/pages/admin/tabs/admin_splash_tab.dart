@@ -141,12 +141,14 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
     super.initState();
     _load();
     // ★ 1020：把保存方法登记给外壳，右下角就会出现悬浮保存按钮
-    AdminSaveBus.register(_save);
+    // ★ 1020：带 owner 注册，切 Tab 不会误执行别的页面的保存
+    AdminSaveBus.register(this, _save);
+    AdminSaveBus.setActive(this);
   }
 
   @override
   void dispose() {
-    AdminSaveBus.clear();
+    AdminSaveBus.clear(this);
     imgCtrl.dispose();
     secondsCtrl.dispose();
     urlCtrl.dispose();
