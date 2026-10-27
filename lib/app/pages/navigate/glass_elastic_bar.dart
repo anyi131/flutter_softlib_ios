@@ -291,6 +291,7 @@ class _ElasticBarState extends State<_ElasticBar>
                             ],
                           ),
                         ),
+                        ),
                       );
                     }),
                   ),
