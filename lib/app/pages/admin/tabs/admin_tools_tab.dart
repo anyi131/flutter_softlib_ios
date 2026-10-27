@@ -9,6 +9,7 @@ import '../../../api/admin_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../design/glass.dart';
 import '../../../utils/toast_util.dart';
 
 /// ═══════════════════════════════════════════════════════════════
@@ -655,7 +656,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
     );
     var on = t == null || _on(t['enable_switch']);
 
-    await showDialog(
+    await showGlassDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setD) => AlertDialog(
@@ -823,7 +824,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
     final weigh = TextEditingController(text: '${c?['weigh'] ?? 0}');
     var on = c == null || _on(c['enable_switch']);
 
-    await showDialog(
+    await showGlassDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setD) => AlertDialog(

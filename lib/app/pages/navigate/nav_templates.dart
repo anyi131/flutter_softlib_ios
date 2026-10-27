@@ -6,6 +6,7 @@ import '../../api/soft_service.dart';
 import '../../design/ui.dart';
 import 'navigate_logic.dart';
 import 'glass_elastic_bar.dart';
+import 'liquid26_bar.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 底部导航栏模板（v55）：classic / glass / float / dock / curve / liquid
@@ -59,6 +60,9 @@ class NavTemplates {
           logic.changePage,
           inset,
         );
+      case 'liquid26':
+        // ★ 1027：iOS 26 液态玻璃 —— 悬浮玻璃板 + 折射高光 + 弹性选中胶囊
+        return Liquid26Bar.build(context, logic, inset);
       default:
         return _classicBar(context, logic, inset);
     }

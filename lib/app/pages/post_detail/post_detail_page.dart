@@ -15,6 +15,7 @@ import 'package:photo_view/photo_view.dart';
 import '../../api/post_service.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
+import '../../design/glass.dart';
 import '../../routes/app_pages.dart';
 import '../../utils/toast_util.dart';
 import '../../api/user_service.dart';
@@ -735,10 +736,9 @@ class _PostDetailPageState extends State<PostDetailPage> {
     String err = '';
     bool showEmoji = false;
 
-    await showModalBottomSheet(
+    await showGlassSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheet) {
           Future<void> pickImage() async {
@@ -1107,7 +1107,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
   }
 
   void _preview(String url) {
-    showDialog(
+    showGlassDialog(
       context: context,
       builder: (_) => AppPressable(
         onTap: Get.back,

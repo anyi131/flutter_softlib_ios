@@ -16,6 +16,7 @@ import 'package:marquee/marquee.dart';
 import '../../../generated/assets.dart';
 import '../../api/soft_service.dart';
 import '../../design/ui.dart';
+import '../../design/glass.dart';
 import '../../api/user_service.dart';
 import '../../models/app_config.dart';
 import '../../routes/app_pages.dart';
@@ -964,7 +965,7 @@ class _SplashPageState extends State<SplashPage> {
 
     // card：紧凑对话框（图标章 + 分隔线 + 右对齐按钮行），最轻量的一套
     if (tpl == 'card') {
-      showDialog(
+      showGlassDialog(
         context: _ctx!,
         barrierDismissible: !cfg.noticeForce,
         barrierColor: Colors.black.withAlpha(dark ? 140 : 90),
@@ -1090,7 +1091,7 @@ class _SplashPageState extends State<SplashPage> {
 
     // banner：中屏布局 —— 顶部横幅固定 + 内容独立滚动 + 底部固定整宽按钮
     if (tpl == 'banner') {
-      showDialog(
+      showGlassDialog(
         context: _ctx!,
         barrierDismissible: !cfg.noticeForce,
         barrierColor: Colors.black.withAlpha(dark ? 150 : 100),
@@ -1245,7 +1246,7 @@ class _SplashPageState extends State<SplashPage> {
 
     // minimal：纯文字排版 —— 无卡片容器、无渐变，仅字重/细线/留白分层
     if (tpl == 'minimal') {
-      showDialog(
+      showGlassDialog(
         context: _ctx!,
         barrierDismissible: !cfg.noticeForce,
         barrierColor: dark ? Colors.black.withAlpha(150) : Colors.black38,
@@ -1344,15 +1345,10 @@ class _SplashPageState extends State<SplashPage> {
 
     // sheet：底部面板 —— 圆角把手 + 分组内容卡 + 整宽按钮
     if (tpl == 'sheet') {
-      showModalBottomSheet(
+      showGlassSheet(
         context: _ctx!,
         isDismissible: !cfg.noticeForce,
-        enableDrag: !cfg.noticeForce,
         isScrollControlled: true,
-        backgroundColor: cardBg,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
         builder: (ctx) => SafeArea(
           top: false,
           child: Padding(
@@ -1597,7 +1593,7 @@ class _SplashPageState extends State<SplashPage> {
 
     // banner_card：横向布局卡 —— 左侧渐变色条 + 右上角日期戳，唯一横排骨架
     if (tpl == 'banner_card') {
-      showDialog(
+      showGlassDialog(
         context: _ctx!,
         barrierDismissible: !cfg.noticeForce,
         barrierColor: Colors.black.withAlpha(dark ? 150 : 95),
@@ -1771,7 +1767,7 @@ class _SplashPageState extends State<SplashPage> {
 
     // ticker：顶部跑马灯 —— 顶部细条滚动标题 + 无卡正文 + 底部链接式按钮
     if (tpl == 'ticker') {
-      showDialog(
+      showGlassDialog(
         context: _ctx!,
         barrierDismissible: !cfg.noticeForce,
         barrierColor: dark ? Colors.black.withAlpha(160) : Colors.black38,
@@ -1883,7 +1879,7 @@ class _SplashPageState extends State<SplashPage> {
     }
 
     // card（原版兜底）：保留默认 AlertDialog
-    showDialog(
+    showGlassDialog(
       context: _ctx!,
       barrierDismissible: !cfg.noticeForce,
       builder: (ctx) => PopScope(

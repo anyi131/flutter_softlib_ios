@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import '../../../design/glass.dart';
 import '../../../utils/err_text.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -725,10 +726,9 @@ class _SquareComponentState extends State<SquareComponent> {
     String videoPreviewUrl = '';
     String videoPreviewType = '';
 
-    await showModalBottomSheet(
+    await showGlassSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheet) {
           Future<void> pickImage() async {

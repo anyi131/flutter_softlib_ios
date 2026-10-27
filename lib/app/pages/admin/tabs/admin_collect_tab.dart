@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../../../design/app_anim.dart';
+import '../../../design/glass.dart';
 import '../../../utils/err_text.dart';
 
 import '../admin_ui_kit.dart';
@@ -671,10 +672,9 @@ class _AdminCollectTabState extends State<AdminCollectTab>
   }
 
   void _showAccountSheet() {
-    showModalBottomSheet(
+    showGlassSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         decoration: BoxDecoration(
           color: ctx.isDark ? C.bg2 : Colors.white,

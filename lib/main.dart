@@ -201,6 +201,9 @@ Future<void> _initializeServices() async {
         SoftService.instance.cachedConfig?.uiConfig.glassMode ?? 'auto';
     await GlassTheme.init(serverMode: mode);
     GlassPerfGuard.start();
+    try {
+      GlassPerfGuard.routeHook = () => Get.currentRoute;
+    } catch (_) {}
   } catch (_) {}
   // 配置EasyLoading
   _configureEasyLoading();

@@ -13,6 +13,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../design/glass.dart';
 import '../../../utils/app_action.dart';
 import '../../../utils/toast_util.dart';
 
@@ -461,7 +462,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
         ToastUtil.info('没有可导出的数据');
         return;
       }
-      await showDialog(
+      await showGlassDialog(
         context: context,
         builder: (ctx) => AlertDialog(
           shape: RoundedRectangleBorder(
@@ -1385,10 +1386,9 @@ class _AdminUsersTabState extends State<AdminUsersTab>
         .map((e) => Map<String, dynamic>.from(e))
         .toList();
 
-    await showModalBottomSheet(
+    await showGlassSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         height: MediaQuery.of(ctx).size.height * 0.86,
         decoration: BoxDecoration(
@@ -1575,7 +1575,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     final showAddr =
         '${u['custom_ip_on'] ?? 0}' == '1' &&
         '${u['custom_addr'] ?? ''}'.isNotEmpty;
-    await showDialog(
+    await showGlassDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(

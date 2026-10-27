@@ -491,11 +491,35 @@ ThemeData buildNewTheme({required bool dark}) {
     dialogTheme: DialogThemeData(
       backgroundColor: dark ? C.bg2 : Colors.white,
       surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.xl)),
+      elevation: dark ? 8 : 4,
+      shadowColor: Colors.black.withAlpha(dark ? 90 : 40),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(R.xl),
+        side: BorderSide(
+          // 玻璃感描边：暗色白高光、浅色淡描边
+          color: dark ? Colors.white.withAlpha(26) : Colors.black.withAlpha(10),
+          width: 0.8,
+        ),
+      ),
+      titleTextStyle: TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w900,
+        letterSpacing: -0.3,
+        color: dark ? C.t1 : C.lt1,
+      ),
+      contentTextStyle: TextStyle(
+        fontSize: 14.5,
+        height: 1.5,
+        color: dark ? C.t2 : C.lt2,
+      ),
     ),
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: dark ? C.bg1 : Colors.white,
       surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      showDragHandle: true,
+      dragHandleColor: dark ? Colors.white.withAlpha(38) : Colors.black.withAlpha(30),
+      modalBarrierColor: Colors.black.withAlpha(dark ? 120 : 70),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(R.xxl)),
       ),

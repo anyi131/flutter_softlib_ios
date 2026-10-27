@@ -29,6 +29,7 @@ import '../../design/app_style.dart';
 import '../../design/app_style_controller.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
+import '../../design/glass.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
 import '../../models/app_item.dart';
@@ -2469,7 +2470,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
 
   /// 截图画廊：左右滑动切换 + 保存到相册
   void _previewGallery(List<String> images, int start) {
-    showDialog(
+    showGlassDialog(
       context: context,
       barrierColor: Colors.black87,
       builder: (_) => _GalleryDialog(images: images, initial: start),

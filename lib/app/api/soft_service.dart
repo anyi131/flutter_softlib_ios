@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 
 import '../utils/err_text.dart';
@@ -210,6 +212,14 @@ class SoftService {
     bool ok = true,
     String error = '',
     String channel = '',
+    // ★★ 1020：补充明细 —— 只在后台报一句「网络异常」分不清原因。
+    String errCode = '',
+    int freeMb = -1,
+    int fileMb = -1,
+    String netType = '',
+    int progress = -1,
+    int retryCnt = 0,
+    String detail = '',
   }) async {
     try {
       await dio.post(
@@ -224,6 +234,15 @@ class SoftService {
           'channel': channel.isEmpty ? lastParseChannel : channel,
           // ★ 1016：deviceModel 一直是空串（从没赋值）→ 后台显示「设备 -」
           'device': DeviceInfo.model,
+          // ★ 1020：明细
+          'os': Platform.operatingSystemVersion,
+          'err_code': errCode,
+          'free_mb': freeMb,
+          'file_mb': fileMb,
+          'net_type': netType,
+          'progress': progress,
+          'retry_cnt': retryCnt,
+          'detail': detail.length > 1500 ? detail.substring(0, 1500) : detail,
         },
         options: Options(
           sendTimeout: const Duration(seconds: 6),

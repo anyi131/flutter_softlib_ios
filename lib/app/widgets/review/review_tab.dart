@@ -13,6 +13,7 @@ import '../../api/review_service.dart';
 import '../../api/user_service.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
+import '../../design/glass.dart';
 import '../../models/review_item.dart';
 import '../../routes/app_pages.dart';
 import 'star_rating.dart';
@@ -547,7 +548,7 @@ class _ReviewTabState extends State<ReviewTab> {
     final ctrl = TextEditingController();
     bool sending = false;
     String err = '';
-    await showDialog(
+    await showGlassDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setD) {
@@ -667,7 +668,7 @@ class _ReviewTabState extends State<ReviewTab> {
     bool sending = false;
     String err = '';
 
-    await showDialog(
+    await showGlassDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
@@ -904,7 +905,7 @@ class _ReviewTabState extends State<ReviewTab> {
   }
 
   void _preview(String url) {
-    showDialog(
+    showGlassDialog(
       context: context,
       builder: (_) => GestureDetector(
         onTap: Get.back,

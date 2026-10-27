@@ -14,6 +14,7 @@ import '../../../api/admin_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../design/glass.dart';
 import '../../../utils/toast_util.dart';
 
 /// 软件管理
@@ -251,10 +252,9 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
   }
 
   void _showFillResult(String title, List details) {
-    showModalBottomSheet(
+    showGlassSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         height: MediaQuery.of(ctx).size.height * 0.62,
         decoration: BoxDecoration(
@@ -339,10 +339,9 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
       ToastUtil.error(ErrText.of(e));
       return;
     }
-    await showModalBottomSheet(
+    await showGlassSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(ctx).size.height * 0.6,
@@ -974,10 +973,9 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
       ToastUtil.error(ErrText.of(e));
       return;
     }
-    await showModalBottomSheet(
+    await showGlassSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) {
           Future<void> reload() async {
@@ -988,7 +986,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
           Future<void> editCat(Map? c) async {
             final t = TextEditingController(text: '${c?['title'] ?? ''}');
             final w = TextEditingController(text: '${c?['weigh'] ?? 0}');
-            await showDialog(
+            await showGlassDialog(
               context: ctx,
               builder: (dctx) => AlertDialog(
                 title: Text(c == null ? '新增分类' : '编辑分类'),
@@ -1221,10 +1219,9 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
         : '${a?['url_type']}';
     final adminNote = TextEditingController(text: '${a?['admin_note'] ?? ''}');
 
-    await showModalBottomSheet(
+    await showGlassSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) {
           bool saving = false;

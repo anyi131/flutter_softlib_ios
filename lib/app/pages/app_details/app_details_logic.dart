@@ -26,6 +26,7 @@ import '../../database/tables/download_task_table.dart';
 import '../../design/app_style.dart';
 import '../../design/app_style_controller.dart';
 import '../../design/ui.dart';
+import '../../design/glass.dart';
 import '../../models/app_item.dart';
 import '../../routes/app_pages.dart';
 import '../../models/http/results/lzy_file_info_model.dart';
@@ -1178,8 +1179,22 @@ class AppDetailsLogic extends GetxController {
           url: dowUrl,
           ok: false,
           // ★ 1016：失败原因细分 —— 后台一眼能判断是「解析问题」还是「网络问题」
+          errCode: () {
+            if (t0.status == DownloadTaskStatus.canceled) {
+              return _userCanceled ? 'USER_CANCEL' : 'SYS_CANCEL';
+            }
+            return 'DL_FAIL';
+          }(),
+          freeMb: _freeSpaceMb(),
+          fileMb: _fileSizeMb(),
+          progress: _shownProgress,
+          retryCnt: _silentRetry,
           error: () {
-            if (t0.status == DownloadTaskStatus.canceled) return '[用户取消] 下载被取消';
+            if (t0.status == DownloadTaskStatus.canceled) {
+              return _userCanceled
+                  ? '[用户取消] 用户主动取消下载'
+                  : '[系统中断] 下载被系统终止（存储不足/权限/省电策略）';
+            }
             final u = dowUrl.toLowerCase();
             final isLzy =
                 u.contains('lanzou') ||
@@ -1189,6 +1204,10 @@ class AppDetailsLogic extends GetxController {
             if (isLzy) {
               return '[解析失效] 蓝奏云直链不可用（解析接口返回异常/链接过期）'
                   '\n解析来源：${u.length > 60 ? u.substring(0, 60) : u}';
+            }
+            // ★ 1027：lanosso CDN 域名单独归类（lanzou 已在 isLzy 前面分支处理）
+            if (u.contains('lanosso.com')) {
+              return '[下载线路] CDN 连接中断，正在自动换线路重试';
             }
             return '[网络异常] 连接中断或源站不可用'
                 '\n地址：${u.length > 60 ? u.substring(0, 60) : u}';
@@ -1290,17 +1309,35 @@ class AppDetailsLogic extends GetxController {
     final done = Completer<bool>();
     _silentRetryTimer = Timer(Duration(seconds: delay), () async {
       try {
-        // ★ 换通道：重新解析一次直链（蓝奏云直链有时效，旧的必然 403）
+        // ★ 1027（真机实测）：首次失败大多是「CDN 瞬时拒连」（直链 30 分钟有效期内）        //   先用原直链重连（换新 TCP 连接），只有直链签发超 20 分钟才重新解析。
+        //   之前每次重试都 resolveLzy，反而撞上蓝奏云上游抖动，白白浪费重试机会。
         var ok = false;
+        int signedAt = 0;
         try {
-          final t = item?.url ?? dowUrl;
-          if (t.isNotEmpty) {
-            final fresh = await service.resolveLzy(t);
-            if (fresh != null && fresh.isNotEmpty) {
-              ok = await _enqueueSilentRetry(fresh);
-            }
+          final m = RegExp(r'/([0-9a-f]{8})/').firstMatch(dowUrl);
+          if (m != null) {
+            final h = int.tryParse(m.group(1)!, radix: 16);
+            if (h != null && h > 1000000000 && h < 2000000000) signedAt = h;
           }
         } catch (_) {}
+        final freshLink = signedAt > 0 &&
+            DateTime.now().millisecondsSinceEpoch ~/ 1000 - signedAt < 1200;
+        if (freshLink && dowUrl.isNotEmpty) {
+          // 直链还年轻 → 直接复用重连
+          ok = await _enqueueSilentRetry(dowUrl);
+        }
+        if (!ok) {
+          // 直链已老 / 复用失败 → 重新解析换新链
+          try {
+            final t = item?.url ?? dowUrl;
+            if (t.isNotEmpty) {
+              final fresh = await service.resolveLzy(t);
+              if (fresh != null && fresh.isNotEmpty) {
+                ok = await _enqueueSilentRetry(fresh);
+              }
+            }
+          } catch (_) {}
+        }
         // 换通道失败 → 试试原任务 retry（部分情况是网络瞬断，原链接仍可用）
         if (!ok && taskId != null && taskId!.isNotEmpty) {
           final nt = await FlutterDownloader.retry(taskId: taskId!);
@@ -1393,6 +1430,32 @@ class AppDetailsLogic extends GetxController {
   /// ★★ 1020：原来直接 FlutterDownloader.retry 复用**旧直链**，
   ///   而蓝奏云直链几小时就过期 → 直链失效后点多少次重试都是同一个失败。
   ///   现在先重新解析拿新直链，再新建任务；解析失败才退回原地重试。
+  /// 手机剩余空间（MB），拿不到返回 -1
+  int _freeSpaceMb() {
+    try {
+      final dir = Directory.systemTemp;
+      final st = dir.statSync();
+      return st.size > 0 ? (st.size / 1048576).round() : -1;
+    } catch (_) {
+      return -1;
+    }
+  }
+
+  /// 安装包大小（MB），拿不到返回 -1
+  int _fileSizeMb() {
+    try {
+      final v = double.tryParse(
+        (appInfo?.fileSize ?? item?.size ?? '').replaceAll(
+          RegExp(r'[^0-9.]'),
+          '',
+        ),
+      );
+      return v != null && v > 0 ? v.round() : -1;
+    } catch (_) {
+      return -1;
+    }
+  }
+
   Future<void> retryDownload() async {
     final origin = dowUrl.isNotEmpty ? dowUrl : (item?.url ?? '');
     if (origin.isNotEmpty) {
@@ -1443,11 +1506,19 @@ class AppDetailsLogic extends GetxController {
     update(['download']);
   }
 
+  /// 用户是否主动点了取消（区分「用户取消」和「系统中断」）
+  ///
+  /// ★★ 1020：FlutterDownloader 的 canceled 状态有两种来源 ——
+  ///   用户点取消、或下载被系统终止（存储满/权限撤销/省电策略），
+  ///   之前一律报「用户取消」，把系统问题也发进告警邮件。
+  bool _userCanceled = false;
+
   Future<void> cancelDownload() async {
     if (taskId == null || taskId!.isEmpty) {
       ToastUtil.error('下载任务ID无效');
       return;
     }
+    _userCanceled = true; // ★ 只有走这里才认定为「用户主动取消」
     await FlutterDownloader.remove(taskId: taskId!, shouldDeleteContent: true);
     downloadTaskDao.deleteDownloadTask(appId);
     taskId = null;
@@ -1580,7 +1651,7 @@ class AppDetailsLogic extends GetxController {
   /// 分享：会员资源不允许分享下载链接（防止绕过会员校验）
   void showSharePopUps(BuildContext context) {
     if (item?.isVipItem == true) {
-      showDialog(
+      showGlassDialog(
         context: context,
         builder: (_) => AlertDialog(
           title: const Text('会员专享资源'),
@@ -1596,7 +1667,7 @@ class AppDetailsLogic extends GetxController {
       return;
     }
     // 分享出去的是「详情页地址」而不是下载直链，避免直链被直接拿走
-    showDialog(
+    showGlassDialog(
       context: context,
       builder: (_) => PostersWidget(
         appInfo: appInfo,
@@ -1624,7 +1695,7 @@ class AppDetailsLogic extends GetxController {
   void showPreviewImage(String imageUrl) {
     final _ctx = SafeCtx.of();
     if (_ctx == null) return;
-    showDialog(
+    showGlassDialog(
       context: _ctx,
       builder: (context) {
         return GestureDetector(

@@ -14,6 +14,7 @@ import '../../../api/admin_service.dart';
 import '../../../api/post_service.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../design/glass.dart';
 import '../../../utils/app_action.dart';
 import '../../../utils/toast_util.dart';
 
@@ -459,7 +460,7 @@ class _AdminContentTabState extends State<AdminContentTab>
     final images = TextEditingController(text: imgList.join('\n'));
     String videoType = '${p['video_type'] ?? 'file'}';
 
-    await showDialog(
+    await showGlassDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setD) {

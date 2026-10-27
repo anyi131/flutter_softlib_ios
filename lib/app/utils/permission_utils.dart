@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../design/glass.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /// 处理常用应用权限的工具类。
@@ -124,7 +125,7 @@ class PermissionUtils {
 
   /// 显示提示用户打开应用设置的对话框。
   static void _showSettingsDialog(BuildContext context, String message) {
-    showDialog(
+    showGlassDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(

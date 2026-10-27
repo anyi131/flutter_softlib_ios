@@ -13,6 +13,7 @@ import 'package:get/get.dart';
 import '../../api/soft_service.dart';
 import '../../design/app_anim.dart';
 import '../../design/ui.dart';
+import '../../design/glass.dart';
 import '../../utils/apk_installer.dart';
 import '../../utils/download_dir.dart';
 import '../../utils/jump_util.dart';
@@ -83,7 +84,7 @@ class UpdateFlow {
     // ★ 1016：安全取 context（启动阶段可能为 null，绝不能崩）
     final ctx = Get.context ?? Get.key.currentContext;
     if (ctx == null) return;
-    showDialog(
+    showGlassDialog(
       // ★ 1016：原来是 Get.context! —— 启动阶段 / 页面切换时 Get.context 可能为 null，
       //   会直接抛「Null check operator used on a null value」（已在真机日志里抓到）。
       context: ctx,
