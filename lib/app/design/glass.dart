@@ -82,7 +82,13 @@ class GlassShell extends StatelessWidget {
   }
 }
 
+/// ★ 1027 玻璃组件总开关：glass_mode=off 时弹窗/弹层回退原生样式。
+/// glass_mode 只控制页面毛玻璃档位，不经过这里——必须独立判断，
+/// 否则服务器关闭玻璃后弹窗仍是玻璃渲染（1027 真机翻车根因）。
+bool get _glassUiEnabled => GlassTheme.enabled;
+
 /// 液态玻璃 Dialog（替代 showDialog）
+/// ★ glass_mode=off 时完全回退原生 showDialog（1027 真机翻车修复）
 Future<T?> showGlassDialog<T>({
   required BuildContext context,
   required WidgetBuilder builder,
@@ -90,6 +96,14 @@ Future<T?> showGlassDialog<T>({
   Color? barrierColor,
   bool dark = false,
 }) {
+  if (!_glassUiEnabled) {
+    return showDialog<T>(
+      context: context,
+      barrierDismissible: barrierDismissible,
+      barrierColor: barrierColor,
+      builder: builder,
+    );
+  }
   final d = dark || Theme.of(context).brightness == Brightness.dark;
   return showGeneralDialog(
     context: context,
@@ -103,12 +117,22 @@ Future<T?> showGlassDialog<T>({
 }
 
 /// 液态玻璃 BottomSheet（替代 showModalBottomSheet）
+/// ★ glass_mode=off 时完全回退原生 showModalBottomSheet
 Future<T?> showGlassSheet<T>({
   required BuildContext context,
   required WidgetBuilder builder,
   bool isScrollControlled = false,
   bool isDismissible = true,
 }) {
+  if (!_glassUiEnabled) {
+    return showModalBottomSheet<T>(
+      context: context,
+      isScrollControlled: isScrollControlled,
+      isDismissible: isDismissible,
+      enableDrag: isDismissible,
+      builder: builder,
+    );
+  }
   final d = Theme.of(context).brightness == Brightness.dark;
   return showModalBottomSheet<T>(
     context: context,
