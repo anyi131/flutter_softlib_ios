@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../design/kit.dart';
 import '../../design/ui.dart';
@@ -81,6 +82,9 @@ class _ElasticBarState extends State<_ElasticBar>
   late Animation<double> _pos;
   double _from = 0;
   double _to = 0;
+  // ★ iOS 拟真按压状态：按下凹 / 长按浮起
+  int? _pressedIdx;
+  int? _liftIdx;
 
   @override
   void initState() {
@@ -160,30 +164,109 @@ class _ElasticBarState extends State<_ElasticBar>
                     );
                   },
                 ),
-                // ③ 图标 + 文字
+                // ③ 图标 + 文字（iOS 拟真：按压凹下 / 长按浮起，松手才切换）
                 Positioned.fill(
                   child: Row(
                     children: List.generate(n, (i) {
                       final sel = widget.index == i;
                       final d = widget.destinations[i];
                       final activeColor = isDark ? Colors.white : C.brand;
+                      final pressed = _pressedIdx == i;
+                      final lifted = _liftIdx == i;
                       return Expanded(
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: () => widget.onTap(i),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              AnimatedScale(
-                                scale: sel ? 1.08 : 1.0,
-                                duration: const Duration(milliseconds: 260),
-                                curve: Curves.easeOutBack,
-                                child: Icon(
-                                  sel ? d.activeIcon : d.icon,
-                                  size: 21,
-                                  color: sel ? activeColor : context.t3,
-                                ),
-                              ),
+                          onTapDown: (_) {
+                            setState(() => _pressedIdx = i);
+                            HapticFeedback.selectionClick();
+                          },
+                          onTapCancel: () {
+                            setState(() {
+                              _pressedIdx = null;
+                              _liftIdx = null;
+                            });
+                          },
+                          // ★ iOS Liquid Glass 语义：长按浮起，松手(onTapUp)才切换
+                          onTapUp: (_) {
+                            final wasLifted = lifted;
+                            setState(() {
+                              _pressedIdx = null;
+                              _liftIdx = null;
+                            });
+                            if (wasLifted) {
+                              HapticFeedback.mediumImpact();
+                              widget.onTap(i);
+                            } else {
+                              widget.onTap(i);
+                            }
+                          },
+                          onLongPressStart: (_) {
+                            setState(() => _liftIdx = i);
+                            HapticFeedback.mediumImpact();
+                          },
+                          onLongPressEnd: (_) {
+                            // 交给 onTapUp 统一处理（onLongPressEnd 先于 onTapUp）
+                          },
+                          child: AnimatedScale(
+                            // 按压凹下 0.92，长按浮起 1.35
+                            scale: lifted
+                                ? 1.35
+                                : pressed
+                                ? 0.92
+                                : 1.0,
+                            duration: Duration(
+                              milliseconds: lifted || pressed ? 120 : 320,
+                            ),
+                            curve: lifted
+                                ? Curves.easeOutBack
+                                : Curves.easeOut,
+                            child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  // 图标（长按浮起时带柔光垫）
+                                  SizedBox(
+                                    width: 44,
+                                    height: 44,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        if (lifted)
+                                          DecoratedBox(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: (isDark
+                                                          ? Colors.white
+                                                          : C.brand)
+                                                      .withAlpha(90),
+                                                  blurRadius: 18,
+                                                  spreadRadius: 2,
+                                                ),
+                                              ],
+                                            ),
+                                            child: const SizedBox(
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                          ),
+                                        AnimatedScale(
+                                          scale: sel ? 1.08 : 1.0,
+                                          duration: const Duration(
+                                            milliseconds: 260,
+                                          ),
+                                          curve: Curves.easeOutBack,
+                                          child: Icon(
+                                            sel ? d.activeIcon : d.icon,
+                                            size: 21,
+                                            color: sel
+                                                ? activeColor
+                                                : context.t3,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                               const SizedBox(height: 2),
                               AnimatedDefaultTextStyle(
                                 duration: const Duration(milliseconds: 200),
