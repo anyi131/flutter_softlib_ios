@@ -1695,7 +1695,7 @@ class AppDetailsLogic extends GetxController {
   void showPreviewImage(String imageUrl) {
     final _ctx = SafeCtx.of();
     if (_ctx == null) return;
-    showGlassDialog(
+    showDialog(
       context: _ctx,
       builder: (context) {
         return GestureDetector(

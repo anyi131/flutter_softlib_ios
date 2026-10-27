@@ -1107,7 +1107,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
   }
 
   void _preview(String url) {
-    showGlassDialog(
+    showDialog(
       context: context,
       builder: (_) => AppPressable(
         onTap: Get.back,

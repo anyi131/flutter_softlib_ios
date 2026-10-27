@@ -195,7 +195,7 @@ class HomeLogic extends GetxController {
     // ★ 1016：Get.context 可能为 null（页面已退出/启动期），直接 ! 会崩
     final ctx = Get.context;
     if (ctx == null) return;
-    showGlassDialog(
+    showDialog(
       context: ctx,
       builder: (context) {
         return AlertDialog(

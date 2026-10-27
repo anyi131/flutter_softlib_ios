@@ -110,9 +110,23 @@ Future<T?> showGlassDialog<T>({
     barrierDismissible: barrierDismissible,
     barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
     barrierColor: barrierColor ?? Colors.black.withAlpha(d ? 120 : 80),
-    pageBuilder: (ctx, _, __) => Center(
-      child: GlassShell(dark: d, child: Dialog(child: builder(ctx))),
-    ),
+    pageBuilder: (ctx, _, __) {
+      final child = builder(ctx);
+      // ★ 1027 根治：内容自己就是 Dialog/AlertDialog（自己管尺寸、padding、背景），
+      // 再套一层 Dialog + GlassShell 会变成「Dialog 套 Dialog 套白卡」——
+      // 白底叠白底、文字飘在整屏中间（权限弹窗/公告弹窗真机翻车根因）。直接透传。
+      if (child is Dialog || child is AlertDialog) return child;
+      // 普通内容：玻璃壳承载，但限制最大尺寸，避免被撑满全屏
+      return Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(ctx).size.width * 0.92,
+            maxHeight: MediaQuery.of(ctx).size.height * 0.82,
+          ),
+          child: GlassShell(dark: d, child: child),
+        ),
+      );
+    },
   );
 }
 

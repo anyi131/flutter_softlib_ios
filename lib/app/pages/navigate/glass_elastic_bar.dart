@@ -30,7 +30,9 @@ class GlassElasticBar {
     ValueChanged<int> onTap,
     double inset,
   ) {
-    final isDark = context.isDark;
+    // ★ 1027：页面全部是硬编码浅色底，底栏若跟主题走会在浅色页上渲染成
+    // 深灰玻璃（真机视频 0:10 那坨深色）。底栏统一走浅色玻璃。
+    final isDark = context.isDark && GlassTheme.isDarkMode;
     return _ElasticBar(
       destinations: destinations,
       index: currentIndex,
@@ -186,31 +188,30 @@ class _ElasticBarState extends State<_ElasticBar>
                               _liftIdx = null;
                             });
                           },
-                          // ★ iOS Liquid Glass 语义：长按浮起，松手(onTapUp)才切换
+                          // 轻点：松手即切（长按会抢走 tap 竞技场，互不冲突）
                           onTapUp: (_) {
-                            final wasLifted = lifted;
                             setState(() {
                               _pressedIdx = null;
                               _liftIdx = null;
                             });
-                            if (wasLifted) {
-                              HapticFeedback.mediumImpact();
-                              widget.onTap(i);
-                            } else {
-                              widget.onTap(i);
-                            }
+                            widget.onTap(i);
                           },
+                          // ★ iOS Liquid Glass：长按浮起 + 触觉，松手才切换
                           onLongPressStart: (_) {
                             setState(() => _liftIdx = i);
                             HapticFeedback.mediumImpact();
                           },
                           onLongPressEnd: (_) {
-                            // 交给 onTapUp 统一处理（onLongPressEnd 先于 onTapUp）
+                            setState(() {
+                              _pressedIdx = null;
+                              _liftIdx = null;
+                            });
+                            widget.onTap(i);
                           },
                           child: AnimatedScale(
-                            // 按压凹下 0.92，长按浮起 1.35
+                            // 按压凹下 0.92，长按浮起 1.18（不超出玻璃板被裁切）
                             scale: lifted
-                                ? 1.35
+                                ? 1.18
                                 : pressed
                                 ? 0.92
                                 : 1.0,

@@ -46,7 +46,10 @@ class GlassTheme {
   GlassTheme._();
 
   /// 当前生效档位（启动时由 [init] 决定，也可后台覆盖）
-  static GlassLevel _level = GlassLevel.medium;
+  /// ★ 1027 修复：默认必须是 off。原来是 medium —— 一旦后台配置没取到
+  /// （离线/首帧/接口失败），玻璃就永久开着，弹窗白底叠白底、文字飘屏
+  /// （10.27 权限弹窗真机翻车根因之一）。必须「配置明确说了才开」。
+  static GlassLevel _level = GlassLevel.off;
   static GlassLevel get level => _level;
 
   /// 是否用户/后台强制过（强制后自动降级不再改写）

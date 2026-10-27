@@ -905,7 +905,7 @@ class _ReviewTabState extends State<ReviewTab> {
   }
 
   void _preview(String url) {
-    showGlassDialog(
+    showDialog(
       context: context,
       builder: (_) => GestureDetector(
         onTap: Get.back,
