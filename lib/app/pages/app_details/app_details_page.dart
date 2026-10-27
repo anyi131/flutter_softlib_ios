@@ -2470,9 +2470,12 @@ class _AppDetailsPageState extends State<AppDetailsPage>
 
   /// 截图画廊：左右滑动切换 + 保存到相册
   void _previewGallery(List<String> images, int start) {
-    showGlassDialog(
+    // ★ 全屏画廊不套玻璃壳：GlassShell/Dialog 约束会把 insetPadding:0 的
+    //   Positioned.fill 压成居中小块（1027 真机翻车），必须原生 showDialog
+    showDialog<void>(
       context: context,
       barrierColor: Colors.black87,
+      barrierDismissible: true,
       builder: (_) => _GalleryDialog(images: images, initial: start),
     );
   }
