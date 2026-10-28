@@ -1670,6 +1670,9 @@ class AppDetailsLogic extends GetxController {
     // 分享出去的是「详情页地址」而不是下载直链，避免直链被直接拿走
     showGlassDialog(
       context: context,
+      // ★ 1028：海报内容自带 BottomPanel 贴底面壳，外层绝不能再套 Center+GlassShell
+      //   否则会变成「居中悬浮卡 + 底部露出下载栏」，真机看着就是两个弹窗
+      bare: true,
       builder: (_) => PostersWidget(
         appInfo: appInfo,
         dowUrl: shareUrl,

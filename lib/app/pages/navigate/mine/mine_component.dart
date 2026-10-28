@@ -1358,12 +1358,49 @@ class MineComponent extends StatelessWidget {
       // ★ 1020：已绑定时改为「解绑QQ」，并且能解绑（之前只能绑、不能解）
       if (logic.isLoggedIn)
         _S(
-          logic.qqBound ? '解绑QQ' : '绑定QQ',
-          logic.qqBound ? Icons.link_off_rounded : Icons.link_rounded,
-          logic.qqBound ? C.danger : C.brand,
+          logic.qqBound ? 'QQ 已绑定' : '绑定QQ',
+          logic.qqBound ? Icons.verified_rounded : Icons.link_rounded,
+          logic.qqBound ? C.brand : C.brand,
           () {
             if (logic.qqBound) {
-              logic.unbindQQ();
+              // ★ 1028：已绑定的用户经常发现还是「QQ用户1234」默认名 ——
+              //   给一个显式的「重新同步昵称/头像」入口，不用解绑再绑
+              Get.dialog<bool>(
+                AppDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  title: const Text('QQ 已绑定', style: TextStyle(fontSize: 16)),
+                  content: const Text(
+                    '昵称/头像显示的还是默认值？可以重新同步一次 QQ 资料。\n'
+                    '（同步会用 QQ 昵称和头像覆盖当前资料）',
+                    style: TextStyle(fontSize: 13, height: 1.6),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Get.back(result: false),
+                      child: const Text('取消'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Get.back();
+                        logic.unbindQQ();
+                      },
+                      child: const Text('解绑', style: TextStyle(color: C.danger)),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Get.back();
+                        logic.bindQQ(sync: true);
+                      },
+                      child: Text(
+                        '同步资料',
+                        style: TextStyle(color: C.brand),
+                      ),
+                    ),
+                  ],
+                ),
+              );
             } else {
               logic.bindQQ();
             }

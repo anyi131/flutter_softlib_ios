@@ -447,6 +447,10 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
   /// ★ 1016：日志详情（完整字段：UA / 设备 / 归属地 / 时间）
   void _showLogDetail(Map<String, dynamic> r) {
     final action = '${r['action'] ?? ''}';
+    final isVip = '${r['is_vip'] ?? 0}' == '1';
+    final isGuest = '${r['is_guest'] ?? 0}' == '1';
+    final isAdmin = '${r['is_admin'] ?? 0}' == '1';
+    final vipText = '${r['vip_expire_text'] ?? ''}';
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -479,6 +483,15 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
               AdKvList(
                 rows: [
                   ('用户', '${r['nickname'] ?? '游客'}（ID ${r['user_id'] ?? 0}）'),
+                  (
+                    '身份',
+                    isGuest
+                        ? '游客（未登录）'
+                        : isVip
+                        ? '会员${vipText.isNotEmpty ? ' · 有效期至 $vipText' : ''}'
+                        : '非会员',
+                  ),
+                  if (isAdmin) ('权限', '管理员'),
                   ('行为', _actions[action] ?? action),
                   ('详情', '${r['detail'] ?? '-'}'),
                   // ★ 1016：下载类日志补全 —— 状态 / 解析方式 / App 版本 / 失败原因
@@ -976,6 +989,10 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
         ? C.violet
         : C.cyan;
 
+    // ★ 1028：是否会员（服务端 op_logs 已补 is_vip / vip_expire_text）
+    final isVip = '${r['is_vip'] ?? 0}' == '1';
+    final isGuest = '${r['is_guest'] ?? 0}' == '1';
+
     return AdCard(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -1002,6 +1019,21 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                   style: Ty.h3.copyWith(fontSize: 13.5, color: context.t1),
                 ),
               ),
+              // ★ 1028：身份标记（会员/非会员/游客）
+              Pill(
+                isGuest
+                    ? '游客'
+                    : isVip
+                    ? '会员'
+                    : '非会员',
+                color: isGuest
+                    ? context.t3
+                    : isVip
+                    ? C.gold
+                    : context.t3,
+                small: true,
+              ),
+              const SizedBox(width: 5),
               Pill(label, color: color, small: true),
             ],
           ),

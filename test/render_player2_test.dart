@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
+import 'package:flutter_softlib/app/widgets/mpv_core.dart';
 import 'package:flutter_softlib/app/pages/toolkit/player_next.dart';
 
 /// 假播放器平台：让真实播放页在没有真机/网络的情况下也能渲染出来
@@ -119,6 +120,8 @@ Future<void> _shot(WidgetTester tester, GlobalKey key, String path) async {
 
 void main() {
   setUpAll(_loadFonts);
+  setUp(() => MpvController.audioViaVideoForTest = true);
+  tearDown(() => MpvController.audioViaVideoForTest = false);
 
   testWidgets('播放页 · 影视全屏版式', (tester) async {
     VideoPlayerPlatform.instance = FakeVideoPlatform();

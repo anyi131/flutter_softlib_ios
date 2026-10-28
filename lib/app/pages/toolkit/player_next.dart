@@ -24,6 +24,8 @@ class VideoPage extends StatefulWidget {
     this.episodes = const [],
     this.onSelectEpisode,
     this.isAudio,
+    this.initialIndex = 0,
+    this.resolveUrl,
   });
 
   final String url;
@@ -35,6 +37,12 @@ class VideoPage extends StatefulWidget {
 
   /// null = 按地址后缀自动判断
   final bool? isAudio;
+
+  /// 起始序号（音乐列表从第 i 首点进来时用）
+  final int initialIndex;
+
+  /// 动态取地址（音乐列表只有歌名/歌手，没有每首歌的直链）
+  final Future<String> Function(int index)? resolveUrl;
 
   @override
   State<VideoPage> createState() => _VideoPageState();
@@ -49,7 +57,7 @@ class _VideoPageState extends State<VideoPage> {
 
   bool _ui = true;
   Timer? _hide;
-  bool _landscape = false;
+  bool _sysLand = false;
   double _speed = 1.0;
 
   int _idx = 0;
@@ -58,11 +66,10 @@ class _VideoPageState extends State<VideoPage> {
 
   bool get _isAudio => widget.isAudio ?? _looksAudio(_url);
 
-  String get _url {
-    if (widget.episodes.isEmpty) return widget.url;
-    if (_idx < 0 || _idx >= widget.episodes.length) return widget.url;
-    return widget.episodes[_idx].$2;
-  }
+  /// 当前真正在播的地址。★ 1028：以前是从 episodes[_idx].$2 推出来的，
+  /// 音乐列表的第二项是「歌手」→ 结果拿「周杰伦」当 URL 去加载，必然播放失败。
+  late String _curUrl = widget.url;
+  String get _url => _curUrl;
 
   String get _epName {
     if (widget.episodes.isEmpty) return '';
@@ -79,18 +86,34 @@ class _VideoPageState extends State<VideoPage> {
     return '';
   }
 
+  /// 真实屏幕方向（跟随陀螺仪/系统旋转，不再用按钮状态猜）
+  bool get _land => MediaQuery.of(context).orientation == Orientation.landscape;
+
   @override
   void initState() {
     super.initState();
     _idx = _matchIndex(widget.url);
+    // ★ 1028：视频页放开横屏（iOS 需要在 Info.plist 里也声明支持横向）；
+    //         音频页保持竖屏，避免封面页横过来变形
+    if (_isAudio) {
+      SystemChrome.setPreferredOrientations(const [DeviceOrientation.portraitUp]);
+    } else {
+      SystemChrome.setPreferredOrientations(const [
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    }
     _boot();
   }
 
   int _matchIndex(String u) {
+    if (widget.episodes.isEmpty) return 0;
     for (var i = 0; i < widget.episodes.length; i++) {
       if (widget.episodes[i].$2 == u) return i;
     }
-    return 0;
+    // 音乐列表的 $2 是歌手，匹配不上 → 用调用方给的起始序号
+    return widget.initialIndex.clamp(0, widget.episodes.length - 1);
   }
 
   static bool _looksAudio(String u) {
@@ -120,10 +143,12 @@ class _VideoPageState extends State<VideoPage> {
     _hide?.cancel();
     _c?.removeListener(_onVal);
     _c?.dispose();
-    if (_landscape) {
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    }
+    // 退出播放页一律回到 App 默认竖直方向
+    SystemChrome.setPreferredOrientations(const [
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
@@ -153,6 +178,7 @@ class _VideoPageState extends State<VideoPage> {
       Uri.parse(_url),
       httpHeaders: _headers(_url),
       autoPlay: true,
+      audioOnly: _isAudio,
     );
     c.addListener(_onVal);
     _c = c;
@@ -209,27 +235,52 @@ class _VideoPageState extends State<VideoPage> {
     _armHide();
   }
 
-  void _pick(int i) {
+  Future<void> _pick(int i) async {
     if (i < 0 || i >= widget.episodes.length) return;
-    setState(() => _idx = i);
-    widget.onSelectEpisode?.call(widget.episodes[i].$2);
+    String u;
+    if (widget.resolveUrl != null) {
+      setState(() {
+        _idx = i;
+        _loading = true;
+        _failed = false;
+        _err = '';
+      });
+      try {
+        u = await widget.resolveUrl!(i);
+      } catch (e) {
+        u = '';
+      }
+      if (!mounted) return;
+      if (u.isEmpty) {
+        setState(() {
+          _loading = false;
+          _failed = true;
+          _err = '该歌曲暂无可用音源';
+        });
+        return;
+      }
+    } else {
+      u = widget.episodes[i].$2;
+    }
+    if (!mounted) return;
+    setState(() => _curUrl = u);
+    widget.onSelectEpisode?.call(u);
     _boot();
   }
 
-  void _next() => _pick(_idx + 1);
-  void _prev() => _pick(_idx - 1);
+  void _next() => unawaited(_pick(_idx + 1));
+  void _prev() => unawaited(_pick(_idx - 1));
 
   Future<void> _toggleLandscape() async {
-    setState(() => _landscape = !_landscape);
-    if (_landscape) {
-      await SystemChrome.setPreferredOrientations([
+    if (_land) {
+      await SystemChrome.setPreferredOrientations(const [DeviceOrientation.portraitUp]);
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    } else {
+      await SystemChrome.setPreferredOrientations(const [
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
       ]);
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    } else {
-      await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
     _armHide();
   }
@@ -239,6 +290,17 @@ class _VideoPageState extends State<VideoPage> {
   @override
   Widget build(BuildContext context) {
     final tall = _isAudio;
+    // ★ 1028：跟着真实方向切系统栏 —— 横屏沉浸、竖屏显示状态栏
+    final land = _land;
+    if (!tall && land != _sysLand) {
+      _sysLand = land;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        SystemChrome.setEnabledSystemUIMode(
+          land ? SystemUiMode.immersiveSticky : SystemUiMode.edgeToEdge,
+        );
+      });
+    }
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -336,7 +398,7 @@ class _VideoPageState extends State<VideoPage> {
                   ),
                 ),
                 _roundBtn(
-                  _landscape ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
+                  _land ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
                   _toggleLandscape,
                   size: 22,
                 ),
@@ -875,7 +937,7 @@ class _VideoPageState extends State<VideoPage> {
         ),
       ),
     );
-    if (picked != null && picked != _idx) _pick(picked);
+    if (picked != null && picked != _idx) unawaited(_pick(picked));
   }
 
   // ================= 状态层 =================

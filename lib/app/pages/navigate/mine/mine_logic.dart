@@ -125,7 +125,7 @@ class MineLogic extends GetxController {
   ///   之前重复点击会并发发起多次 QQ 登录，原生回调错乱 → 用户说的「未知问题」。
   bool _binding = false;
 
-  Future<void> bindQQ() async {
+  Future<void> bindQQ({bool sync = false}) async {
     if (!_userService.isLoggedIn) {
       ToastUtil.info('请先登录你自己的账号，再绑定 QQ');
       return;
@@ -161,7 +161,9 @@ class MineLogic extends GetxController {
       // 页面已销毁（用户在等待时被路由带走）→ 只刷新数据，不弹提示
       if (isClosed) return;
       qqBound = true;
-      ToastUtil.success('绑定成功，以后 QQ 一键登录直接进本账号');
+      ToastUtil.success(
+        sync ? '已同步 QQ 昵称和头像' : '绑定成功，以后 QQ 一键登录直接进本账号',
+      );
       await load();
     } catch (e) {
       BlockingDialog.hide();

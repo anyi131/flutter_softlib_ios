@@ -720,6 +720,12 @@ class _MusicHomePageState extends State<MusicHomePage> {
               ('${e['name'] ?? ''}', '${e['artist'] ?? ''}'),
           ],
           initialIndex: idx < 0 ? 0 : idx,
+          // ★ 1028：切歌要按 id 现取直链，不能把歌手名当 URL
+          resolveUrl: (i) async {
+            if (i < 0 || i >= list.length) return '';
+            final d = await MusicSvc.url('${list[i]['id'] ?? ''}');
+            return '${d?['url'] ?? ''}';
+          },
         ),
       );
     } catch (e) {
@@ -1072,6 +1078,11 @@ class _MusicListPageState extends State<MusicListPage> {
               ('${e['name'] ?? ''}', '${e['artist'] ?? ''}'),
           ],
           initialIndex: i,
+          resolveUrl: (k) async {
+            if (k < 0 || k >= list.length) return '';
+            final d = await MusicSvc.url('${list[k]['id'] ?? ''}');
+            return '${d?['url'] ?? ''}';
+          },
         ),
       );
     } catch (e) {

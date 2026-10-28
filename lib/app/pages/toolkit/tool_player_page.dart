@@ -39,6 +39,9 @@ class ToolPlayerPage extends StatefulWidget {
   final List<(String, String)>? playlist;
   final int initialIndex;
 
+  /// 音乐列表：只有歌名/歌手，直链要按序号现取
+  final Future<String> Function(int index)? resolveUrl;
+
   const ToolPlayerPage({
     super.key,
     required this.url,
@@ -48,6 +51,7 @@ class ToolPlayerPage extends StatefulWidget {
     this.isAudio = false,
     this.playlist,
     this.initialIndex = 0,
+    this.resolveUrl,
   });
 
   @override
@@ -68,6 +72,8 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
       subtitle: widget.subtitle ?? '',
       isAudio: widget.isAudio,
       episodes: widget.playlist ?? const [],
+      initialIndex: widget.initialIndex,
+      resolveUrl: widget.resolveUrl,
       onSelectEpisode: (u) => setState(() => _url = u),
     );
   }
