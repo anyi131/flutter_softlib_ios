@@ -2283,7 +2283,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     final hasPrice = price.isNotEmpty && (double.tryParse(price) ?? 0) > 0;
     if (!hasPrice) {
       await Get.dialog(
-        AlertDialog(
+        AppDialog(
           title: const Text(
             '会员专享资源',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
@@ -2321,7 +2321,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         (double.tryParse(balance) ?? 0) >= (double.tryParse(price) ?? 0);
     final title = isVipUser ? '会员专享资源' : '付费资源';
     await Get.dialog(
-      AlertDialog(
+      AppDialog(
         title: Text(
           title,
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
@@ -2409,7 +2409,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   /// 用余额购买并解锁
   Future<void> _buyWithBalance(int appId, String fileName, String price) async {
     final ok = await Get.dialog<bool>(
-      AlertDialog(
+      AppDialog(
         title: const Text('确认支付'),
         content: Text(
           '将使用账户余额支付 ¥$price 购买该软件。\n'
@@ -2443,7 +2443,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   /// 提示弹窗。route 为空时只显示「知道了」关闭，不做跳转。
   void _dialog(String title, String msg, String okText, String? route) {
     Get.dialog(
-      AlertDialog(
+      AppDialog(
         title: Text(title),
         content: Text(msg),
         actions: [

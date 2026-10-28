@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'ui.dart';
+import 'glass.dart';
 import 'glass_theme.dart';
 
 /// ═══════════════════════════════════════════════════════════════
@@ -16,6 +17,125 @@ import 'glass_theme.dart';
 ///   · 色值只用 C.*，圆角只用 R.*，排版只用 Ty.*
 ///   · 所有可点元素必须有按压反馈（InkWell/GestureDetector + 缩放）
 /// ═══════════════════════════════════════════════════════════════
+
+/// ─────────── 通用弹窗 ───────────
+/// AlertDialog 的替代品：玻璃开 → 磨砂壳，玻璃关 → 实底卡，
+/// 两种模式共用同一套排版，杜绝「内容裸浮在遮罩上 / 白底叠白底」。
+/// 参数尽量对齐 AlertDialog，方便原地替换。
+class AppDialog extends StatelessWidget {
+  const AppDialog({
+    super.key,
+    this.title,
+    this.content,
+    this.actions,
+    this.insetPadding,
+    this.maxWidth = 380,
+    this.titlePadding = const EdgeInsets.fromLTRB(20, 18, 20, 0),
+    this.contentPadding = const EdgeInsets.fromLTRB(20, 14, 20, 0),
+    this.actionsPadding = const EdgeInsets.fromLTRB(12, 8, 12, 10),
+    this.actionsAlignment,
+    // 以下参数只为兼容 AlertDialog 的调用写法，不生效
+    this.shape,
+    this.backgroundColor,
+    this.elevation,
+    this.scrollable = false,
+  });
+
+  final Widget? title;
+  final Widget? content;
+  final List<Widget>? actions;
+  final EdgeInsets? insetPadding;
+  final double maxWidth;
+  final EdgeInsets titlePadding;
+  final EdgeInsets contentPadding;
+  final EdgeInsets actionsPadding;
+  final MainAxisAlignment? actionsAlignment;
+  final ShapeBorder? shape;
+  final Color? backgroundColor;
+  final double? elevation;
+  final bool scrollable;
+
+  WrapAlignment get _wrapAlign {
+    switch (actionsAlignment) {
+      case MainAxisAlignment.start:
+        return WrapAlignment.start;
+      case MainAxisAlignment.center:
+        return WrapAlignment.center;
+      case MainAxisAlignment.spaceBetween:
+        return WrapAlignment.spaceBetween;
+      case MainAxisAlignment.spaceAround:
+        return WrapAlignment.spaceAround;
+      case MainAxisAlignment.spaceEvenly:
+        return WrapAlignment.spaceEvenly;
+      default:
+        return WrapAlignment.end;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final body = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (title != null)
+          Padding(
+            padding: titlePadding,
+            child: DefaultTextStyle.merge(
+              style: TextStyle(
+                fontSize: 16.5,
+                fontWeight: FontWeight.w800,
+                height: 1.3,
+                color: context.t1,
+                decoration: TextDecoration.none,
+              ),
+              child: IconTheme.merge(
+                data: IconThemeData(color: context.t2, size: 20),
+                child: title!,
+              ),
+            ),
+          ),
+        if (content != null)
+          Flexible(
+            child: SingleChildScrollView(
+              padding: contentPadding,
+              child: DefaultTextStyle.merge(
+                style: TextStyle(
+                  fontSize: 14.5,
+                  height: 1.55,
+                  color: context.t2,
+                  decoration: TextDecoration.none,
+                ),
+                child: content!,
+              ),
+            ),
+          ),
+        if (actions != null && actions!.isNotEmpty)
+          Padding(
+            padding: actionsPadding,
+            child: Wrap(
+              alignment: _wrapAlign,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 6,
+              runSpacing: 6,
+              children: actions!,
+            ),
+          ),
+      ],
+    );
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding:
+          insetPadding ?? const EdgeInsets.symmetric(horizontal: 26, vertical: 40),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: PanelSurface(child: body),
+      ),
+    );
+  }
+}
 
 /// ─────────── 主按钮 ───────────
 /// 渐变胶囊 + 顶部内高光 + 光晕投影，图标带圆形半透明底。

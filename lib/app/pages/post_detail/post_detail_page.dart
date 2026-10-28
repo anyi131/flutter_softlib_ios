@@ -667,7 +667,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
 
   Future<void> _deleteComment(Map<String, dynamic> c) async {
     final ok = await Get.dialog<bool>(
-      AlertDialog(
+      AppDialog(
         title: const Text('删除评论'),
         content: const Text('确定删除这条评论吗？'),
         actions: [
@@ -709,7 +709,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
     final user = UserService.instance.user;
     if (user == null) {
       final go = await Get.dialog<bool>(
-        AlertDialog(
+        AppDialog(
           title: const Text('需要登录'),
           content: const Text('评论需要先登录账号'),
           actions: [
@@ -1074,7 +1074,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
 
   Future<void> _deletePost() async {
     final ok = await Get.dialog<bool>(
-      AlertDialog(
+      AppDialog(
         title: const Text('删除动态'),
         content: const Text('确定删除这条动态吗？评论也会一并删除。'),
         actions: [

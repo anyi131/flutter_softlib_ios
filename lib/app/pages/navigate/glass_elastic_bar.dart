@@ -32,7 +32,10 @@ class GlassElasticBar {
   ) {
     // ★ 1027：页面全部是硬编码浅色底，底栏若跟主题走会在浅色页上渲染成
     // 深灰玻璃（真机视频 0:10 那坨深色）。底栏统一走浅色玻璃。
-    final isDark = context.isDark && GlassTheme.isDarkMode;
+    // ★ 1028 修正：页面自 1026 起已全面走主题（深色底 #0E0F15 / 深色卡 #1A1D28），
+    // 上一版写死 isDarkMode=false 导致深色模式下底栏仍是一块白玻璃（用户截图实测）。
+    // 现在按页面真实明暗走：深色页 → 深色玻璃，浅色页 → 浅色玻璃。
+    final isDark = context.isDark;
     return _ElasticBar(
       destinations: destinations,
       index: currentIndex,

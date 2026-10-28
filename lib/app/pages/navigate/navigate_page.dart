@@ -8,6 +8,7 @@ import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'nav_templates.dart';
 import 'navigate_logic.dart';
+import '../../design/kit.dart';
 
 /// 主框架 —— iOS 26/27 风格玻璃底部 Tab
 ///
@@ -40,7 +41,7 @@ class _NavigatePageState extends State<NavigatePage> {
     }
     final go = await showDialog<bool>(
       context: context,
-      builder: (c) => AlertDialog(
+      builder: (c) => AppDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [

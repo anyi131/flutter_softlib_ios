@@ -40,6 +40,7 @@ import '../../utils/lzy_local_parser.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
 import '../../widgets/posters/posters_widget.dart';
+import '../../design/kit.dart';
 
 @pragma('vm:entry-point')
 class AppDetailsLogic extends GetxController {
@@ -403,7 +404,7 @@ class AppDetailsLogic extends GetxController {
     if (!ctx.mounted) return;
     final go = await showDialog<bool>(
       context: ctx,
-      builder: (c) => AlertDialog(
+      builder: (c) => AppDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Row(
           children: [
@@ -712,7 +713,7 @@ class AppDetailsLogic extends GetxController {
     final go = await showDialog<bool>(
       context: ctx,
       barrierDismissible: false,
-      builder: (c) => AlertDialog(
+      builder: (c) => AppDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
@@ -884,7 +885,7 @@ class AppDetailsLogic extends GetxController {
         if (ctx0 != null) {
           final ok = await showDialog<bool>(
             context: ctx0,
-            builder: (c) => AlertDialog(
+            builder: (c) => AppDialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -1223,7 +1224,7 @@ class AppDetailsLogic extends GetxController {
   void _showDownloadFailedSheet() {
     final origin = dowUrl.isNotEmpty ? dowUrl : (item?.url ?? '');
     Get.dialog<void>(
-      AlertDialog(
+      AppDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Text('下载没有完成', style: TextStyle(fontSize: 16)),
         content: Column(
@@ -1547,7 +1548,7 @@ class AppDetailsLogic extends GetxController {
       final ok = await ApkInstaller.canInstall();
       if (!ok) {
         final go = await Get.dialog<bool>(
-          AlertDialog(
+          AppDialog(
             title: const Text('需要安装权限'),
             content: const Text('安装应用需要您允许「安装未知应用」权限，前往设置开启？'),
             actions: [
@@ -1653,7 +1654,7 @@ class AppDetailsLogic extends GetxController {
     if (item?.isVipItem == true) {
       showGlassDialog(
         context: context,
-        builder: (_) => AlertDialog(
+        builder: (_) => AppDialog(
           title: const Text('会员专享资源'),
           content: const Text('该资源为会员专享，不支持分享下载链接。\n如需分享，请在广场发帖推荐。'),
           actions: [

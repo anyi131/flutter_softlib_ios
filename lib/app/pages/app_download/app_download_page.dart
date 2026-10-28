@@ -179,7 +179,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
                             )
                             .toList();
                         final ok = await Get.dialog<bool>(
-                          AlertDialog(
+                          AppDialog(
                             title: const Text('批量删除'),
                             content: Text(
                               '将删除所选 ${items.length} 项的记录和已下载文件，确定吗？',
@@ -226,7 +226,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
                       onTap: () async {
                         final logic = Get.find<AppDownloadLogic>();
                         final ok = await Get.dialog<bool>(
-                          AlertDialog(
+                          AppDialog(
                             title: const Text('清空失败任务'),
                             content: const Text('将删除全部失败/取消任务的记录，确定吗？'),
                             actions: [
@@ -597,7 +597,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
                         color: C.danger,
                         onTap: () async {
                           final ok = await Get.dialog<bool>(
-                            AlertDialog(
+                            AppDialog(
                               title: const Text('删除下载'),
                               content: Text(
                                 '将删除「${_displayName(d)}」的记录和已下载的文件，确定吗？',

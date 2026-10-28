@@ -89,7 +89,7 @@ class MineLogic extends GetxController {
   /// ★ 1020：解绑 QQ（绑错了能自救）
   Future<void> unbindQQ() async {
     final ok = await Get.dialog<bool>(
-      AlertDialog(
+      AppDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Text('解绑 QQ', style: TextStyle(fontSize: 16)),
         content: const Text(
@@ -323,7 +323,7 @@ class MineLogic extends GetxController {
     final nickCtrl = TextEditingController(text: u?.nickname ?? '');
     final qqCtrl = TextEditingController(text: u?.qq ?? '');
     final ok = await Get.dialog<bool>(
-      AlertDialog(
+      AppDialog(
         title: const Text('编辑资料'),
         content: StatefulBuilder(
           builder: (ctx, setSt) => SingleChildScrollView(
@@ -383,7 +383,7 @@ class MineLogic extends GetxController {
   /// 退出登录
   Future<void> logout() async {
     final yes = await Get.dialog<bool>(
-      AlertDialog(
+      AppDialog(
         title: const Text('退出登录'),
         content: const Text('确定要退出当前账号吗？'),
         actions: [
@@ -435,7 +435,7 @@ class MineLogic extends GetxController {
     if (!isLoggedIn) return openLogin();
     final ctrl = TextEditingController();
     final code = await Get.dialog<String>(
-      AlertDialog(
+      AppDialog(
         title: const Text('使用卡密'),
         content: TextField(
           controller: ctrl,
@@ -529,7 +529,7 @@ class MineLogic extends GetxController {
 
   void showAgreement(String title, String content) {
     Get.dialog(
-      AlertDialog(
+      AppDialog(
         title: Text(title),
         content: SingleChildScrollView(
           child: Text(content, style: const TextStyle(height: 1.7)),
@@ -935,7 +935,7 @@ class MineLogic extends GetxController {
       return;
     }
     final goods = await Get.dialog<String>(
-      AlertDialog(
+      AppDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
@@ -1092,7 +1092,7 @@ class MineLogic extends GetxController {
     if (!isLoggedIn) return openLogin();
     final ctrl = TextEditingController(text: account?.title ?? '');
     final v = await Get.dialog<String>(
-      AlertDialog(
+      AppDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           '自定义称号',
@@ -1138,7 +1138,7 @@ class MineLogic extends GetxController {
   Future<void> replaceSplash() async {
     if (!isLoggedIn) return openLogin();
     final action = await Get.dialog<String>(
-      AlertDialog(
+      AppDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           '替换开屏',

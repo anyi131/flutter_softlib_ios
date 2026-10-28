@@ -21,6 +21,7 @@ import '../../utils/toast_util.dart';
 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../../design/kit.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 更新体验 v52 —— 精美更新弹窗 + 应用内下载进度（需求 #4）
@@ -409,7 +410,7 @@ class _UpdateCardState extends State<_UpdateCard> {
     if (!can && mounted) {
       final go = await showDialog<bool>(
         context: context,
-        builder: (c) => AlertDialog(
+        builder: (c) => AppDialog(
           title: const Text('需要「安装未知应用」权限'),
           content: const Text(
             '系统要求先允许本应用安装其他应用，才能自动完成更新。'

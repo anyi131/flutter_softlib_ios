@@ -25,6 +25,7 @@ import '../jicun_parse_service.dart';
 import '../jicun_platform.dart';
 import 'jicun_history_page.dart';
 import 'jicun_video_player_page.dart';
+import '../../design/glass.dart';
 
 class JicunPage extends StatefulWidget {
   const JicunPage({super.key});
@@ -154,13 +155,12 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (c) => SafeArea(
-        child: Container(
+        child: SheetSurface(
+          color: c.isDark ? C.bg2 : Colors.white,
           margin: const EdgeInsets.all(14),
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: c.isDark ? C.bg2 : Colors.white,
-            borderRadius: BorderRadius.circular(R.lg),
-          ),
+          radius: R.lg,
+          onlyTop: false,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

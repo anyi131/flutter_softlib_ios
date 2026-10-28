@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../design/ui.dart';
 import '../utils/err_text.dart';
 import '../utils/toast_util.dart';
+import '../design/kit.dart';
 
 /// 统一的操作反馈
 ///
@@ -119,7 +120,7 @@ class AppAction {
     }
     showDialog<void>(
       context: ctx,
-      builder: (c) => AlertDialog(
+      builder: (c) => AppDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [

@@ -21,6 +21,7 @@ import '../../api/soft_service.dart';
 import '../../api/user_service.dart';
 import '../../utils/apk_installer.dart';
 import '../../utils/toast_util.dart';
+import '../../design/kit.dart';
 
 ///下载信息类
 class DownInfo {
@@ -310,7 +311,7 @@ class AppDownloadLogic extends GetxController {
   /// 解析不了时：让用户用浏览器打开原链接
   void _showBrowserFallback(String rawUrl) {
     Get.dialog<void>(
-      AlertDialog(
+      AppDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Text('暂时无法自动下载', style: TextStyle(fontSize: 16)),
         content: Column(

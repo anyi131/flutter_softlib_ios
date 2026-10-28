@@ -316,7 +316,7 @@ class _AppComponentState extends State<AppComponent> {
   Future<void> _search() async {
     final ctrl = TextEditingController(text: _kw);
     final v = await Get.dialog<String>(
-      AlertDialog(
+      AppDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(R.lg),
         ),
@@ -760,6 +760,8 @@ class _AppComponentState extends State<AppComponent> {
                             if (a.version.isNotEmpty) a.version,
                             if (a.size.isNotEmpty) a.size,
                           ].join(' · '),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: Ty.tiny.copyWith(color: context.t3),
                         ),
                       ],

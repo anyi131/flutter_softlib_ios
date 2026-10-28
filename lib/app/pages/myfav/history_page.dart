@@ -11,6 +11,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/err_text.dart';
 import '../../utils/toast_util.dart';
+import '../../design/glass.dart';
 
 /// 使用历史
 ///
@@ -84,12 +85,10 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Future<void> _clearAll() async {
     final pick = await Get.bottomSheet<int>(
-      Container(
+      SheetSurface(
+        color: context.isDark ? C.bg1 : Colors.white,
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-        decoration: BoxDecoration(
-          color: context.isDark ? C.bg1 : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
+        radius: 20,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,7 +137,7 @@ class _HistoryPageState extends State<HistoryPage> {
         onTap: () {
           if (days == 0) {
             Get.dialog<bool>(
-              AlertDialog(
+              AppDialog(
                 title: const Text('清空全部历史'),
                 content: const Text('将删除所有工具使用记录，不可恢复。'),
                 actions: [

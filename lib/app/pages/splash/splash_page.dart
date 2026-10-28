@@ -24,6 +24,7 @@ import '../guide/onboard_page.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/local_splash.dart';
 import 'maintain_page.dart';
+import '../../design/kit.dart';
 
 /// 启动页：远程开屏图 + 倒计时 + 公告弹窗（后台可下发，无需发版）
 class SplashPage extends StatefulWidget {
@@ -1884,7 +1885,7 @@ class _SplashPageState extends State<SplashPage> {
       barrierDismissible: !cfg.noticeForce,
       builder: (ctx) => PopScope(
         canPop: !cfg.noticeForce,
-        child: AlertDialog(
+        child: AppDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),

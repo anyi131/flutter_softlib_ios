@@ -509,7 +509,8 @@ class UserService {
       final r = await _dio.get('/api/softlib/user/donate_rank');
       if (r.data is Map && r.data['code'] == 1 && r.data['data'] is List) {
         return List<Map<String, dynamic>>.from(
-          (r.data['data'] as List).map((e) => Map<String, dynamic>.from(e)),
+          ((r.data['data'] as List?) ?? const [])
+              .map((e) => Map<String, dynamic>.from(e)),
         );
       }
     } catch (_) {}
@@ -594,7 +595,8 @@ class UserService {
       final r = await _dio.get('/api/softlib/user/exchange_goods');
       if (r.data is Map && r.data['code'] == 1 && r.data['data'] is List) {
         return List<Map<String, dynamic>>.from(
-          (r.data['data'] as List).map((e) => Map<String, dynamic>.from(e)),
+          ((r.data['data'] as List?) ?? const [])
+              .map((e) => Map<String, dynamic>.from(e)),
         );
       }
     } catch (_) {}

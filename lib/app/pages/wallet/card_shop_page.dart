@@ -455,7 +455,7 @@ class _CardShopPageState extends State<CardShopPage>
     final name = '${g['name'] ?? ''}';
     final price = '${g['price'] ?? '0.00'}';
     final go = await Get.dialog<bool>(
-      AlertDialog(
+      AppDialog(
         title: const Text('确认购买'),
         content: Text('购买「$name」\n\n将扣除余额 ¥$price\n当前余额 ¥$_balance'),
         actions: [
@@ -477,7 +477,7 @@ class _CardShopPageState extends State<CardShopPage>
       if (!mounted) return;
       // 购买成功 → 弹出卡密并可直接复制
       await Get.dialog(
-        AlertDialog(
+        AppDialog(
           title: const Text('购买成功'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -526,7 +526,7 @@ class _CardShopPageState extends State<CardShopPage>
 
   Future<void> _redeem(String code) async {
     final go = await Get.dialog<bool>(
-      AlertDialog(
+      AppDialog(
         title: const Text('确认兑换'),
         content: Text('将兑换卡密：\n$code\n\n兑换后不可撤销，确定吗？'),
         actions: [

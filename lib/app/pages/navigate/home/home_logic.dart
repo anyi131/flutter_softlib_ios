@@ -16,6 +16,7 @@ import '../../../models/app_config.dart';
 import '../../../models/http/results/carousel_model.dart';
 import '../../../models/http/results/referral_model.dart';
 import '../../../routes/app_pages.dart';
+import '../../../design/kit.dart';
 
 class HomeLogic extends GetxController {
   HttpApi httpApi = Get.find<HttpApi>();
@@ -198,7 +199,7 @@ class HomeLogic extends GetxController {
     showDialog(
       context: ctx,
       builder: (context) {
-        return AlertDialog(
+        return AppDialog(
           contentPadding: EdgeInsets.all(3),
           content: SizedBox(
             width: Get.width * 0.5,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../design/glass.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../design/kit.dart';
 
 /// 处理常用应用权限的工具类。
 class PermissionUtils {
@@ -128,7 +129,7 @@ class PermissionUtils {
     showGlassDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
+        return AppDialog(
           title: const Text('需要权限'),
           content: Text(message),
           actions: <Widget>[

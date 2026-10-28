@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_softlib/app/debug/self_check.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -203,6 +204,10 @@ class _AboutPageState extends State<AboutPage> {
                 onTap: () {
                   Clipboard.setData(ClipboardData(text: _localVersion));
                   ToastUtil.success('版本号已复制');
+                },
+                onLongPress: () {
+                  ToastUtil.success('开始自检，请勿退出');
+                  SelfCheck.run(version: _localVersion);
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(

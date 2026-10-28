@@ -406,7 +406,8 @@ class SoftService {
       );
       final data = resp.data;
       if (data is Map && data['code'] == 1 && data['data'] is List) {
-        final list = (data['data'] as List).whereType<Map>().toList();
+        final list =
+            ((data['data'] as List?) ?? const []).whereType<Map>().toList();
         if (list.isEmpty) return null;
         // 优先取 apk/ipa，其次取第一个文件
         Map? pick;

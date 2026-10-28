@@ -491,7 +491,7 @@ class _ReviewTabState extends State<ReviewTab> {
     final isAdmin = UserService.instance.user?.isAdmin == true;
     if (rp.userId != myId && !isAdmin) return;
     final ok = await Get.dialog<bool>(
-      AlertDialog(
+      AppDialog(
         title: const Text('删除回复'),
         content: Text('确定删除这条回复吗？\n「${rp.content}」'),
         actions: [
@@ -527,7 +527,7 @@ class _ReviewTabState extends State<ReviewTab> {
   Future<void> _openReply(ReviewItem r) async {
     if (!UserService.instance.isLoggedIn) {
       final go = await Get.dialog<bool>(
-        AlertDialog(
+        AppDialog(
           title: const Text('需要登录'),
           content: const Text('回复需要先登录账号'),
           actions: [
@@ -552,7 +552,7 @@ class _ReviewTabState extends State<ReviewTab> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setD) {
-          return AlertDialog(
+          return AppDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(R.md),
             ),
@@ -642,7 +642,7 @@ class _ReviewTabState extends State<ReviewTab> {
   Future<void> _openCompose() async {
     if (!UserService.instance.isLoggedIn) {
       final go = await Get.dialog<bool>(
-        AlertDialog(
+        AppDialog(
           title: const Text('需要登录'),
           content: const Text('评价软件需要先登录账号'),
           actions: [
@@ -691,6 +691,7 @@ class _ReviewTabState extends State<ReviewTab> {
             '😭',
             '😡',
           ];
+          const scoreText = ['很差', '较差', '一般', '满意', '超赞'];
 
           Future<void> pick() async {
             try {
@@ -709,195 +710,316 @@ class _ReviewTabState extends State<ReviewTab> {
             }
           }
 
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(R.md),
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 22,
+              vertical: 40,
             ),
-            title: Text('写评论', style: Ty.h3.copyWith(fontSize: 17)),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 评分
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: C.lbg2,
-                      borderRadius: BorderRadius.circular(R.sm),
-                    ),
-                    child: Row(
-                      children: [
-                        const Text('给这个软件打分', style: TextStyle(fontSize: 13.5)),
-                        const Spacer(),
-                        StarInput(
-                          value: score,
-                          size: 24,
-                          onChanged: (v) => setD(() => score = v),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: ctrl,
-                    maxLines: 4,
-                    maxLength: 500,
-                    decoration: InputDecoration(
-                      hintText: '请输入评论内容',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(R.sm),
-                      ),
-                    ),
-                  ),
-                  // 已选图片
-                  if (images.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        for (int i = 0; i < images.length; i++)
-                          Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(R.xs),
-                                child: Image.file(
-                                  File(images[i]),
-                                  width: 58,
-                                  height: 58,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Positioned(
-                                right: 0,
-                                top: 0,
-                                child: GestureDetector(
-                                  onTap: () => setD(() {
-                                    images.removeAt(i);
-                                    files.removeAt(i);
-                                  }),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(1.5),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.black54,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.close,
-                                      size: 12,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 380),
+              child: PanelSurface(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── 标题行 ──
+                      Row(
+                        children: [
+                          Container(
+                            width: 4,
+                            height: 15,
+                            decoration: BoxDecoration(
+                              gradient: C.brandGradient,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
-                      ],
-                    ),
-                  ],
-                  const SizedBox(height: 10),
-                  Text(
-                    '选择表情',
-                    style: Ty.small.copyWith(fontSize: 12.5, color: context.t3),
-                  ),
-                  const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 2,
-                    children: emojis
-                        .map(
-                          (e) => InkWell(
-                            onTap: () {
-                              ctrl.text += e;
-                              setD(() {});
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: Text(
-                                e,
-                                style: const TextStyle(fontSize: 21),
+                          const SizedBox(width: 8),
+                          Text(
+                            '写评论',
+                            style: Ty.h3.copyWith(
+                              fontSize: 16.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: sending ? null : () => Navigator.pop(ctx),
+                            child: Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: context.isDark
+                                    ? Colors.white.withAlpha(20)
+                                    : Colors.black.withAlpha(10),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 16,
+                                color: context.t2,
                               ),
                             ),
                           ),
-                        )
-                        .toList(),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      // ── 评分 ──
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(14, 10, 12, 10),
+                        decoration: BoxDecoration(
+                          color: C.brand.withAlpha(context.isDark ? 34 : 15),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  '综合评分',
+                                  style: TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  scoreText[score - 1],
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: C.brand,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Spacer(),
+                            StarInput(
+                              value: score,
+                              size: 26,
+                              onChanged: (v) => setD(() => score = v),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── 输入框 ──
+                      Container(
+                        decoration: BoxDecoration(
+                          color: context.isDark
+                              ? Colors.white.withAlpha(12)
+                              : const Color(0xFFF4F6FB),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: context.isDark
+                                ? Colors.white.withAlpha(16)
+                                : Colors.black.withAlpha(8),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: TextField(
+                          controller: ctrl,
+                          maxLines: 4,
+                          minLines: 4,
+                          maxLength: 500,
+                          style: const TextStyle(fontSize: 14.5, height: 1.5),
+                          decoration: InputDecoration(
+                            hintText: '说说这个软件用起来怎么样…',
+                            hintStyle: TextStyle(
+                              fontSize: 14,
+                              color: context.t3,
+                            ),
+                            border: InputBorder.none,
+                            counterStyle: TextStyle(
+                              fontSize: 10.5,
+                              color: context.t3,
+                            ),
+                            contentPadding: const EdgeInsets.fromLTRB(
+                              14,
+                              12,
+                              14,
+                              4,
+                            ),
+                          ),
+                          onChanged: (_) => setD(() {}),
+                        ),
+                      ),
+
+                      // ── 已选图片 ──
+                      if (images.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (int i = 0; i < images.length; i++)
+                              Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.file(
+                                      File(images[i]),
+                                      width: 56,
+                                      height: 56,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    right: -5,
+                                    top: -5,
+                                    child: GestureDetector(
+                                      onTap: () => setD(() {
+                                        images.removeAt(i);
+                                        files.removeAt(i);
+                                      }),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(2.5),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withAlpha(150),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: context.isDark
+                                                ? const Color(0xFF1A1E29)
+                                                : Colors.white,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Icons.close_rounded,
+                                          size: 11,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                          ],
+                        ),
+                      ],
+
+                      const SizedBox(height: 10),
+                      Text(
+                        '选择表情',
+                        style: Ty.small.copyWith(
+                          fontSize: 12,
+                          color: context.t3,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      // 表情横向滚动，不再挤成两排
+                      SizedBox(
+                        height: 38,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: emojis.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 2),
+                          itemBuilder: (_, i) => InkWell(
+                            borderRadius: BorderRadius.circular(10),
+                            onTap: () {
+                              ctrl.text += emojis[i];
+                              setD(() {});
+                            },
+                            child: Container(
+                              width: 34,
+                              alignment: Alignment.center,
+                              child: Text(
+                                emojis[i],
+                                style: const TextStyle(fontSize: 20),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      if (err.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.error_outline_rounded,
+                              size: 13,
+                              color: C.danger,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                err,
+                                style: Ty.tiny.copyWith(
+                                  fontSize: 12,
+                                  color: C.danger,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          SoftButton(
+                            label: '图片',
+                            icon: Icons.image_outlined,
+                            height: 46,
+                            onPressed: sending ? null : pick,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: PrimaryButton(
+                              label: '发布评论',
+                              height: 46,
+                              loading: sending,
+                              onPressed: sending
+                                  ? null
+                                  : () async {
+                                      final content = ctrl.text.trim();
+                                      if (content.isEmpty && images.isEmpty) {
+                                        setD(() => err = '请输入评论内容或添加图片');
+                                        return;
+                                      }
+                                      setD(() {
+                                        sending = true;
+                                        err = '';
+                                      });
+                                      try {
+                                        final urls = <String>[];
+                                        for (final f
+                                            in List<File>.from(files)) {
+                                          urls.add(await _svc.uploadImage(f));
+                                        }
+                                        await _svc.create(
+                                          appId: widget.appId,
+                                          score: score,
+                                          content: content,
+                                          images: urls,
+                                        );
+                                        if (ctx.mounted) Navigator.pop(ctx);
+                                        _toast('评论成功 ✅');
+                                        _load();
+                                      } catch (e) {
+                                        setD(() {
+                                          sending = false;
+                                          err = ErrText.of(e);
+                                        });
+                                      }
+                                    },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  if (err.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      err,
-                      style: Ty.tiny.copyWith(fontSize: 12, color: C.danger),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: sending ? null : pick,
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.image_outlined, size: 17),
-                    SizedBox(width: 4),
-                    Text('图片'),
-                  ],
                 ),
               ),
-              TextButton(
-                onPressed: sending ? null : () => Navigator.pop(ctx),
-                child: const Text('取消'),
-              ),
-              FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: C.brand),
-                onPressed: sending
-                    ? null
-                    : () async {
-                        final content = ctrl.text.trim();
-                        if (content.isEmpty && images.isEmpty) {
-                          setD(() => err = '请输入评论内容或添加图片');
-                          return;
-                        }
-                        setD(() {
-                          sending = true;
-                          err = '';
-                        });
-                        try {
-                          final urls = <String>[];
-                          for (final f in List<File>.from(files)) {
-                            urls.add(await _svc.uploadImage(f));
-                          }
-                          await _svc.create(
-                            appId: widget.appId,
-                            score: score,
-                            content: content,
-                            images: urls,
-                          );
-                          if (ctx.mounted) Navigator.pop(ctx);
-                          _toast('评论成功 ✅');
-                          _load();
-                        } catch (e) {
-                          setD(() {
-                            sending = false;
-                            err = ErrText.of(e);
-                          });
-                        }
-                      },
-                child: sending
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('发布'),
-              ),
-            ],
+            ),
           );
         },
       ),

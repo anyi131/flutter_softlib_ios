@@ -55,7 +55,7 @@ class _JicunHistoryPageState extends State<JicunHistoryPage> {
   Future<void> _clearAll() async {
     final go = await showDialog<bool>(
       context: context,
-      builder: (c) => AlertDialog(
+      builder: (c) => AppDialog(
         title: const Text('清空历史'),
         content: const Text('确定清空全部解析历史吗?'),
         actions: [

@@ -9,6 +9,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/err_text.dart';
 import '../../utils/toast_util.dart';
+import '../../design/glass.dart';
 
 /// 求软件 · 需求投票
 ///
@@ -127,12 +128,10 @@ class _WishPageState extends State<WishPage> {
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        child: Container(
+        child: SheetSurface(
+          color: context.isDark ? C.bg1 : Colors.white,
           padding: const EdgeInsets.fromLTRB(18, 16, 18, 22),
-          decoration: BoxDecoration(
-            color: context.isDark ? C.bg1 : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-          ),
+          radius: 22,
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,

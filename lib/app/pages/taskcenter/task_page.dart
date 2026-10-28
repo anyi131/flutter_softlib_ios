@@ -15,6 +15,7 @@ import '../../design/adaptive.dart';
 import '../../design/ui.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
+import '../../design/kit.dart';
 
 /// ★ 1016：赏帮赚新手任务 → 领会员
 class TaskPage extends StatefulWidget {
@@ -107,7 +108,7 @@ class _TaskPageState extends State<TaskPage> {
     }
     showDialog<void>(
       context: context,
-      builder: (c) => AlertDialog(
+      builder: (c) => AppDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         titlePadding: const EdgeInsets.only(top: 22),
         title: const Text(
@@ -199,7 +200,8 @@ class _TaskPageState extends State<TaskPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      // ★ 1028 深色适配：原整页浅底 + 白卡，深色模式下文字仍是浅色 → 白字白底看不见
+      backgroundColor: context.isDark ? C.bg0 : const Color(0xFFF5F6FA),
       body: SafeArea(
         child: _loading
             ? const Center(child: CircularProgressIndicator())
@@ -231,7 +233,7 @@ class _TaskPageState extends State<TaskPage> {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.isDark ? C.bg2 : Colors.white,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -359,7 +361,7 @@ class _TaskPageState extends State<TaskPage> {
               ),
             ),
             Container(
-              color: Colors.white,
+              color: context.isDark ? C.bg2 : Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Row(
                 children: [
@@ -418,9 +420,13 @@ class _TaskPageState extends State<TaskPage> {
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.isDark ? C.bg2 : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black.withAlpha(12)),
+        border: Border.all(
+          color: context.isDark
+              ? Colors.white.withAlpha(16)
+              : Colors.black.withAlpha(12),
+        ),
       ),
       child: Column(children: steps),
     );
@@ -544,7 +550,9 @@ class _TaskPageState extends State<TaskPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FC),
+        color: context.isDark
+            ? Colors.white.withAlpha(10)
+            : const Color(0xFFF8F9FC),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -628,7 +636,9 @@ class _TaskPageState extends State<TaskPage> {
             hintStyle: TextStyle(fontSize: 12.5, color: context.t3),
             isDense: true,
             filled: true,
-            fillColor: const Color(0xFFF8F9FC),
+            fillColor: context.isDark
+                ? Colors.white.withAlpha(10)
+                : const Color(0xFFF8F9FC),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
               vertical: 12,
@@ -650,7 +660,9 @@ class _TaskPageState extends State<TaskPage> {
             height: _shotUrl.isEmpty ? 46 : null,
             padding: _shotUrl.isEmpty ? null : const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FC),
+              color: context.isDark
+                  ? Colors.white.withAlpha(10)
+                  : const Color(0xFFF8F9FC),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: _shotUrl.isEmpty
@@ -686,7 +698,9 @@ class _TaskPageState extends State<TaskPage> {
                           errorBuilder: (_, __, ___) => Container(
                             width: 52,
                             height: 52,
-                            color: const Color(0xFFEDEFF5),
+                            color: context.isDark
+                                ? Colors.white.withAlpha(14)
+                                : const Color(0xFFEDEFF5),
                             child: Icon(
                               Icons.image_rounded,
                               size: 20,
@@ -733,9 +747,15 @@ class _TaskPageState extends State<TaskPage> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF9F0),
+            color: context.isDark
+                ? const Color(0xFFFF7A45).withAlpha(26)
+                : const Color(0xFFFFF9F0),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFFFD9A8)),
+            border: Border.all(
+              color: context.isDark
+                  ? const Color(0xFFFFB74D).withAlpha(80)
+                  : const Color(0xFFFFD9A8),
+            ),
           ),
           child: Row(
             children: [
@@ -745,18 +765,22 @@ class _TaskPageState extends State<TaskPage> {
                   children: [
                     Text(
                       '管理员微信：$wx',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.4,
-                        color: Color(0xFFB0793A),
+                        color: context.isDark
+                            ? const Color(0xFFFFC078)
+                            : const Color(0xFFB0793A),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '核实通过后 $hours 小时内发密码',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFFB8A084),
+                        color: context.isDark
+                            ? const Color(0xFFFFD9B0).withAlpha(190)
+                            : const Color(0xFFB8A084),
                       ),
                     ),
                   ],
@@ -831,9 +855,14 @@ class _TaskPageState extends State<TaskPage> {
       margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.isDark ? C.bg2 : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFC7F0D8), width: 1.5),
+        border: Border.all(
+          color: context.isDark
+              ? const Color(0xFF2E7D52).withAlpha(150)
+              : const Color(0xFFC7F0D8),
+          width: 1.5,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -888,14 +917,18 @@ class _TaskPageState extends State<TaskPage> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFFF4FBF7),
+              color: context.isDark
+                  ? const Color(0xFF34D399).withAlpha(22)
+                  : const Color(0xFFF4FBF7),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               '密码 30 天内有效 · 仅限本人使用',
               style: TextStyle(
                 fontSize: 11.2,
-                color: const Color(0xFF4B8B6A).withAlpha(230),
+                color: context.isDark
+                    ? const Color(0xFF6EE7B7)
+                    : const Color(0xFF4B8B6A).withAlpha(230),
               ),
             ),
           ),
@@ -967,7 +1000,7 @@ class _TaskPageState extends State<TaskPage> {
                           ),
                           isDense: true,
                           filled: true,
-                          fillColor: const Color(0xFFF8F9FC),
+                          fillColor: context.isDark ? C.bg3 : const Color(0xFFF8F9FC),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 14,
                             vertical: 13,
@@ -975,13 +1008,13 @@ class _TaskPageState extends State<TaskPage> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide(
-                              color: Colors.black.withAlpha(18),
+                              color: context.isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(18),
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide(
-                              color: Colors.black.withAlpha(18),
+                              color: context.isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(18),
                             ),
                           ),
                         ),

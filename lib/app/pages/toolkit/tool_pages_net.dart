@@ -1811,7 +1811,7 @@ class _MoviePageState extends State<MoviePage> {
         final out = <Map<String, dynamic>>[];
         for (final b in ((d?['blocks'] as List?) ?? [])) {
           if (b is Map && b['list'] is List) {
-            for (final e in (b['list'] as List)) {
+            for (final e in ((b['list'] as List?) ?? const [])) {
               if (e is Map) out.add(Map<String, dynamic>.from(e));
             }
           }
@@ -2443,7 +2443,7 @@ class _MusicPageState extends State<MusicPage> {
       final out = <Map<String, dynamic>>[];
       for (final b in ((d?['blocks'] as List?) ?? [])) {
         if (b is Map && b['list'] is List) {
-          for (final e in (b['list'] as List)) {
+          for (final e in ((b['list'] as List?) ?? const [])) {
             if (e is Map) out.add(Map<String, dynamic>.from(e));
           }
         }

@@ -128,7 +128,8 @@ class PostService {
       );
       if (r.data is Map && r.data['code'] == 1 && r.data['data'] is List) {
         return List<Map<String, dynamic>>.from(
-          (r.data['data'] as List).map((e) => Map<String, dynamic>.from(e)),
+          ((r.data['data'] as List?) ?? const [])
+              .map((e) => Map<String, dynamic>.from(e)),
         );
       }
     } catch (e) {
@@ -189,7 +190,7 @@ class PostService {
     if (r.data is Map) {
       final m = r.data as Map;
       if (m['code'] == 1 && m['data'] is List)
-        return (m['data'] as List).length;
+        return ((m['data'] as List?) ?? const []).length;
       throw Exception((m['msg'] ?? '解析失败').toString());
     }
     throw Exception('解析失败');

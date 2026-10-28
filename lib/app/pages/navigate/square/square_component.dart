@@ -686,7 +686,7 @@ class _SquareComponentState extends State<SquareComponent> {
   Future<void> _compose() async {
     if (!UserService.instance.isLoggedIn) {
       final go = await Get.dialog<bool>(
-        AlertDialog(
+        AppDialog(
           title: const Text('需要登录'),
           content: const Text('发布动态需要先登录账号'),
           actions: [
