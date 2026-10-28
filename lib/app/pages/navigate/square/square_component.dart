@@ -138,28 +138,6 @@ class _SquareComponentState extends State<SquareComponent> {
           ),
         ],
       ),
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: context.tabSpace - 10),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: Deco.brandGradient,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: C.brand.withAlpha(110),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: FloatingActionButton(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            onPressed: _compose,
-            child: const Icon(Icons.edit_rounded, color: Colors.white),
-          ),
-        ),
-      ),
     );
   }
 
@@ -185,6 +163,35 @@ class _SquareComponentState extends State<SquareComponent> {
                   style: Ty.small.copyWith(color: context.t3),
                 ),
               ],
+            ),
+          ),
+          // ★ 1028：底部悬浮 FAB 已移除，发布入口收进顶栏
+          AppPressable(
+            onTap: _compose,
+            child: Container(
+              height: 34,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: context.isDark ? C.bg3 : Colors.white,
+                borderRadius: BorderRadius.circular(R.md),
+                border: Border.all(color: C.brand.withAlpha(70)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.edit_rounded, size: 15, color: C.brand),
+                  const SizedBox(width: 5),
+                  Text(
+                    '发布',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: C.brand,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

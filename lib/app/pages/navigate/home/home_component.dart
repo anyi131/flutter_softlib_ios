@@ -1765,6 +1765,11 @@ class _HomeComponentState extends State<HomeComponent> {
 
   // ───────── ④ 轮播 ─────────
   Widget _banner() {
+    // 后台 ui_config.home.banner = off 时整块轮播不渲染
+    final cfg = SoftService.instance.cachedConfig?.uiConfig;
+    if (cfg != null && cfg.homeBanner == 'off') {
+      return const SizedBox.shrink();
+    }
     return GetBuilder<HomeLogic>(
       id: 'carousel',
       builder: (logic) {

@@ -183,7 +183,10 @@ class HomeLogic extends GetxController {
   ///跳转加客服（★ v331z3：实时缓存兜底 + 直接打开链接，原来只会把链接当图片展示）
   void joinUser() {
     final cached = SoftService.instance.cachedConfig;
-    final userUrl = configData?.feedbackUser ?? (cached?.feedbackUser ?? '');
+    // ★ 1028：feedback_user 为空时退回后台「客服链接」service_url（此前该字段无人消费）
+    final preferred = configData?.feedbackUser ?? (cached?.feedbackUser ?? '');
+    final fallback = configData?.serviceUrl ?? (cached?.serviceUrl ?? '');
+    final userUrl = preferred.isNotEmpty ? preferred : fallback;
     if (userUrl.isEmpty) {
       ToastUtil.error('暂未配置');
       return;

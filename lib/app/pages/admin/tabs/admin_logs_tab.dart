@@ -451,6 +451,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      showDragHandle: false,
       builder: (c) => Container(
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
@@ -859,6 +860,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      showDragHandle: false,
       builder: (c) => Container(
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),

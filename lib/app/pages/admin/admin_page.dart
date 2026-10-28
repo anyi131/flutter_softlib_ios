@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../utils/err_text.dart';
 
+import 'admin_downloads_page.dart';
 import 'admin_ui_kit.dart';
 
 import 'admin_shell_v2.dart';
@@ -474,6 +475,14 @@ class _OverviewTabState extends State<_OverviewTab> {
             title: '下载数据',
             subtitle: '今日下载 / 失败 / 累计 · 点记录看详情',
             accent: C.cyan,
+            trailing: TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const AdminDownloadsPage(),
+                ),
+              ),
+              child: const Text('全部记录'),
+            ),
           ),
           AdCard(
             radius: R.lg,
@@ -530,6 +539,27 @@ class _OverviewTabState extends State<_OverviewTab> {
                                       ),
                                     ),
                                   ),
+                                  if ('${r['is_vip'] ?? ''}' == '1') ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 1,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: C.gold.withAlpha(30),
+                                        borderRadius:
+                                            BorderRadius.circular(R.xs),
+                                      ),
+                                      child: Text(
+                                        '会员',
+                                        style: Ty.tiny.copyWith(
+                                          color: C.gold,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                  ],
                                   Expanded(
                                     child: Text(
                                       '${r['app_title'] ?? ''}'
@@ -702,6 +732,12 @@ class _OverviewTabState extends State<_OverviewTab> {
                 '用户',
                 '${r['nickname'] ?? ''}'
                     '${(r['user_id'] ?? 0).toString() == '0' ? '（未登录）' : ' (ID ${r['user_id']})'}',
+              ),
+              _dlRow(
+                '会员',
+                '${r['is_vip'] ?? -1}' == '1'
+                    ? '会员${('${r['vip_expire_text'] ?? ''}').isEmpty ? '' : '（到期 ${r['vip_expire_text']}）'}'
+                    : ('${r['is_vip'] ?? -1}' == '0' ? '普通用户' : '未登录 / 未知'),
               ),
               _dlRow('状态', ok ? '成功' : '失败'),
               _dlRow('IP', '${r['ip'] ?? '-'}'),

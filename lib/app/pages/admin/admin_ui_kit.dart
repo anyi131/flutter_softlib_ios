@@ -47,6 +47,7 @@ class AdCard extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(15),
     this.onTap,
+    this.onLongPress,
     this.accent,
 
     /// 兼容旧组件参数（KitCard/GlassCard 的 glow/radius/blur/alpha）
@@ -64,6 +65,9 @@ class AdCard extends StatelessWidget {
   final Widget child;
   final EdgeInsets? padding;
   final VoidCallback? onTap;
+
+  /// 长按（列表页快捷操作）
+  final VoidCallback? onLongPress;
   final Color? accent;
   final Color? glow;
   final EdgeInsets? margin;
@@ -125,9 +129,17 @@ class AdCard extends StatelessWidget {
       );
     }
 
+    final tappable = onTap != null || onLongPress != null;
     return Padding(
       padding: margin ?? EdgeInsets.zero,
-      child: onTap == null ? body : GestureDetector(onTap: onTap, child: body),
+      child: tappable
+          ? GestureDetector(
+              onTap: onTap,
+              onLongPress: onLongPress,
+              behavior: HitTestBehavior.opaque,
+              child: body,
+            )
+          : body,
     );
   }
 }
@@ -539,6 +551,151 @@ class AdTag extends StatelessWidget {
           fontWeight: FontWeight.w800,
           color: c,
         ),
+      ),
+    );
+  }
+}
+
+/// 列表加载骨架：比转圈更"有内容感"，且不会让页面高度跳动
+class AdListSkeleton extends StatefulWidget {
+  const AdListSkeleton({
+    super.key,
+    this.rows = 5,
+    this.height = 64,
+    this.padding = const EdgeInsets.fromLTRB(0, 10, 0, 10),
+  });
+
+  final int rows;
+  final double height;
+  final EdgeInsets padding;
+
+  @override
+  State<AdListSkeleton> createState() => _AdListSkeletonState();
+}
+
+class _AdListSkeletonState extends State<AdListSkeleton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final base = context.isDark ? Colors.white : Colors.black;
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (_, _) {
+        final a = 6 + (_c.value * 10).round();
+        Widget bar(double h) => Container(
+          width: double.infinity,
+          height: h,
+          decoration: BoxDecoration(
+            color: base.withAlpha(a),
+            borderRadius: BorderRadius.circular(6),
+          ),
+        );
+        return Column(
+          children: [
+            for (var i = 0; i < widget.rows; i++)
+              Container(
+                height: widget.height,
+                margin: EdgeInsets.only(
+                  top: i == 0 ? widget.padding.top : 8,
+                  bottom: i == widget.rows - 1 ? widget.padding.bottom : 0,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: Ad.cardBg(context),
+                  borderRadius: BorderRadius.circular(Ad.rCard),
+                  border: Border.all(color: Ad.stroke(context)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: base.withAlpha(a),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: 0.42,
+                            child: bar(10),
+                          ),
+                          const SizedBox(height: 7),
+                          FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: 0.26,
+                            child: bar(8),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    SizedBox(width: 34, height: 16, child: bar(16)),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// 列表顶部结果条：一行小的「共 N 条 · 条件」，让页面不至于一进来就只剩搜索框
+class AdResultBar extends StatelessWidget {
+  const AdResultBar({
+    super.key,
+    required this.text,
+    this.trailing,
+    this.color,
+  });
+
+  final String text;
+  final Widget? trailing;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 3,
+            height: 11,
+            decoration: BoxDecoration(
+              color: color ?? C.brand,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Ty.tiny.copyWith(fontSize: 11, color: context.t3),
+            ),
+          ),
+          if (trailing != null) trailing!,
+        ],
       ),
     );
   }

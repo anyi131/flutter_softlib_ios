@@ -219,7 +219,19 @@ class JicunDownloadController extends GetxController {
       }
     }
     update(['jicun_tasks']);
+    final settled = task.status.value;
+    if (settled == JicunTaskStatus.done ||
+        settled == JicunTaskStatus.failed) {
+      try {
+        onTaskSettled?.call(task, settled);
+      } catch (_) {
+        // 提醒出错不能影响下载结果
+      }
+    }
   }
+
+  /// 任务结束回调(完成/失败)。页面挂上去弹提醒;为空则不提醒。
+  void Function(JicunTask task, JicunTaskStatus status)? onTaskSettled;
 
   static String _errText(Object e) {
     var t = e.toString();

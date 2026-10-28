@@ -22,7 +22,7 @@ import 'glass_theme.dart';
 /// AlertDialog 的替代品：玻璃开 → 磨砂壳，玻璃关 → 实底卡，
 /// 两种模式共用同一套排版，杜绝「内容裸浮在遮罩上 / 白底叠白底」。
 /// 参数尽量对齐 AlertDialog，方便原地替换。
-class AppDialog extends StatelessWidget {
+class AppDialog extends StatelessWidget with GlassOwnSurface {
   const AppDialog({
     super.key,
     this.title,

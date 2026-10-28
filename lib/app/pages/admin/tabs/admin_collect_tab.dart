@@ -256,7 +256,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
   Widget build(BuildContext context) {
     super.build(context);
     if (_loading && _items.isEmpty && !_loggedIn) {
-      return const LoadingState(text: '加载采集数据…');
+      return const AdListSkeleton(rows: 7);
     }
     if (!_loggedIn) return _needCookie();
     return Column(

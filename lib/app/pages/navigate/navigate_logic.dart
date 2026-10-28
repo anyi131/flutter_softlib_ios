@@ -27,6 +27,8 @@ import '../../design/theme_controller.dart';
 import 'update_flow.dart';
 
 import '../../api/soft_service.dart';
+import '../../models/app_config.dart';
+import '../splash/maintain_page.dart';
 import '../../api/user_service.dart';
 import '../../utils/permission_utils.dart';
 import '../../widgets/icon_font.dart';
@@ -87,11 +89,59 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
   List<NavigationDestination> labels = List.of(_baseLabels);
   List<Widget> pages = _basePages();
 
+  /// 维护页是否正显示（防止重复 push）
+  bool _maintainShown = false;
+
+  /// 运行中切到维护：整页盖住，用户点「重新加载」会复查配置，恢复后自动关
+  void _showMaintain(AppConfig cfg) {
+    if (_maintainShown) return;
+    final ctx = Get.key.currentContext;
+    if (ctx == null) return;
+    final nav = Navigator.of(ctx, rootNavigator: true);
+    _maintainShown = true;
+    nav
+        .push(
+          MaterialPageRoute<void>(
+            fullscreenDialog: true,
+            builder: (_) => MaintainPage(
+              appName: cfg.splashTitle.isEmpty ? '安逸软件汇' : cfg.splashTitle,
+              text: cfg.maintainText,
+              template: cfg.maintainTemplate,
+              onReload: () async {
+                final again =
+                    await SoftService.instance.fetchConfig(force: true);
+                if (again == null || !again.maintainEnable) {
+                  _maintainShown = false;
+                  if (nav.canPop()) nav.pop();
+                }
+              },
+            ),
+          ),
+        )
+        .whenComplete(() => _maintainShown = false);
+  }
+
+  void _closeMaintain() {
+    if (!_maintainShown) return;
+    _maintainShown = false;
+    final ctx = Get.key.currentContext;
+    if (ctx == null) return;
+    final nav = Navigator.of(ctx, rootNavigator: true);
+    if (nav.canPop()) nav.pop();
+  }
+
   /// 按后台配置裁剪 Tab（工具Tab已整体移除）
   Future<void> applyUiConfig({bool force = false}) async {
     try {
       final cfg = await SoftService.instance.fetchConfig(force: force);
       if (cfg == null) return; // 拉不到配置绝不覆盖当前状态
+
+      // ★ 维护模式：App 已在运行时也要拦得住（冷启动由开屏页负责）
+      if (cfg.maintainEnable) {
+        _showMaintain(cfg);
+        return;
+      }
+      if (_maintainShown) _closeMaintain();
       final ui = cfg.uiConfig;
       final ls = <NavigationDestination>[];
       final ps = <Widget>[];
@@ -136,14 +186,16 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
         currentIndex = 0;
         pageController.jumpToPage(0);
       }
-      // 深浅模式由后台统一下发
+      // 深浅模式由后台统一下发（后台允许用户自选时，保留用户的选择）
       final tc = ThemeController.instance;
-      final m = switch (ui.themeMode) {
-        'dark' => ThemeMode.dark,
-        'system' => ThemeMode.system,
-        _ => ThemeMode.light,
-      };
-      await tc.setMode(m);
+      final respectUserTheme = ui.allowUserThemeToggle;
+      if (!respectUserTheme) {
+        await tc.setMode(switch (ui.themeMode) {
+          'dark' => ThemeMode.dark,
+          'system' => ThemeMode.system,
+          _ => ThemeMode.light,
+        });
+      }
       tc.applyServerPalette(ui.themePalette);
       update(['navigate']);
     } catch (_) {}

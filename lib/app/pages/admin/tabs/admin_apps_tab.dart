@@ -824,9 +824,19 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
             ],
           ),
         ),
+        // 结果条：只加载完才显示，避免和骨架屏抢注意力
+        if (!_loading && _list.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 2, 14, 0),
+            child: AdResultBar(
+              text: '共 ${_list.length} 个软件'
+                  '${_kw.trim().isEmpty ? '' : ' · 关键词「${_kw.trim()}」'}'
+                  '${_selMode ? ' · 已选 ${_sel.length}' : ''}',
+            ),
+          ),
         Expanded(
           child: _loading
-              ? const LoadingState(text: '加载软件列表…')
+              ? const AdListSkeleton(rows: 7)
               : RefreshIndicator(
                   onRefresh: _load,
                   child: ListView.builder(

@@ -248,12 +248,14 @@ class AdminService {
     int size = 20,
     String status = '',
     String keyword = '',
+    int? vip,
   }) async => Map<String, dynamic>.from(
     (await _post('download_logs', {
           'page': page,
           'size': size,
           if (status.isNotEmpty) 'status': status,
           if (keyword.isNotEmpty) 'keyword': keyword,
+          if (vip != null) 'vip': vip,
         }))['data'] ??
         {},
   );

@@ -200,7 +200,8 @@ class UiConfig {
       featureExchange: _b(feat['exchange'], true),
       featureDonateRank: _b(feat['donate_rank'], true),
       featureInvite: _b(feat['invite'], true),
-      featureNotice: _b(feat['notice'], true),
+      // 兼容旧后台：home.notice = off 与 features.notice 任一关闭都不弹
+      featureNotice: _b(feat['notice'], true) && _s(home['notice'], 'on') != 'off',
       featureReferral: _b(feat['referral'], true),
       featureCardRedeem: _b(feat['card_redeem'], true),
       featureCardShop: _b(feat['card_shop'], true),

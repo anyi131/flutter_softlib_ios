@@ -40,6 +40,11 @@ class AdminShellV2 extends StatefulWidget {
 class _AdminShellV2State extends State<AdminShellV2> {
   int _i = 0;
 
+  /// 当前所在分组（标签分「数据 / 运营 / 内容 / 系统」四组）
+  int _g = 0;
+
+  static const _groupOrder = <String>['数据', '运营', '内容', '系统'];
+
   static const _items = <(String, IconData, String)>[
     // ★★ 必须与 admin_page.dart 的 children 顺序**逐一对齐**！
     //    之前顺序写错（内容/工具/采集/解析 位置颠倒）→ 点「内容」显示的是采集页。
@@ -62,6 +67,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
   void initState() {
     super.initState();
     _i = widget.tab.index;
+    _g = _groupOf(_i);
     widget.tab.addListener(_onTab);
   }
 
@@ -71,14 +77,27 @@ class _AdminShellV2State extends State<AdminShellV2> {
     super.dispose();
   }
 
+  int _groupOf(int i) {
+    final g = _groupOrder.indexOf(_items[i].$3);
+    return g < 0 ? 0 : g;
+  }
+
   void _onTab() {
     if (!mounted) return;
-    if (_i != widget.tab.index) setState(() => _i = widget.tab.index);
+    if (_i != widget.tab.index) {
+      setState(() {
+        _i = widget.tab.index;
+        _g = _groupOf(_i);
+      });
+    }
   }
 
   void _go(int i) {
     widget.tab.animateTo(i);
-    setState(() => _i = i);
+    setState(() {
+      _i = i;
+      _g = _groupOf(i);
+    });
   }
 
   String get _tpl {
@@ -119,6 +138,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
               context: context,
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
+              showDragHandle: false,
               builder: (_) => const AdminLinkPreviewSheet(),
             ),
             child: Container(
@@ -194,14 +214,27 @@ class _AdminShellV2State extends State<AdminShellV2> {
                 ],
               ),
             ),
+            // 一级：分组（数据/运营/内容/系统）
             SizedBox(
-              height: 44,
+              height: 26,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
-                itemCount: _items.length,
+                itemCount: _groupOrder.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 4),
+                itemBuilder: (_, g) => _groupChip(g),
+              ),
+            ),
+            const SizedBox(height: 6),
+            // 二级：当前分组内的标签
+            SizedBox(
+              height: 40,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
+                itemCount: _tabsOfGroup.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 7),
-                itemBuilder: (_, i) => _pill(i),
+                itemBuilder: (_, k) => _pill(_tabsOfGroup[k]),
               ),
             ),
             const SizedBox(height: 4),
@@ -867,6 +900,54 @@ class _AdminShellV2State extends State<AdminShellV2> {
       child: Icon(Icons.refresh_rounded, size: 18, color: context.t2),
     ),
   );
+
+  /// 当前分组下的标签索引（保持与 children 一致，只影响显示顺序）
+  List<int> get _tabsOfGroup => <int>[
+    for (var i = 0; i < _items.length; i++)
+      if (_groupOf(i) == _g) i,
+  ];
+
+  Widget _groupChip(int g) {
+    final on = g == _g;
+    final name = _groupOrder[g];
+    final count = _items.where((e) => e.$3 == name).length;
+    return AppPressable(
+      onTap: () => setState(() => _g = g),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: on ? C.brand.withAlpha(18) : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: on ? C.brand.withAlpha(80) : Colors.transparent,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(
+              name,
+              style: Ty.tiny.copyWith(
+                fontSize: 12,
+                fontWeight: on ? FontWeight.w800 : FontWeight.w600,
+                color: on ? C.brand : context.t3,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '$count',
+              style: Ty.tiny.copyWith(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: on ? C.brand : context.t3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _pill(int i) {
     final on = i == _i;

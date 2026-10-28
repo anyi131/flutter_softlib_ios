@@ -5,6 +5,8 @@
 // 按宿主设计体系(lib/app/design)重写;下载落盘到应用目录(非系统媒体库)。
 // 版权与许可遵循上游 MIT License,见仓库 LICENSE。
 ////////////////////////////////////////////////////////////////////////////////
+import 'dart:async';
+
 import 'dart:io';
 
 import '../../utils/err_text.dart';
@@ -20,10 +22,19 @@ import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import '../jicun_config.dart';
 import '../jicun_download_controller.dart';
-import '../jicun_history_store.dart';
+import '../jicun_downloader.dart';
 import '../jicun_parse_service.dart';
+import '../jicun_download_naming.dart';
+import '../jicun_prefs.dart';
+import '../jicun_network.dart';
 import '../jicun_platform.dart';
+import '../jicun_playback_headers.dart';
+import '../jicun_save_album.dart';
+import '../jicun_save_remote.dart';
+import '../widgets/jicun_gallery.dart';
+import 'jicun_audio_player_page.dart';
 import 'jicun_history_page.dart';
+import 'jicun_settings_page.dart';
 import 'jicun_video_player_page.dart';
 import '../../design/glass.dart';
 
@@ -37,9 +48,13 @@ class JicunPage extends StatefulWidget {
 class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
   final _ctrl = TextEditingController();
   final _settings = JicunSettings.instance;
+  final _prefs = JicunPrefs.instance;
   final _tasks = JicunDownloadController.I;
 
   bool _parsing = false;
+
+  /// 正在保存到相册的任务 id（防连点，也用来把按钮文案切成「保存中…」）
+  final Set<String> _savingIds = <String>{};
   ParseResult? _result;
   String _sourceUrl = '';
   VideoQuality? _pickedQuality;
@@ -50,6 +65,16 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     // 后台配置拉一次(剪贴板/公告等即时生效)
     _settings.refresh();
+    // 本机偏好（自动粘贴/存储目录/通知开关）先读一次，首屏就能拿到
+    unawaited(_prefs.load().then((_) {
+      if (!mounted) return;
+      // 冷启动也自动粘贴一次（以前只有从后台回来才触发）
+      if (_prefs.autoPaste && _ctrl.text.trim().isEmpty) {
+        unawaited(_autoPaste());
+      }
+    }));
+    // 下载完成/失败提醒（开关在本机偏好里）
+    _tasks.onTaskSettled = _onTaskSettled;
     _ensureStorage();
   }
 
@@ -63,9 +88,29 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
     } catch (_) {}
   }
 
+  /// 任务收尾提醒：完成/失败各一个开关，关掉就静默
+  void _onTaskSettled(JicunTask task, JicunTaskStatus status) {
+    if (status == JicunTaskStatus.done) {
+      if (!_prefs.notifyOnDone) return;
+      ToastUtil.success('「${_shortTitle(task.title)}」下载完成');
+    } else if (status == JicunTaskStatus.failed) {
+      if (!_prefs.notifyOnFail) return;
+      ToastUtil.error('「${_shortTitle(task.title)}」下载失败');
+    }
+  }
+
+  /// 标题太长会把提示条撑爆，超过 12 个字截断
+  String _shortTitle(String raw) {
+    final t = raw.trim().isEmpty ? '任务' : raw.trim();
+    return t.length > 12 ? '${t.substring(0, 12)}…' : t;
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    if (_tasks.onTaskSettled == _onTaskSettled) {
+      _tasks.onTaskSettled = null;
+    }
     // 后台 clear_on_exit:退出页面清历史
     _tasks.clearHistoryIfConfigured();
     _ctrl.dispose();
@@ -76,13 +121,15 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // 后台 auto_paste:回到前台自动读剪贴板
     if (state == AppLifecycleState.resumed &&
-        _settings.cfg.autoPaste &&
+        _prefs.autoPaste &&
         _ctrl.text.trim().isEmpty) {
       _autoPaste();
     }
   }
 
   Future<void> _autoPaste() async {
+    await _prefs.load();
+    if (!mounted) return;
     try {
       final data = await Clipboard.getData(Clipboard.kTextPlain);
       final raw = data?.text ?? '';
@@ -132,6 +179,11 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
   Future<void> _download() async {
     final r = _result;
     if (r == null) return;
+    // 仅 Wi-Fi 下载：判不准（null）时放行，别把用户卡死
+    if (_prefs.wifiOnly && await jicunIsCellular() == true) {
+      if (mounted) ToastUtil.info('已开启仅 Wi-Fi 下载，当前是移动网络');
+      return;
+    }
     // 清晰度策略 ask:视频有第二档时先弹选择
     var quality = _pickedQuality;
     if (r.videos.isNotEmpty &&
@@ -154,6 +206,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
     return showModalBottomSheet<VideoQuality>(
       context: context,
       backgroundColor: Colors.transparent,
+      showDragHandle: false,
       builder: (c) => SafeArea(
         child: SheetSurface(
           color: c.isDark ? C.bg2 : Colors.white,
@@ -275,10 +328,19 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
                 ),
               ),
               Text(
-                '粘贴分享链接 · 解析并下载(保存到应用目录)',
+                '粘贴分享链接 · 解析 · 下载后可存到相册',
                 style: TextStyle(fontSize: 12, color: context.t3),
               ),
             ],
+          ),
+        ),
+        MiniAction(
+          icon: Icons.tune_rounded,
+          label: '设置',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const JicunSettingsPage(),
+            ),
           ),
         ),
       ],
@@ -426,6 +488,17 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
             _mediaPreview(r),
             const SizedBox(height: 10),
             _mediaSummary(r),
+            // ★ 1028：解析结果里只要有视频，就给一个明确的「在线播放」入口。
+            // 之前只有「点封面」才能进播放器 —— 带图集、或视频没有封面时，
+            // 用户根本点不到播放器（这是「播放器怎么用不了」的主要来源）。
+            if (r.videos.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              _playEntry(r),
+            ],
+            if ((r.audioUrl ?? '').isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _audioEntry(r),
+            ],
             if (r.videos.isNotEmpty && r.videos.first.qualities.length > 1)
               Padding(
                 padding: const EdgeInsets.only(top: 10),
@@ -469,6 +542,111 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
               icon: Icons.save_alt_rounded,
               onPressed: _download,
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── 在线播放入口 ──────────────────────────────────────────────────────
+
+  /// 打开全屏播放页（清晰度优先用用户选中的那一档）
+  void _openPlayer() {
+    final r = _result;
+    if (r == null || r.videos.isEmpty) return;
+    final v = r.videos.first;
+    final vurl = _pickedQuality?.url ?? v.url;
+    if (vurl.isEmpty) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => JicunVideoPlayerPage(url: vurl),
+      ),
+    );
+  }
+
+  /// 音频直链单独一条入口（有些平台解析出来只有音频）—— 上游同样的位置。
+  Widget _audioEntry(ParseResult r) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: _openAudio,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: C.brand.withAlpha(context.isDark ? 26 : 14),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: C.brand.withAlpha(56)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.graphic_eq_rounded, size: 22, color: C.brand),
+            const SizedBox(width: 8),
+            Text(
+              '在线收听',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: C.brand,
+              ),
+            ),
+            const Spacer(),
+            Text('音频', style: TextStyle(fontSize: 12, color: context.t3)),
+            Icon(Icons.chevron_right_rounded, size: 18, color: C.t3),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openAudio() {
+    final r = _result;
+    final url = r?.audioUrl ?? '';
+    if (url.isEmpty) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => JicunAudioPlayerPage(
+          url: url,
+          title: r?.title ?? '',
+          cover: r?.coverUrl ?? '',
+        ),
+      ),
+    );
+  }
+
+  Widget _playEntry(ParseResult r) {
+    final first = r.videos.first;
+    final label = _pickedQuality?.label ??
+        (first.qualities.isNotEmpty ? first.qualities.first.label : '');
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: _openPlayer,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: C.brand.withAlpha(context.isDark ? 26 : 14),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: C.brand.withAlpha(56)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.play_circle_fill_rounded, size: 22, color: C.brand),
+            const SizedBox(width: 8),
+            Text(
+              '在线播放',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: C.brand,
+              ),
+            ),
+            const Spacer(),
+            if (label.isNotEmpty)
+              Text(
+                label,
+                style: TextStyle(fontSize: 12, color: context.t3),
+              ),
+            Icon(Icons.chevron_right_rounded, size: 18, color: C.t3),
           ],
         ),
       ),
@@ -527,14 +705,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
     return GestureDetector(
       onTap: () {
         if (showPlay) {
-          final v = videos.first;
-          final vurl = _pickedQuality?.url ?? v.url;
-          if (vurl.isEmpty) return;
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => JicunVideoPlayerPage(url: vurl),
-            ),
-          );
+          _openPlayer();
         } else {
           _showImageViewer([url]);
         }
@@ -572,84 +743,27 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
 
   /// 全屏图片查看器：黑底 dialog + PageView 左右滑 + InteractiveViewer 双指缩放。
   void _showImageViewer(List<String> urls, {int initialIndex = 0}) {
-    final controller = PageController(initialPage: initialIndex);
-    final pageNotifier = ValueNotifier<int>(initialIndex);
-    controller.addListener(() {
-      final page = controller.page?.round() ?? initialIndex;
-      if (page != pageNotifier.value) pageNotifier.value = page;
-    });
-    showDialog<void>(
-      context: context,
-      barrierColor: Colors.black87,
-      builder: (context) {
-        return Dialog.fullscreen(
-          backgroundColor: Colors.black,
-          child: Stack(
-            children: [
-              PageView.builder(
-                controller: controller,
-                itemCount: urls.length,
-                itemBuilder: (context, i) {
-                  return InteractiveViewer(
-                    maxScale: 4,
-                    child: Center(
-                      child: _netImage(urls[i], fit: BoxFit.contain),
-                    ),
-                  );
-                },
-              ),
-              SafeArea(
-                child: Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ),
-                ),
-              ),
-              if (urls.length > 1)
-                SafeArea(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: ValueListenableBuilder<int>(
-                        valueListenable: pageNotifier,
-                        builder: (context, page, _) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withAlpha(120),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '${page + 1} / ${urls.length}',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.white,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
-    ).whenComplete(controller.dispose);
+    final images = urls.where((u) => u.isNotEmpty).toList(growable: false);
+    if (images.isEmpty) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => JicunGalleryPage(
+          images: images,
+          initialIndex: initialIndex.clamp(0, images.length - 1),
+          headers: jicunPlaybackHeaders(images.first),
+          onSave: (index) async {
+            final url = images[index];
+            final res = await jicunSaveToAlbumFromUrl(
+              url,
+              kind: MediaKind.image.wireName,
+              displayName: jicunCleanTitle(_result?.title ?? ''),
+            );
+            if (!mounted) return;
+            res.ok ? ToastUtil.success(res.message) : ToastUtil.info(res.message);
+          },
+        ),
+      ),
+    );
   }
 
   /// 网络图：加载中灰底占位，失败图标占位。
@@ -808,16 +922,30 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
                 t.message ?? label,
                 style: TextStyle(fontSize: 11, color: context.t3),
               ),
-              if (t.files.any((f) => f.isNotEmpty))
+              if (t.files.any((f) => f.isNotEmpty)) ...[
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    DirectoryeofNote(t),
+                    _firstFileOf(t),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 10, color: context.t3),
                   ),
                 ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: MiniAction(
+                      icon: _savingIds.contains(t.id)
+                          ? Icons.hourglass_top_rounded
+                          : Icons.photo_library_rounded,
+                      label: _savingIds.contains(t.id) ? '保存中…' : '存到相册',
+                      onTap: () => _saveTaskToAlbum(t),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -825,17 +953,73 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
     });
   }
 
-  static String DirectoryeofNote(JicunTask t) {
+  /// 把任务里已落盘的文件存进系统相册（视频/图片）或文档目录（音频）。
+  ///
+  /// 相册插件是按条写的，所以一批图集会逐条存；失败不中断，最后统一报结果 ——
+  /// 用户要的是「哪些存进去了」，不是第一条失败就整体回滚。
+  Future<void> _saveTaskToAlbum(JicunTask t) async {
+    if (_savingIds.contains(t.id)) return;
+    final idx = <int>[
+      for (var i = 0; i < t.files.length; i++)
+        if (t.files[i].isNotEmpty) i,
+    ];
+    if (idx.isEmpty) {
+      ToastUtil.info('还没有可保存的文件');
+      return;
+    }
+    setState(() => _savingIds.add(t.id));
+    final base = jicunCleanTitle(t.title);
+    var ok = 0;
+    String? firstFail;
+    try {
+      for (final i in idx) {
+        final kind = i < t.items.length
+            ? t.items[i].kind.wireName
+            : MediaKind.video.wireName;
+        // 图集会有多张同名标题，补个序号才分得清是哪一张。
+        final name = idx.length > 1 ? '${base}_${i + 1}' : base;
+        final res = await jicunSaveToAlbum(
+          t.files[i],
+          kind: kind,
+          displayName: name.isEmpty ? null : name,
+        );
+        if (res.ok) {
+          ok++;
+        } else {
+          firstFail ??= res.message;
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _savingIds.remove(t.id));
+    }
+    if (!mounted) return;
+    if (ok == idx.length) {
+      ToastUtil.success(ok > 1 ? '已保存 $ok 个文件' : '已保存到相册');
+    } else if (ok > 0) {
+      ToastUtil.info('已保存 $ok/${idx.length}，其余失败：${firstFail ?? '未知原因'}');
+    } else {
+      ToastUtil.info(firstFail ?? '保存失败，请重试');
+    }
+  }
+
+  static String _firstFileOf(JicunTask t) {
     final first = t.files.firstWhere((f) => f.isNotEmpty, orElse: () => '');
     return first.isEmpty ? '' : first;
   }
 
   Widget _historyEntry() {
     return KitCard(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const JicunHistoryPage()),
-      ),
+      // ★ 1028：历史页点一条记录会把原始链接 pop 回来，这里回填并立刻重解析
+      onTap: () async {
+        final url = await Navigator.push<String>(
+          context,
+          MaterialPageRoute(builder: (_) => const JicunHistoryPage()),
+        );
+        if (!mounted) return;
+        if (url == null || url.trim().isEmpty) return;
+        _ctrl.text = url.trim();
+        await _parse();
+      },
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [

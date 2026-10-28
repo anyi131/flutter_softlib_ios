@@ -123,7 +123,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
         _filterRow(),
         Expanded(
           child: _loading
-              ? const LoadingState(text: '加载订单…')
+              ? const AdListSkeleton(rows: 6)
               : (_list.isEmpty
                     ? const EmptyState(
                         text: '暂无订单',

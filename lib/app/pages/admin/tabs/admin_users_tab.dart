@@ -103,7 +103,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
   Widget build(BuildContext context) {
     super.build(context);
     if (_loading && _list.isEmpty) {
-      return const LoadingState(text: '加载用户列表…');
+      return const AdListSkeleton(rows: 7);
     }
     return Column(
       children: [
@@ -527,6 +527,8 @@ class _AdminUsersTabState extends State<AdminUsersTab>
               }
             })
           : null,
+      // 长按：不离开列表就能封禁/解封、送会员、复制 ID
+      onLongPress: _selectMode ? null : () => _quickActions(u),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -758,6 +760,108 @@ class _AdminUsersTabState extends State<AdminUsersTab>
   );
 
   /// 会员天数调整：赠送 / 扣减 / 选日期 / 设为永久
+  /// 长按用户卡片的快捷操作（不跳详情页）
+  Future<void> _quickActions(Map u) async {
+    final id = int.tryParse('${u['id']}') ?? 0;
+    if (id <= 0) return;
+    final banned = u['status'] == 'hidden';
+    final name = '${u['nickname'] ?? u['username'] ?? '用户 $id'}';
+
+    final op = await showGlassSheet<String>(
+      context: context,
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 6),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Ty.h3.copyWith(color: context.t1),
+                  ),
+                ),
+                AdTag(text: 'ID $id', color: context.t3),
+              ],
+            ),
+          ),
+          _qaRow(
+            ctx,
+            icon: banned ? Icons.lock_open_rounded : Icons.block_rounded,
+            color: banned ? C.mint : C.warning,
+            label: banned ? '解除封禁' : '封禁该用户',
+            value: banned ? 'unban' : 'ban',
+          ),
+          _qaRow(
+            ctx,
+            icon: Icons.workspace_premium_rounded,
+            color: C.gold,
+            label: '赠送 30 天会员',
+            value: 'vip',
+          ),
+          _qaRow(
+            ctx,
+            icon: Icons.fingerprint_rounded,
+            color: C.brand,
+            label: '复制用户 ID',
+            value: 'copy',
+          ),
+          _qaRow(
+            ctx,
+            icon: Icons.receipt_long_rounded,
+            color: C.violet,
+            label: '查看详情',
+            value: 'detail',
+          ),
+          const SizedBox(height: 10),
+        ],
+      ),
+    );
+    if (op == null || !mounted) return;
+
+    if (op == 'copy') {
+      await Clipboard.setData(ClipboardData(text: '$id'));
+      ToastUtil.success('已复制 ID $id');
+      return;
+    }
+    if (op == 'detail') {
+      await _showDetail(u);
+      return;
+    }
+    try {
+      if (op == 'vip') {
+        await _svc.userBatch([id], 'vip', days: 30);
+        ToastUtil.success('已赠送 30 天会员');
+      } else {
+        await _svc.userBatch([id], op);
+        ToastUtil.success(op == 'ban' ? '已封禁' : '已解封');
+      }
+      if (mounted) await _load();
+    } catch (e) {
+      ToastUtil.error(ErrText.of(e));
+    }
+  }
+
+  Widget _qaRow(
+    BuildContext ctx, {
+    required IconData icon,
+    required Color color,
+    required String label,
+    required String value,
+  }) {
+    return ListTile(
+      dense: true,
+      leading: Icon(icon, size: 20, color: color),
+      title: Text(label, style: Ty.small.copyWith(color: ctx.t1)),
+      trailing: Icon(Icons.chevron_right_rounded, size: 18, color: ctx.t3),
+      onTap: () => Navigator.pop(ctx, value),
+    );
+  }
+
   Future<void> _grantVip(int id, int days) async {
     String mode = 'add'; // add | sub | date | forever
     final dayCtrl = TextEditingController(text: '30');

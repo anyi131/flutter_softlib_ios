@@ -751,6 +751,7 @@ class _VideoPageState extends State<VideoPage> {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
+      showDragHandle: false,
       builder: (c) => Container(
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.symmetric(vertical: 12),

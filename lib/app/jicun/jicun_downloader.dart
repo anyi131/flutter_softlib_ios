@@ -24,6 +24,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'jicun_config.dart';
+import 'jicun_prefs.dart';
 import 'jicun_download_logic.dart';
 
 /// 记一条「这里故意吞掉了异常」(移植自上游 failure.dart)。
@@ -300,7 +301,7 @@ class Downloader {
 
   static Future<File> _publishToFile(DownloadItem item, File file) async {
     final base = await _publicBase();
-    final dir = Directory('${base.path}/${JicunSettings.instance.saveDirName}');
+    final dir = Directory('${base.path}/${JicunPrefs.instance.saveDirName}');
     if (!dir.existsSync()) dir.createSync(recursive: true);
     var name = item.fileName;
     var target = File('${dir.path}/$name');
@@ -327,7 +328,7 @@ class Downloader {
   /// 应用下载目录的可读路径(给 UI 提示用)。
   static Future<String> downloadDirPath() async {
     final base = await _publicBase();
-    return '${base.path}/${JicunSettings.instance.saveDirName}';
+    return '${base.path}/${JicunPrefs.instance.saveDirName}';
   }
 
   /// 清扫缓存目录里残留超过 24 小时的 .part 分片(移植自上游 sweepLeftovers 思路)。

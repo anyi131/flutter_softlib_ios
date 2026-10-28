@@ -1225,7 +1225,36 @@ class MineLogic extends GetxController {
       // 带上我的邀请码（有登录时），好友注册双方都有积分
       final myCode = _userService.user?.inviteCode ?? '';
       if (myCode.isNotEmpty) buf.writeln('邀请码：$myCode');
-      await Share.share(buf.toString().trim(), subject: name);
+      final text = buf.toString().trim();
+      // 后台配了分享图就带着图分享（图下载失败自动退回纯文字）
+      final img = (cfg?.shareImage ?? '').trim();
+      if (img.isNotEmpty) {
+        try {
+          final target = File(
+            '${Directory.systemTemp.path}/softlib_share_'
+            '${DateTime.now().millisecondsSinceEpoch}.jpg',
+          );
+          final cli = HttpClient();
+          final resp = await (await cli.getUrl(Uri.parse(img))).close();
+          final bytes = await resp.fold<List<int>>(
+            <int>[],
+            (a, b) => a..addAll(b),
+          );
+          cli.close();
+          if (bytes.isNotEmpty) {
+            await target.writeAsBytes(bytes, flush: true);
+            await Share.shareXFiles(
+              [XFile(target.path)],
+              text: text,
+              subject: name,
+            );
+            return;
+          }
+        } catch (_) {
+          // 忽略，走下面的纯文字分享
+        }
+      }
+      await Share.share(text, subject: name);
     } catch (e) {
       ToastUtil.error('分享失败：${ErrText.of(e)}');
     }

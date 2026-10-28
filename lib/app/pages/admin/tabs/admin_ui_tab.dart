@@ -438,7 +438,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
                 ],
               ),
             ),
-            _card('工具箱布局模板', _toolLayoutPicker()),
+            // 工具 Tab 已下线，布局模板不再可选（控件保留在配置里只为兼容旧数据）
             _card('管理后台整体模板', _adminTemplatePicker()),
             _card('邀请配置', _inviteConfig()),
             _card('支付弹窗文案', _payNoticeConfig()),
@@ -1143,19 +1143,6 @@ class _AdminUiTabState extends State<AdminUiTab> {
     ],
     _navTemplate,
     (v) => setState(() => _navTemplate = v),
-  );
-
-  // v54：管理后台整体模板
-  /// ★ 1015：工具箱布局模板（4 款骨架级差异）
-  Widget _toolLayoutPicker() => _chipRow(
-    const [
-      ('grid', '图标网格'),
-      ('card', '大卡列表'),
-      ('compact', '紧凑宫格'),
-      ('banner', '分类横幅'),
-    ],
-    _toolLayout,
-    (v) => setState(() => _toolLayout = v),
   );
 
   Widget _adminTemplatePicker() => _chipRow(

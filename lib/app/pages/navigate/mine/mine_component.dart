@@ -12,6 +12,8 @@ import '../../../api/soft_service.dart';
 import '../../../models/ui_config.dart';
 import '../../../api/user_service.dart';
 import '../../../design/adaptive.dart';
+import '../../../design/glass.dart';
+import '../../../design/theme_controller.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../routes/app_pages.dart';
@@ -1409,10 +1411,23 @@ class MineComponent extends StatelessWidget {
           C.accentOrange,
           () => logic.pointsExchange(),
         ),
-      _S('关于软件', Icons.info_rounded, C.brandBright, () {
-        final c = SafeCtx.of();
-        if (c != null) logic.about(c);
-      }),
+      // 后台「允许用户自选明暗」打开时才出现
+      if (_uiCfg.allowUserThemeToggle)
+        _S(
+          '外观',
+          Icons.dark_mode_rounded,
+          C.violet,
+          () {
+            final c = SafeCtx.of();
+            if (c != null) _pickTheme(c);
+          },
+        ),
+      // 后台「关于页开关」关掉后不再出现
+      if (SoftService.instance.cachedConfig?.aboutEnable ?? true)
+        _S('关于软件', Icons.info_rounded, C.brandBright, () {
+          final c = SafeCtx.of();
+          if (c != null) logic.about(c);
+        }),
       _S(
         '用户协议',
         Icons.description_rounded,
@@ -1487,6 +1502,48 @@ class MineComponent extends StatelessWidget {
             height: 52,
             onPressed: logic.openLogin,
           );
+  }
+
+  /// 外观选择：浅色 / 深色 / 跟随系统（后台允许用户自选时才有入口）
+  Future<void> _pickTheme(BuildContext c) async {
+    final cur = ThemeController.instance.mode.value;
+    final v = await showGlassSheet<String>(
+      context: c,
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 16, 18, 6),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text('外观', style: Ty.h3.copyWith(color: ctx.t1)),
+            ),
+          ),
+          for (final e in const <(String, ThemeMode, IconData)>[
+            ('浅色', ThemeMode.light, Icons.light_mode_rounded),
+            ('深色', ThemeMode.dark, Icons.dark_mode_rounded),
+            ('跟随系统', ThemeMode.system, Icons.brightness_auto_rounded),
+          ])
+            ListTile(
+              dense: true,
+              leading: Icon(e.$3, size: 20, color: ctx.t2),
+              title: Text(e.$1, style: Ty.small.copyWith(color: ctx.t1)),
+              trailing: cur == e.$2
+                  ? Icon(Icons.check_rounded, size: 18, color: C.brand)
+                  : null,
+              onTap: () => Navigator.pop(ctx, e.$1),
+            ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+    if (v == null) return;
+    // 主题模式是 Rx，main.dart 的 Obx 会自动重建整个 App，这里不用 setState
+    await ThemeController.instance.setMode(switch (v) {
+      '深色' => ThemeMode.dark,
+      '跟随系统' => ThemeMode.system,
+      _ => ThemeMode.light,
+    });
   }
 }
 
