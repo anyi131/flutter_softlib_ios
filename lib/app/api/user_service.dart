@@ -8,6 +8,7 @@ import 'package:get/get.dart' hide Response;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/device_info_util.dart';
+import 'qq_login.dart';
 
 /// 用户信息模型
 class UserInfo {
@@ -264,6 +265,48 @@ class UserService {
     final d = Map<String, dynamic>.from(r.data as Map);
     if (d['code'] != 1) throw Exception('${d['msg'] ?? '绑定失败'}');
     return Map<String, dynamic>.from((d['data'] as Map?) ?? {});
+  }
+
+  /// ★ 1028：已绑定 QQ 的老账号补昵称/头像
+  ///
+  /// 为什么必须客户端来调：QQ 只认授权时拿到的 access_token，
+  /// 服务器从不保存 token，也拿不到「QQ号 → 昵称」的公开接口，
+  /// 所以批量代刷是不可能的。这里用客户端缓存的授权静默刷一次即可。
+  ///
+  /// - auth 为空时读本地缓存（不弹 QQ 界面）
+  /// - 只覆盖「QQ用户1234」这类自动昵称，用户自己改过的一律不动
+  Future<Map<String, String>?> refreshQQProfile({dynamic auth}) async {
+    if (_token.isEmpty) return null;
+    try {
+      final a = auth ?? await QQLogin.cachedAuth();
+      if (a == null) return null;
+      final openid = '${a.openid}';
+      final tk = '${a.accessToken}';
+      if (openid.isEmpty || tk.isEmpty) return null;
+
+      final r = await _dio.post(
+        '/api/softlib/user/qq_refresh_profile',
+        data: {'token': _token, 'openid': openid, 'access_token': tk},
+      );
+      if (r.data is! Map) return null;
+      final d = Map<String, dynamic>.from(r.data as Map);
+      if (d['code'] != 1) return null;
+      final data = Map<String, dynamic>.from((d['data'] as Map?) ?? {});
+      final nick = '${data['nickname'] ?? ''}'.trim();
+      final face = '${data['avatar'] ?? ''}'.trim();
+      if (nick.isEmpty) return null;
+
+      final u = _user;
+      if (u != null) {
+        final m = u.toJson();
+        m['nickname'] = nick;
+        if (face.isNotEmpty) m['avatar'] = face;
+        final merged = UserInfo.fromJson(m);
+        await _save(_token, merged);
+      }
+      return {'nickname': nick, 'avatar': face};
+    } catch (_) {}
+    return null;
   }
 
   /// 启动时恢复登录态

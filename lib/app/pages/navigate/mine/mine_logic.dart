@@ -155,6 +155,16 @@ class MineLogic extends GetxController {
       }
       try {
         await _userService.bindQQ(openid: r.openid, accessToken: r.accessToken);
+        // ★ 1028：点「同步资料」时真的去拉 QQ 昵称/头像（服务器 bind 不改昵称）
+        if (sync) {
+          final fix = await _userService.refreshQQProfile(auth: r);
+          if (fix != null) {
+            final n = fix['nickname'] ?? '';
+            if (n.isNotEmpty) nickname = n;
+            final f = fix['avatar'] ?? '';
+            if (f.isNotEmpty) avatarUrl = f;
+          }
+        }
       } finally {
         BlockingDialog.hide();
       }
@@ -234,6 +244,17 @@ class MineLogic extends GetxController {
         }
         // 未读消息数（「消息」格子红点）
         messageCount = unreadN;
+        // ★ 1028：老账号仍是自动昵称（QQ用户1234）→ 用本地缓存的 QQ 授权静默补一次，
+        //   不弹授权框、不改用户自己起过的昵称。没有缓存时立即返回，开销可忽略。
+        if (nickname.isEmpty || RegExp(r'^QQ用户\d+$').hasMatch(nickname)) {
+          final fix = await _userService.refreshQQProfile();
+          if (fix != null) {
+            final n = fix['nickname'] ?? '';
+            if (n.isNotEmpty) nickname = n;
+            final f = fix['avatar'] ?? '';
+            if (f.isNotEmpty) avatarUrl = f;
+          }
+        }
         update();
         // ★ 1020：顺带查一下 QQ 绑定状态（决定显示「绑定」还是「解绑」）
         refreshQqBound();
