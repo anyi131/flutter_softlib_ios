@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -1016,12 +1017,11 @@ class AppImage extends StatelessWidget {
       borderRadius: BorderRadius.circular(radius),
       child: url.trim().isEmpty
           ? fallback(errorIcon)
-          : CachedNetworkImage(
-              imageUrl: url,
+          : RetryImage(
+              url: url,
               width: width,
               height: height,
               fit: fit,
-              fadeInDuration: const Duration(milliseconds: 200),
               // ★ 按实际显示尺寸解码：避免把 2000px 原图整张解到内存
               //   （列表大量图片时这是内存与掉帧的主要来源）
               memCacheWidth: width != null
@@ -1030,9 +1030,98 @@ class AppImage extends StatelessWidget {
                         .clamp(64, 1024)
                   : null,
               maxWidthDiskCache: 1024,
-              placeholder: (_, __) => fallback(placeholderIcon),
-              errorWidget: (_, __, ___) => fallback(errorIcon),
+              placeholder: () => fallback(placeholderIcon),
+              errorWidget: () => fallback(errorIcon),
             ),
+    );
+  }
+}
+
+/// ─────────── 会自动重试的网络图片 ───────────
+/// ★ 1029c：Flutter 复用的 keep-alive 连接被服务端关掉后，接着的第一个请求
+///   会直接「Connection reset by peer」（服务端日志里根本没有这条请求），
+///   表现就是整格图片变成破图标、还会被当成 App 崩溃上报。
+///   这里失败后延时重建，URL 追加 r=N 绕开失败缓存，最多重试 2 次。
+class RetryImage extends StatefulWidget {
+  const RetryImage({
+    super.key,
+    required this.url,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+    this.memCacheWidth,
+    this.maxWidthDiskCache,
+    this.maxRetries = 2,
+    this.placeholder,
+    this.errorWidget,
+  });
+
+  final String url;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+  final int? memCacheWidth;
+  final int? maxWidthDiskCache;
+  final int maxRetries;
+  final Widget Function()? placeholder;
+  final Widget Function()? errorWidget;
+
+  @override
+  State<RetryImage> createState() => _RetryImageState();
+}
+
+class _RetryImageState extends State<RetryImage> {
+  int _attempt = 0;
+  Timer? _timer;
+
+  @override
+  void didUpdateWidget(covariant RetryImage old) {
+    super.didUpdateWidget(old);
+    if (old.url != widget.url) {
+      _timer?.cancel();
+      _attempt = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _scheduleRetry() {
+    if (_attempt >= widget.maxRetries) return;
+    _timer?.cancel();
+    // 500ms 起，逐次拉长，别把重试流量打成风暴
+    _timer = Timer(Duration(milliseconds: 500 + _attempt * 700), () {
+      if (!mounted) return;
+      setState(() => _attempt++);
+    });
+  }
+
+  String get _url {
+    if (_attempt == 0) return widget.url;
+    final u = widget.url;
+    return '$u${u.contains('?') ? '&' : '?'}r=$_attempt';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CachedNetworkImage(
+      key: ValueKey('${widget.url}#$_attempt'),
+      imageUrl: _url,
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
+      fadeInDuration: const Duration(milliseconds: 200),
+      memCacheWidth: widget.memCacheWidth,
+      maxWidthDiskCache: widget.maxWidthDiskCache,
+      placeholder: (_, __) =>
+          widget.placeholder?.call() ?? const SizedBox.shrink(),
+      errorWidget: (_, __, ___) {
+        _scheduleRetry();
+        return widget.errorWidget?.call() ?? const SizedBox.shrink();
+      },
     );
   }
 }

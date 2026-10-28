@@ -3298,13 +3298,13 @@ class _WallpaperPageState extends State<WallpaperPage> {
                       onLongPress: () => ImgSaver.saveUrl(_urls[i]),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(R.md),
-                        child: CachedNetworkImage(
-                          imageUrl: _urls[i],
+                        child: RetryImage(
+                          url: _urls[i],
                           fit: BoxFit.cover,
                           memCacheWidth: 360,
-                          placeholder: (_, __) =>
+                          placeholder: () =>
                               Container(color: C.brand.withAlpha(14)),
-                          errorWidget: (_, __, ___) => Container(
+                          errorWidget: () => Container(
                             color: C.brand.withAlpha(14),
                             child: Icon(
                               Icons.broken_image_outlined,

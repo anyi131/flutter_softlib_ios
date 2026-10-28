@@ -139,6 +139,9 @@ bool _isNetErr(String e) =>
     e.contains('HttpException');
 
 /// 是否指向图片资源
+/// ★ 1029c：`/api/softlib/wallpaperimg?id=..&w=420` 这类**没有扩展名**的图片
+///   接口以前认不出来 → 一次连接抖动就被当成 App 崩溃上报，服务器还会推送
+///   「FlutterError 错误提醒」给管理员。这里把常见图片路径词一并算上。
 bool _looksLikeImage(String e) =>
     e.contains('.jpg') ||
     e.contains('.jpeg') ||
@@ -146,7 +149,15 @@ bool _looksLikeImage(String e) =>
     e.contains('.webp') ||
     e.contains('.gif') ||
     e.contains('/images/') ||
-    e.contains('image');
+    e.contains('image') ||
+    e.contains('/img') ||
+    e.contains('img?') ||
+    e.contains('img&') ||
+    e.contains('wallpaper') ||
+    e.contains('avatar') ||
+    e.contains('photo') ||
+    e.contains('picurl') ||
+    e.contains('cover');
 
 void _logError(String tag, Object error, StackTrace? stack) {
   debugPrint('[Softlib][$tag] $error');
