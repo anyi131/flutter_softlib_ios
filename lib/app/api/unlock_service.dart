@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'api_http.dart';
 
 import 'api_host.dart';
 import 'user_service.dart';
@@ -41,7 +42,7 @@ class UnlockService {
   UnlockService._();
   static final UnlockService instance = UnlockService._();
 
-  final Dio _dio = Dio(
+  final Dio _dio = ApiHttp.create(
     BaseOptions(
       baseUrl: ApiHost.base,
       connectTimeout: const Duration(seconds: 12),

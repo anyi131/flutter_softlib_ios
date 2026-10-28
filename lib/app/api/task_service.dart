@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'api_http.dart';
 
 import 'api_host.dart';
 import 'user_service.dart';
@@ -9,7 +10,7 @@ class TaskService {
   TaskService._();
   static final TaskService instance = TaskService._();
 
-  final Dio _dio = Dio(
+  final Dio _dio = ApiHttp.create(
     BaseOptions(
       headers: DeviceInfo.headers,
       baseUrl: ApiHost.base,

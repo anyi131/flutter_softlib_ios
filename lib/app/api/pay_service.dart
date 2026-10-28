@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'api_http.dart';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -44,7 +45,7 @@ class PayService {
   PayService._();
   static final PayService instance = PayService._();
 
-  final Dio _dio = Dio(
+  final Dio _dio = ApiHttp.create(
     BaseOptions(
       baseUrl: ApiHost.base,
       connectTimeout: const Duration(seconds: 8),

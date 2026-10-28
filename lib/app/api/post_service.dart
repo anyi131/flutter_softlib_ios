@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'api_http.dart';
 
 import 'package:flutter/foundation.dart';
 
@@ -16,7 +17,7 @@ class PostService {
   static final PostService instance = PostService._();
 
   static const String baseUrl = ApiHost.base;
-  final Dio _dio = Dio(
+  final Dio _dio = ApiHttp.create(
     BaseOptions(
       headers: DeviceInfo.headers,
       baseUrl: baseUrl,

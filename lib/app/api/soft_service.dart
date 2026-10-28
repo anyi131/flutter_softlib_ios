@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'api_http.dart';
 
 import 'package:dio/dio.dart';
 
@@ -25,7 +26,7 @@ class SoftService {
   static const String baseUrl = ApiHost.base;
 
   final Dio _dio =
-      Dio(
+      ApiHttp.create(
           BaseOptions(
             baseUrl: baseUrl,
             connectTimeout: const Duration(seconds: 6),
@@ -1028,7 +1029,7 @@ class _RetryInterceptor extends Interceptor {
       await Future.delayed(Duration(milliseconds: 400 * (tried + 1)));
       try {
         final resp =
-            await Dio(
+            await ApiHttp.create(
               BaseOptions(
                 baseUrl: opt.baseUrl,
                 connectTimeout: opt.connectTimeout,

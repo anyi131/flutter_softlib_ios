@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'api_http.dart';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -13,7 +14,7 @@ class AdminService {
   AdminService._();
   static final AdminService instance = AdminService._();
 
-  final Dio _dio = Dio(
+  final Dio _dio = ApiHttp.create(
     BaseOptions(
       headers: DeviceInfo.headers,
       baseUrl: ApiHost.base,

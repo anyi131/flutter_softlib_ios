@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'api_http.dart';
 
 import 'package:dio/dio.dart';
 
@@ -11,7 +12,7 @@ class ReviewService {
   ReviewService._();
   static final ReviewService instance = ReviewService._();
 
-  final Dio _dio = Dio(
+  final Dio _dio = ApiHttp.create(
     BaseOptions(
       baseUrl: ApiHost.base,
       connectTimeout: const Duration(seconds: 12),

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'api_http.dart';
 
 import 'api_host.dart';
 import 'user_service.dart';
@@ -8,7 +9,7 @@ class MessageService {
   MessageService._();
   static final MessageService instance = MessageService._();
 
-  final Dio _dio = Dio(
+  final Dio _dio = ApiHttp.create(
     BaseOptions(
       baseUrl: ApiHost.base,
       connectTimeout: const Duration(seconds: 12),

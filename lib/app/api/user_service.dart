@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'api_http.dart';
 import 'dart:convert';
 
 import 'api_host.dart';
@@ -149,7 +150,7 @@ class UserService {
   static const String _kToken = 'user_token';
   static const String _kUser = 'user_info';
 
-  final Dio _dio = Dio(
+  final Dio _dio = ApiHttp.create(
     BaseOptions(
       headers: DeviceInfo.headers,
       baseUrl: baseUrl,
