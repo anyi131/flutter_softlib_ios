@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -10,7 +11,9 @@ import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../api/soft_service.dart';
+import '../../utils/img_saver.dart';
 import '../../utils/toast_util.dart';
+import '../../widgets/media_preview.dart';
 import 'tool_kit.dart';
 
 /// 工具箱 · 内置浏览器（1015 新增）
@@ -57,6 +60,8 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
         'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 '
         '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
       )
+      // ★ 1029：内置网页桥 —— 解决 WebView 里「保存图片 / 新窗口」全部失灵
+      ..addJavaScriptChannel('MinisWeb', onMessageReceived: _onJsMessage)
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (p) {
@@ -76,8 +81,17 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
               });
             }
           },
-          onPageFinished: (_) {
-            if (!_disposed) setState(() => _loading = false);
+          onPageFinished: (u) {
+            if (!_disposed) {
+              setState(() {
+                _loading = false;
+                // ★ 1029：慢页面 20s 超时后就算最终加载完，超时遮罩原来会一直盖在上面
+                //   （用户以为彻底打不开）——页面只要 finish 就撤掉
+                if (_err == '加载超时') _err = null;
+              });
+            }
+            // ★ 1029：每个页面加载完都补一次桥脚本（有些站会整页替换 document）
+            _injectShim(u);
           },
           onWebResourceError: (e) {
             if (mounted && e.isForMainFrame == true) {
@@ -103,6 +117,11 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
             }
             if (u.startsWith('about:') || u.startsWith('javascript:')) {
               return NavigationDecision.navigate;
+            }
+            // ★ 1029：blob:/data: 下载链接不能交给系统（launchUrl 打不开）——
+            //   这正是「保存图片点了没反应」的另一条死路
+            if (u.startsWith('blob:') || u.startsWith('data:')) {
+              return NavigationDecision.prevent;
             }
             // tel: / mailto: / intent: / alipays: 等交给系统处理
             _openExternal(u);
@@ -142,6 +161,156 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
   ///
   /// ★ 1016：只保留「2 秒内同一地址只尝试一次」的去抖 —— 其它一律照原样放行，
   ///   不再做协议白名单（白名单会把一些工具的正常跳转挡掉，属于误伤）。
+  /// ★ 1029：注入给所有内置网页用的「补丁脚本」
+  ///
+  /// 为什么必须打这个补丁（淘宝买家秀/图集秀这类页面的通病）：
+  ///   ① WebView 没有 download delegate：`<a download>` + `blob:` 点了一点反应都没有
+  ///      （页面自己的保存按钮就是这么写的，还会假提示「已开始下载」）
+  ///   ② WebView 没有 onCreateWindow：`window.open(url,'_blank')` 直接返回 null
+  ///      （上面那个页面的保存兜底就是 window.open → 同样死路）
+  ///   ③ WKWebView 长按图片没有系统菜单，用户连"存储图像"都找不到
+  /// 补丁做三件事：window.open 变本页跳转；a[download]/blob 交给 App 存相册；
+  /// 长按图片弹 App 自己的预览（可保存）。
+  static const String _shimJs = r'''
+(function(){
+  if (window.__anyiWebShim) { return; }
+  window.__anyiWebShim = 1;
+  function post(o){ try { MinisWeb.postMessage(JSON.stringify(o)); } catch(e){} }
+  try {
+    window.open = function(u){ if (u) { post({t:'open', u:String(u)}); } return null; };
+  } catch(e){}
+  document.addEventListener('click', function(e){
+    var a = e.target && e.target.closest ? e.target.closest('a[download]') : null;
+    if (!a) { return; }
+    var href = a.href || a.getAttribute('href') || '';
+    var name = a.getAttribute('download') || '';
+    if (!href) { return; }
+    e.preventDefault(); e.stopPropagation();
+    if (href.indexOf('blob:') === 0) {
+      fetch(href).then(function(r){ return r.blob(); }).then(function(b){
+        var fr = new FileReader();
+        fr.onload = function(){ post({t:'blob', d:String(fr.result), n:name, m:b.type||''}); };
+        fr.onerror = function(){ post({t:'err', m:'图片读取失败'}); };
+        fr.readAsDataURL(b);
+      }).catch(function(){ post({t:'err', m:'图片读取失败'}); });
+    } else {
+      post({t:'save', u:href, n:name});
+    }
+  }, true);
+  var hold = null;
+  function clearHold(){ if (hold) { clearTimeout(hold); hold = null; } }
+  document.addEventListener('touchstart', function(e){
+    var el = e.target;
+    if (el && el.tagName === 'IMG') {
+      clearHold();
+      hold = setTimeout(function(){ post({t:'img', u: el.currentSrc || el.src}); }, 520);
+    }
+  }, true);
+  ['touchend','touchmove','touchcancel','scroll'].forEach(function(k){
+    document.addEventListener(k, clearHold, true);
+  });
+  document.addEventListener('contextmenu', function(e){
+    var el = e.target;
+    if (el && el.tagName === 'IMG') {
+      e.preventDefault();
+      post({t:'img', u: el.currentSrc || el.src});
+    }
+  }, true);
+})();
+''';
+
+  void _injectShim(String url) {
+    if (_disposed) return;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) return;
+    _c.runJavaScript(_shimJs).catchError((_) {});
+  }
+
+  /// JS 桥回调
+  void _onJsMessage(JavaScriptMessage msg) {
+    if (_disposed || !mounted) return;
+    Map<String, dynamic> m;
+    try {
+      final o = jsonDecode(msg.message);
+      if (o is! Map) return;
+      m = Map<String, dynamic>.from(o);
+    } catch (_) {
+      return;
+    }
+    final t = '${m['t'] ?? ''}';
+    final u = '${m['u'] ?? ''}'.trim();
+    final n = '${m['n'] ?? ''}'.trim();
+    switch (t) {
+      case 'img':
+        if (u.startsWith('http') || u.startsWith('data:')) {
+          MediaPreview.showImages(context, [u]);
+        }
+        break;
+      case 'save':
+        if (u.startsWith('http')) {
+          if (_isFileLink(u) || _isFileLink(n)) {
+            _openExternal(u);
+          } else {
+            ImgSaver.saveUrl(u, name: _cleanName(n));
+          }
+        }
+        break;
+      case 'blob':
+        final d = '${m['d'] ?? ''}';
+        final mime = '${m['m'] ?? ''}';
+        if (d.startsWith('data:')) {
+          if (mime.isEmpty || mime.startsWith('image/')) {
+            _saveDataUrl(d, n);
+          } else {
+            ToastUtil.info('该文件不支持在 App 内下载，请用浏览器打开');
+          }
+        }
+        break;
+      case 'open':
+        if (u.isEmpty || u == 'about:blank') return;
+        if (u.startsWith('http://') || u.startsWith('https://')) {
+          _c.loadRequest(Uri.parse(u));
+        } else if (!u.startsWith('blob:') && !u.startsWith('data:')) {
+          _openExternal(u);
+        }
+        break;
+      case 'err':
+        ToastUtil.error('${m['m'] ?? '操作失败'}');
+        break;
+    }
+  }
+
+  bool _isFileLink(String s) {
+    final v = s.toLowerCase();
+    return ['.apk', '.zip', '.rar', '.7z', '.pdf', '.doc', '.xls']
+        .any((e) => v.contains(e));
+  }
+
+  /// 网页里的文件名常带乱码（「ä¹°å®¶ç§_1793.jpg」），这里只留安全字符，
+  /// 剩下的用时间戳，避免相册里出现一堆看不懂的名字
+  String? _cleanName(String n) {
+    if (n.trim().isEmpty) return null;
+    final base = n.split('/').last;
+    final dot = base.lastIndexOf('.');
+    var stem = dot > 0 ? base.substring(0, dot) : base;
+    final ext = dot > 0 ? base.substring(dot).toLowerCase() : '.jpg';
+    stem = stem.replaceAll(RegExp(r'[^A-Za-z0-9_\-]'), '');
+    if (stem.length < 2) return null;
+    if (stem.length > 40) stem = stem.substring(0, 40);
+    return 'anyi_$stem$ext';
+  }
+
+  Future<void> _saveDataUrl(String data, String name) async {
+    try {
+      final i = data.indexOf(',');
+      final bytes = base64Decode(i >= 0 ? data.substring(i + 1) : data);
+      final nm = _cleanName(name) ??
+          'anyi_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      await ImgSaver.saveBytes(bytes, name: nm);
+    } catch (_) {
+      ToastUtil.error('保存失败，请用浏览器打开后再保存');
+    }
+  }
+
   String _lastExternal = '';
   int _lastExternalAt = 0;
 
@@ -203,6 +372,16 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
           },
         ),
         actions: [
+          // ★ 1029：内置浏览器兜底入口常驻 —— 页面里有 App 处理不了的操作时，
+          //   用户不用先「失败」才能找到系统浏览器
+          IconButton(
+            icon: Icon(Icons.open_in_new_rounded, size: 19, color: context.t1),
+            tooltip: '用浏览器打开',
+            onPressed: () async {
+              final u = await _c.currentUrl() ?? widget.url;
+              launchUrlString(u, mode: LaunchMode.externalApplication);
+            },
+          ),
           IconButton(
             icon: Icon(Icons.refresh_rounded, size: 20, color: context.t1),
             onPressed: () => _c.reload(),

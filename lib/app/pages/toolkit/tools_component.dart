@@ -1046,6 +1046,16 @@ class _ToolsComponentState extends State<ToolsComponent>
       fn(title: title, apiUrl: apiUrl);
       return;
     }
+    // ★ 1029：kind=local（后台「内部网页」）—— 一律用 App 内置浏览器打开 target。
+    //   原来没有这个分支，能不能打开全靠下面的兜底；
+    //   一旦后台顺手填了 api_url，还会被误判成「接口工具」塞进 ApiToolPage。
+    if (kind == 'local' || kind == 'web' || kind == 'webview' || kind == 'page') {
+      final u = target.isNotEmpty ? target : apiUrl;
+      if (u.startsWith('http')) {
+        Get.to(() => ToolBrowserPage(title: title, url: u));
+        return;
+      }
+    }
     // ★ 1015：三类兜底，优先级从高到低
     //   ① 配了 api_url（不论 api_path 是否为空）→ 通用接口工具
     //   ② 配了外部链接 target → App 内 WebView 打开
