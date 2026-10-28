@@ -1048,11 +1048,33 @@ class _SplashPageState extends State<SplashPage> {
     );
   }
 
-  void _showNotice(AppConfig cfg) {
+  Future<void> _showNotice(AppConfig cfg) async {
     // ★ 渲染失败绝不白屏：任何异常都静默降级为「不弹公告」
     try {
+      if (!await _noticeQuotaLeft(cfg)) return;
       _showNoticeInner(cfg);
     } catch (_) {}
+  }
+
+  /// ★ 1028：后台可设「同一用户每天最多弹几次公告」(notice_daily_limit)，0 = 不限。
+  /// 计数按「公告内容指纹 + 当天」存本地；后台换了公告内容会自动重新计数。
+  Future<bool> _noticeQuotaLeft(AppConfig cfg) async {
+    final limit = cfg.noticeDailyLimit;
+    if (limit <= 0) return true;
+    final sp = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+    final day = '${now.year}-${now.month}-${now.day}';
+    final sig = (cfg.noticeTitle + '|' + cfg.noticeContent).hashCode.toRadixString(16);
+    final kDay = 'notice_q_day_$sig';
+    final kCnt = 'notice_q_cnt_$sig';
+    if (sp.getString(kDay) != day) {
+      await sp.setString(kDay, day);
+      await sp.setInt(kCnt, 0);
+    }
+    final used = sp.getInt(kCnt) ?? 0;
+    if (used >= limit) return false;
+    await sp.setInt(kCnt, used + 1);
+    return true;
   }
 
   void _showNoticeInner(AppConfig cfg) {

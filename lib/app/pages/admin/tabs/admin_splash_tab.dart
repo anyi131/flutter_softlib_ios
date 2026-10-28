@@ -55,6 +55,8 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   final titleCtrl = TextEditingController();
   final descCtrl = TextEditingController();
   final noticeTitleCtrl = TextEditingController(text: '公告');
+  // ★ 1028：同一用户每天最多弹几次公告（0 = 不限）
+  final noticeLimitCtrl = TextEditingController(text: '0');
   final noticeContentCtrl = TextEditingController();
   final maintainCtrl = TextEditingController();
 
@@ -154,6 +156,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
     urlCtrl.dispose();
     titleCtrl.dispose();
     descCtrl.dispose();
+    noticeLimitCtrl.dispose();
     noticeTitleCtrl.dispose();
     noticeContentCtrl.dispose();
     maintainCtrl.dispose();
@@ -203,6 +206,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         splashEnable = '${d['splash_enable'] ?? 0}' == '1';
         noticeEnable = '${d['notice_enable'] ?? 1}' != '0';
         noticeForce = '${d['notice_force'] ?? 0}' == '1';
+        noticeLimitCtrl.text = '${d['notice_daily_limit'] ?? 0}';
         maintainEnable = '${d['maintain_enable'] ?? 0}' == '1';
         _maintainTemplate = '${d['maintain_template'] ?? 'engineer'}';
         imgCtrl.text = '${d['splash_image'] ?? ''}';
@@ -510,6 +514,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         'notice_title': noticeTitleCtrl.text.trim(),
         'notice_content': noticeContentCtrl.text,
         'notice_force': noticeForce ? 1 : 0,
+        'notice_daily_limit': int.tryParse(noticeLimitCtrl.text.trim()) ?? 0,
         'maintain_enable': maintainEnable ? 1 : 0,
         'maintain_text': maintainCtrl.text.trim(),
         'maintain_template': _maintainTemplate,
@@ -924,6 +929,8 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
               noticeForce,
               (v) => setState(() => noticeForce = v),
             ),
+            _field('每天最多显示几次（0 = 不限）', noticeLimitCtrl,
+                keyboard: TextInputType.number),
             _field('公告标题', noticeTitleCtrl),
             _field('公告内容（支持 HTML）', noticeContentCtrl, lines: 4),
           ],

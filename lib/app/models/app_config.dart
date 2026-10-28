@@ -25,6 +25,9 @@ class AppConfig {
   final String noticeUrl;
   final bool noticeForce;
 
+  /// ★ 1028：同一用户每天最多弹几次公告（0 = 不限次数）
+  final int noticeDailyLimit;
+
   // ===== 远程控制 =====
   final bool maintainEnable;
   final String maintainText;
@@ -101,6 +104,7 @@ class AppConfig {
     this.noticeContent = '',
     this.noticeUrl = '',
     this.noticeForce = false,
+    this.noticeDailyLimit = 0,
     this.maintainEnable = false,
     this.maintainText = '',
     this.maintainTemplate = 'engineer',
@@ -179,6 +183,7 @@ class AppConfig {
     noticeContent: _s(json['notice_content']),
     noticeUrl: _s(json['notice_url']),
     noticeForce: _b(json['notice_force']),
+    noticeDailyLimit: _i(json['notice_daily_limit']),
     maintainEnable: _b(json['maintain_enable']),
     maintainText: _s(json['maintain_text']),
     maintainTemplate: _s(json['maintain_template']).isEmpty

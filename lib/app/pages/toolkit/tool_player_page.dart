@@ -65,6 +65,8 @@ class _ToolPlayerPageState extends State<ToolPlayerPage> {
       url: _url,
       title: widget.title,
       poster: widget.cover,
+      subtitle: widget.subtitle ?? '',
+      isAudio: widget.isAudio,
       episodes: widget.playlist ?? const [],
       onSelectEpisode: (u) => setState(() => _url = u),
     );
