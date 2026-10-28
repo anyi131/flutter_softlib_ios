@@ -197,13 +197,29 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
       post({t:'save', u:href, n:name});
     }
   }, true);
+  // 长按图片：http 的交给 App 预览；blob: 的（页面自己缓存下来的那张）
+  // 不能给 App 当网址用，就地读成 dataURL 再交给 App
+  function sendImg(el){
+    var u = el.currentSrc || el.src || '';
+    if (!u) { return; }
+    if (u.indexOf('blob:') === 0) {
+      fetch(u).then(function(r){ return r.blob(); }).then(function(b){
+        var fr = new FileReader();
+        fr.onload = function(){ post({t:'blob', d:String(fr.result), n:'', m:b.type||''}); };
+        fr.onerror = function(){ post({t:'err', m:'图片读取失败'}); };
+        fr.readAsDataURL(b);
+      }).catch(function(){ post({t:'err', m:'图片读取失败'}); });
+    } else {
+      post({t:'img', u:u});
+    }
+  }
   var hold = null;
   function clearHold(){ if (hold) { clearTimeout(hold); hold = null; } }
   document.addEventListener('touchstart', function(e){
     var el = e.target;
     if (el && el.tagName === 'IMG') {
       clearHold();
-      hold = setTimeout(function(){ post({t:'img', u: el.currentSrc || el.src}); }, 520);
+      hold = setTimeout(function(){ sendImg(el); }, 520);
     }
   }, true);
   ['touchend','touchmove','touchcancel','scroll'].forEach(function(k){
@@ -213,7 +229,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
     var el = e.target;
     if (el && el.tagName === 'IMG') {
       e.preventDefault();
-      post({t:'img', u: el.currentSrc || el.src});
+      sendImg(el);
     }
   }, true);
 })();
