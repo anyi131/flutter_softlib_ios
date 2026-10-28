@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../api/api_http.dart';
 
 import '../../utils/err_text.dart';
 
@@ -3226,7 +3227,7 @@ class _WallpaperPageState extends State<WallpaperPage> {
     setState(() => _busy = true);
     try {
       final r =
-          await Dio(
+          await ApiHttp.create(
             BaseOptions(
               baseUrl: ApiHost.base,
               connectTimeout: const Duration(seconds: 8),

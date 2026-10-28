@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../api/api_http.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -55,7 +56,7 @@ class _FavoritesPageState extends State<FavoritesPage>
     super.dispose();
   }
 
-  Dio get _dio => Dio(
+  Dio get _dio => ApiHttp.create(
     BaseOptions(
       baseUrl: ApiHost.base,
       connectTimeout: const Duration(seconds: 6),

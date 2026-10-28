@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import '../../api/api_http.dart';
 
 import '../../design/app_anim.dart';
 import '../../api/task_service.dart';
@@ -671,7 +672,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   Future<Set<int>> _loadFavIds() async {
     try {
       final r =
-          await Dio(
+          await ApiHttp.create(
             BaseOptions(
               baseUrl: ApiHost.base,
               connectTimeout: const Duration(seconds: 5),
@@ -697,7 +698,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     }
     try {
       final r =
-          await Dio(
+          await ApiHttp.create(
             BaseOptions(
               baseUrl: ApiHost.base,
               connectTimeout: const Duration(seconds: 5),
@@ -2506,7 +2507,7 @@ class _GalleryDialogState extends State<_GalleryDialog> {
   Future<void> _save() async {
     try {
       final url = widget.images[_cur];
-      final resp = await Dio().get<List<int>>(
+      final resp = await ApiHttp.attach(Dio()).get<List<int>>(
         url,
         options: Options(responseType: ResponseType.bytes),
       );
