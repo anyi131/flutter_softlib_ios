@@ -611,6 +611,7 @@ class _MusicHomePageState extends State<MusicHomePage> {
               borderRadius: BorderRadius.circular(99),
               child: cover.startsWith('http')
                   ? CachedNetworkImage(
+                        memCacheWidth: 114,
                       imageUrl: SoftService.proxyImage(cover),
                       width: 38,
                       height: 38,
@@ -882,6 +883,7 @@ class _MusicListPageState extends State<MusicListPage> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(R.md),
                           child: CachedNetworkImage(
+                                     memCacheWidth: 400,
                             imageUrl: SoftService.proxyImage(widget.cover),
                             width: Ad.w(context, 92),
                             height: Ad.h(context, 92),

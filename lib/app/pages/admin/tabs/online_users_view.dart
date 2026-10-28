@@ -372,6 +372,7 @@ class _OnlineUsersViewState extends State<OnlineUsersView> {
                   )
                 : ClipOval(
                     child: CachedNetworkImage(
+                               memCacheWidth: 102,
                       imageUrl: avatar,
                       width: 34,
                       height: 34,

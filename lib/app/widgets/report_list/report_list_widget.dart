@@ -125,6 +125,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: CachedNetworkImage(
+                             memCacheWidth: 330,
                     imageUrl: report.image ?? '',
                     width: 110,
                     height: 80,
@@ -405,7 +406,8 @@ class _ReportListWidgetState extends State<ReportListWidget>
           children: [
             AspectRatio(
               aspectRatio: 16 / 9,
-              child: CachedNetworkImage(imageUrl: img, fit: BoxFit.cover),
+              child: CachedNetworkImage(
+                         memCacheWidth: 400,imageUrl: img, fit: BoxFit.cover),
             ),
             Padding(
               padding: const EdgeInsets.all(12),

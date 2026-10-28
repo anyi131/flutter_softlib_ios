@@ -113,6 +113,7 @@ class _HomeComponentState extends State<HomeComponent> {
                 height: 48,
                 child: (d.image ?? '').isNotEmpty
                     ? CachedNetworkImage(
+                          memCacheWidth: 400,
                         imageUrl: d.image!,
                         fit: BoxFit.cover,
                         errorWidget: (_, __, ___) =>

@@ -344,6 +344,7 @@ class _FavoritesPageState extends State<FavoritesPage>
           : ClipRRect(
               borderRadius: BorderRadius.circular(13),
               child: CachedNetworkImage(
+                         memCacheWidth: 138,
                 imageUrl: icon,
                 width: 46,
                 height: 46,

@@ -499,6 +499,7 @@ class AppDetailsLogic extends GetxController {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: CachedNetworkImage(
+                                       memCacheWidth: 96,
                               imageUrl: a.icon,
                               width: 32,
                               height: 32,

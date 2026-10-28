@@ -272,6 +272,7 @@ class _ReviewTabState extends State<ReviewTab> {
               ClipOval(
                 child: r.avatar.isNotEmpty
                     ? CachedNetworkImage(
+                          memCacheWidth: 108,
                         imageUrl: r.avatar,
                         width: 36,
                         height: 36,
@@ -350,6 +351,7 @@ class _ReviewTabState extends State<ReviewTab> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(R.xs),
                         child: CachedNetworkImage(
+                                   memCacheWidth: 228,
                           imageUrl: u,
                           width: 76,
                           height: 76,

@@ -214,6 +214,7 @@ class HomeLogic extends GetxController {
                     width: Get.width * 0.5,
                     height: Get.height * 0.3,
                     child: CachedNetworkImage(
+                               memCacheWidth: 400,
                       imageUrl: imageUrl ?? '',
                       fit: BoxFit.contain,
                       placeholder: (context, url) {

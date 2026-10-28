@@ -2096,6 +2096,7 @@ class _SplashPageState extends State<SplashPage> {
   Widget _splashImage() {
     if (_netSplash.isNotEmpty) {
       return CachedNetworkImage(
+                 memCacheWidth: 400,
         imageUrl: _netSplash,
         fit: BoxFit.cover,
         width: double.infinity,

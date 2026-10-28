@@ -735,6 +735,7 @@ class _AppComponentState extends State<AppComponent> {
                     child: a.icon.isEmpty
                         ? _ph(46)
                         : CachedNetworkImage(
+                              memCacheWidth: 138,
                             imageUrl: a.icon,
                             width: 46,
                             height: 46,
@@ -827,6 +828,7 @@ class _AppComponentState extends State<AppComponent> {
                 child: a.icon.isEmpty
                     ? _ph(38)
                     : CachedNetworkImage(
+                          memCacheWidth: 114,
                         imageUrl: a.icon,
                         width: 38,
                         height: 38,
@@ -1120,6 +1122,7 @@ class _AppComponentState extends State<AppComponent> {
                     child: a.icon.isEmpty
                         ? _ph()
                         : CachedNetworkImage(
+                              memCacheWidth: 162,
                             imageUrl: a.icon,
                             width: 54,
                             height: 54,

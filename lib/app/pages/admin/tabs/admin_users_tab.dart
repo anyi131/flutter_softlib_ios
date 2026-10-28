@@ -553,6 +553,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                         child: Icon(Icons.person, size: 21, color: C.brand),
                       )
                     : CachedNetworkImage(
+                          memCacheWidth: 120,
                         imageUrl: '${u['avatar']}',
                         width: 40,
                         height: 40,

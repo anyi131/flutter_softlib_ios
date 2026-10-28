@@ -419,6 +419,7 @@ class _AboutPageState extends State<AboutPage> {
                 child: logo.isEmpty
                     ? _logoFallback()
                     : CachedNetworkImage(
+                          memCacheWidth: 400,
                         imageUrl: logo,
                         fit: BoxFit.cover,
                         errorWidget: (_, __, ___) => _logoFallback(),

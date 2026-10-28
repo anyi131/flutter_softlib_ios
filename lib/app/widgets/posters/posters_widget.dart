@@ -161,6 +161,7 @@ class _PostersWidgetState extends State<PostersWidget> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(18),
               child: CachedNetworkImage(
+                         memCacheWidth: 228,
                 imageUrl: appInfo?.fileIcon ?? '',
                 width: 76,
                 height: 76,

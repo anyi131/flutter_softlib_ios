@@ -209,6 +209,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
               ClipOval(
                 child: p.avatar.isNotEmpty
                     ? CachedNetworkImage(
+                          memCacheWidth: 120,
                         imageUrl: p.avatar,
                         width: 40,
                         height: 40,
@@ -365,6 +366,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(R.sm),
                     child: CachedNetworkImage(
+                               memCacheWidth: 400,
                       imageUrl: img,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -478,6 +480,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
           ClipOval(
             child: avatar.isNotEmpty
                 ? CachedNetworkImage(
+                      memCacheWidth: 96,
                     imageUrl: avatar,
                     width: 32,
                     height: 32,
@@ -562,6 +565,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(R.xs),
                                 child: CachedNetworkImage(
+                                           memCacheWidth: 210,
                                   imageUrl: '$u',
                                   width: 70,
                                   height: 70,

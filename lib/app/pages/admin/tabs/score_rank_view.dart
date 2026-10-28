@@ -274,6 +274,7 @@ class _ScoreRankViewState extends State<ScoreRankView> {
                       child: Icon(Icons.person, size: 18, color: C.brand),
                     )
                   : CachedNetworkImage(
+                        memCacheWidth: 102,
                       imageUrl: avatar,
                       width: 34,
                       height: 34,

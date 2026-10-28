@@ -129,6 +129,7 @@ class DetailAurora {
                               ),
                             )
                           : CachedNetworkImage(
+                                memCacheWidth: 400,
                               imageUrl: iconUrl,
                               fit: BoxFit.cover,
                               errorWidget: (_, __, ___) => Container(
@@ -491,6 +492,7 @@ class DetailAurora {
                   maxWidth: MediaQuery.of(c).size.width * 0.84,
                 ),
                 child: CachedNetworkImage(
+                           memCacheWidth: 660,
                   imageUrl: shots[i],
                   fit: BoxFit.cover,
                   errorWidget: (_, __, ___) => Container(

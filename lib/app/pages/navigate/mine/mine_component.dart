@@ -140,6 +140,7 @@ class MineComponent extends StatelessWidget {
             ),
             child: logic.avatarUrl.isNotEmpty
                 ? CachedNetworkImage(
+                      memCacheWidth: 400,
                     imageUrl: logic.avatarUrl,
                     fit: BoxFit.cover,
                     placeholder: (_, __) => _defaultAvatar(context),
@@ -733,6 +734,7 @@ class MineComponent extends StatelessWidget {
                 child: ClipOval(
                   child: logic.avatarUrl.isNotEmpty
                       ? CachedNetworkImage(
+                            memCacheWidth: 400,
                           imageUrl: logic.avatarUrl,
                           fit: BoxFit.cover,
                           placeholder: (_, __) => _defaultAvatar(context),
@@ -869,6 +871,7 @@ class MineComponent extends StatelessWidget {
               clipBehavior: Clip.antiAlias,
               child: logic.avatarUrl.isNotEmpty
                   ? CachedNetworkImage(
+                        memCacheWidth: 400,
                       imageUrl: logic.avatarUrl,
                       fit: BoxFit.cover,
                       placeholder: (_, __) => _defaultAvatar(context),

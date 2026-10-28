@@ -101,6 +101,7 @@ class DetailNeon {
                           ),
                         )
                       : CachedNetworkImage(
+                            memCacheWidth: 400,
                           imageUrl: iconUrl,
                           fit: BoxFit.cover,
                           errorWidget: (_, __, ___) => Container(
@@ -436,6 +437,7 @@ class DetailNeon {
                   maxWidth: MediaQuery.of(c).size.width * 0.82,
                 ),
                 child: CachedNetworkImage(
+                           memCacheWidth: 630,
                   imageUrl: shots[i],
                   fit: BoxFit.cover,
                   errorWidget: (_, __, ___) => Container(

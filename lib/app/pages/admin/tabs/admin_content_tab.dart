@@ -336,6 +336,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                   itemBuilder: (_, j) => ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: CachedNetworkImage(
+                               memCacheWidth: 180,
                       imageUrl: '${imgs[j]}',
                       width: 60,
                       height: 60,
@@ -783,6 +784,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: CachedNetworkImage(
+                             memCacheWidth: 180,
                     imageUrl: '${c['image']}',
                     width: 60,
                     height: 42,
@@ -1565,6 +1567,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: CachedNetworkImage(
+                             memCacheWidth: 180,
                     imageUrl: '${r['image']}',
                     width: 60,
                     height: 42,

@@ -247,7 +247,8 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
           fit: StackFit.expand,
           children: [
             if (widget.cover.isNotEmpty)
-              CachedNetworkImage(imageUrl: widget.cover, fit: BoxFit.cover),
+              CachedNetworkImage(
+                  memCacheWidth: 400,imageUrl: widget.cover, fit: BoxFit.cover),
             Container(
               color: Colors.black38,
               alignment: Alignment.center,
@@ -421,6 +422,7 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
             children: [
               if (_cover.isNotEmpty)
                 CachedNetworkImage(
+                    memCacheWidth: 400,
                   imageUrl: _cover,
                   fit: BoxFit.cover,
                   placeholder: (_, __) => Container(color: Colors.black12),

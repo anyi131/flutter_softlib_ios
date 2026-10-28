@@ -216,6 +216,7 @@ class _GalleryPageState extends State<_GalleryPage> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(7),
                         child: CachedNetworkImage(
+                                   memCacheWidth: 400,
                           imageUrl: widget.urls[i],
                           fit: BoxFit.cover,
                           errorWidget: (_, __, ___) => const Icon(
@@ -268,6 +269,7 @@ class MediaGrid extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(radius),
           child: CachedNetworkImage(
+                     memCacheWidth: 400,
             imageUrl: urls[i],
             fit: BoxFit.cover,
             placeholder: (_, __) => Container(

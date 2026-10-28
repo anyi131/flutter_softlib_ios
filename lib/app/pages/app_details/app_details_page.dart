@@ -1472,6 +1472,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                         maxWidth: MediaQuery.of(context).size.width * 0.88,
                       ),
                       child: CachedNetworkImage(
+                                 memCacheWidth: 450,
                         imageUrl: shots[i],
                         height: 230,
                         fit: BoxFit.contain, // 按原始比例完整显示，绝不裁切
@@ -1590,6 +1591,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                         ClipRRect(
                           borderRadius: BorderRadius.circular(5),
                           child: CachedNetworkImage(
+                                     memCacheWidth: 80,
                             imageUrl: a.icon,
                             width: 16,
                             height: 16,
@@ -2544,6 +2546,7 @@ class _GalleryDialogState extends State<_GalleryDialog> {
                 maxScale: 4,
                 child: Center(
                   child: CachedNetworkImage(
+                             memCacheWidth: 400,
                     imageUrl: widget.images[i],
                     fit: BoxFit.contain,
                     placeholder: (_, __) => const Center(
