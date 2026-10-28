@@ -1,6 +1,8 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/ui_config.dart';
+
 /// 轻音效（下载完成 / 签到成功 / 来消息 / 有新版本）
 ///
 /// ★★ 1020 重做（用户反馈「音效开启了也没用」）：
@@ -41,6 +43,19 @@ class SoundUtil {
       update = sp.getBool(_kUpdate) ?? true;
       _loaded = true;
     } catch (_) {}
+  }
+
+  /// ★ 1028：服务端下发的音效开关（ui_config.sfx）—— 全站统管
+  ///
+  /// 原来 4 个开关只写本机 SharedPreferences，后台一改只影响管理员自己那台，
+  /// 用户端照旧默认 true，表现为「音效开关没用」。现在配置一拉到就覆盖本地。
+  static void applyRemote(SfxConfig s) {
+    master = s.master;
+    download = s.download;
+    sign = s.sign;
+    message = s.message;
+    update = s.update;
+    _loaded = true;
   }
 
   /// 后台/设置页修改后保存
@@ -93,16 +108,22 @@ class SoundUtil {
   // ═══════════ 播放实现 ═══════════
 
   static final Map<String, AudioPlayer> _players = {};
-  static bool _audioReady = false;
 
-  /// 首次播放时预热（避免第一次有延迟）
+  /// 预热（避免第一次有延迟）
+  ///
+  /// ★ 1028：改成「谁缺补谁」。原来一把 `_audioReady=true` 提前置位，
+  ///   第一次创建失败（音频会话没就绪/静音）就再也不重试 → 全程无声。
   static Future<void> _warmUp() async {
-    if (_audioReady) return;
-    _audioReady = true;
     for (final k in ['download', 'sign', 'message', 'update']) {
+      if (_players.containsKey(k)) continue;
       try {
         final p = AudioPlayer();
         await p.setReleaseMode(ReleaseMode.stop);
+        // ★ 1028：低延迟模式 —— 短音效走 MediaPlayer 时首帧有明显延迟，
+        //   用户会觉得「开关点了没反应」。
+        try {
+          await p.setPlayerMode(PlayerMode.lowLatency);
+        } catch (_) {}
         await p.setSource(AssetSource('audio/$k.wav'));
         _players[k] = p;
       } catch (_) {}
@@ -116,7 +137,11 @@ class SoundUtil {
         await _warmUp();
         final p = _players[name];
         if (p == null) return;
+        // ★ 1028：stop() 之后必须把进度归零，否则 resume() 会「从头到尾都没有声音」
         await p.stop();
+        try {
+          await p.seek(Duration.zero);
+        } catch (_) {}
         await p.resume();
       } catch (_) {
         // 静音 / 无音频设备 / 播放失败 —— 静默忽略，绝不影响主流程
@@ -132,6 +157,5 @@ class SoundUtil {
       } catch (_) {}
     }
     _players.clear();
-    _audioReady = false;
   }
 }

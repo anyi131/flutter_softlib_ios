@@ -42,6 +42,47 @@ class PayNoticeConfig {
   );
 }
 
+/// 音效开关（后台 ui_config.sfx 下发）
+///
+/// ★ 1028 修「音效开关没用」：原来这 5 个开关只写本机 SharedPreferences，
+///   管理员在后台关掉只影响他自己那台手机，用户端读的还是本地默认 true。
+///   现在随 ui_config 一起下发，才是真正全站生效。
+class SfxConfig {
+  final bool master; // 总开关
+  final bool download; // 下载完成
+  final bool sign; // 签到成功
+  final bool message; // 来消息
+  final bool update; // 版本更新
+
+  const SfxConfig({
+    this.master = true,
+    this.download = true,
+    this.sign = true,
+    this.message = true,
+    this.update = true,
+  });
+
+  static bool _b(dynamic v) => v == null
+      ? true
+      : (v == true || v == 1 || v == '1' || v == 'true' || v == 'on');
+
+  factory SfxConfig.fromJson(Map json) => SfxConfig(
+    master: _b(json['master']),
+    download: _b(json['download']),
+    sign: _b(json['sign']),
+    message: _b(json['message']),
+    update: _b(json['update']),
+  );
+
+  Map<String, dynamic> toJson() => {
+    'master': master ? 1 : 0,
+    'download': download ? 1 : 0,
+    'sign': sign ? 1 : 0,
+    'message': message ? 1 : 0,
+    'update': update ? 1 : 0,
+  };
+}
+
 /// 全局界面配置（后台 admin「界面配置」下发，App 启动时应用）
 ///
 /// 后端存储：sys_config['ui_config'] = JSON 字符串
@@ -116,6 +157,9 @@ class UiConfig {
   // ── 支付确认弹窗文案（后台可配，空=用内置默认）──
   final PayNoticeConfig payNotice;
 
+  // ── 音效开关（后台下发，全站生效）──
+  final SfxConfig sfx;
+
   // ── 首页快捷入口开关（v52g #7 热更新布局）──
   final bool quickSign;
   final bool quickVip;
@@ -166,6 +210,7 @@ class UiConfig {
     this.glassMode = 'auto',
     this.adminTemplate = 'light_card',
     this.payNotice = const PayNoticeConfig(),
+    this.sfx = const SfxConfig(),
 
     this.quickSign = true,
     this.quickVip = true,
@@ -234,6 +279,9 @@ class UiConfig {
       adminTemplate: _s(json['admin_template'], 'light_card'),
       payNotice: PayNoticeConfig.fromJson(
         json['pay_notice'] is Map ? (json['pay_notice'] as Map) : const {},
+      ),
+      sfx: SfxConfig.fromJson(
+        json['sfx'] is Map ? Map<String, dynamic>.from(json['sfx'] as Map) : const {},
       ),
 
       quickSign: _b(home['quick_sign'], true),

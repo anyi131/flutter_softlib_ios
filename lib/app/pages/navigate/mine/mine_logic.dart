@@ -317,6 +317,11 @@ class MineLogic extends GetxController {
     try {
       final n = await MessageService.instance.unread();
       if (n != messageCount) {
+        // ★ 1028：来消息音效 —— 只在「原本就有未读、又变多」时响，
+        //   首次进入不响（否则每次打开我的页都叮一声）。开关由后台下发。
+        if (messageCount > 0 && n > messageCount) {
+          SoundUtil.playMessage();
+        }
         messageCount = n;
         update();
       }

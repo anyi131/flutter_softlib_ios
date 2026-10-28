@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 import '../utils/err_text.dart';
+import '../utils/sound_util.dart';
 
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
@@ -102,6 +103,10 @@ class SoftService {
       if (data is Map && data['code'] == 1 && data['data'] is Map) {
         final cfg = AppConfig.fromJson(Map<String, dynamic>.from(data['data']));
         _configCache = cfg;
+        // ★ 1028：音效开关随配置下发（后台改一次，全站生效）
+        try {
+          SoundUtil.applyRemote(cfg.uiConfig.sfx);
+        } catch (_) {}
         _configAt = DateTime.now();
         configVersion.value++;
         return cfg;

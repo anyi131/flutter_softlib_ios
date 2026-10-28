@@ -96,6 +96,12 @@ class _AdminUiTabState extends State<AdminUiTab> {
   final _payButtonCtrl = TextEditingController();
   // 首页快捷入口（v52g #7）
   bool _qSign = true, _qVip = true, _qService = true, _qUpdate = true;
+  // ★ 1028：音效开关（原来只写本机 → 后台关掉对用户无效，现在随 ui_config 下发）
+  bool _sfxMaster = true,
+      _sfxDownload = true,
+      _sfxSign = true,
+      _sfxMessage = true,
+      _sfxUpdate = true;
 
   bool _loading = true;
 
@@ -201,6 +207,15 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _qVip = '${home['quick_vip'] ?? 1}' == '1';
         _qService = '${home['quick_service'] ?? 1}' == '1';
         _qUpdate = '${home['quick_update'] ?? 1}' == '1';
+        // ★ 1028：音效开关（ui_config.sfx）
+        final sfx = (ui['sfx'] is Map)
+            ? Map<String, dynamic>.from(ui['sfx'] as Map)
+            : <String, dynamic>{};
+        _sfxMaster = '${sfx['master'] ?? 1}' == '1';
+        _sfxDownload = '${sfx['download'] ?? 1}' == '1';
+        _sfxSign = '${sfx['sign'] ?? 1}' == '1';
+        _sfxMessage = '${sfx['message'] ?? 1}' == '1';
+        _sfxUpdate = '${sfx['update'] ?? 1}' == '1';
         _loading = false;
       });
     } catch (e) {
@@ -299,6 +314,14 @@ class _AdminUiTabState extends State<AdminUiTab> {
           'card_note': _payCardNoteCtrl.text.trim(),
           'app_note': _payAppNoteCtrl.text.trim(),
           'button': _payButtonCtrl.text.trim(),
+        },
+        // ★ 1028：音效开关（全站下发）
+        'sfx': {
+          'master': _sfxMaster ? 1 : 0,
+          'download': _sfxDownload ? 1 : 0,
+          'sign': _sfxSign ? 1 : 0,
+          'message': _sfxMessage ? 1 : 0,
+          'update': _sfxUpdate ? 1 : 0,
         },
       },
     };
@@ -690,29 +713,34 @@ class _AdminUiTabState extends State<AdminUiTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        row('总开关', '关闭后所有音效都不播放', SoundUtil.master, (v) {
+        row('总开关', '关闭后所有音效都不播放（全站生效）', _sfxMaster, (v) {
+          setState(() => _sfxMaster = v);
+          SoundUtil.master = v;
           SoundUtil.save(masterOn: v);
-          setState(() {});
         }),
-        row('下载完成', '下载成功时轻提示', SoundUtil.download, (v) {
+        row('下载完成', '下载成功时轻提示', _sfxDownload, (v) {
+          setState(() => _sfxDownload = v);
+          SoundUtil.download = v;
           SoundUtil.save(downloadOn: v);
-          setState(() {});
-        }, disabled: !SoundUtil.master),
-        row('签到成功', '签到成功时提示', SoundUtil.sign, (v) {
+        }, disabled: !_sfxMaster),
+        row('签到成功', '签到成功时提示', _sfxSign, (v) {
+          setState(() => _sfxSign = v);
+          SoundUtil.sign = v;
           SoundUtil.save(signOn: v);
-          setState(() {});
-        }, disabled: !SoundUtil.master),
-        row('来消息', '收到新通知时提示', SoundUtil.message, (v) {
+        }, disabled: !_sfxMaster),
+        row('来消息', '收到新通知时提示', _sfxMessage, (v) {
+          setState(() => _sfxMessage = v);
+          SoundUtil.message = v;
           SoundUtil.save(messageOn: v);
-          setState(() {});
-        }, disabled: !SoundUtil.master),
-        row('版本更新', '检测到新版本时提示', SoundUtil.update, (v) {
+        }, disabled: !_sfxMaster),
+        row('版本更新', '检测到新版本时提示', _sfxUpdate, (v) {
+          setState(() => _sfxUpdate = v);
+          SoundUtil.update = v;
           SoundUtil.save(updateOn: v);
-          setState(() {});
-        }, disabled: !SoundUtil.master),
+        }, disabled: !_sfxMaster),
         const SizedBox(height: 4),
         Text(
-          '提示：音效跟随系统静音设置，静音后自动不响',
+          '提示：改完记得点底部「保存」，否则只对当前这台手机生效；保存后会随配置下发给所有用户。音效跟随系统静音设置。',
           style: Ty.tiny.copyWith(fontSize: 11, color: context.t3),
         ),
       ],
