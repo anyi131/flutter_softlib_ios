@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import '../../design/app_anim.dart';
 import '../../utils/safe_ctx.dart';
@@ -1065,8 +1066,20 @@ class _SplashPageState extends State<SplashPage> {
     final now = DateTime.now();
     final day = '${now.year}-${now.month}-${now.day}';
     final sig = (cfg.noticeTitle + '|' + cfg.noticeContent).hashCode.toRadixString(16);
-    final kDay = 'notice_q_day_$sig';
-    final kCnt = 'notice_q_cnt_$sig';
+    // ★ 1028：按「用户」计数 —— 换了账号各算各的；未登录时算游客。
+    String uid = 'guest';
+    try {
+      final raw = sp.getString('user_info');
+      if (raw != null && raw.isNotEmpty) {
+        final m = jsonDecode(raw);
+        if (m is Map) {
+          final id = m['id'] ?? m['user_id'] ?? m['uid'];
+          if (id != null && '$id'.isNotEmpty && '$id' != '0') uid = '$id';
+        }
+      }
+    } catch (_) {}
+    final kDay = 'notice_q_day_${uid}_$sig';
+    final kCnt = 'notice_q_cnt_${uid}_$sig';
     if (sp.getString(kDay) != day) {
       await sp.setString(kDay, day);
       await sp.setInt(kCnt, 0);
