@@ -671,6 +671,8 @@ class _ReviewTabState extends State<ReviewTab> {
     await showGlassDialog(
       context: context,
       barrierDismissible: false,
+      // ★ 1028：内容自带贴底面壳，外层不要再加玻璃壳（原来是两层底 + 上下留白）
+      bare: true,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setD) {
           const emojis = [
@@ -710,19 +712,10 @@ class _ReviewTabState extends State<ReviewTab> {
             }
           }
 
-          return Dialog(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            insetPadding: const EdgeInsets.symmetric(
-              horizontal: 22,
-              vertical: 40,
-            ),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 380),
-              child: PanelSurface(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
-                  child: Column(
+          return BottomPanel(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
+              child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1018,9 +1011,7 @@ class _ReviewTabState extends State<ReviewTab> {
                     ],
                   ),
                 ),
-              ),
-            ),
-          );
+              );
         },
       ),
     );

@@ -70,16 +70,23 @@ class GlassShell extends StatelessWidget {
     this.dark = false,
     this.radius = 22,
     this.topHighlight = true,
+    this.onlyTop = false,
   });
   final Widget child;
   final bool dark;
   final double radius;
   final bool topHighlight;
 
+  /// ★ 1028：贴底面板只圆上面两个角（底部与屏幕齐平，不能露出底下页面）
+  final bool onlyTop;
+
   @override
   Widget build(BuildContext context) {
     final d = dark || Theme.of(context).brightness == Brightness.dark;
     final look = PanelLook.of(d);
+    final br = onlyTop
+        ? BorderRadius.vertical(top: Radius.circular(radius))
+        : BorderRadius.circular(radius);
 
     // 只有「深色 + 玻璃开 + 档位允许」才真模糊；浅色一律实底
     final sigma = (GlassTheme.enabled && GlassTheme.bigBlur && look.blur)
@@ -89,7 +96,7 @@ class GlassShell extends StatelessWidget {
     Widget card = Container(
       decoration: BoxDecoration(
         color: look.fill,
-        borderRadius: BorderRadius.circular(radius),
+        borderRadius: br,
         border: Border.all(color: look.border, width: 0.8),
       ),
       child: topHighlight
@@ -116,7 +123,7 @@ class GlassShell extends StatelessWidget {
 
     if (sigma > 0) {
       card = ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
+        borderRadius: br,
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
           child: card,
@@ -128,10 +135,57 @@ class GlassShell extends StatelessWidget {
     //   弹窗看起来就是「贴在纸上的一张纸」（1028 用户截图里的硬边就是这个原因）。
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(radius),
+        borderRadius: br,
         boxShadow: look.shadow,
       ),
       child: card,
+    );
+  }
+}
+
+/// ★ 1028：贴底面板外壳（写评论 / 分享海报这类内容很高的弹层）
+///
+/// 旧写法是「居中 Dialog + insetPadding 上下各 40」：内容一高就变成上下各留
+/// 一截的悬浮卡 —— 底部那截正好把详情页的「会员免费下载」整条露出来
+/// （1028 真机截图复现，评论与海报两处都有）。
+/// 这里统一改成：贴底、铺满宽度、只圆上面两个角、自动留底部安全区；
+/// 内容高度超过 92% 屏高时自己滚动。
+class BottomPanel extends StatelessWidget {
+  const BottomPanel({
+    super.key,
+    required this.child,
+    this.maxWidth = 560,
+    this.radius = 22,
+  });
+
+  final Widget child;
+  final double maxWidth;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      // 关键：贴底 + 去掉四周 inset，否则永远在底部留一条缝
+      alignment: Alignment.bottomCenter,
+      insetPadding: EdgeInsets.zero,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: maxWidth,
+          maxHeight: mq.size.height * 0.92,
+        ),
+        child: PanelSurface(
+          onlyTop: true,
+          radius: radius,
+          child: Padding(
+            // 全面屏底部横条：贴着屏幕底边时要自己留出来，否则按钮压手
+            padding: EdgeInsets.only(bottom: mq.padding.bottom),
+            child: child,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -146,25 +200,33 @@ class PanelSurface extends StatelessWidget {
     required this.child,
     this.radius = 24,
     this.clip = true,
+    this.onlyTop = false,
   });
 
   final Widget child;
   final double radius;
   final bool clip;
 
+  /// ★ 1028：贴底面板只圆上面两个角
+  final bool onlyTop;
+
   @override
   Widget build(BuildContext context) {
     final d = Theme.of(context).brightness == Brightness.dark;
     final look = PanelLook.of(d);
+    final br = onlyTop
+        ? BorderRadius.vertical(top: Radius.circular(radius))
+        : BorderRadius.circular(radius);
 
     if (GlassTheme.enabled && look.blur) {
       return GlassShell(
         radius: radius,
         dark: d,
         topHighlight: false,
+        onlyTop: onlyTop,
         child: clip
             ? ClipRRect(
-                borderRadius: BorderRadius.circular(radius),
+                borderRadius: br,
                 child: child,
               )
             : child,
@@ -174,13 +236,13 @@ class PanelSurface extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: look.fill,
-        borderRadius: BorderRadius.circular(radius),
+        borderRadius: br,
         border: Border.all(color: look.border, width: 0.8),
         boxShadow: look.shadow,
       ),
       child: clip
           ? ClipRRect(
-              borderRadius: BorderRadius.circular(radius),
+              borderRadius: br,
               child: child,
             )
           : child,
@@ -306,6 +368,9 @@ Future<T?> showGlassDialog<T>({
   bool barrierDismissible = true,
   Color? barrierColor,
   bool dark = false,
+  // ★ 1028：内容自己就是贴底 Dialog（写评论/海报等自定义外壳），
+  // 外层一律不加壳、不居中——否则就是「两层底 + 上下留白」。
+  bool bare = false,
 }) {
   if (!_glassUiEnabled) {
     return showDialog<T>(
@@ -328,7 +393,7 @@ Future<T?> showGlassDialog<T>({
       // 白底叠白底、文字飘在整屏中间（权限弹窗/公告弹窗真机翻车根因）。直接透传。
       // ★ 1028 补：PopScope(Dialog) 与 AppDialog 同样自带底板，也要透传，
       // 否则外层玻璃壳 + 内层卡片 = 「套了两个弹窗」（比上面的情况更隐蔽）。
-      if (_ownsSurface(child)) return child;
+      if (bare || _ownsSurface(child)) return child;
       // 普通内容：玻璃壳承载，但限制最大尺寸，避免被撑满全屏
       return Center(
         child: ConstrainedBox(

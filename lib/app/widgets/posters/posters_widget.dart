@@ -37,16 +37,12 @@ class _PostersWidgetState extends State<PostersWidget> {
   Widget build(BuildContext context) {
     // ★ 1028：不再用裸 Column 浮在遮罩上（玻璃开/关都难看）。
     // 透明 Dialog + PanelSurface：玻璃开走磨砂壳，玻璃关走实底卡。
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 26, vertical: 40),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 360),
-        child: PanelSurface(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-            child: Column(
+    return BottomPanel(
+      maxWidth: 460,
+      radius: 26,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+        child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // ── 标题行 ──
@@ -112,8 +108,6 @@ class _PostersWidgetState extends State<PostersWidget> {
               ],
             ),
           ),
-        ),
-      ),
     );
   }
 
