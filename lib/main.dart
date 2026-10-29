@@ -105,6 +105,7 @@ Future<void> main() async {
       try {
         final info = await PackageInfo.fromPlatform();
         _appVersion = '${info.version}+${info.buildNumber}';
+        DeviceInfo.appVersion = _appVersion;
       } catch (_) {}
       await _initializeServices();
       // ★ 1015：启动心跳上报 —— 每次冷启动都记一条，

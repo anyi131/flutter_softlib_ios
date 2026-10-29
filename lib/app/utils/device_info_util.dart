@@ -15,6 +15,9 @@ class DeviceInfo {
 
   static String model = '';
   static String os = '';
+  /// 应用版本号（如 3.10.28+132）。启动时由 main.dart 填，下载/崩溃上报都靠它，
+  /// 否则后台只看到「应用版本 -」。
+  static String appVersion = '';
   static bool _inited = false;
 
   /// 启动时调用一次（失败也不抛异常）

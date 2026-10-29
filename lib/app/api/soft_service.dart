@@ -240,6 +240,8 @@ class SoftService {
           'channel': channel.isEmpty ? lastParseChannel : channel,
           // ★ 1016：deviceModel 一直是空串（从没赋值）→ 后台显示「设备 -」
           'device': DeviceInfo.model,
+          // ★ 1029：补上版本号，后台再也不会显示「应用版本：-」
+          'version': DeviceInfo.appVersion,
           // ★ 1020：明细
           'os': Platform.operatingSystemVersion,
           'err_code': errCode,

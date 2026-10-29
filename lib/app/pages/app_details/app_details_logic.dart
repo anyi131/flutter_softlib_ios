@@ -41,6 +41,7 @@ import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
 import '../../widgets/posters/posters_widget.dart';
 import '../../design/kit.dart';
+import '../../utils/disk_space.dart';
 
 @pragma('vm:entry-point')
 class AppDetailsLogic extends GetxController {
@@ -1187,7 +1188,7 @@ class AppDetailsLogic extends GetxController {
             }
             return 'DL_FAIL';
           }(),
-          freeMb: _freeSpaceMb(),
+          freeMb: await _freeSpaceMb(),
           fileMb: _fileSizeMb(),
           progress: _shownProgress,
           retryCnt: _silentRetry,
@@ -1433,15 +1434,11 @@ class AppDetailsLogic extends GetxController {
   ///   而蓝奏云直链几小时就过期 → 直链失效后点多少次重试都是同一个失败。
   ///   现在先重新解析拿新直链，再新建任务；解析失败才退回原地重试。
   /// 手机剩余空间（MB），拿不到返回 -1
-  int _freeSpaceMb() {
-    try {
-      final dir = Directory.systemTemp;
-      final st = dir.statSync();
-      return st.size > 0 ? (st.size / 1048576).round() : -1;
-    } catch (_) {
-      return -1;
-    }
-  }
+  ///
+  /// ★ 1029：原来取 `Directory.systemTemp.statSync().size` —— 那是目录 inode 的大小
+  ///   （一般 4096 字节），除下来恒定 0 MB，后台据此判「存储不足」，把 CDN 断流
+  ///   误诊成空间问题。改为走原生 StatFs，取不到就报 -1（未知）。
+  Future<int> _freeSpaceMb() => DiskSpace.freeMb();
 
   /// 安装包大小（MB），拿不到返回 -1
   int _fileSizeMb() {
