@@ -920,6 +920,17 @@ class AppDetailsLogic extends GetxController {
       }
     } catch (_) {}
 
+    // ★ 1029：下载前先看真实剩余空间 —— 原来没有这一步，空间不够也照样入队，
+    //   白白重试 3 次再报「CDN 中断」，用户完全不知道是存储满了。
+    try {
+      final freeMb = await DiskSpace.freeMb();
+      final needMb = _fileSizeMb();
+      if (freeMb > 0 && needMb > 0 && freeMb < needMb + 50) {
+        ToastUtil.error('存储空间不足：剩余 $freeMb MB，安装包 $needMb MB，请清理后再试');
+        _unlockToken = true;
+        return;
+      }
+    } catch (_) {}
     // ★★ 1016：令牌**不再一进来就消费** —— 原来先置 false，一旦解析失败
     //   （蓝奏云文件被取消分享等），用户点「重试」就会被判「尚未通过服务端校验」。
     //   改为「真正要发起下载任务前」再消费（见下方 enqueue 之前），
