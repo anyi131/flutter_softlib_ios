@@ -42,6 +42,7 @@ import '../../utils/toast_util.dart';
 import '../../widgets/posters/posters_widget.dart';
 import '../../design/kit.dart';
 import '../../utils/disk_space.dart';
+import '../../utils/lzy_line.dart';
 
 @pragma('vm:entry-point')
 class AppDetailsLogic extends GetxController {
@@ -1111,8 +1112,18 @@ class AppDetailsLogic extends GetxController {
       return;
     }
     _unlockToken = false;
+    // ★ 1029i：下载前并发探测蓝奏各节点（每条只取 1KB），挑真能连通的那条。
+    //   解析到坏 IPv6 或单节点抽风时，不会再让用户白等 30 秒才失败。
+    var dlUrl = parseUrl!;
+    try {
+      if (LzyLine.isDirect(dlUrl)) {
+        ResolveOverlay.stage('选择下载线路…');
+        final alive = await LzyLine.pickAlive(dlUrl);
+        if (alive != null && alive.isNotEmpty) dlUrl = alive;
+      }
+    } catch (_) {}
     final newTaskId = await FlutterDownloader.enqueue(
-      url: parseUrl,
+      url: dlUrl,
       fileName: fileName,
       savedDir: await DownloadDir.path(),
       showNotification: true,
@@ -1301,6 +1312,8 @@ class AppDetailsLogic extends GetxController {
   //       重试期间界面显示「正在重连(第 n 次)」，进度条保持不动、不归零；
   //       三次全败才真正进 failed 态并提示用户。
   int _silentRetry = 0;
+  /// ★ 1029i：重试时轮换蓝奏节点用（每次失败 +1，换下一个 host）
+  int _lineTry = 0;
   Timer? _silentRetryTimer;
   bool _silentRetrying = false;
 
@@ -1329,6 +1342,17 @@ class AppDetailsLogic extends GetxController {
         // ★ 1027（真机实测）：首次失败大多是「CDN 瞬时拒连」（直链 30 分钟有效期内）        //   先用原直链重连（换新 TCP 连接），只有直链签发超 20 分钟才重新解析。
         //   之前每次重试都 resolveLzy，反而撞上蓝奏云上游抖动，白白浪费重试机会。
         var ok = false;
+        // ★ 1029i：第一次重试先原地 retry = 断点续传，已下好的分片不再重下。
+        //   之前直接删任务重下，34MB 的文件下到 80% 断线等于白费流量。
+        if (_silentRetry == 1 && taskId != null && taskId!.isNotEmpty) {
+          try {
+            final nt0 = await FlutterDownloader.retry(taskId: taskId!);
+            if (nt0 != null && nt0.isNotEmpty) {
+              taskId = nt0;
+              ok = true;
+            }
+          } catch (_) {}
+        }
         int signedAt = 0;
         try {
           final m = RegExp(r'/([0-9a-f]{8})/').firstMatch(dowUrl);
@@ -1339,7 +1363,7 @@ class AppDetailsLogic extends GetxController {
         } catch (_) {}
         final freshLink = signedAt > 0 &&
             DateTime.now().millisecondsSinceEpoch ~/ 1000 - signedAt < 1200;
-        if (freshLink && dowUrl.isNotEmpty) {
+        if (!ok && freshLink && dowUrl.isNotEmpty) {
           // 直链还年轻 → 直接复用重连
           ok = await _enqueueSilentRetry(dowUrl);
         }
@@ -1388,6 +1412,8 @@ class AppDetailsLogic extends GetxController {
 
   /// 用新直链重新入队（保留原进度语义：清掉旧任务，新任务从断点续传）
   Future<bool> _enqueueSilentRetry(String freshUrl) async {
+    // ★ 1029i：换一个节点重试（各节点共用同一 token），别再死磕同一条
+    final target = LzyLine.rotate(freshUrl, _lineTry++);
     try {
       // 删除失败的旧任务（避免列表里堆一串失败记录）
       final old = taskId;
@@ -1400,7 +1426,7 @@ class AppDetailsLogic extends GetxController {
         } catch (_) {}
       }
       final nt = await FlutterDownloader.enqueue(
-        url: freshUrl,
+        url: target,
         savedDir: await DownloadDir.path(),
         fileName: appInfo?.fileName ?? '',
         showNotification: true,
@@ -1409,7 +1435,7 @@ class AppDetailsLogic extends GetxController {
       );
       if (nt == null || nt.isEmpty) return false;
       taskId = nt;
-      dowUrl = freshUrl;
+      dowUrl = target;
       return true;
     } catch (_) {
       return false;
