@@ -1221,7 +1221,10 @@ class AppDetailsLogic extends GetxController {
             }
             // ★ 1027：lanosso CDN 域名单独归类（lanzou 已在 isLzy 前面分支处理）
             if (u.contains('lanosso.com')) {
-              return '[下载线路] CDN 连接中断，正在自动换线路重试';
+              // ★ 1029：原来写「正在自动换线路重试」——根本没有换线路机制，
+              //   用户以为软件在自救，实际是连不上就结束。改为如实描述。
+              return '[下载线路] 蓝奏 CDN 连不上（常见于移动网络/运营商拦截）'
+                  '\n建议：改用浏览器打开，或换 Wi-Fi 再试';
             }
             return '[网络异常] 连接中断或源站不可用'
                 '\n地址：${u.length > 60 ? u.substring(0, 60) : u}';
