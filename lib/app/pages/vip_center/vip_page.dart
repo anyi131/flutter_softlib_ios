@@ -304,8 +304,8 @@ class _VipPageState extends State<VipPage> {
     return '限时特惠';
   }
 
-  /// ★ 1031 促销横幅（纯展示）—— 黑金奢华风：
-  ///   深色底 + 金色光边 + 右下角暗纹勋章，倒计时秒级跳动。
+  /// ★ 1031 促销横幅（纯展示）—— 深底金字，克制的奢华：
+  ///   左侧细金竖条锚点 + 标题/小字 + 右侧「距结束 xx:xx:xx」。
   ///   后台关掉 / 未配置 = 整块不渲染。倒计时走每秒 setState 的 _promoTick。
   Widget _promoBanner() {
     final cfg = SoftService.instance.cachedConfig?.promo;
@@ -316,120 +316,91 @@ class _VipPageState extends State<VipPage> {
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1D1810), Color(0xFF2C2314)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFF7D57A).withAlpha(56)),
+          color: context.isDark
+              ? const Color(0xFF141210)
+              : const Color(0xFF17130C),
+          borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFC9A227).withAlpha(
-                context.isDark ? 60 : 42,
-              ),
-              blurRadius: 26,
-              offset: const Offset(0, 8),
+              color: Colors.black.withAlpha(context.isDark ? 90 : 46),
+              blurRadius: 16,
+              offset: const Offset(0, 5),
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: Stack(
-            children: [
-              // 右下角暗纹勋章（纯装饰，不挡点击）
-              const Positioned(
-                right: -14,
-                bottom: -22,
-                child: IgnorePointer(
-                  child: Icon(
-                    Icons.workspace_premium_rounded,
-                    size: 112,
-                    color: Color(0x14F7D57A),
+        child: Row(
+          children: [
+            // 左侧细金竖条（锚点，替代大图标）
+            Container(
+              width: 3,
+              height: 34,
+              decoration: BoxDecoration(
+                gradient: Deco.goldGradient,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 11),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFFE8CE93),
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 2.5,
+                    ),
                   ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
-                child: Row(
-                  children: [
-                    // 金色火苗圆徽
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: const BoxDecoration(
-                        gradient: Deco.goldGradient,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.local_fire_department_rounded,
-                        color: Color(0xFF241C0D),
-                        size: 24,
+                  if (cfg.tip.isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      cfg.tip,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: const Color(0xFFE8CE93).withAlpha(120),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.3,
                       ),
                     ),
-                    const SizedBox(width: 11),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Color(0xFFF3E3BC),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                          if (cfg.tip.isNotEmpty) ...[
-                            const SizedBox(height: 3),
-                            Text(
-                              cfg.tip,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Color(0x8CF3E3BC),
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    if (hasCountdown)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0E0B06).withAlpha(210),
-                          borderRadius: BorderRadius.circular(R.full),
-                          border: Border.all(
-                            color: const Color(0xFFF7D57A).withAlpha(40),
-                          ),
-                        ),
-                        child: Text(
-                          _promoCountdown(end),
-                          style: const TextStyle(
-                            color: Color(0xFFF7D57A),
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.4,
-                            fontFeatures: [FontFeature.tabularFigures()],
-                          ),
-                        ),
-                      ),
                   ],
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+            if (hasCountdown)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '距结束',
+                    style: TextStyle(
+                      color: const Color(0xFFE8CE93).withAlpha(110),
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _promoCountdown(end),
+                    style: const TextStyle(
+                      color: Color(0xFFE8CE93),
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.6,
+                      fontFeatures: [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
+              ),
+          ],
         ),
       ),
     );
@@ -675,16 +646,51 @@ class _VipPageState extends State<VipPage> {
                     ],
                   ),
                   const SizedBox(height: 5),
-                  // 划线原价：参与促销 = 现价 × 后台倍数；未参与 = ×1.5 锚点价（仅展示）
-                  Text(
-                    '¥${_origPrice(plan.money, promo: _promoHit(index))}',
-                    maxLines: 1,
-                    style: Ty.tiny.copyWith(
-                      color: context.t3,
-                      decoration: TextDecoration.lineThrough,
-                      decorationColor: context.t3,
-                    ),
-                  ),
+                  // 划线原价 + 促销套餐加「立省 xx」（参与 = 现价 × 后台倍数；未参与 = ×1.5 锚点价）
+                  Builder(builder: (_) {
+                    final hit = _promoHit(index);
+                    final save = _promoSave(plan.money, promo: hit);
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            '¥${_origPrice(plan.money, promo: hit)}',
+                            maxLines: 1,
+                            style: Ty.tiny.copyWith(
+                              color: context.t3,
+                              decoration: TextDecoration.lineThrough,
+                              decorationColor: context.t3,
+                            ),
+                          ),
+                        ),
+                        if (hit && save != null) ...[
+                          const SizedBox(width: 5),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 1.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF17130C),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Text(
+                              '立省$save',
+                              style: const TextStyle(
+                                color: Color(0xFFE8CE93),
+                                fontSize: 8.5,
+                                height: 1.2,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    );
+                  }),
                 ],
               ),
               // 「最受欢迎」角标（中档）
@@ -721,33 +727,30 @@ class _VipPageState extends State<VipPage> {
                     ),
                   ),
                 ),
-              // ★ 1031 促销斜角丝带（右上角折角）：后台可勾选单套餐参与
+              // ★ 1031 促销角签（右上角小旗）：后台可勾选单套餐参与
               if (_promoHit(index))
                 Positioned(
                   top: 0,
                   right: 0,
-                  child: ClipPath(
-                    clipper: _PromoRibbonClip(),
-                    child: Container(
-                      width: 66,
-                      height: 58,
-                      decoration: const BoxDecoration(
-                        gradient: Deco.goldGradient,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(9, 4, 9, 5),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF17130C),
+                      borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(16),
+                        bottomLeft: Radius.circular(14),
                       ),
-                      alignment: Alignment.topRight,
-                      padding: const EdgeInsets.only(top: 7, right: 7),
-                      child: Text(
-                        _planPromoLabel(),
-                        maxLines: 2,
-                        textAlign: TextAlign.right,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF241C0D),
-                          fontSize: 8.5,
-                          height: 1.15,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.2,
-                        ),
+                    ),
+                    child: Text(
+                      _planPromoLabel(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFFE8CE93),
+                        fontSize: 9.5,
+                        height: 1,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.8,
                       ),
                     ),
                   ),
@@ -757,6 +760,19 @@ class _VipPageState extends State<VipPage> {
         ),
       ),
     );
+  }
+
+  /// ★ 1031 「立省」金额 = 划线价 − 现价，取整去掉拖尾 .00（促销套餐才显示）
+  String? _promoSave(String money, {bool promo = false}) {
+    if (!promo) return null;
+    final v = double.tryParse(money);
+    if (v == null) return null;
+    final orig = v * (SoftService.instance.cachedConfig?.promo.mul ?? 2);
+    final save = orig - v;
+    if (save <= 0) return null;
+    return save == save.roundToDouble()
+        ? save.toInt().toString()
+        : save.toStringAsFixed(save * 10 % 1 == 0 ? 1 : 2);
   }
 
   /// 展示用划线原价：促销时按后台倍数，未促销时 ×1.5 锚点价（仅展示，不参与下单）
@@ -887,19 +903,4 @@ class _VipPageState extends State<VipPage> {
       if (mounted && _submitting) setState(() => _submitting = false);
     }
   }
-}
-
-/// ★ 1031 促销折角丝带裁剪：右上角三角折角（宽 66 × 高 58，斜边 44px）
-class _PromoRibbonClip extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    return Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.width, 0)
-      ..lineTo(size.width, size.height)
-      ..close();
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
