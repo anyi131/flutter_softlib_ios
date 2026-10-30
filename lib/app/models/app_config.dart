@@ -4,6 +4,46 @@ import 'ui_config.dart';
 
 import '../jicun/jicun_config.dart';
 
+/// ★ 1031 会员促销配置（纯展示：划线原价 = 套餐现价 × mul，扣款价不变）
+class PromoCfg {
+  final bool on;
+  final String title; // 横幅标题，如「限时特惠」
+  final String end; // 结束时间 yyyy-MM-dd HH:mm:ss，空=不显示倒计时
+  final String tip; // 横幅小字，如「全场会员限时 5 折」
+  final double mul; // 划线倍数：原价 = 现价 × mul
+
+  /// 参与促销的套餐下标（0/1/2…，从 0 数；空 = 全部套餐）
+  final List<int> idx;
+
+  /// 套餐角标文案，如「限时特惠 5 折」；空 = 用 tip
+  final String badge;
+
+  const PromoCfg({
+    this.on = false,
+    this.title = '限时特惠',
+    this.end = '',
+    this.tip = '',
+    this.mul = 2,
+    this.idx = const [],
+    this.badge = '',
+  });
+
+  /// 套餐 i 是否参与促销（idx 空 = 全部）
+  bool hit(int i) => idx.isEmpty || idx.contains(i);
+
+  /// 解析 "0,2" / "0，2" / "0 2" → [0,2]；非法 token 丢弃
+  static List<int> _parseIdx(dynamic v) {
+    final s = '${v ?? ''}'.trim();
+    if (s.isEmpty) return const [];
+    final out = <int>[];
+    for (final t in s.split(RegExp(r'[,，\s]+'))) {
+      final n = int.tryParse(t.trim());
+      if (n != null && n >= 0 && !out.contains(n)) out.add(n);
+    }
+    return out;
+  }
+}
+
 /// App 全局配置（来自 /api/softlib/config/index，后台可远程下发）
 class AppConfig {
   final String placard;
@@ -86,6 +126,9 @@ class AppConfig {
   /// ★ 全局界面配置（Tab开关/功能开关/主题/深色模式 —— 后台「界面配置」下发）
   final UiConfig uiConfig;
 
+  /// ★ 1030 会员促销（纯展示，扣款价永远按后台套餐价）
+  final PromoCfg promo;
+
   /// 即存「解析配置」（后台 ui_config.jicun 节点;拉不到为 null,客户端用默认值）
   final dynamic jicunConfig;
 
@@ -137,6 +180,7 @@ class AppConfig {
     this.themePalette = 'aurora',
     this.toolHomeStyle = 'group',
     this.uiConfig = const UiConfig(),
+    this.promo = const PromoCfg(),
     this.jicunConfig,
   });
 
@@ -235,6 +279,18 @@ class AppConfig {
         : _s(json['app_ui_style']),
     uiConfig: _parseUiConfig(json),
     jicunConfig: _parseJicunConfig(json),
+    promo: PromoCfg(
+      on: _i(json['promo_on']) == 1,
+      title: _s(json['promo_title']),
+      end: _s(json['promo_end']),
+      tip: _s(json['promo_tip']),
+      idx: PromoCfg._parseIdx(json['promo_idx']),
+      badge: _s(json['promo_badge']),
+      mul: () {
+        final v = double.tryParse('${json['promo_mul'] ?? ''}');
+        return (v == null || v <= 1) ? 2.0 : v;
+      }(),
+    ),
   );
 
   /// 即存「解析配置」(后台 ui_config.jicun 节点;没有则 null,由客户端兜底默认)
