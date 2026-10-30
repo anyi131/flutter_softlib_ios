@@ -572,8 +572,10 @@ class _VipPageState extends State<VipPage> {
     final plan = _plans[index];
     final selected = _selectedPlan == index;
     final popular = index == 1; // 中间档 = 最受欢迎
-    // ★ 1031：右上角有促销角签时顶部多留 7px，避免角签压住套餐名
+    // ★ 1031：促销开着时整排统一多留 7px 顶部让位带（角签只画在参与卡上），
+    //   保证同一排三张卡的套餐名永远水平对齐，不会歪歪扭扭
     final hasFlag = _promoHit(index);
+    final promoOn = SoftService.instance.cachedConfig?.promo.on ?? false;
     return AppPressable(
       onTap: () => setState(() => _selectedPlan = index),
       child: Transform.scale(
@@ -583,7 +585,7 @@ class _VipPageState extends State<VipPage> {
           duration: const Duration(milliseconds: 180),
           padding: EdgeInsets.fromLTRB(
             6,
-            (popular ? 22 : 18) + (hasFlag ? 7 : 0),
+            (popular ? 22 : 18) + (promoOn ? 7 : 0),
             6,
             18,
           ),
@@ -613,7 +615,7 @@ class _VipPageState extends State<VipPage> {
             children: [
               Column(
                 children: [
-                  SizedBox(height: hasFlag ? 4 : 8),
+                  const SizedBox(height: 8),
                   Text(
                     plan.name,
                     maxLines: 1,
