@@ -1342,16 +1342,26 @@ class AppDetailsLogic extends GetxController {
         // ★ 1027（真机实测）：首次失败大多是「CDN 瞬时拒连」（直链 30 分钟有效期内）        //   先用原直链重连（换新 TCP 连接），只有直链签发超 20 分钟才重新解析。
         //   之前每次重试都 resolveLzy，反而撞上蓝奏云上游抖动，白白浪费重试机会。
         var ok = false;
-        // ★ 1029i：第一次重试先原地 retry = 断点续传，已下好的分片不再重下。
-        //   之前直接删任务重下，34MB 的文件下到 80% 断线等于白费流量。
+        // ★ 1029i：第一次重试先验活再决定怎么续：
+        //   - 原链 1KB 探测 200/206 → 原地 retry（断点续传，不浪费已下分片）
+        //   - 原链 403/410（签名失效）→ 直接重新解析，重放必死就不浪费这次重试
+        //   - 探测失败（本机网络问题）→ 原地 retry 搏一把
         if (_silentRetry == 1 && taskId != null && taskId!.isNotEmpty) {
+          var alive = 0;
           try {
-            final nt0 = await FlutterDownloader.retry(taskId: taskId!);
-            if (nt0 != null && nt0.isNotEmpty) {
-              taskId = nt0;
-              ok = true;
-            }
+            alive = await LzyLine.probe(dowUrl);
           } catch (_) {}
+          if (alive == 403 || alive == 410 || alive == 451) {
+            // 签名已失效：原地 retry 必然再 403，跳过，走下面的重新解析
+          } else {
+            try {
+              final nt0 = await FlutterDownloader.retry(taskId: taskId!);
+              if (nt0 != null && nt0.isNotEmpty) {
+                taskId = nt0;
+                ok = true;
+              }
+            } catch (_) {}
+          }
         }
         int signedAt = 0;
         try {

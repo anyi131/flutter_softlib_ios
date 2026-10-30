@@ -60,6 +60,31 @@ class LzyLine {
     return best;
   }
 
+  /// 探测单条直链，返回 HTTP 状态码（200/206=可下，403/410/451=签名失效），
+  /// 网络层异常返回 0。重试前用它区分「该续传」还是「该重新解析」。
+  static Future<int> probe(String url, {Duration timeout = const Duration(milliseconds: 2500)}) async {
+    final code = await _probe(url, timeout);
+    if (code != null) return 200;
+    // _probe 把非 200/206 也归成 null，无法区分失效/网络断；这里单独再探一次拿真实码
+    final client = HttpClient()
+      ..connectionTimeout = const Duration(seconds: 3)
+      ..userAgent = 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 '
+          '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
+    try {
+      final req = await client.getUrl(Uri.parse(url)).timeout(timeout);
+      req.headers.set(HttpHeaders.rangeHeader, 'bytes=0-1023');
+      final resp = await req.close().timeout(timeout);
+      try {
+        await resp.drain<void>().timeout(timeout);
+      } catch (_) {}
+      return resp.statusCode;
+    } catch (_) {
+      return 0;
+    } finally {
+      client.close(force: true);
+    }
+  }
+
   /// 返回耗时（毫秒），不可用返回 null
   static Future<int?> _probe(String url, Duration timeout) async {
     final sw = Stopwatch()..start();

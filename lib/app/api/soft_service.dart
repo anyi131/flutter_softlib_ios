@@ -23,6 +23,16 @@ class SoftService {
   SoftService._();
   static final SoftService instance = SoftService._();
 
+  /// ★ 1029m：下载结果上报去重（key → 上次上报毫秒），10 秒窗口
+  static final Map<String, int> _dlSeen = <String, int>{};
+  static bool _dlSeenEvery(String k, int now) {
+    final last = _dlSeen[k];
+    if (last != null && now - last < 10000) return true;
+    _dlSeen[k] = now;
+    if (_dlSeen.length > 64) _dlSeen.clear();
+    return false;
+  }
+
   static const String baseUrl = ApiHost.base;
 
   final Dio _dio =
@@ -227,6 +237,11 @@ class SoftService {
     int retryCnt = 0,
     String detail = '',
   }) async {
+    // ★ 1029m：同一次下载会被「状态回调」和「完整性校验」各报一遍，
+    //   后台记录直接翻倍、告警邮件也跟着发两封。10 秒内同 App 同结果只报一次。
+    final _k = '$appId|$ok|${error.hashCode}';
+    final _now = DateTime.now().millisecondsSinceEpoch;
+    if (_dlSeenEvery(_k, _now)) return;
     try {
       await dio.post(
         '/api/softlib/app/download_result',
