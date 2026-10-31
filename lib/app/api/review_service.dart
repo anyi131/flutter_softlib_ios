@@ -4,6 +4,7 @@ import 'api_http.dart';
 import 'package:dio/dio.dart';
 
 import '../models/review_item.dart';
+import '../utils/img_compress.dart';
 import 'api_host.dart';
 import 'user_service.dart';
 
@@ -135,7 +136,7 @@ class ReviewService {
   Future<String> uploadImage(File file) async {
     final form = FormData.fromMap({
       'file': await MultipartFile.fromFile(
-        file.path,
+        (await ImgCompress.upload(file)).path,
         filename: file.path.split('/').last,
       ),
     });

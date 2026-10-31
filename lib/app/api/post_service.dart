@@ -8,6 +8,7 @@ import 'api_host.dart';
 import 'package:dio/dio.dart';
 
 import '../utils/device_info_util.dart';
+import '../utils/img_compress.dart';
 import '../models/post_item.dart';
 import 'user_service.dart';
 
@@ -203,7 +204,7 @@ class PostService {
       // ★ 1014 P2：服务端已加登录校验，上传必须带 token
       'token': UserService.instance.token,
       'file': await MultipartFile.fromFile(
-        file.path,
+        (await ImgCompress.upload(file)).path,
         filename: file.path.split('/').last,
       ),
     });

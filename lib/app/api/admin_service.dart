@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 import 'api_host.dart';
 import 'user_service.dart';
 import '../utils/device_info_util.dart';
+import '../utils/img_compress.dart';
 import '../utils/json_safe.dart';
 
 /// 内嵌管理系统服务（需管理员账号登录）
@@ -373,7 +374,7 @@ class AdminService {
   Future<String> uploadImage(File file) async {
     final form = FormData.fromMap({
       'file': await MultipartFile.fromFile(
-        file.path,
+        (await ImgCompress.upload(file)).path,
         filename: file.path.split('/').last,
       ),
       'token': UserService.instance.token,

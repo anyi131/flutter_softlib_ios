@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 
 import 'app/jicun/jicun_prefs.dart';
@@ -12,6 +13,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_softlib/app/debug/self_check.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_softlib/app/database/database.dart';
@@ -29,6 +31,7 @@ import 'app/design/app_style_controller.dart';
 import 'app/design/glass_theme.dart';
 import 'app/design/glass_perf_guard.dart';
 import 'app/api/soft_service.dart';
+import 'app/utils/deep_links.dart';
 import 'app/api/wish_service.dart';
 import 'app/api/app_sign.dart';
 import 'app/design/app_anim.dart';
@@ -38,6 +41,18 @@ Future<void> main() async {
   // ★ 全局错误捕获：任何未捕获异常都不应导致白屏/闪退
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+    // ★ 1031r sentry_flutter：DSN 为空时完全跳过初始化（零开销）
+    if (kSentryDsn.isNotEmpty) {
+      await SentryFlutter.init(
+        (options) {
+          options.dsn = kSentryDsn;
+          options.environment = kSentryEnv;
+          options.tracesSampleRate = 0.2;
+          options.sendDefaultPii = false;
+          options.attachScreenshot = false;
+        },
+      );
+    }
     // ★ 1016：音效开关读取（本地偏好）
     unawaited(SoundUtil.init());
     // ★ 1028：即存的本机偏好（自动粘贴/存储目录/通知开关）提前读，首屏即可用
@@ -119,6 +134,12 @@ Future<void> main() async {
         ).catchError((_) {});
       } catch (_) {}
       runApp(const SoftLibApp());
+      // ★ 1031r app_links：Deep Link 绑定（首帧后 600ms 兜底延迟已内置）
+      unawaited(Future.delayed(const Duration(seconds: 1), () {
+        try {
+          DeepLinks.bind();
+        } catch (_) {}
+      }));
     } catch (error, stackTrace) {
       _logError('startup', error, stackTrace);
       runApp(_buildErrorApp(error.toString()));
@@ -161,6 +182,12 @@ bool _looksLikeImage(String e) =>
     e.contains('picurl') ||
     e.contains('cover');
 
+// ★ 1031r sentry_flutter：全局崩溃收集
+//   填入 DSN 即启用（SDK 初始化 + 原生崩溃钩子自动挂载）；
+//   为空时 SDK 不初始化，所有 Sentry 调用均为 no-op、零开销零发包。
+const String kSentryDsn = '';
+const String kSentryEnv = 'prod';
+
 void _logError(String tag, Object error, StackTrace? stack) {
   debugPrint('[Softlib][$tag] $error');
   if (stack != null) debugPrint(stack.toString());
@@ -179,6 +206,10 @@ void _logError(String tag, Object error, StackTrace? stack) {
   if (n >= 3) return; // 同一错误最多报 3 次，防刷屏
   _reportSeen[key] = n + 1;
   _reportCount++;
+  // ★ 1031r：同步转发到 Sentry（未初始化时内部 no-op）
+  try {
+    Sentry.captureException(error, stackTrace: stack);
+  } catch (_) {}
   try {
     // 不 await（避免阻塞 UI），但立即发起；异常自己吞掉
     SoftService.reportLogStatic(
@@ -347,7 +378,15 @@ class SoftLibApp extends StatelessWidget {
               MediaQuery.of(Get.context ?? context).platformBrightness ==
                   Brightness.dark);
       _syncSystemBars(isDark);
-      return GetMaterialApp(
+      // ★ 1031r dynamic_color：捕获 Android 12+ / iOS 平台动态色
+      return DynamicColorBuilder(
+        builder: (lightDynamic, darkDynamic) {
+          // ★ 1031r：构建期不能改 Rx 状态（会炸 Obx），挪到帧末注入
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ThemeController.instance
+                .setDynamicSchemes(android: lightDynamic, ios: darkDynamic);
+          });
+          return GetMaterialApp(
         title: '安逸软件汇',
         debugShowCheckedModeBanner: false,
         initialRoute: Routes.splash,
@@ -381,6 +420,8 @@ class SoftLibApp extends StatelessWidget {
         ],
         supportedLocales: const [Locale("zh", "CN"), Locale("en", "US")],
         locale: const Locale("zh", "CN"),
+                );
+        },
       );
     });
   }

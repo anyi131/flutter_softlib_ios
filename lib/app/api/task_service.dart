@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'api_http.dart';
 
 import 'api_host.dart';
 import 'user_service.dart';
 import '../utils/device_info_util.dart';
+import '../utils/img_compress.dart';
 
 /// ★ 1016：任务奖励（做任务 → 输密码 → 领会员）
 class TaskService {
@@ -90,10 +93,11 @@ class TaskService {
 
   /// 上传截图（复用项目已有的 /api/softlib/pic/index）
   Future<String> uploadShot(String path) async {
+    final cf = await ImgCompress.upload(File(path));
     final form = FormData.fromMap({
       'token': UserService.instance.token,
       'file': await MultipartFile.fromFile(
-        path,
+        cf.path,
         filename: path.split('/').last,
       ),
     });

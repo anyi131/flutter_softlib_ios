@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../design/app_anim.dart';
 import '../../utils/err_text.dart';
@@ -168,7 +169,10 @@ class _MessagePageState extends State<MessagePage> {
                             ),
                           );
                         }
-                        return _card(_list[i]);
+                        return _card(_list[i])
+                            .animate(delay: (60 * (i % 12)).ms)
+                            .fadeIn(curve: Curves.easeOutCubic)
+                            .slideY(begin: 0.04, end: 0);
                       },
                     ),
                   ),

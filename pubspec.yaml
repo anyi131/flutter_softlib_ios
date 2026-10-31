@@ -55,6 +55,13 @@ dependencies:
   permission_handler: ^12.0.1
   share_plus: ^10.1.2
   device_info_plus: ^11.2.0
+  # ★ 1031r 开源批一：动态取色主题 + 压缩提速 + token 加固 + 动画 DSL
+  dynamic_color: ^1.8.1
+  flutter_image_compress: ^2.4.0
+  sentry_flutter: ^9.0.0
+  app_links: ^6.3.2
+  flutter_secure_storage: ^10.0.0
+  flutter_animate: ^4.5.2
   qr_flutter: ^4.1.0
   image_gallery_saver_plus: ^4.0.1
   # 存相册到「安逸软件汇」这一层：4.0.1 的 saveFile 没有 album 参数

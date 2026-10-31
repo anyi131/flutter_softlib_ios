@@ -6,6 +6,7 @@ import 'api_host.dart';
 
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide Response;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/device_info_util.dart';
@@ -148,6 +149,9 @@ class UserService {
 
   static const String baseUrl = ApiHost.base;
   static const String _kToken = 'user_token';
+  // ★ 1031r：token 迁入 Keychain/Keystore（读写都过 Secure；SP 里的旧值只读不写，读到即迁移）
+  // v11 起默认启用带硬件背书的加密存储，encryptedSharedPreferences 参数已弃用
+  static const FlutterSecureStorage _secure = FlutterSecureStorage();
   static const String _kUser = 'user_info';
 
   final Dio _dio = ApiHttp.create(
@@ -217,7 +221,9 @@ class UserService {
     //   而全项目读的都是 _kToken（'user_token'）—— 键名不一致，登录态根本没落盘。
     //   更糟的是「我的」页 load() 会先 restore()，用空的 user_token
     //   把内存里的 _token 冲成 ''，于是界面立刻变回未登录。
-    await sp.setString(_kToken, token);
+    await _secure.write(key: _kToken, value: token);
+    await _secure.delete(key: _kToken);
+    await sp.remove(_kToken); // 1031r：不再留 SP 明文
     // ★ 1016 提速：这里**不再等资料请求**（调用方 QQ/密码登录成功后会立刻刷新「我的」，
     //   那一次就够了）。少一个网络往返，授权回来到「登录成功」明显更快。
     //   失败也不清 token —— 刚下发的 token 一定是有效的，
@@ -313,7 +319,16 @@ class UserService {
   /// 启动时恢复登录态
   Future<void> restore() async {
     final sp = await SharedPreferences.getInstance();
-    final t = sp.getString(_kToken) ?? '';
+    // 1031r：优先 Keychain/Keystore；老用户从 SP 迁移（读到即搬走）
+    var t = await _secure.read(key: _kToken) ?? '';
+    if (t.isEmpty) {
+      final legacy = sp.getString(_kToken) ?? '';
+      if (legacy.isNotEmpty) {
+        t = legacy;
+        try { await _secure.write(key: _kToken, value: legacy); } catch (_) {}
+        await sp.remove(_kToken);
+      }
+    }
     // ★ 1016：prefs 里没值的时候不要清掉内存里刚写入的 token
     //   （否则「刚登录 → load() → restore()」这一拍就会把登录态抹掉）
     if (t.isNotEmpty) _token = t;

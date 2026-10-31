@@ -99,9 +99,37 @@ class ThemePalette {
       brandDeep: Color(0xFF1F2937),
       accent: Color(0xFF9CA3AF),
     ),
+
+    // ★ 1031r dynamic_color：第 9 套「跟壁纸取色」。
+    //   颜色为占位（实际色由 ThemeController._applyWallpaper 用平台动态色覆写）；
+    //   平台不支持时落回 byKey(null)=默认蓝紫。
+    ThemePalette(
+      key: 'wallpaper',
+      name: '跟壁纸取色',
+      desc: 'Android 12+ / iOS 从壁纸提取主色',
+      brand: Color(0xFF4B5EF5),
+      brandBright: Color(0xFF6E7DFF),
+      brandDeep: Color(0xFF3A4BD8),
+      accent: Color(0xFFA78BFA),
+    ),
   ];
 
+  /// ★ 1031r dynamic_color：第 9 套「跟壁纸取色」。
+  ///   颜色占位（实际色由 ThemeController._applyWallpaper 用平台动态色覆写）；
+  ///   平台不支持时 _applyWallpaper 落回 byKey(null)=默认蓝紫。
+  static const ThemePalette wallpaper = ThemePalette(
+    key: 'wallpaper',
+    name: '跟壁纸取色',
+    desc: 'Android 12+ / iOS 从壁纸提取主色',
+    brand: Color(0xFF4B5EF5),
+    brandBright: Color(0xFF6E7DFF),
+    brandDeep: Color(0xFF3A4BD8),
+    accent: Color(0xFFA78BFA),
+  );
+
   static ThemePalette byKey(String? k) {
+    // ★ 1031r：wallpaper = 动态取色（第 9 套），实际色由 ThemeController 注入，
+    //   这里兜底给默认蓝紫（平台不支持时也是这个）
     for (final p in all) {
       if (p.key == k) return p;
     }
