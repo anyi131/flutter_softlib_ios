@@ -302,11 +302,13 @@ class _UpdateCardState extends State<_UpdateCard> {
   }
 
   Future<void> _start() async {
-    if (_phase == 'downloading') return;
+    if (_phase == 'downloading' || _phase == 'preparing') return;
     // 权限
     if (await Permission.notification.isDenied) {
       await Permission.notification.request();
     }
+    // ★ 1031：解析期间给即时反馈——正文换「解析下载地址…」加载态，主按钮变加载中
+    if (mounted) setState(() => _phase = 'preparing');
     // ═══ 解析直链：三级降级（本地 → 服务端 → 浏览器）═══
     //   ★ 1016：原来只有「服务端解析」一跳，未登录/票据失败就直接跳浏览器，
     //   用户看到的是「没解析就跳浏览器」。现在更新包也走完整降级链。
@@ -353,12 +355,13 @@ class _UpdateCardState extends State<_UpdateCard> {
           ? SoftService.lastParseError
           : LzyLocalParser.lastError;
       if (mounted) {
+        setState(() => _phase = 'idle'); // 恢复可重试原状，再跳浏览器
         ToastUtil.info(why.isEmpty ? '解析失败，改用浏览器下载' : '解析失败（$why），改用浏览器');
       }
       _fallbackBrowser();
       return;
     }
-    setState(() => _phase = 'downloading');
+    if (mounted) setState(() => _phase = 'downloading');
     final taskId = await FlutterDownloader.enqueue(
       url: direct,
       fileName: 'softlib_update_${DateTime.now().millisecondsSinceEpoch}.apk',
@@ -368,6 +371,7 @@ class _UpdateCardState extends State<_UpdateCard> {
       openFileFromNotification: true,
     );
     if (taskId == null) {
+      setState(() => _phase = 'idle');
       _fallbackBrowser();
       return;
     }
@@ -646,6 +650,7 @@ class _UpdateCardState extends State<_UpdateCard> {
       fontWeight: FontWeight.w700,
       color: isDark ? C.t3 : C.lt3,
     );
+    final busy = _phase == 'preparing'; // ★ 1031 解析中：按钮加载态、不可点
     return Padding(
       padding: EdgeInsets.fromLTRB(compact ? 16 : 18, 4, compact ? 16 : 18, 14),
       child: Column(
@@ -653,28 +658,43 @@ class _UpdateCardState extends State<_UpdateCard> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppPressable(
-            onTap: _phase == 'done'
-                ? _install
-                : (_phase == 'failed'
-                      ? () => setState(() => _phase = 'idle')
-                      : _start),
+            onTap: busy
+                ? null
+                : (_phase == 'done'
+                      ? _install
+                      : (_phase == 'failed'
+                            ? () => setState(() => _phase = 'idle')
+                            : _start)),
             child: Container(
               height: 46,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                gradient: C.brandGradient,
+                gradient: busy
+                    ? LinearGradient(
+                        colors: [C.brand.withAlpha(150), C.accent.withAlpha(150)],
+                      )
+                    : C.brandGradient,
                 borderRadius: BorderRadius.circular(999),
               ),
-              child: Text(
-                _phase == 'done'
-                    ? '立即安装'
-                    : (_phase == 'failed' ? '重试' : '立即更新'),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
+              child: busy
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      _phase == 'done'
+                          ? '立即安装'
+                          : (_phase == 'failed' ? '重试' : '立即更新'),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(height: 2),
@@ -1027,6 +1047,44 @@ class _UpdateCardState extends State<_UpdateCard> {
     );
   }
 
+  /// ★ 1031：解析中加载态（点击「立即更新」到开始下载之间的即时反馈）
+  Widget _preparingBody() {
+    final isDark = context.isDark;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+      child: Row(
+        children: [
+          const SizedBox(
+            width: 30,
+            height: 30,
+            child: CircularProgressIndicator(strokeWidth: 2.6),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '正在准备下载…',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    color: isDark ? C.t1 : C.lt1,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '正在解析下载地址，请稍候',
+                  style: TextStyle(fontSize: 12, color: isDark ? C.t3 : C.lt3),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ─────────── 进度/结果态（下载中 / 已完成 / 失败）───────────
   Widget _progressBody() {
     final isDark = context.isDark;
@@ -1140,6 +1198,7 @@ class _UpdateCardState extends State<_UpdateCard> {
   /// list 模板专用正文：把更新说明按行拆成「圆点条目」清单
   ///   —— 与其它模板的整段文字排版是**结构级差异**
   Widget _listBody() {
+    if (_phase == 'preparing') return _preparingBody();
     if (_phase != 'idle') return _progressBody();
     final isDark = context.isDark;
     final lines = _contentToText(widget.content)
@@ -1448,6 +1507,7 @@ class _UpdateCardState extends State<_UpdateCard> {
 
   /// timeline 模板正文：左侧竖线 + 圆点 + 右侧文字
   Widget _timelineBody() {
+    if (_phase == 'preparing') return _preparingBody();
     if (_phase != 'idle') return _progressBody();
     final isDark = context.isDark;
     final lines = _contentToText(widget.content)
