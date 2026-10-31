@@ -345,6 +345,11 @@ class UserService {
     if (info != null) _user = info;
     final sp = await SharedPreferences.getInstance();
     await sp.setString(_kToken, _token);
+    // ★ 1031u：同步写 secure——restore() 优先读 Keychain/Keystore，
+    //   只写 SP 的话，重启后 secure 里的旧迁移值会反过来盖掉新登录
+    try {
+      await _secure.write(key: _kToken, value: _token);
+    } catch (_) {}
     if (_user != null) {
       final u = _user;
       if (u != null) await sp.setString(_kUser, jsonEncode(u.toJson()));
@@ -358,6 +363,11 @@ class UserService {
     final sp = await SharedPreferences.getInstance();
     await sp.remove(_kToken);
     await sp.remove(_kUser);
+    // ★ 1031u：secure storage 也要清——否则杀 App 重开 restore() 会
+    //   从 Keychain/Keystore 读回旧 token，退出登录形同虚设
+    try {
+      await _secure.delete(key: _kToken);
+    } catch (_) {}
     if (t.isNotEmpty) {
       try {
         await _dio.post('/api/softlib/user/logout', data: {'token': t});
