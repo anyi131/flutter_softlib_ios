@@ -153,11 +153,7 @@ class _CardShopPageState extends State<CardShopPage>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF5B6CFF), Color(0xFF8B5CF6)],
-        ),
+        gradient: C.brandGradient,
         borderRadius: BorderRadius.circular(R.lg),
         boxShadow: [
           BoxShadow(

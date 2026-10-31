@@ -319,10 +319,9 @@ class _VipPageState extends State<VipPage> {
         padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
         decoration: BoxDecoration(
           color: context.isDark
-              ? const Color(0xFF141210)
-              : const Color(0xFF17130C),
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
+              ? Deco.promoBg2(context)
+              : Deco.promoBg(context),
+          borderRadius: BorderRadius.circular(14),          boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(context.isDark ? 90 : 46),
               blurRadius: 16,
@@ -350,8 +349,8 @@ class _VipPageState extends State<VipPage> {
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFFE8CE93),
+                    style: TextStyle(
+                      color: Deco.promoText(context),
                       fontSize: 14.5,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 2.5,
@@ -364,7 +363,7 @@ class _VipPageState extends State<VipPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: const Color(0xFFE8CE93).withAlpha(120),
+                        color: Deco.promoText(context).withAlpha(120),
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                         letterSpacing: 0.3,
@@ -381,7 +380,7 @@ class _VipPageState extends State<VipPage> {
                   Text(
                     '距结束',
                     style: TextStyle(
-                      color: const Color(0xFFE8CE93).withAlpha(110),
+                      color: Deco.promoText(context).withAlpha(110),
                       fontSize: 9.5,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1,
@@ -390,8 +389,8 @@ class _VipPageState extends State<VipPage> {
                   const SizedBox(height: 2),
                   Text(
                     _promoCountdown(end),
-                    style: const TextStyle(
-                      color: Color(0xFFE8CE93),
+                    style: TextStyle(
+                      color: Deco.promoText(context),
                       fontSize: 13.5,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.6,
@@ -450,13 +449,13 @@ class _VipPageState extends State<VipPage> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF241F18),
+                  color: Deco.promoBg2(context),
                   borderRadius: BorderRadius.circular(R.full),
                 ),
-                child: const Text(
+                child: Text(
                   'VIP PRO',
                   style: TextStyle(
-                    color: Color(0xFFF7D57A),
+                    color: Deco.promoText(context),
                     fontWeight: FontWeight.w900,
                     fontSize: 12,
                     letterSpacing: 0.6,
@@ -464,9 +463,9 @@ class _VipPageState extends State<VipPage> {
                 ),
               ),
               const Spacer(),
-              const Icon(
+              Icon(
                 Icons.workspace_premium_rounded,
-                color: Color(0xFF241F18),
+                color: Deco.promoBg2(context),
                 size: 26,
               ),
             ],
@@ -478,10 +477,10 @@ class _VipPageState extends State<VipPage> {
               final u = UserService.instance.user;
               final isVip = u?.isVipActive ?? false;
               if (!isVip) {
-                return const Text(
+                return Text(
                   '解锁完整软件库体验',
                   style: TextStyle(
-                    color: Color(0xFF241F18),
+                    color: Deco.promoBg2(context),
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
                   ),
@@ -491,10 +490,10 @@ class _VipPageState extends State<VipPage> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     '您已是尊贵会员',
                     style: TextStyle(
-                      color: Color(0xFF241F18),
+                      color: Deco.promoBg2(context),
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
                     ),
@@ -504,7 +503,7 @@ class _VipPageState extends State<VipPage> {
                     Text(
                       '有效期至 $exp · 续费可在到期时间上顺延',
                       style: TextStyle(
-                        color: const Color(0xFF241F18).withAlpha(190),
+                        color: Deco.promoBg2(context).withAlpha(190),
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                       ),
@@ -518,7 +517,7 @@ class _VipPageState extends State<VipPage> {
           Text(
             '会员资源、专属标识、优先服务一次开通，所有套餐均自动对接后台价格。',
             style: TextStyle(
-              color: const Color(0xFF241F18).withAlpha(190),
+              color: Deco.promoBg2(context).withAlpha(190),
               fontSize: 13,
               height: 1.5,
             ),
@@ -542,7 +541,7 @@ class _VipPageState extends State<VipPage> {
                         child: Icon(
                           benefits[i].$1,
                           size: 19,
-                          color: const Color(0xFF241F18),
+                          color: Deco.promoBg2(context),
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -550,8 +549,8 @@ class _VipPageState extends State<VipPage> {
                         benefits[i].$2,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF241F18),
+                        style: TextStyle(
+                          color: Deco.promoBg2(context),
                           fontSize: 10.5,
                           fontWeight: FontWeight.w800,
                         ),
@@ -682,13 +681,13 @@ class _VipPageState extends State<VipPage> {
                               vertical: 1.5,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF17130C),
+                              color: Deco.promoBg(context),
                               borderRadius: BorderRadius.circular(5),
                             ),
                             child: Text(
                               '立省$save',
-                              style: const TextStyle(
-                                color: Color(0xFFE8CE93),
+                              style: TextStyle(
+                                color: Deco.promoText(context),
                                 fontSize: 8.5,
                                 height: 1.2,
                                 fontWeight: FontWeight.w800,
@@ -725,10 +724,10 @@ class _VipPageState extends State<VipPage> {
                           ),
                         ],
                       ),
-                      child: const Text(
+                      child: Text(
                         '最受欢迎',
                         style: TextStyle(
-                          color: Color(0xFF241F18),
+                          color: Deco.promoBg2(context),
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
                         ),
@@ -743,9 +742,9 @@ class _VipPageState extends State<VipPage> {
                   right: 0,
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(9, 4, 9, 5),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF17130C),
-                      borderRadius: BorderRadius.only(
+                    decoration: BoxDecoration(
+                      color: Deco.promoBg(context),
+                      borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(16),
                         bottomLeft: Radius.circular(14),
                       ),
@@ -754,8 +753,8 @@ class _VipPageState extends State<VipPage> {
                       _planPromoLabel(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFFE8CE93),
+                      style: TextStyle(
+                        color: Deco.promoText(context),
                         fontSize: 9.5,
                         height: 1,
                         fontWeight: FontWeight.w800,

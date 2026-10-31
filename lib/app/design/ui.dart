@@ -136,6 +136,17 @@ class Deco {
 
   static bool dark(BuildContext c) => Theme.of(c).brightness == Brightness.dark;
 
+  /// ★ 1031 促销配色对（浅/深模式各一套，会员页横幅/角签/立省胶囊统一引用）。
+  /// 金色系保持「促销=金」的品牌联想，深色模式降低对比防刺眼。
+  static Color promoBg(BuildContext c) =>
+      dark(c) ? const Color(0xFF1C1812) : const Color(0xFF17130C);
+  static Color promoBg2(BuildContext c) =>
+      dark(c) ? const Color(0xFF2A2418) : const Color(0xFF241C0D);
+  static Color promoText(BuildContext c) =>
+      dark(c) ? const Color(0xFFE8CE93) : const Color(0xFFF7D57A);
+  static Color promoTextDim(BuildContext c) =>
+      dark(c) ? const Color(0xFFB39B6B) : const Color(0xFFB39B6B);
+
   /// 主背景：浅色页面底 + 柔和彩色光晕（浅色为主）
   /// ★ fit: expand 保证无论父级约束如何都铺满，避免转场/首帧露出底色
   /// ★ RepaintBoundary：光晕是静态的，隔离后滚动/动画时不会跟着重绘

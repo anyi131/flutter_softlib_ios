@@ -714,7 +714,7 @@ class _AppComponentState extends State<AppComponent> {
                     left: 10,
                     child: Row(
                       children: [
-                        if (a.isNew) _badge('NEW', const Color(0xFFFF6B35)),
+                        if (a.isNew) _badge('NEW', C.warning),
                         if (vip) ...[
                           if (a.isNew) const SizedBox(width: 6),
                           _badge('会员', C.gold),
@@ -856,7 +856,7 @@ class _AppComponentState extends State<AppComponent> {
                   width: 6,
                   height: 6,
                   decoration: const BoxDecoration(
-                    color: Color(0xFFFF6B35),
+                    color: C.warning,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -990,9 +990,7 @@ class _AppComponentState extends State<AppComponent> {
                         vertical: 1.5,
                       ),
                       decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFFFF6B35), Color(0xFFFB923C)],
-                        ),
+                        color: C.warning,
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(8),
                           bottomRight: Radius.circular(8),
@@ -1142,16 +1140,14 @@ class _AppComponentState extends State<AppComponent> {
                           vertical: 1.5,
                         ),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFFF6B35), Color(0xFFFB923C)],
-                          ),
+                          color: C.warning,
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(8),
                             bottomRight: Radius.circular(8),
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFFF6B35).withAlpha(120),
+                              color: C.warning.withAlpha(120),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),

@@ -414,7 +414,7 @@ class NavTemplates {
                           ),
                           constraints: const BoxConstraints(maxWidth: 120),
                           decoration: BoxDecoration(
-                            color: isDark ? C.t1 : const Color(0xFF20242E),
+                            color: isDark ? C.t1 : C.lt1,
                             borderRadius: BorderRadius.circular(R.sm),
                           ),
                           child: Text(

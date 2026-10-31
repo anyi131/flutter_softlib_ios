@@ -403,7 +403,7 @@ class MineComponent extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: context.isDark ? C.bg0 : const Color(0xFF171A22),
+            color: context.isDark ? C.bg0 : C.lt1,
             borderRadius: BorderRadius.circular(R.xl),
             border: Border.all(color: C.brand.withAlpha(80)),
             boxShadow: [
@@ -1078,7 +1078,7 @@ class MineComponent extends StatelessWidget {
   }
 
   Widget _defaultAvatar(BuildContext context) => Container(
-    color: context.isDark ? C.bg2 : const Color(0xFFEDF0F7),
+    color: context.isDark ? C.bg2 : C.lbg2,
     alignment: Alignment.center,
     child: Icon(Icons.person_rounded, size: 34, color: C.brandBright),
   );
@@ -1219,9 +1219,9 @@ class MineComponent extends StatelessWidget {
                 color: Colors.white.withAlpha(50),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.workspace_premium_rounded,
-                color: Color(0xFF3A2E10),
+                color: Deco.promoBg(context),
                 size: 21,
               ),
             ),
@@ -1230,10 +1230,10 @@ class MineComponent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     '赞助会员',
                     style: TextStyle(
-                      color: Color(0xFF3A2E10),
+                      color: Deco.promoBg(context),
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
                     ),
@@ -1247,8 +1247,8 @@ class MineComponent extends StatelessWidget {
                               : '有效期至 ${logic.vipExpire}'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xCC3A2E10),
+                    style: TextStyle(
+                      color: Deco.promoBg(context).withAlpha(200),
                       fontSize: 12,
                     ),
                   ),
@@ -1258,14 +1258,14 @@ class MineComponent extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF2B2410),
+                color: Deco.promoBg(context),
                 borderRadius: BorderRadius.circular(R.full),
               ),
               // v52f #11：已是会员显示「立即续费」，未开通才显示「立即开通」
               child: Text(
                 logic.isLoggedIn && logic.isVip ? '立即续费' : '立即开通',
-                style: const TextStyle(
-                  color: Color(0xFFF7D57A),
+                style: TextStyle(
+                  color: Deco.promoText(context),
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),

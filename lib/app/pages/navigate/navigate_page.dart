@@ -45,7 +45,7 @@ class _NavigatePageState extends State<NavigatePage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
-            Icon(Icons.exit_to_app_rounded, color: Color(0xFFFB7185), size: 22),
+            Icon(Icons.exit_to_app_rounded, color: C.danger, size: 22),
             SizedBox(width: 9),
             Text(
               '退出应用',
@@ -64,7 +64,7 @@ class _NavigatePageState extends State<NavigatePage> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFFB7185),
+              backgroundColor: C.danger,
             ),
             onPressed: () => Navigator.pop(c, true),
             child: const Text('退出'),

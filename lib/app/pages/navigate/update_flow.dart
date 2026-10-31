@@ -1038,7 +1038,7 @@ class _UpdateCardState extends State<_UpdateCard> {
           children: [
             const Icon(
               Icons.check_circle_rounded,
-              color: Color(0xFF34D399),
+              color: C.success,
               size: 36,
             ),
             const SizedBox(width: 12),
@@ -1070,7 +1070,7 @@ class _UpdateCardState extends State<_UpdateCard> {
           children: [
             const Icon(
               Icons.error_outline_rounded,
-              color: Color(0xFFFB7185),
+              color: C.danger,
               size: 34,
             ),
             const SizedBox(width: 12),

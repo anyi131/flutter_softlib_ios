@@ -229,7 +229,7 @@ class _SquareComponentState extends State<SquareComponent> {
                   fontWeight: sel ? FontWeight.w800 : FontWeight.w500,
                   color: sel
                       ? Colors.white
-                      : (isDark ? C.t2 : const Color(0xFF4B5563)),
+                      : (isDark ? C.t2 : C.lt2),
                 ),
               ),
             ),
