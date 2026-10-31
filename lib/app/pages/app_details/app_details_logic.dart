@@ -612,8 +612,13 @@ class AppDetailsLogic extends GetxController {
   }
 
   bool _askedInstall = false;
+  // ★ 1031u：完成信号有并发双路（isolate 回调 + 700ms 轮询），
+  //   bool 检查与置位之间存在 await 空档 → 两路同时通过 → 弹窗两次。
+  //   改为同步置位 + 完成计数（计数仅供诊断）。
+  int _completeHandledCount = 0;
   Future<void> _onDownloadComplete() async {
     if (_askedInstall) return;
+    _askedInstall = true; // ★ 同步先占坑，async 竞态两路只会活一路
     // ★ v331s：完成校验以「文件实际大小」为准——下载器偶发把断流判为
     //   complete（上一版用 _shownProgress 判断会误伤正常完成：显示层
     //   滞后于真实进度）。文件大小 ≥ 期望大小的 90% 视为真完成；
@@ -680,7 +685,9 @@ class AppDetailsLogic extends GetxController {
       logger.e('[download] 校验异常(放行): $e');
     }
     if (!fileOk) {
-      _askedInstall = false;
+      // ★ 1031u：校验失败只回 idle，不放开 _askedInstall——
+      //   若放开，另一路完成信号会立刻再弹一次错误提示；
+      //   重新下载成功时 addDownload 处会复位（1159 行）
       _uiPhase = phaseIdle;
       _shownProgress = 0;
       _explicitReset = true;
@@ -745,6 +752,7 @@ class AppDetailsLogic extends GetxController {
       ),
     );
     _askedInstall = false;
+    _completeHandledCount++;
     if (go == true) {
       await openDownloadFile();
     }
