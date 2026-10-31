@@ -332,7 +332,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   style: TextStyle(
                     fontSize: 13.5,
                     height: 1.9,
-                    color: isDark ? Colors.grey[300] : const Color(0xFF41454B),
+                    color: isDark ? Colors.grey[300] : C.lt2,
                   ),
                 ),
                 if (needToggle) ...[
@@ -914,12 +914,12 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   ),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFFF6B35), Color(0xFFFB923C)],
+                      colors: [C.accentOrange, C.warning],
                     ),
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFF6B35).withAlpha(140),
+                        color: C.accentOrange.withAlpha(140),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -1409,7 +1409,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             fontSize: 14,
             height: 1.9,
             letterSpacing: 0.1,
-            color: isDark ? Colors.grey[300] : const Color(0xFF41454B),
+            color: isDark ? Colors.grey[300] : C.lt2,
           ),
         ),
         if (desc.length > 120) ...[
@@ -1466,7 +1466,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   child: Container(
                     color: isDark
                         ? Colors.white.withAlpha(18)
-                        : const Color(0xFFF0F1F5),
+                        : C.lbg2,
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         maxWidth: MediaQuery.of(context).size.width * 0.88,
@@ -1509,7 +1509,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF262626) : const Color(0xFFF6F7F9),
+            color: isDark ? C.bg2 : C.lbg2,
             borderRadius: BorderRadius.circular(11),
           ),
           child: Row(
@@ -1789,7 +1789,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 color: accent == null
                     ? (dark
                           ? Colors.white.withAlpha(10)
-                          : const Color(0xFFF2F4F9))
+                          : C.lbg2)
                     : accent.withAlpha(dark ? 26 : 14),
               ),
               clipBehavior: Clip.antiAlias,
@@ -2102,7 +2102,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               label: '取消',
               icon: Icons.close_rounded,
               onTap: download.cancelDownload,
-              color: const Color(0xFF6B7280),
+              color: C.lt2,
             ),
           ],
         ),

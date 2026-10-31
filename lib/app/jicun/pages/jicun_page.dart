@@ -362,7 +362,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
           children: [
             const Icon(
               Icons.campaign_rounded,
-              color: Color(0xFFB45309),
+              color: C.warning,
               size: 18,
             ),
             const SizedBox(width: 8),
@@ -372,7 +372,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
                 style: const TextStyle(
                   fontSize: 13,
                   height: 1.5,
-                  color: Color(0xFFB45309),
+                  color: C.warning,
                 ),
               ),
             ),

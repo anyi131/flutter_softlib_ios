@@ -118,8 +118,8 @@ class _ToastWidgetState extends State<_ToastWidget>
                   ),
                   decoration: BoxDecoration(
                     color: context.isDark
-                        ? const Color(0xF21A1D26)
-                        : const Color(0xF2FFFFFF),
+                        ? C.bg2.withAlpha(242)
+                        : C.lbg1.withAlpha(242),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: color.withAlpha(context.isDark ? 90 : 70),

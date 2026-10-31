@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../design/ui.dart';
 import '../../widgets/mpv_core.dart';
 
 /// ★ 1028：播放页推翻重做（音乐 / 影视共用一套）
@@ -361,7 +362,7 @@ class _VideoPageState extends State<VideoPage> {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Color(0xD9000000), Color(0x00000000)],
+                colors: Deco.scrimSoft,
               ),
             ),
             child: Row(
@@ -391,7 +392,7 @@ class _VideoPageState extends State<VideoPage> {
                             _subline,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Color(0x99FFFFFF), fontSize: 11.5),
+                            style: TextStyle(color: Colors.white.withAlpha(153), fontSize: 11.5),
                           ),
                         ),
                     ],
@@ -430,7 +431,7 @@ class _VideoPageState extends State<VideoPage> {
               gradient: LinearGradient(
                 begin: Alignment.bottomCenter,
                 end: Alignment.topCenter,
-                colors: [Color(0xE6000000), Color(0x00000000)],
+                colors: Deco.scrim,
               ),
             ),
             child: Column(
@@ -438,9 +439,9 @@ class _VideoPageState extends State<VideoPage> {
               children: [
                 Row(
                   children: [
-                    Text(_fmt(pos), style: const TextStyle(color: Color(0xCCFFFFFF), fontSize: 11.5)),
+                    Text(_fmt(pos), style: TextStyle(color: Colors.white.withAlpha(204), fontSize: 11.5)),
                     Expanded(child: _slider(pos, dur)),
-                    Text(_fmt(dur), style: const TextStyle(color: Color(0xCCFFFFFF), fontSize: 11.5)),
+                    Text(_fmt(dur), style: TextStyle(color: Colors.white.withAlpha(204), fontSize: 11.5)),
                   ],
                 ),
                 const SizedBox(height: 2),
@@ -485,7 +486,7 @@ class _VideoPageState extends State<VideoPage> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        const ColoredBox(color: Color(0xFF0B0B0F)),
+        const ColoredBox(color: C.bg0),
         if (p != null && p.isNotEmpty)
           ImageFiltered(
             imageFilter: ui.ImageFilter.blur(sigmaX: 42, sigmaY: 42),
@@ -495,7 +496,7 @@ class _VideoPageState extends State<VideoPage> {
               errorBuilder: (_, __, ___) => const SizedBox.shrink(),
             ),
           ),
-        const ColoredBox(color: Color(0xB3000000)),
+        ColoredBox(color: Colors.black.withAlpha(179)),
       ],
     );
   }
@@ -549,7 +550,7 @@ class _VideoPageState extends State<VideoPage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Color(0x8CFFFFFF), fontSize: 13),
+                        style: TextStyle(color: Colors.white.withAlpha(140), fontSize: 13),
                       ),
                     ),
                 ],
@@ -566,8 +567,8 @@ class _VideoPageState extends State<VideoPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(_fmt(pos), style: const TextStyle(color: Color(0x99FFFFFF), fontSize: 11)),
-                        Text(_fmt(dur), style: const TextStyle(color: Color(0x99FFFFFF), fontSize: 11)),
+                        Text(_fmt(pos), style: TextStyle(color: Colors.white.withAlpha(153), fontSize: 11)),
+                        Text(_fmt(dur), style: TextStyle(color: Colors.white.withAlpha(153), fontSize: 11)),
                       ],
                     ),
                   ),
@@ -619,8 +620,8 @@ class _VideoPageState extends State<VideoPage> {
         height: side,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(26),
-          boxShadow: const [
-            BoxShadow(color: Color(0x73000000), blurRadius: 40, offset: Offset(0, 18)),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withAlpha(115), blurRadius: 40, offset: Offset(0, 18)),
           ],
         ),
         clipBehavior: Clip.antiAlias,
@@ -641,22 +642,22 @@ class _VideoPageState extends State<VideoPage> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF3A3A46), Color(0xFF15151B)],
+          colors: [C.bg3, C.bg1],
         ),
       ),
-      child: const Center(
-        child: Icon(Icons.music_note_rounded, size: 76, color: Color(0x66FFFFFF)),
+      child: Center(
+        child: Icon(Icons.music_note_rounded, size: 76, color: Colors.white.withAlpha(102)),
       ),
     );
   }
 
   Widget _rotatingDot(bool playing) => AnimatedOpacity(
         opacity: playing ? 1 : .35,
-        duration: const Duration(milliseconds: 240),
+        duration: Duration(milliseconds: 240),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
           decoration: BoxDecoration(
-            color: const Color(0x1AFFFFFF),
+            color: Colors.white.withAlpha(26),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
@@ -688,11 +689,11 @@ class _VideoPageState extends State<VideoPage> {
         data: SliderTheme.of(context).copyWith(
           trackHeight: thick ? 4 : 2.5,
           thumbShape: RoundSliderThumbShape(enabledThumbRadius: thick ? 6 : 4.5),
-          overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+          overlayShape: RoundSliderOverlayShape(overlayRadius: 14),
           activeTrackColor: Colors.white,
-          inactiveTrackColor: const Color(0x3DFFFFFF),
+          inactiveTrackColor: Colors.white.withAlpha(61),
           thumbColor: Colors.white,
-          overlayColor: const Color(0x26FFFFFF),
+          overlayColor: Colors.white.withAlpha(38),
         ),
         child: Slider(
           min: 0,
@@ -724,10 +725,10 @@ class _VideoPageState extends State<VideoPage> {
       child: Container(
         width: size,
         height: size,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.white,
-          boxShadow: [BoxShadow(color: Color(0x4D000000), blurRadius: 20, offset: Offset(0, 8))],
+          boxShadow: [BoxShadow(color: Colors.black.withAlpha(77), blurRadius: 20, offset: Offset(0, 8))],
         ),
         child: Icon(
           playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
@@ -760,7 +761,7 @@ class _VideoPageState extends State<VideoPage> {
         width: 38,
         height: 38,
         alignment: Alignment.center,
-        decoration: const BoxDecoration(color: Color(0x1AFFFFFF), shape: BoxShape.circle),
+        decoration: BoxDecoration(color: Colors.white.withAlpha(26), shape: BoxShape.circle),
         child: Icon(icon, size: size, color: Colors.white),
       ),
     );
@@ -772,9 +773,9 @@ class _VideoPageState extends State<VideoPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
         decoration: BoxDecoration(
-          color: const Color(0x1AFFFFFF),
+          color: Colors.white.withAlpha(26),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0x1FFFFFFF)),
+          border: Border.all(color: Colors.white.withAlpha(31)),
         ),
         child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 11.5)),
       ),
@@ -787,7 +788,7 @@ class _VideoPageState extends State<VideoPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
         decoration: BoxDecoration(
-          color: primary ? Colors.white : const Color(0x1AFFFFFF),
+          color: primary ? Colors.white : Colors.white.withAlpha(26),
           borderRadius: BorderRadius.circular(22),
         ),
         child: Text(
@@ -822,7 +823,7 @@ class _VideoPageState extends State<VideoPage> {
   Future<void> _speedSheet() async {
     final picked = await showModalBottomSheet<double>(
       context: context,
-      backgroundColor: const Color(0xFF14141A),
+      backgroundColor: C.bg1,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
@@ -842,12 +843,12 @@ class _VideoPageState extends State<VideoPage> {
                 title: Text(
                   '${s}x',
                   style: TextStyle(
-                    color: s == _speed ? const Color(0xFF6EE7A8) : Colors.white,
+                    color: s == _speed ? C.mint : Colors.white,
                     fontSize: 14,
                   ),
                 ),
                 trailing: s == _speed
-                    ? const Icon(Icons.check_rounded, size: 18, color: Color(0xFF6EE7A8))
+                    ? const Icon(Icons.check_rounded, size: 18, color: C.mint)
                     : null,
                 onTap: () => Navigator.pop(ctx, s),
               ),
@@ -865,7 +866,7 @@ class _VideoPageState extends State<VideoPage> {
     if (widget.episodes.isEmpty) return;
     final picked = await showModalBottomSheet<int>(
       context: context,
-      backgroundColor: const Color(0xFF14141A),
+      backgroundColor: C.bg1,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
@@ -891,7 +892,7 @@ class _VideoPageState extends State<VideoPage> {
                     const SizedBox(width: 8),
                     Text(
                       '共 ${widget.episodes.length}',
-                      style: const TextStyle(color: Color(0x66FFFFFF), fontSize: 11.5),
+                      style: TextStyle(color: Colors.white.withAlpha(102), fontSize: 11.5),
                     ),
                     const Spacer(),
                     _roundBtn(Icons.close_rounded, () => Navigator.pop(ctx), size: 18),
@@ -911,11 +912,11 @@ class _VideoPageState extends State<VideoPage> {
                         width: 26,
                         child: cur
                             ? const Icon(Icons.graphic_eq_rounded,
-                                size: 16, color: Color(0xFF6EE7A8))
+                                size: 16, color: C.mint)
                             : Text(
                                 '${i + 1}',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(color: Color(0x59FFFFFF), fontSize: 11.5),
+                                style: TextStyle(color: Colors.white.withAlpha(89), fontSize: 11.5),
                               ),
                       ),
                       title: Text(
@@ -923,7 +924,7 @@ class _VideoPageState extends State<VideoPage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: cur ? const Color(0xFF6EE7A8) : const Color(0xE6FFFFFF),
+                          color: cur ? C.mint : Colors.white.withAlpha(230),
                           fontSize: 13.5,
                           fontWeight: cur ? FontWeight.w600 : FontWeight.w400,
                         ),
@@ -945,14 +946,14 @@ class _VideoPageState extends State<VideoPage> {
   Widget _stateLayer() {
     if (_failed) {
       return Container(
-        color: const Color(0xE6000000),
+        color: Colors.black.withAlpha(230),
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.wifi_off_rounded, color: Color(0xCCFFFFFF), size: 38),
+                Icon(Icons.wifi_off_rounded, color: Colors.white.withAlpha(204), size: 38),
                 const SizedBox(height: 14),
                 const Text(
                   '播放失败',
@@ -964,7 +965,7 @@ class _VideoPageState extends State<VideoPage> {
                   maxLines: 3,
                   textAlign: TextAlign.center,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Color(0x8CFFFFFF), fontSize: 12, height: 1.5),
+                  style: TextStyle(color: Colors.white.withAlpha(140), fontSize: 12, height: 1.5),
                 ),
                 const SizedBox(height: 20),
                 Row(

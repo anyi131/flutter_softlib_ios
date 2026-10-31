@@ -599,7 +599,7 @@ class MineLogic extends GetxController {
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFF1B1D2B), Color(0xFF12131C)],
+              colors: [C.bg2, C.bg0],
             ),
           ),
           child: Column(
@@ -608,11 +608,11 @@ class MineLogic extends GetxController {
               // ── 头部 ──
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 18, 14, 16),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFF3A2E10), Color(0xFF1B1D2B)],
+                    colors: [C.gold.withAlpha(55), C.bg2],
                   ),
                   borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                 ),
@@ -622,12 +622,12 @@ class MineLogic extends GetxController {
                       padding: const EdgeInsets.all(9),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFFFFD54F), Color(0xFFF59E0B)],
+                          colors: [C.amber, C.warning],
                         ),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFF59E0B).withAlpha(90),
+                            color: C.warning.withAlpha(90),
                             blurRadius: 14,
                             offset: const Offset(0, 4),
                           ),
@@ -857,17 +857,17 @@ class MineLogic extends GetxController {
                           title,
                           style: const TextStyle(
                             fontSize: 9.5,
-                            color: Color(0xFFC9BEFF),
+                            color: C.violet,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
                       const SizedBox(width: 5),
                     ],
-                    if (isAdmin) _miniTag('管理', const Color(0xFFEF4444)),
+                    if (isAdmin) _miniTag('管理', C.danger),
                     if (isVip) ...[
                       const SizedBox(width: 4),
-                      _miniTag('会员', const Color(0xFFF59E0B)),
+                      _miniTag('会员', C.warning),
                     ],
                     if (title.isEmpty && !isAdmin && !isVip)
                       Text(
@@ -892,7 +892,7 @@ class MineLogic extends GetxController {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFFFFD54F),
+                  color: C.amber,
                 ),
               ),
               if ((double.tryParse(vipAmt) ?? 0) > 0 ||
@@ -969,7 +969,7 @@ class MineLogic extends GetxController {
           children: [
             Icon(
               Icons.monetization_on_rounded,
-              color: Color(0xFFFB923C),
+              color: C.accentOrange,
               size: 21,
             ),
             SizedBox(width: 9),
@@ -995,10 +995,10 @@ class MineLogic extends GetxController {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFB923C).withAlpha(dark ? 36 : 22),
+                    color: C.accentOrange.withAlpha(dark ? 36 : 22),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFFFB923C).withAlpha(70),
+                      color: C.accentOrange.withAlpha(70),
                     ),
                   ),
                   child: Row(
@@ -1015,7 +1015,7 @@ class MineLogic extends GetxController {
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
-                          color: Color(0xFFFB923C),
+                          color: C.accentOrange,
                         ),
                       ),
                     ],
@@ -1055,7 +1055,7 @@ class MineLogic extends GetxController {
   Widget _exchangeItem(BuildContext ctx, String goods, String label, int cost) {
     final enough = points >= cost;
     final dark = Theme.of(ctx).brightness == Brightness.dark;
-    const warn = Color(0xFFFBBF24);
+    const warn = C.amber;
     final sub = dark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -1105,7 +1105,7 @@ class MineLogic extends GetxController {
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w800,
-                  color: enough ? const Color(0xFFC9A227) : sub,
+                  color: enough ? C.gold : sub,
                 ),
               ),
             ],

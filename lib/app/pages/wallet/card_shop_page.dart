@@ -376,7 +376,7 @@ class _CardShopPageState extends State<CardShopPage>
             decoration: BoxDecoration(
               color: context.isDark
                   ? Colors.white.withAlpha(8)
-                  : const Color(0xFFF6F7F9),
+                  : C.lbg2,
               borderRadius: BorderRadius.circular(R.sm),
               border: Border.all(
                 color: context.isDark

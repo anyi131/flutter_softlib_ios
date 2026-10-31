@@ -244,7 +244,7 @@ class _HistoryTile extends StatelessWidget {
                 height: 44,
                 child: cover.isEmpty
                     ? Container(
-                        color: context.isDark ? C.bg2 : const Color(0xFFEEF1F7),
+                        color: context.isDark ? C.bg2 : C.lbg2,
                         child: Icon(
                           Icons.movie_creation_outlined,
                           size: 20,
@@ -255,7 +255,7 @@ class _HistoryTile extends StatelessWidget {
                         cover,
                         fit: BoxFit.cover,
                         errorBuilder: (_, _, _) => Container(
-                          color: context.isDark ? C.bg2 : const Color(0xFFEEF1F7),
+                          color: context.isDark ? C.bg2 : C.lbg2,
                           child: Icon(
                             Icons.movie_creation_outlined,
                             size: 20,

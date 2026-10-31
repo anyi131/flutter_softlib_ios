@@ -249,8 +249,8 @@ class _WaterPageState extends State<WaterPage> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 24),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF3AC0FF), Color(0xFF465CFF)],
+              gradient: LinearGradient(
+                colors: [C.brandBright, C.brandDeep],
               ),
               borderRadius: BorderRadius.circular(R.lg),
             ),
@@ -375,7 +375,7 @@ class _PregnancyPageState extends State<PregnancyPage> {
             padding: const EdgeInsets.symmetric(vertical: 22),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFFFF8BA7), Color(0xFFFF5C8A)],
+                colors: [C.pink, C.rose],
               ),
               borderRadius: BorderRadius.circular(R.lg),
             ),
@@ -530,7 +530,7 @@ class _PeriodPageState extends State<PeriodPage> {
                 _r(
                   '下次经期',
                   '${next.month}月${next.day}日（${toNext}天后）',
-                  color: const Color(0xFFFF5C8A),
+                  color: C.rose,
                 ),
                 _r('排卵日', '${ovu.month}月${ovu.day}日'),
                 _r(

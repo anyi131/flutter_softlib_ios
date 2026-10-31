@@ -90,7 +90,7 @@ class _AgreementPageState extends State<AgreementPage> {
                                       height: 1.85,
                                       color: context.isDark
                                           ? Colors.grey[300]
-                                          : const Color(0xFF3B4048),
+                                          : C.lt2,
                                     ),
                                   ),
                                 ),

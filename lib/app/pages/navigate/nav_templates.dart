@@ -570,7 +570,7 @@ class NavTemplates {
             decoration: BoxDecoration(
               // 暗色：深色半透明玻璃体；浅色：白色高透玻璃体
               color: isDark
-                  ? const Color(0xD90E1119)
+                  ? C.bg0.withAlpha(217)
                   : Colors.white.withAlpha(196),
               borderRadius: BorderRadius.circular(R.full),
               gradient: isDark

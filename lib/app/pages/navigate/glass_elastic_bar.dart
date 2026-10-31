@@ -317,8 +317,8 @@ class _ElasticBarState extends State<_ElasticBar>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? const [Color(0xCC161A24), Color(0xB312151C)]
-              : const [Color(0xF2FFFFFF), Color(0xD9F4F6FF)],
+              ? const [C.bg1, C.bg0]
+              : const [C.lbg1, C.lbg1],
         ),
         border: Border.all(
           color: isDark

@@ -513,7 +513,7 @@ class _ToolsComponentState extends State<ToolsComponent>
           end: Alignment.bottomRight,
           colors: context.isDark
               ? [const Color(0xFF2A2140), const Color(0xFF1C1A2A)]
-              : [const Color(0xFFFFF7E6), const Color(0xFFFFFBFF)],
+              : [C.lbg2, C.lbg1],
         ),
         border: Border.all(
           color: C.amber.withAlpha(context.isDark ? 70 : 60),
@@ -784,7 +784,7 @@ class _ToolsComponentState extends State<ToolsComponent>
                       color: fav
                           ? C.amber
                           : (context.isDark
-                                ? const Color(0xFF2B2F3A)
+                                ? C.bg3
                                 : Colors.white),
                       shape: BoxShape.circle,
                       border: Border.all(

@@ -1015,8 +1015,8 @@ class _PomodoroPageState extends State<PomodoroPage> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: _isWork
-                    ? [const Color(0xFFFF6B6B), const Color(0xFFFF3B30)]
-                    : [const Color(0xFF4ADE80), const Color(0xFF22C55E)],
+                    ? [C.danger, C.danger]
+                    : [C.success, C.success],
               ),
               borderRadius: BorderRadius.circular(R.lg),
             ),

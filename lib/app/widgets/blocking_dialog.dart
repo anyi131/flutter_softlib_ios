@@ -34,11 +34,11 @@ class BlockingDialog {
               width: 240,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
               decoration: BoxDecoration(
-                color: const Color(0xF21A1D26),
+                color: C.bg2.withAlpha(242),
                 borderRadius: BorderRadius.circular(R.lg),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                    color: Color(0x66000000),
+                    color: Colors.black.withAlpha(102),
                     blurRadius: 28,
                     offset: Offset(0, 10),
                   ),
@@ -70,8 +70,8 @@ class BlockingDialog {
                     Text(
                       sub,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xB3FFFFFF),
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(179),
                         fontSize: 11.5,
                         height: 1.5,
                       ),
@@ -84,7 +84,7 @@ class BlockingDialog {
         ),
       ),
       barrierDismissible: false,
-      barrierColor: const Color(0xCC000000),
+      barrierColor: Colors.black.withAlpha(204),
     );
   }
 

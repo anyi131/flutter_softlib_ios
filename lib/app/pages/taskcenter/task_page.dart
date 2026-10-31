@@ -201,7 +201,7 @@ class _TaskPageState extends State<TaskPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // ★ 1028 深色适配：原整页浅底 + 白卡，深色模式下文字仍是浅色 → 白字白底看不见
-      backgroundColor: context.isDark ? C.bg0 : const Color(0xFFF5F6FA),
+      backgroundColor: context.isDark ? C.bg0 : C.lbg0,
       body: SafeArea(
         child: _loading
             ? const Center(child: CircularProgressIndicator())
@@ -274,7 +274,7 @@ class _TaskPageState extends State<TaskPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF7A45).withAlpha(50),
+            color: C.accentOrange.withAlpha(50),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -290,9 +290,9 @@ class _TaskPageState extends State<TaskPage> {
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xFFFF7A45),
-                    Color(0xFFFF9F43),
-                    Color(0xFFFFC53D),
+                    C.accentOrange,
+                    C.accentOrange,
+                    C.amber,
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -385,7 +385,7 @@ class _TaskPageState extends State<TaskPage> {
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w800,
-            color: Color(0xFFFF7A45),
+            color: C.accentOrange,
           ),
         ),
         const SizedBox(height: 2),
@@ -450,7 +450,7 @@ class _TaskPageState extends State<TaskPage> {
               height: 28,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFFFF7A45), Color(0xFFFFC53D)],
+                  colors: [C.accentOrange, C.amber],
                 ),
                 shape: BoxShape.circle,
               ),
@@ -497,7 +497,7 @@ class _TaskPageState extends State<TaskPage> {
                     '⚠️ $warning',
                     style: const TextStyle(
                       fontSize: 12,
-                      color: Color(0xFFC77700),
+                      color: C.gold,
                       height: 1.5,
                     ),
                   ),
@@ -522,12 +522,12 @@ class _TaskPageState extends State<TaskPage> {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFFFF7A45), Color(0xFFFFA53D)],
+            colors: [C.accentOrange, C.accentOrange],
           ),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFF7A45).withAlpha(70),
+              color: C.accentOrange.withAlpha(70),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -552,7 +552,7 @@ class _TaskPageState extends State<TaskPage> {
       decoration: BoxDecoration(
         color: context.isDark
             ? Colors.white.withAlpha(10)
-            : const Color(0xFFF8F9FC),
+            : C.lbg2,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -569,7 +569,7 @@ class _TaskPageState extends State<TaskPage> {
                     margin: const EdgeInsets.only(top: 2),
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: const Color(0xFFD0D5E2),
+                        color: C.lt3,
                         width: 1.6,
                       ),
                       borderRadius: BorderRadius.circular(5),
@@ -638,7 +638,7 @@ class _TaskPageState extends State<TaskPage> {
             filled: true,
             fillColor: context.isDark
                 ? Colors.white.withAlpha(10)
-                : const Color(0xFFF8F9FC),
+                : C.lbg2,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
               vertical: 12,
@@ -662,7 +662,7 @@ class _TaskPageState extends State<TaskPage> {
             decoration: BoxDecoration(
               color: context.isDark
                   ? Colors.white.withAlpha(10)
-                  : const Color(0xFFF8F9FC),
+                  : C.lbg2,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: _shotUrl.isEmpty
@@ -700,7 +700,7 @@ class _TaskPageState extends State<TaskPage> {
                             height: 52,
                             color: context.isDark
                                 ? Colors.white.withAlpha(14)
-                                : const Color(0xFFEDEFF5),
+                                : C.lbg2,
                             child: Icon(
                               Icons.image_rounded,
                               size: 20,
@@ -748,13 +748,13 @@ class _TaskPageState extends State<TaskPage> {
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
           decoration: BoxDecoration(
             color: context.isDark
-                ? const Color(0xFFFF7A45).withAlpha(26)
-                : const Color(0xFFFFF9F0),
+                ? C.accentOrange.withAlpha(26)
+                : C.accentOrange.withAlpha(13),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: context.isDark
-                  ? const Color(0xFFFFB74D).withAlpha(80)
-                  : const Color(0xFFFFD9A8),
+                  ? C.accentOrange.withAlpha(80)
+                  : C.amber.withAlpha(120),
             ),
           ),
           child: Row(
@@ -768,8 +768,8 @@ class _TaskPageState extends State<TaskPage> {
                       style: TextStyle(
                         fontSize: 12.4,
                         color: context.isDark
-                            ? const Color(0xFFFFC078)
-                            : const Color(0xFFB0793A),
+                            ? C.accentOrange.withAlpha(170)
+                            : C.gold,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -779,8 +779,8 @@ class _TaskPageState extends State<TaskPage> {
                       style: TextStyle(
                         fontSize: 11,
                         color: context.isDark
-                            ? const Color(0xFFFFD9B0).withAlpha(190)
-                            : const Color(0xFFB8A084),
+                            ? C.amber.withAlpha(150).withAlpha(190)
+                            : C.gold.withAlpha(150),
                       ),
                     ),
                   ],
@@ -798,7 +798,7 @@ class _TaskPageState extends State<TaskPage> {
                   ),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFFF7A45), Color(0xFFFFA53D)],
+                      colors: [C.accentOrange, C.accentOrange],
                     ),
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -859,8 +859,8 @@ class _TaskPageState extends State<TaskPage> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: context.isDark
-              ? const Color(0xFF2E7D52).withAlpha(150)
-              : const Color(0xFFC7F0D8),
+              ? C.success.withAlpha(150)
+              : C.success.withAlpha(45),
           width: 1.5,
         ),
       ),
@@ -881,7 +881,7 @@ class _TaskPageState extends State<TaskPage> {
                     fontSize: _applyState == 1 ? 18 : 16,
                     fontWeight: FontWeight.w800,
                     color: _applyState == 1
-                        ? const Color(0xFF0C8A4C)
+                        ? C.success
                         : context.t3,
                   ),
                 ),
@@ -896,7 +896,7 @@ class _TaskPageState extends State<TaskPage> {
                     ),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF12B76A), Color(0xFF0C8A4C)],
+                        colors: [C.success, C.success],
                       ),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -918,8 +918,8 @@ class _TaskPageState extends State<TaskPage> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               color: context.isDark
-                  ? const Color(0xFF34D399).withAlpha(22)
-                  : const Color(0xFFF4FBF7),
+                  ? C.mint.withAlpha(22)
+                  : C.success.withAlpha(13),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -927,8 +927,8 @@ class _TaskPageState extends State<TaskPage> {
               style: TextStyle(
                 fontSize: 11.2,
                 color: context.isDark
-                    ? const Color(0xFF6EE7B7)
-                    : const Color(0xFF4B8B6A).withAlpha(230),
+                    ? C.mint
+                    : C.success.withAlpha(230),
               ),
             ),
           ),
@@ -1000,7 +1000,7 @@ class _TaskPageState extends State<TaskPage> {
                           ),
                           isDense: true,
                           filled: true,
-                          fillColor: context.isDark ? C.bg3 : const Color(0xFFF8F9FC),
+                          fillColor: context.isDark ? C.bg3 : C.lbg2,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 14,
                             vertical: 13,

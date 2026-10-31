@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../design/ui.dart';
+
 /// 表情面板（常用 emoji，点选后插入输入框）
 class EmojiPanel extends StatelessWidget {
   final void Function(String emoji) onPick;
@@ -78,8 +80,8 @@ class EmojiPanel extends StatelessWidget {
       height: 130,
       decoration: BoxDecoration(
         color: Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF262626)
-            : const Color(0xFFF6F7F9),
+            ? C.bg2
+            : C.lbg2,
         borderRadius: BorderRadius.circular(12),
       ),
       child: GridView.builder(

@@ -308,7 +308,7 @@ class _AboutPageState extends State<AboutPage> {
           width: double.infinity,
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            color: const Color(0xFF15181F),
+            color: C.bg1,
             borderRadius: BorderRadius.circular(R.xl),
             border: Border.all(color: C.brand.withAlpha(90)),
             boxShadow: [
@@ -577,7 +577,7 @@ class _AboutPageState extends State<AboutPage> {
               height: 1.8,
               color: context.isDark
                   ? Colors.grey[300]
-                  : const Color(0xFF41454B),
+                  : C.lt2,
             ),
           ),
         ],

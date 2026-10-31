@@ -595,7 +595,7 @@ class _MusicHomePageState extends State<MusicHomePage> {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: context.isDark ? const Color(0xFF1E1E22) : Colors.white,
+          color: context.isDark ? C.bg2 : C.lbg1,
           borderRadius: BorderRadius.circular(R.full),
           boxShadow: [
             BoxShadow(

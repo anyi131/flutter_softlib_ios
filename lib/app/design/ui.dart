@@ -136,6 +136,10 @@ class Deco {
 
   static bool dark(BuildContext c) => Theme.of(c).brightness == Brightness.dark;
 
+  /// ★ 1031f 黑色渐变遮罩（图片上压字用）：标准/柔和两档，浅深模式通用
+  static const List<Color> scrim = [Color(0xE6000000), Color(0x00000000)];
+  static const List<Color> scrimSoft = [Color(0xAA000000), Color(0x00000000)];
+
   /// ★ 1031 促销配色对（浅/深模式各一套，会员页横幅/角签/立省胶囊统一引用）。
   /// 金色系保持「促销=金」的品牌联想，深色模式降低对比防刺眼。
   static Color promoBg(BuildContext c) =>

@@ -37,7 +37,7 @@ class _UrlWebviewPageState extends State<UrlWebviewPage> {
     }
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFFFFFFFF))
+      ..setBackgroundColor(C.lbg1)
       ..setNavigationDelegate(
         NavigationDelegate(
           // ★ 1015：加载失败兜底（原来没有 → 失败就永久白屏）

@@ -473,7 +473,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
-                    colors: [Color(0xE6000000), Color(0x00000000)],
+                    colors: Deco.scrim,
                   ),
                 ),
               ),

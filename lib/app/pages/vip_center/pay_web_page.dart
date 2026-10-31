@@ -52,7 +52,7 @@ class _PayWebPageState extends State<PayWebPage> {
 
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFFFFFFFF))
+      ..setBackgroundColor(C.lbg1)
       ..setNavigationDelegate(
         NavigationDelegate(
           // ★ 1015：加载失败兜底

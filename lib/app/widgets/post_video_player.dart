@@ -343,7 +343,7 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
-                      colors: [Color(0xD9000000), Color(0x00000000)],
+                      colors: Deco.scrim,
                     ),
                   ),
                   child: Row(
@@ -459,7 +459,7 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
-                      colors: [Color(0xAA000000), Color(0x00000000)],
+                      colors: Deco.scrimSoft,
                     ),
                   ),
                   child: const Text(

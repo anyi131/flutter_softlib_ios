@@ -445,7 +445,7 @@ class _AppComponentState extends State<AppComponent> {
               ? null
               : [
                   BoxShadow(
-                    color: const Color(0xFF2C3550).withAlpha(18),
+                    color: C.lt1.withAlpha(18),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -507,7 +507,7 @@ class _AppComponentState extends State<AppComponent> {
                           ? null
                           : [
                               BoxShadow(
-                                color: const Color(0xFF2C3550).withAlpha(14),
+                                color: C.lt1.withAlpha(14),
                                 blurRadius: 10,
                                 offset: const Offset(0, 3),
                               ),

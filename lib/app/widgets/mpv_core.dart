@@ -5,6 +5,8 @@ import 'package:audioplayers/audioplayers.dart' as ap_lib;
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import '../design/ui.dart';
+
 /// ★ 1016：媒体内核适配层（video_player / ExoPlayer · AVPlayer）
 ///
 /// 历史：先试过 media_kit（libmpv，+40MB 体积）与 better_player（要求 Dart 3.12+），
@@ -354,13 +356,17 @@ class MpvView extends StatelessWidget {
 /// 兼容旧的进度条组件
 class VideoProgressColors {
   const VideoProgressColors({
-    this.playedColor = const Color(0xFF4B5EF5),
-    this.bufferedColor = const Color(0xFF9E9E9E),
-    this.backgroundColor = const Color(0x33000000),
+    this.playedColor,
+    this.bufferedColor,
+    this.backgroundColor,
   });
-  final Color playedColor;
-  final Color bufferedColor;
-  final Color backgroundColor;
+  /// null = 构建时取 C.brand / C.lt3（跟随全局配色方案）
+  final Color? playedColor;
+  final Color? bufferedColor;
+  final Color? backgroundColor;
+  Color get played => playedColor ?? C.brand;
+  Color get buffered => bufferedColor ?? C.lt3;
+  Color get background => backgroundColor ?? const Color(0x33000000);
 }
 
 class VideoProgressIndicator extends StatelessWidget {
@@ -405,7 +411,7 @@ class VideoProgressIndicator extends StatelessWidget {
                 Container(
                   height: 3,
                   decoration: BoxDecoration(
-                    color: colors.backgroundColor,
+                    color: colors.background,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -414,7 +420,7 @@ class VideoProgressIndicator extends StatelessWidget {
                   child: Container(
                     height: 3,
                     decoration: BoxDecoration(
-                      color: colors.playedColor,
+                      color: colors.played,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),

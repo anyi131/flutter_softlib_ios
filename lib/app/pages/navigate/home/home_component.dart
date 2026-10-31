@@ -527,7 +527,7 @@ class _HomeComponentState extends State<HomeComponent> {
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
-                      colors: [Color(0xE6000000), Color(0x00000000)],
+                      colors: Deco.scrim,
                     ),
                   ),
                 ),
@@ -962,7 +962,7 @@ class _HomeComponentState extends State<HomeComponent> {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Color(0x99000000), Color(0x22000000)],
+                        colors: Deco.scrimSoft,
                       ),
                     ),
                   ),
@@ -1848,10 +1848,7 @@ class _HomeComponentState extends State<HomeComponent> {
                                   gradient: LinearGradient(
                                     begin: Alignment.bottomCenter,
                                     end: Alignment.topCenter,
-                                    colors: [
-                                      Color(0xCC000000),
-                                      Color(0x00000000),
-                                    ],
+                                    colors: Deco.scrim,
                                   ),
                                 ),
                                 child: Text(
@@ -2217,7 +2214,7 @@ class _HomeComponentState extends State<HomeComponent> {
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [Color(0xE6000000), Color(0x00000000)],
+                  colors: Deco.scrim,
                 ),
               ),
             ),

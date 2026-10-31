@@ -809,7 +809,7 @@ class _ReviewTabState extends State<ReviewTab> {
                         decoration: BoxDecoration(
                           color: context.isDark
                               ? Colors.white.withAlpha(12)
-                              : const Color(0xFFF4F6FB),
+                              : C.lbg2,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: context.isDark
@@ -881,7 +881,7 @@ class _ReviewTabState extends State<ReviewTab> {
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: context.isDark
-                                                ? const Color(0xFF1A1E29)
+                                                ? C.bg2
                                                 : Colors.white,
                                             width: 1.5,
                                           ),
