@@ -2096,11 +2096,12 @@ class _SplashPageState extends State<SplashPage> {
   Widget _splashImage() {
     if (_netSplash.isNotEmpty) {
       return CachedNetworkImage(
-                 memCacheWidth: 400,
         imageUrl: _netSplash,
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
+        memCacheWidth: 1080, // ★ 1031：开屏整屏显示，400 会糊；1080 保证主流屏清晰
+        filterQuality: FilterQuality.medium,
         fadeInDuration: const Duration(milliseconds: 260),
         placeholder: (_, __) => _localSplash.isNotEmpty
             ? Image.file(File(_localSplash), fit: BoxFit.cover)
@@ -2136,11 +2137,31 @@ class _SplashPageState extends State<SplashPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Image.asset(Assets.imagesApp, width: 104, height: 104),
+          // ★ 1031：白底圆角托盘 + 阴影，深浅 logo 都能放；图从 104 提到 120
+          Container(
+            width: 144,
+            height: 144,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(32),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(38),
+                  blurRadius: 28,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Image.asset(
+              Assets.imagesApp,
+              width: 116,
+              height: 116,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.medium,
+            ),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 26),
           const Text(
             '安逸软件汇',
             style: TextStyle(
