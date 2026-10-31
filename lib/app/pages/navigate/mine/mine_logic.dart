@@ -10,6 +10,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,6 +35,14 @@ import '../../../utils/toast_util.dart';
 import '../../../widgets/blocking_dialog.dart';
 
 /// 我的页逻辑：登录态 + 本地资料
+/// ★ 1031q：生命周期观察者（前台才轮询红点）
+class _LifeObs with WidgetsBindingObserver {
+  final void Function(AppLifecycleState state) onChange;
+  _LifeObs({required this.onChange});
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) => onChange(state);
+}
+
 class MineLogic extends GetxController {
   static const _kSignDate = 'mine_sign_date';
 
@@ -51,10 +61,30 @@ class MineLogic extends GetxController {
   int followCount = 0;
   int fansCount = 0;
 
+  // ★ 1031q：全局消息红点轮询（30 秒一次，仅前台）
+  bool _pollPaused = false;
+  Timer? _msgPoll;
+  void _startMsgPoll() {
+    _msgPoll?.cancel();
+    _msgPoll = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (_pollPaused) return;
+      if (!UserService.instance.isLoggedIn) return;
+      _refreshUnread();
+    });
+    // 前后台切换：后台暂停省电，回前台立即查一次
+    WidgetsBinding.instance.addObserver(_LifeObs(onChange: (state) {
+      _pollPaused = state == AppLifecycleState.paused;
+      if (state == AppLifecycleState.resumed) {
+        if (UserService.instance.isLoggedIn) _refreshUnread();
+      }
+    }));
+  }
+
   @override
   void onInit() {
     super.onInit();
     load();
+    _startMsgPoll(); // ★ 1031q：消息红点轮询
     // v52f #6：监听全局登录失效信号，立即刷新本页（回到未登录 UI）
     ever(_userService.expiredTick, (_) {
       nickname = '';
@@ -297,6 +327,12 @@ class MineLogic extends GetxController {
   ///   跳转被网络请求阻塞；快速连点还会重复入栈。
   ///   改为：跳转不阻塞 + 未读数后台刷新。
   bool _msgOpening = false;
+  @override
+  void onClose() {
+    _msgPoll?.cancel();
+    super.onClose();
+  }
+
   Future<void> openMessages() async {
     if (!isLoggedIn) return openLogin();
     if (_msgOpening) return; // 防连点

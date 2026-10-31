@@ -25,6 +25,9 @@ class _MessagePageState extends State<MessagePage> {
   bool _loading = true;
   int _page = 1;
   bool _hasMore = true;
+  // ★ 1031q：批量操作（多选模式）
+  bool _selecting = false;
+  final Set<int> _sel = <int>{};
 
   @override
   void initState() {
@@ -52,6 +55,10 @@ class _MessagePageState extends State<MessagePage> {
         }
         _hasMore = list.length >= 20;
         _loading = false;
+        // ★ 1031q：清掉已不存在的选中项
+        final ids = _list.map((m) => (m['id'] as num?)?.toInt() ?? 0).toSet();
+        _sel.removeWhere((id) => !ids.contains(id));
+        if (_sel.isEmpty) _selecting = false;
       });
     } catch (e) {
       if (!mounted) return;
@@ -60,6 +67,7 @@ class _MessagePageState extends State<MessagePage> {
     }
   }
 
+  /// ★ 1031q：一键全部已读（顶栏 done_all 图标）
   Future<void> _markAllRead() async {
     try {
       await MessageService.instance.markRead();
@@ -77,9 +85,14 @@ class _MessagePageState extends State<MessagePage> {
 
   Future<void> _delete(Map<String, dynamic> m) async {
     try {
-      await MessageService.instance.remove((m['id'] as num?)?.toInt() ?? 0);
+      final did = (m['id'] as num?)?.toInt() ?? 0;
+      await MessageService.instance.remove(did);
       if (!mounted) return;
-      setState(() => _list.remove(m));
+      setState(() {
+        _list.remove(m);
+        _sel.remove(did);
+        if (_sel.isEmpty) _selecting = false;
+      });
       ToastUtil.success('已删除');
     } catch (e) {
       ToastUtil.error(ErrText.of(e));
@@ -100,6 +113,10 @@ class _MessagePageState extends State<MessagePage> {
     if (lt == 'post' && lid > 0) {
       await Get.toNamed(Routes.postDetail, arguments: {'id': lid});
       _load(reset: true);
+    } else if (lt.isEmpty) {
+      // ★ 1031q：system/无链接消息点开 = 底部弹层看全文
+      if (!mounted) return;
+      await _showDetail(m);
     } else if (lt == 'recharge') {
       Get.toNamed(Routes.recharge);
     } else if (lt == 'vip') {
@@ -156,14 +173,134 @@ class _MessagePageState extends State<MessagePage> {
                     ),
                   ),
           ),
+          if (_selecting && _sel.isNotEmpty) _batchBar(),
           _topBar(topInset),
         ],
       ),
     );
   }
 
+  /// ★ 1031q：底部批量操作栏（已读/删除/全选）
+  Widget _batchBar() {
+    final dark = context.isDark;
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: SafeArea(
+        top: false,
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: dark ? C.bg2 : Colors.white,
+            borderRadius: BorderRadius.circular(R.lg),
+            border: Border.all(color: C.stroke),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2C3550).withAlpha(20),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              AppPressable(
+                onTap: () => setState(() {
+                  if (_sel.length == _list.length) {
+                    _sel.clear();
+                  } else {
+                    _sel.addAll(_list.map((m) => (m['id'] as num?)?.toInt() ?? 0));
+                  }
+                }),
+                child: Text(
+                  _sel.length == _list.length ? '取消全选' : '全选',
+                  style: Ty.small.copyWith(fontSize: 13, color: context.t2),
+                ),
+              ),
+              const Spacer(),
+              Text('已选 ${_sel.length}',
+                  style: Ty.small.copyWith(fontSize: 12.5, color: context.t3)),
+              const SizedBox(width: 12),
+              AppPressable(
+                onTap: _batchRead,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: C.brand.withAlpha(dark ? 46 : 26),
+                    borderRadius: BorderRadius.circular(R.sm),
+                  ),
+                  child: Text('标记已读',
+                      style: Ty.small.copyWith(fontSize: 12.5, color: C.brand)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              AppPressable(
+                onTap: _batchDelete,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: C.danger.withAlpha(dark ? 42 : 24),
+                    borderRadius: BorderRadius.circular(R.sm),
+                  ),
+                  child: Text('删除',
+                      style: Ty.small.copyWith(fontSize: 12.5, color: C.danger)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ★ 1031q：多选切换
+  void _toggleSel(int id) => setState(() {
+        _sel.contains(id) ? _sel.remove(id) : _sel.add(id);
+      });
+
+  /// ★ 1031q：批量已读
+  Future<void> _batchRead() async {
+    try {
+      for (final id in _sel) {
+        await MessageService.instance.markRead(id: id);
+      }
+      if (!mounted) return;
+      setState(() {
+        for (final m in _list) {
+          if (_sel.contains((m['id'] as num?)?.toInt() ?? 0)) m['is_read'] = 1;
+        }
+        _sel.clear();
+        _selecting = false;
+      });
+      ToastUtil.success('已标记为已读');
+    } catch (e) {
+      ToastUtil.error(ErrText.of(e));
+    }
+  }
+
+  /// ★ 1031q：批量删除
+  Future<void> _batchDelete() async {
+    try {
+      for (final id in _sel) {
+        await MessageService.instance.remove(id);
+      }
+      if (!mounted) return;
+      setState(() {
+        _list.removeWhere((m) => _sel.contains((m['id'] as num?)?.toInt() ?? 0));
+        _sel.clear();
+        _selecting = false;
+      });
+      ToastUtil.success('已删除');
+    } catch (e) {
+      ToastUtil.error(ErrText.of(e));
+    }
+  }
+
   Widget _card(Map<String, dynamic> m) {
     final unread = (m['is_read'] as num?)?.toInt() == 0;
+    final mid = (m['id'] as num?)?.toInt() ?? 0;
     final type = (m['type'] ?? 'system').toString();
     final (IconData icon, Color color) = switch (type) {
       'comment' => (Icons.chat_bubble_rounded, C.brand),
@@ -178,10 +315,20 @@ class _MessagePageState extends State<MessagePage> {
       margin: const EdgeInsets.only(bottom: 8),
       radius: R.md,
       padding: const EdgeInsets.all(13),
-      onTap: () => _open(m),
+      onTap: _selecting ? () => _toggleSel(mid) : () => _open(m),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (_selecting) ...[
+            Icon(
+              _sel.contains(mid)
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              size: 20,
+              color: _sel.contains(mid) ? C.brand : context.t3,
+            ),
+            const SizedBox(width: 10),
+          ],
           Container(
             width: 36,
             height: 36,
@@ -309,9 +456,101 @@ class _MessagePageState extends State<MessagePage> {
                     : const SizedBox.shrink(),
               ),
             ),
+            const SizedBox(width: 6),
+            AppPressable(
+              onTap: _list.isEmpty ? null : () => setState(() {
+                _selecting = !_selecting;
+                _sel.clear();
+              }),
+              child: SizedBox(
+                width: 40,
+                child: Text(
+                  _selecting ? '取消' : '管理',
+                  style: Ty.tiny.copyWith(
+                    fontSize: 13,
+                    color: _list.isEmpty ? context.t3 : C.brand,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  /// ★ 1031q：system 消息全文详情弹层
+  Future<void> _showDetail(Map<String, dynamic> m) async {
+    await Get.bottomSheet(
+      Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.72,
+        ),
+        decoration: BoxDecoration(
+          color: context.isDark ? C.bg2 : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 38,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: context.t3.withAlpha(70),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${m['title'] ?? ''}',
+                        style: Ty.h3.copyWith(
+                          color: context.t1,
+                          fontSize: 16.5,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    AppPressable(
+                      onTap: Get.back,
+                      child: Icon(Icons.close_rounded, size: 20, color: context.t3),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${m['time_text'] ?? ''}',
+                  style: Ty.tiny.copyWith(fontSize: 11, color: context.t3),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Text(
+                      '${m['content'] ?? ''}',
+                      style: Ty.body.copyWith(
+                        color: context.t2,
+                        height: 1.7,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
     );
   }
 }
