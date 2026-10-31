@@ -217,6 +217,11 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _sfxSign = '${sfx['sign'] ?? 1}' == '1';
         _sfxMessage = '${sfx['message'] ?? 1}' == '1';
         _sfxUpdate = '${sfx['update'] ?? 1}' == '1';
+        // ★ 1031u：回填音色——之前漏读导致进后台 UI Tab 保存时
+        //   会用默认 yunxi 覆盖服务端已设的音色（女声变男声回归 bug）
+        if (SoundUtil.voiceStyles.containsKey(sfx['voice_style'])) {
+          _sfxVoiceStyle = sfx['voice_style'] as String;
+        }
         _loading = false;
       });
     } catch (e) {
