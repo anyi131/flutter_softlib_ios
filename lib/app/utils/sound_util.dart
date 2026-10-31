@@ -5,17 +5,23 @@ import '../models/ui_config.dart';
 
 /// 轻音效（下载完成 / 签到成功 / 来消息 / 有新版本）
 ///
-/// ★★ 1020 重做（用户反馈「音效开启了也没用」）：
-///   原来根本没播音频 —— 只是 SystemSound.play(click) + 震动，
-///   而多数手机默认关闭「触摸提示音」，所以用户开了开关也听不到。
-///
-///   现在：
-///     · 真实音频文件（assets/audio/*.wav，4 个共 47KB）
-///     · audioplayers 低延迟播放，每类独立实例（不抢彼此）
-///     · 系统静音/勿扰时自动不响（由系统音频会话决定）
-///     · 4 个场景独立开关 + 总开关，与后台配置一致
+/// ★★ 1031 重做（用户反馈「乱七八糟的音效」）：
+///   原 4 个 wav 是单频纯音哔声（882/1050/658Hz），观感廉价。
+///   现改为真人语音播报（微软 Edge 神经语音，可商用），三套音色随后台下发：
+///     yunxi    男声·阳光（默认）
+///     xiaoxiao 女声·温暖
+///     yunyang  男声·沉稳
+///   资产：assets/audio/voice/{style}-{scene}.mp3（12 个共 96KB）
 class SoundUtil {
   SoundUtil._();
+
+  /// 当前音色（后台 sfx.voice_style 下发）
+  static String voiceStyle = 'yunxi';
+  static const voiceStyles = <String, String>{
+    'yunxi': '男声 · 阳光',
+    'xiaoxiao': '女声 · 温暖',
+    'yunyang': '男声 · 沉稳',
+  };
 
   static const _kMaster = 'sfx_master';
   static const _kDownload = 'sfx_download';
@@ -55,6 +61,11 @@ class SoundUtil {
     sign = s.sign;
     message = s.message;
     update = s.update;
+    // ★ 1031：人声音色随配置下发；变化时重建播放器
+    if (voiceStyles.containsKey(s.voiceStyle) && s.voiceStyle != voiceStyle) {
+      voiceStyle = s.voiceStyle;
+      onVoiceStyleChanged();
+    }
     _loaded = true;
   }
 
@@ -109,24 +120,40 @@ class SoundUtil {
 
   static final Map<String, AudioPlayer> _players = {};
 
+  /// 当前音色变化后调用：丢弃旧实例，下次播放按新音色重建
+  static void onVoiceStyleChanged() {
+    for (final p in _players.values) {
+      try {
+        p.dispose();
+      } catch (_) {}
+    }
+    _players.clear();
+  }
+
   /// 预热（避免第一次有延迟）
   ///
-  /// ★ 1028：改成「谁缺补谁」。原来一把 `_audioReady=true` 提前置位，
-  ///   第一次创建失败（音频会话没就绪/静音）就再也不重试 → 全程无声。
+  /// ★ 1031：按当前音色加载 assets/audio/voice/{style}-{scene}.mp3；
+  ///   资产缺失时回退默认音色 yunxi。
   static Future<void> _warmUp() async {
     for (final k in ['download', 'sign', 'message', 'update']) {
       if (_players.containsKey(k)) continue;
       try {
         final p = AudioPlayer();
         await p.setReleaseMode(ReleaseMode.stop);
-        // ★ 1028：低延迟模式 —— 短音效走 MediaPlayer 时首帧有明显延迟，
-        //   用户会觉得「开关点了没反应」。
         try {
           await p.setPlayerMode(PlayerMode.lowLatency);
         } catch (_) {}
-        await p.setSource(AssetSource('audio/$k.wav'));
+        await p.setSource(AssetSource('audio/voice/$voiceStyle-$k.mp3'));
         _players[k] = p;
-      } catch (_) {}
+      } catch (_) {
+        // 当前音色资产缺失 → 回退默认音色
+        try {
+          final p = AudioPlayer();
+          await p.setReleaseMode(ReleaseMode.stop);
+          await p.setSource(AssetSource('audio/voice/yunxi-$k.mp3'));
+          _players[k] = p;
+        } catch (_) {}
+      }
     }
   }
 

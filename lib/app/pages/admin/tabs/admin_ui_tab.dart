@@ -102,6 +102,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
       _sfxSign = true,
       _sfxMessage = true,
       _sfxUpdate = true;
+  String _sfxVoiceStyle = 'yunxi'; // ★ 1031：人声音色
 
   bool _loading = true;
 
@@ -322,6 +323,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
           'sign': _sfxSign ? 1 : 0,
           'message': _sfxMessage ? 1 : 0,
           'update': _sfxUpdate ? 1 : 0,
+          'voice_style': _sfxVoiceStyle,
         },
       },
     };
@@ -738,6 +740,48 @@ class _AdminUiTabState extends State<AdminUiTab> {
           SoundUtil.update = v;
           SoundUtil.save(updateOn: v);
         }, disabled: !_sfxMaster),
+        const SizedBox(height: 10),
+        // ★ 1031：人声音色选择（真人语音播报，随配置全站下发）
+        Text('人声音色', style: Ty.small.copyWith(fontWeight: FontWeight.w800, color: context.t1)),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: SoundUtil.voiceStyles.entries.map((e) {
+            final sel = _sfxVoiceStyle == e.key;
+            return AppPressable(
+              onTap: () {
+                setState(() => _sfxVoiceStyle = e.key);
+                SoundUtil.voiceStyle = e.key;
+                SoundUtil.onVoiceStyleChanged();
+                // 立即试听一条
+                SoundUtil.playDownload();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: sel ? context.theme.colorScheme.primary.withAlpha(28) : null,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: sel ? context.theme.colorScheme.primary : context.t3.withAlpha(80),
+                  ),
+                ),
+                child: Text(
+                  e.value,
+                  style: Ty.small.copyWith(
+                    fontWeight: sel ? FontWeight.w900 : FontWeight.w600,
+                    color: sel ? context.theme.colorScheme.primary : context.t2,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '点音色立即试听；保存后全站用户播报同款音色。',
+          style: Ty.tiny.copyWith(fontSize: 11, color: context.t3),
+        ),
         const SizedBox(height: 4),
         Text(
           '提示：改完记得点底部「保存」，否则只对当前这台手机生效；保存后会随配置下发给所有用户。音效跟随系统静音设置。',
