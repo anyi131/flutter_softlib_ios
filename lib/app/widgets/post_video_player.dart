@@ -8,6 +8,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../api/post_service.dart';
 import '../design/ui.dart';
+import '../design/app_anim.dart';
 
 /// 动态视频播放器
 ///
@@ -305,7 +306,7 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
             ),
             // 居中播放键（暂停时）
             AnimatedOpacity(
-              duration: const Duration(milliseconds: 180),
+              duration: AppAnim.base,
               opacity: (!c.value.isPlaying || _showControls) ? 1 : 0,
               child: GestureDetector(
                 onTap: _togglePlay,
@@ -332,7 +333,7 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
               right: 0,
               bottom: 0,
               child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 180),
+                duration: AppAnim.base,
                 opacity: _showControls ? 1 : 0,
                 child: Container(
                   padding: const EdgeInsets.symmetric(

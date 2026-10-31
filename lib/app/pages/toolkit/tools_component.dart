@@ -409,7 +409,7 @@ class _ToolsComponentState extends State<ToolsComponent>
         clipBehavior: Clip.none,
         children: [
           AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
+            duration: AppAnim.slow,
             width: Ad.s(context, 42),
             height: Ad.s(context, 42),
             decoration: BoxDecoration(

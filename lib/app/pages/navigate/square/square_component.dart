@@ -214,7 +214,7 @@ class _SquareComponentState extends State<SquareComponent> {
           return AppPressable(
             onTap: () => _switchCat(c.id),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 170),
+              duration: AppAnim.base,
               padding: const EdgeInsets.symmetric(horizontal: 15),
               alignment: Alignment.center,
               decoration: BoxDecoration(

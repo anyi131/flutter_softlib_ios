@@ -9,6 +9,7 @@ import '../../utils/toast_util.dart';
 import 'nav_templates.dart';
 import 'navigate_logic.dart';
 import '../../design/kit.dart';
+import '../../design/app_anim.dart';
 
 /// 主框架 —— iOS 26/27 风格玻璃底部 Tab
 ///
@@ -164,8 +165,8 @@ class _NavigatePageState extends State<NavigatePage> {
       onTap: () => logic.changePage(i),
       child: Center(
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
+          duration: AppAnim.base,
+          curve: AppAnim.emphasized,
           padding: EdgeInsets.symmetric(horizontal: sel ? 15 : 11, vertical: 8),
           decoration: BoxDecoration(
             gradient: sel ? Deco.brandGradient : null,

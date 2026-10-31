@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../design/app_anim.dart';
 
 /// ★ 1016：安全获取 BuildContext
 ///
@@ -38,7 +39,7 @@ class SafeCtx {
         barrierDismissible: barrierDismissible,
         barrierLabel: '',
         pageBuilder: (ctx, _, __) => builder(ctx),
-        transitionDuration: const Duration(milliseconds: 180),
+        transitionDuration: AppAnim.base,
         transitionBuilder: (_, a, __, child) =>
             FadeTransition(opacity: a, child: child),
       );

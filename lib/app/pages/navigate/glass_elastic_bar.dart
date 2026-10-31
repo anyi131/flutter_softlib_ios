@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../design/glass_theme.dart';
+import '../../design/app_anim.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// iOS 27「Liquid Glass」底部导航栏（GlassElasticBar）
@@ -273,7 +274,7 @@ class _ElasticBarState extends State<_ElasticBar>
                                   ),
                               const SizedBox(height: 2),
                               AnimatedDefaultTextStyle(
-                                duration: const Duration(milliseconds: 200),
+                                duration: AppAnim.slow,
                                 style: TextStyle(
                                   fontSize: 9.5,
                                   height: 1.1,

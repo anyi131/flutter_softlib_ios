@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'ui.dart';
 import 'glass.dart';
 import 'glass_theme.dart';
+import 'app_anim.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 ///  统一组件库（Design Kit）
@@ -1113,7 +1114,7 @@ class _RetryImageState extends State<RetryImage> {
       width: widget.width,
       height: widget.height,
       fit: widget.fit,
-      fadeInDuration: const Duration(milliseconds: 200),
+      fadeInDuration: AppAnim.base,
       memCacheWidth: widget.memCacheWidth,
       maxWidthDiskCache: widget.maxWidthDiskCache,
       placeholder: (_, __) =>

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../design/ui.dart';
+import '../design/app_anim.dart';
 
 /// 统一轻提示（替代原生 Toast）
 ///
@@ -78,7 +79,7 @@ class _ToastWidgetState extends State<_ToastWidget>
     with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 220),
+    duration: AppAnim.base,
   )..forward();
 
   @override
@@ -104,7 +105,7 @@ class _ToastWidgetState extends State<_ToastWidget>
           position: Tween<Offset>(
             begin: const Offset(0, 0.35),
             end: Offset.zero,
-          ).animate(CurvedAnimation(parent: _c, curve: Curves.easeOutCubic)),
+          ).animate(CurvedAnimation(parent: _c, curve: AppAnim.emphasized)),
           child: FadeTransition(
             opacity: _c,
             child: Center(

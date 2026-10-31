@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../../design/ui.dart';
 import '../../widgets/mpv_core.dart';
+import '../../design/app_anim.dart';
 
 /// ★ 1028：播放页推翻重做（音乐 / 影视共用一套）
 ///
@@ -355,7 +356,7 @@ class _VideoPageState extends State<VideoPage> {
         ignoring: !_ui,
         child: AnimatedOpacity(
           opacity: _ui ? 1 : 0,
-          duration: const Duration(milliseconds: 220),
+          duration: AppAnim.base,
           child: Container(
             padding: EdgeInsets.only(top: padTop + 4, left: 2, right: 6, bottom: 22),
             decoration: const BoxDecoration(
@@ -424,7 +425,7 @@ class _VideoPageState extends State<VideoPage> {
         ignoring: !_ui,
         child: AnimatedOpacity(
           opacity: _ui ? 1 : 0,
-          duration: const Duration(milliseconds: 220),
+          duration: AppAnim.base,
           child: Container(
             padding: EdgeInsets.only(left: 14, right: 14, top: 26, bottom: padBottom + 8),
             decoration: const BoxDecoration(
@@ -613,8 +614,8 @@ class _VideoPageState extends State<VideoPage> {
     final side = (mq.width - 96).clamp(180.0, 320.0).toDouble();
     return AnimatedScale(
       scale: playing ? 1 : .94,
-      duration: const Duration(milliseconds: 380),
-      curve: Curves.easeOutCubic,
+      duration: AppAnim.slow,
+      curve: AppAnim.emphasized,
       child: Container(
         width: side,
         height: side,
@@ -653,7 +654,7 @@ class _VideoPageState extends State<VideoPage> {
 
   Widget _rotatingDot(bool playing) => AnimatedOpacity(
         opacity: playing ? 1 : .35,
-        duration: Duration(milliseconds: 240),
+        duration: AppAnim.base,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
           decoration: BoxDecoration(

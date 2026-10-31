@@ -222,7 +222,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
           return AppPressable(
             onTap: () => onTab(i),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
+              duration: AppAnim.base,
               padding: const EdgeInsets.symmetric(horizontal: 15),
               alignment: Alignment.center,
               decoration: BoxDecoration(
@@ -629,7 +629,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                       return AppPressable(
                         onTap: () => onTab(i),
                         child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
+                          duration: AppAnim.base,
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(

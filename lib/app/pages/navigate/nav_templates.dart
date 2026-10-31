@@ -7,6 +7,7 @@ import '../../design/ui.dart';
 import 'navigate_logic.dart';
 import 'glass_elastic_bar.dart';
 import 'liquid26_bar.dart';
+import '../../design/app_anim.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 底部导航栏模板（v55）：classic / glass / float / dock / curve / liquid
@@ -122,8 +123,8 @@ class NavTemplates {
       onTap: () => logic.changePage(i),
       child: Center(
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
+          duration: AppAnim.base,
+          curve: AppAnim.emphasized,
           padding: EdgeInsets.symmetric(horizontal: sel ? 15 : 11, vertical: 8),
           decoration: BoxDecoration(
             gradient: sel ? Deco.brandGradient : null,
@@ -224,7 +225,7 @@ class NavTemplates {
                         ),
                         const SizedBox(height: 3),
                         AnimatedDefaultTextStyle(
-                          duration: const Duration(milliseconds: 200),
+                          duration: AppAnim.base,
                           style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: sel ? FontWeight.w900 : FontWeight.w600,
@@ -288,8 +289,8 @@ class NavTemplates {
                     Transform.translate(
                       offset: Offset(0, sel ? -12 : 0),
                       child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 240),
-                        curve: Curves.easeOutBack,
+                        duration: AppAnim.base,
+                        curve: AppAnim.spring,
                         width: sel ? 44 : 40,
                         height: sel ? 44 : 40,
                         decoration: BoxDecoration(
@@ -384,7 +385,7 @@ class NavTemplates {
                   children: [
                     // 图标
                     AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
+                      duration: AppAnim.base,
                       width: 38,
                       height: 38,
                       decoration: BoxDecoration(
@@ -639,8 +640,8 @@ class NavTemplates {
                           // 选中项放大 1.15
                           AnimatedScale(
                             scale: sel ? 1.15 : 1.0,
-                            duration: const Duration(milliseconds: 260),
-                            curve: Curves.easeOutBack,
+                            duration: AppAnim.slow,
+                            curve: AppAnim.spring,
                             child: Container(
                               width: 40,
                               height: 34,
@@ -681,7 +682,7 @@ class NavTemplates {
                           const SizedBox(height: 3),
                           // 选中项底部小圆点
                           AnimatedContainer(
-                            duration: const Duration(milliseconds: 240),
+                            duration: AppAnim.base,
                             width: sel ? 4 : 0,
                             height: 4,
                             decoration: BoxDecoration(

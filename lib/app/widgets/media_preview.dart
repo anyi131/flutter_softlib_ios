@@ -8,6 +8,7 @@ import '../design/ad.dart';
 import '../design/ui.dart';
 import '../utils/img_saver.dart';
 import '../utils/toast_util.dart';
+import '../design/app_anim.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 媒体预览（1015 新增）
@@ -120,7 +121,7 @@ class _GalleryPageState extends State<_GalleryPage> {
           // 顶部栏
           AnimatedOpacity(
             opacity: _showBar ? 1 : 0,
-            duration: const Duration(milliseconds: 180),
+            duration: AppAnim.base,
             child: Container(
               padding: EdgeInsets.only(
                 top: MediaQuery.of(context).padding.top + 6,

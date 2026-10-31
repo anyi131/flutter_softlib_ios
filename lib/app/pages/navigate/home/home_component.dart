@@ -1141,7 +1141,7 @@ class _HomeComponentState extends State<HomeComponent> {
                   ),
                   AnimatedRotation(
                     turns: open ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
+                    duration: AppAnim.base,
                     child: Icon(
                       Icons.keyboard_arrow_down_rounded,
                       color: context.t3,
@@ -1153,7 +1153,7 @@ class _HomeComponentState extends State<HomeComponent> {
             ),
           ),
           AnimatedCrossFade(
-            duration: const Duration(milliseconds: 220),
+            duration: AppAnim.base,
             crossFadeState: open
                 ? CrossFadeState.showFirst
                 : CrossFadeState.showSecond,
@@ -1877,7 +1877,7 @@ class _HomeComponentState extends State<HomeComponent> {
                   enlargeFactor: 0.14,
                   autoPlayInterval: const Duration(seconds: 4),
                   autoPlayAnimationDuration: const Duration(milliseconds: 700),
-                  autoPlayCurve: Curves.easeOutCubic,
+                  autoPlayCurve: AppAnim.emphasized,
                   onPageChanged: (i, _) {
                     if (_carouselIdx != i) {
                       setState(() => _carouselIdx = i);
@@ -1891,7 +1891,7 @@ class _HomeComponentState extends State<HomeComponent> {
                 children: List.generate(
                   list.length,
                   (i) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 260),
+                    duration: AppAnim.slow,
                     margin: const EdgeInsets.symmetric(horizontal: 3),
                     height: 5,
                     width: i == idx ? 20 : 5,

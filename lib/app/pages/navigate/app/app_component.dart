@@ -477,7 +477,7 @@ class _AppComponentState extends State<AppComponent> {
           return AppPressable(
             onTap: () => _switch(c.id),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: AppAnim.slow,
               padding: const EdgeInsets.symmetric(horizontal: 18),
               alignment: Alignment.center,
               decoration: BoxDecoration(

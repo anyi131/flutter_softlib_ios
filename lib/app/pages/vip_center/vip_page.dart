@@ -581,7 +581,7 @@ class _VipPageState extends State<VipPage> {
         // 中间档视觉放大（Transform 不参与布局计算，不会触发重排循环）
         scale: popular ? 1.05 : 1.0,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+          duration: AppAnim.base,
           padding: EdgeInsets.fromLTRB(
             6,
             (popular ? 22 : 18) + (promoOn ? 7 : 0),
@@ -806,7 +806,7 @@ class _VipPageState extends State<VipPage> {
               ? () => setState(() => _payMethod = index)
               : () => ToastUtil.info('该支付方式暂未开放'),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 160),
+            duration: AppAnim.fast,
             height: 44,
             decoration: BoxDecoration(
               color: selected

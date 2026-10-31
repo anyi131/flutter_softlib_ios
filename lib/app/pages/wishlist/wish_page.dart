@@ -482,7 +482,7 @@ class _WishPageState extends State<WishPage> {
             AppPressable(
               onTap: () => _vote(w),
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
+                duration: AppAnim.base,
                 width: 46,
                 padding: const EdgeInsets.symmetric(vertical: 7),
                 decoration: BoxDecoration(

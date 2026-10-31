@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../utils/jump_util.dart';
+import '../../design/app_anim.dart';
 
 class ArticleReadingLogic extends GetxController {
   // 统一的颜色样式
@@ -91,8 +92,8 @@ class ArticleReadingLogic extends GetxController {
       if (imagePageController.hasClients) {
         imagePageController.animateToPage(
           currentImageIndex,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
+          duration: AppAnim.slow,
+          curve: AppAnim.standard,
         );
       }
     }
@@ -105,8 +106,8 @@ class ArticleReadingLogic extends GetxController {
       if (imagePageController.hasClients) {
         imagePageController.animateToPage(
           currentImageIndex,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
+          duration: AppAnim.slow,
+          curve: AppAnim.standard,
         );
       }
     }
@@ -123,7 +124,7 @@ class ArticleReadingLogic extends GetxController {
     scrollController.animateTo(
       0,
       duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
+      curve: AppAnim.standard,
     );
   }
 

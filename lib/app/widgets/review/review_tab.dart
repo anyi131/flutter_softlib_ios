@@ -17,6 +17,7 @@ import '../../design/glass.dart';
 import '../../models/review_item.dart';
 import '../../routes/app_pages.dart';
 import 'star_rating.dart';
+import '../../design/app_anim.dart';
 
 /// 评价 Tab（评分卡 + 筛选 + 评论列表）
 class ReviewTab extends StatefulWidget {
@@ -230,7 +231,7 @@ class _ReviewTabState extends State<ReviewTab> {
               _load();
             },
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
+              duration: AppAnim.fast,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
                 color: sel

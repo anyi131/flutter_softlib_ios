@@ -874,7 +874,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
     return AppPressable(
       onTap: () => _go(i),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 170),
+        duration: AppAnim.base,
         padding: const EdgeInsets.symmetric(horizontal: 13),
         alignment: Alignment.center,
         decoration: BoxDecoration(

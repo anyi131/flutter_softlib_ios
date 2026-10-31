@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../design/adaptive.dart';
 import '../../design/ui.dart';
 import '../../routes/app_pages.dart';
+import '../../design/app_anim.dart';
 
 /// 首次启动引导
 ///
@@ -154,7 +155,7 @@ class _OnboardPageState extends State<OnboardPage> {
                   children: List.generate(_pages.length, (i) {
                     final on = i == _i;
                     return AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
+                      duration: AppAnim.base,
                       margin: const EdgeInsets.symmetric(horizontal: 3),
                       width: on ? 20 : 6,
                       height: 6,
@@ -182,8 +183,8 @@ class _OnboardPageState extends State<OnboardPage> {
                           _finish();
                         } else {
                           _pc.nextPage(
-                            duration: const Duration(milliseconds: 260),
-                            curve: Curves.easeOut,
+                            duration: AppAnim.slow,
+                            curve: AppAnim.emphasized,
                           );
                         }
                       },

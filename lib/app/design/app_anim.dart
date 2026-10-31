@@ -29,6 +29,9 @@ class AppAnim {
   static const Curve exit = Curves.easeInCubic;
   static const Curve spring = Curves.easeOutBack;
 
+  /// ★ 1031：标准滚动/翻页曲线（animateToPage、scrollTo 等双向平滑场景）
+  static const Curve standard = Curves.easeInOut;
+
   /// 页面淡入上浮（自定义转场 builder 用）
   static Widget fadeUp(
     BuildContext c,
