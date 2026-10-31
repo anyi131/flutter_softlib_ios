@@ -79,9 +79,85 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
     return v is Map ? Map<String, dynamic>.from(v) : <String, dynamic>{};
   }
 
+  /// 千分位整数（12345 → 12,345）
+  String _num(num v) {
+    final s = v.round().toString();
+    final b = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      b.write(s[i]);
+      final rest = s.length - i - 1;
+      if (rest > 0 && rest % 3 == 0) b.write(',');
+    }
+    return b.toString();
+  }
+
+  /// 金额：千分位 + 两位小数（"1234.5" → 1,234.50）
+  String _money(String raw) {
+    final v = double.tryParse(raw) ?? 0;
+    final whole = v.truncate();
+    final cents = ((v - whole) * 100).round() % 100;
+    return '${_num(whole)}.${cents.toString().padLeft(2, '0')}';
+  }
+
+  /// 今日失败率（今日失败 / 今日全部），无数据返回 null
+  double? _todayFailRate() {
+    final ok = _i('down_today');
+    final fail = _i('down_today_fail');
+    final all = ok + fail;
+    return all > 0 ? fail * 100 / all : null;
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const LoadingState(text: '加载中…');
+    if (_loading) {
+      return ListView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(
+          context.pagePadding,
+          6,
+          context.pagePadding,
+          28,
+        ),
+        children: [
+          // 模拟真实布局的骨架：今天卡 / 趋势卡 / 收入·在线两卡
+          Container(
+            padding: const EdgeInsets.fromLTRB(14, 13, 14, 14),
+            decoration: BoxDecoration(
+              color: context.cardBg,
+              borderRadius: BorderRadius.circular(R.lg),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: const [
+                    Skeleton(width: 90, height: 12),
+                    SizedBox(width: 8),
+                    Skeleton(width: 52, height: 10),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: const [
+                    Expanded(child: Skeleton(height: 56)),
+                    SizedBox(width: 14),
+                    Expanded(child: Skeleton(height: 56)),
+                    SizedBox(width: 14),
+                    Expanded(child: Skeleton(height: 56)),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                const Skeleton(height: 10),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Skeleton(height: 150, radius: R.lg),
+          const SizedBox(height: 12),
+          const Skeleton(height: 120, radius: R.lg),
+        ],
+      );
+    }
     if (_err.isNotEmpty) {
       return EmptyState(
         icon: Icons.cloud_off_rounded,
@@ -105,6 +181,8 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
         ),
         children: [
           _todayBlock(),
+          const SizedBox(height: 12),
+          _pendingStrip(),
           const SizedBox(height: 12),
           _trendBlock(),
           const SizedBox(height: 12),
@@ -192,6 +270,62 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
     );
   }
 
+  // ═════════ ⓪ 待办 ═════════
+
+  /// 待办条：待发货 / 待审评价 / 未处理举报（全 0 显示清零）
+  Widget _pendingStrip() {
+    final items = <(String, int, Color)>[
+      ('待发货订单', _i('pending_orders'), C.amber),
+      ('待审评价', _i('reviewsPending'), C.violet),
+      ('未处理举报', _i('open_reports'), C.danger),
+    ];
+    final allZero = items.every((e) => e.$2 == 0);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: allZero
+            ? C.mint.withAlpha(context.isDark ? 26 : 10)
+            : context.cardBg,
+        borderRadius: BorderRadius.circular(R.md),
+        border: Border.all(
+          color: context.isDark
+              ? Colors.white.withAlpha(14)
+              : Colors.black.withAlpha(7),
+        ),
+      ),
+      child: Row(
+        children: [
+          Text(
+            allZero ? '✓ 待办已清零' : '待处理',
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w800,
+              color: allZero ? C.mint : context.t2,
+            ),
+          ),
+          const Spacer(),
+          for (final (label, n, c) in items) ...[
+            if (n > 0 || !allZero) ...[
+              Text(
+                '$label ',
+                style: TextStyle(fontSize: 10.5, color: context.t3),
+              ),
+              Text(
+                '${_num(n)}',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w900,
+                  color: n > 0 ? c : context.t3,
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
   // ═════════ ① 今天 ═════════
 
   Widget _todayBlock() {
@@ -200,6 +334,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
     final users = _i('today_users');
     final active = _i('today_active_users');
     final boot = _i('boot_today');
+    final failRate = _todayFailRate();
 
     return _section(
       title: '今天',
@@ -229,16 +364,16 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
           // 次级指标
           Row(
             children: [
-              _smallStat('启动次数', '$boot', C.brand),
+              _smallStat('启动次数', _num(boot), C.brand),
               _smallStat(
                 '下载转化率',
                 '${_f('conv_rate').toStringAsFixed(1)}%',
                 C.mint,
               ),
               _smallStat(
-                '下载失败率',
-                '${_f('down_fail_rate').toStringAsFixed(1)}%',
-                _f('down_fail_rate') > 10 ? C.danger : C.mint,
+                '今日失败率',
+                failRate == null ? '—' : '${failRate.toStringAsFixed(1)}%',
+                (failRate ?? 0) > 10 ? C.danger : C.mint,
               ),
               _smallStat(
                 '人均下载',
@@ -281,7 +416,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
               colors: [color, color.withAlpha(170)],
             ).createShader(rect),
             child: Text(
-              '$value',
+              _num(value),
               style: TextStyle(
                 fontSize: 28,
                 height: 1,
@@ -307,8 +442,8 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
               if (yesterday != null && yesterday > 0) ...[
                 const SizedBox(width: 4),
                 Text(
-                  '昨日$yesterday',
-                  style: TextStyle(fontSize: 9, color: context.t3),
+                  '昨日${_num(yesterday)}',
+                  style: TextStyle(fontSize: 10, color: context.t3),
                 ),
               ],
             ],
@@ -326,7 +461,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
     ),
     child: Text(
       text,
-      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: c),
+      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: c),
     ),
   );
 
@@ -339,7 +474,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: c),
         ),
         const SizedBox(height: 2),
-        Text(label, style: TextStyle(fontSize: 9, color: context.t3)),
+        Text(label, style: TextStyle(fontSize: 10, color: context.t3)),
       ],
     ),
   );
@@ -398,8 +533,8 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
               children: [
                 Expanded(
                   child: Text(
-                    '7 日合计：下载 ${sumDown.toInt()} 次 · '
-                    '新增 ${sumUser.toInt()} 人',
+                    '7 日合计：下载 ${_num(sumDown)} 次 · '
+                    '新增 ${_num(sumUser)} 人',
                     style: TextStyle(fontSize: 10, color: context.t2),
                   ),
                 ),
@@ -419,7 +554,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
         decoration: BoxDecoration(color: c, shape: BoxShape.circle),
       ),
       const SizedBox(width: 4),
-      Text(label, style: TextStyle(fontSize: 9.5, color: context.t3)),
+      Text(label, style: TextStyle(fontSize: 10, color: context.t3)),
     ],
   );
 
@@ -446,9 +581,9 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
         children: [
           Row(
             children: [
-              _moneyCell('今日', '¥${_s('today_money')}', C.gold),
-              _moneyCell('本月', '¥${_s('month_money')}', C.amber),
-              _moneyCell('累计', '¥${_s('total_money')}', C.violet),
+              _moneyCell('今日', '¥${_money(_s('today_money'))}', C.gold),
+              _moneyCell('本月', '¥${_money(_s('month_money'))}', C.amber),
+              _moneyCell('累计', '¥${_money(_s('total_money'))}', C.violet),
             ],
           ),
           const SizedBox(height: 12),
@@ -459,7 +594,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
               _smallStat('已付订单', '${_i('paid_orders')}', C.mint),
               _smallStat('待付订单', '${_i('unpaid_orders')}', C.amber),
               _smallStat('今日订单', '${_i('today_orders')}', C.brand),
-              _smallStat('上周同日', '¥${cmp['money'] ?? '0.00'}', context.t3),
+              _smallStat('上周同日', '¥${_money('${cmp['money'] ?? 0}')}', context.t3),
             ],
           ),
         ],
@@ -533,10 +668,10 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
           const SizedBox(height: 10),
           Row(
             children: [
-              _smallStat('有效会话', '${_i('active_tokens')}', C.brand),
-              _smallStat('今日登录', '${_i('today_active_users')}', C.mint),
-              _smallStat('启动设备', '${_i('boot_devices_today')}', C.violet),
-              _smallStat('今日启动', '${_i('boot_today')}', C.cyan),
+              _smallStat('有效会话', _num(_i('active_tokens')), C.brand),
+              _smallStat('今日下载', _num(_i('down_today')), C.mint),
+              _smallStat('启动设备', _num(_i('boot_devices_today')), C.violet),
+              _smallStat('今日启动', _num(_i('boot_today')), C.cyan),
             ],
           ),
           // ★ 1020：在线用户明细（用户要求「要看到是哪些用户」）
@@ -593,7 +728,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
                   child: Text(
                     '还有 ${users.length - 8} 人，点击查看全部 ›',
                     style: TextStyle(
-                      fontSize: 9.5,
+                      fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: C.brand,
                     ),
@@ -720,7 +855,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
           ],
         ),
         const SizedBox(height: 3),
-        Text(label, style: TextStyle(fontSize: 9, color: context.t3)),
+        Text(label, style: TextStyle(fontSize: 10, color: context.t3)),
       ],
     ),
   );
@@ -741,10 +876,11 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
   Widget _failBlock() {
     final items = _failItems;
     final total = items.fold<double>(0, (s, e) => s + e.value).toInt();
+    // ignore: unused_local_variable
     return _section(
       title: '今日下载失败',
       accent: C.danger,
-      trailing: _pill('$total 次', C.danger),
+      trailing: _pill('${_num(total)} 次', C.danger),
       child: MiniBarList(items: items, color: C.danger, maxItems: 4),
     );
   }
@@ -771,8 +907,8 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
       title: '热门软件',
       accent: C.violet,
       trailing: Text(
-        '在库 ${_i('apps')} · 总下载 ${_i('total_down')}',
-        style: TextStyle(fontSize: 9.5, color: context.t3),
+        '在库 ${_i('apps')} · 总下载 ${_num(_i('total_down'))}',
+        style: TextStyle(fontSize: 10, color: context.t3),
       ),
       child: MiniBarList(items: _rankItems, color: C.brand, maxItems: 5),
     );
@@ -801,16 +937,16 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
           ),
           const SizedBox(height: 6),
           Text(
-            '新增 ${m30['users'] ?? 0} 人 · '
-            '下载 ${m30['downs'] ?? 0} 次 · '
-            '收入 ¥${m30['money'] ?? '0.00'}',
+            '新增 ${_num((m30['users'] as num?)?.toInt() ?? 0)} 人 · '
+            '下载 ${_num((m30['downs'] as num?)?.toInt() ?? 0)} 次 · '
+            '收入 ¥${_money('${m30['money'] ?? 0}')}',
             style: TextStyle(fontSize: 11, height: 1.6, color: context.t2),
           ),
           const SizedBox(height: 4),
           Text(
-            '累计 ${_i('users')} 个用户 · '
-            '${_i('total_views')} 次浏览 · '
-            '${_i('total_down')} 次下载',
+            '累计 ${_num(_i('users'))} 个用户 · '
+            '${_num(_i('total_views'))} 次浏览 · '
+            '${_num(_i('total_down'))} 次下载',
             style: TextStyle(fontSize: 10, color: context.t3, height: 1.6),
           ),
         ],
