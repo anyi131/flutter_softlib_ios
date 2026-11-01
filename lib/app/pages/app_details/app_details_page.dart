@@ -1472,7 +1472,8 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                         maxWidth: MediaQuery.of(context).size.width * 0.88,
                       ),
                       child: CachedNetworkImage(
-                                 memCacheWidth: 450,
+                        // ★ 1101：截图条 230pt×3x≈690px，450 不够放大 1.5 倍
+                        memCacheWidth: 900,
                         imageUrl: shots[i],
                         height: 230,
                         fit: BoxFit.contain, // 按原始比例完整显示，绝不裁切
@@ -2546,7 +2547,8 @@ class _GalleryDialogState extends State<_GalleryDialog> {
                 maxScale: 4,
                 child: Center(
                   child: CachedNetworkImage(
-                             memCacheWidth: 400,
+                    // ★ 1101：全屏查看器按 3x 屏宽解码（原 400 在高分屏 3 倍放大=糊）
+                    memCacheWidth: 1080,
                     imageUrl: widget.images[i],
                     fit: BoxFit.contain,
                     placeholder: (_, __) => const Center(

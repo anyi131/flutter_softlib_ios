@@ -492,7 +492,8 @@ class DetailAurora {
                   maxWidth: MediaQuery.of(c).size.width * 0.84,
                 ),
                 child: CachedNetworkImage(
-                           memCacheWidth: 660,
+                  // ★ 1101：0.84 屏宽×3x≈1110px，660 不够
+                  memCacheWidth: 1080,
                   imageUrl: shots[i],
                   fit: BoxFit.cover,
                   errorWidget: (_, __, ___) => Container(

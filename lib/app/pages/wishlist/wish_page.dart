@@ -62,7 +62,8 @@ class _WishPageState extends State<WishPage> {
 
   Future<void> _load({bool more = false}) async {
     if (!more) {
-      setState(() => _loading = true);
+      // ★ 1101 排雷：刷新不切骨架，只有首进空列表才显示
+      if (_list.isEmpty) setState(() => _loading = true);
       _page = 1;
     }
     final r = await _svc.list(

@@ -3165,7 +3165,8 @@ class _ComicReadPageState extends State<ComicReadPage> {
                           itemBuilder: (c, i) => ClipRRect(
                             borderRadius: BorderRadius.circular(R.sm),
                             child: CachedNetworkImage(
-                                       memCacheWidth: 400,
+                              // ★ 1101：工具图库全宽 fitWidth，400 拉伸糊
+                              memCacheWidth: 900,
                               imageUrl: _images[i],
                               fit: BoxFit.fitWidth,
                               placeholder: (_, __) => Container(

@@ -270,7 +270,8 @@ class MediaGrid extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(radius),
           child: CachedNetworkImage(
-                     memCacheWidth: 400,
+            // ★ 1101：九宫格大图按 2 列宽给足（原 400 放大糊）
+            memCacheWidth: 700,
             imageUrl: urls[i],
             fit: BoxFit.cover,
             placeholder: (_, __) => Container(

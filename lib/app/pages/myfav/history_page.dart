@@ -43,7 +43,8 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
+    // ★ 1101 排雷：刷新不切骨架，只有首进空列表才显示
+    if (_list.isEmpty) setState(() => _loading = true);
     try {
       // ★ 1020：服务端只认 POST body 里的 token
       final r = await _dio.post(

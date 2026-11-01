@@ -366,7 +366,8 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(R.sm),
                     child: CachedNetworkImage(
-                               memCacheWidth: 400,
+                      // ★ 1101：帖子全宽图，400 拉到 3 倍屏宽=糊
+                      memCacheWidth: 900,
                       imageUrl: img,
                       width: double.infinity,
                       fit: BoxFit.cover,

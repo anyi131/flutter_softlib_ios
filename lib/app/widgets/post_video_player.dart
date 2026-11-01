@@ -258,7 +258,9 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
           children: [
             if (widget.cover.isNotEmpty)
               CachedNetworkImage(
-                  memCacheWidth: 400,imageUrl: widget.cover, fit: BoxFit.cover),
+                  // ★ 1101：视频封面全宽，400 拉伸糊
+                  memCacheWidth: 900,
+                  imageUrl: widget.cover, fit: BoxFit.cover),
             Container(
               color: Colors.black38,
               alignment: Alignment.center,
@@ -431,8 +433,9 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
             fit: StackFit.expand,
             children: [
               if (_cover.isNotEmpty)
-                CachedNetworkImage(
-                    memCacheWidth: 400,
+              CachedNetworkImage(
+                  // ★ 1101：视频封面全宽，400 拉伸糊
+                  memCacheWidth: 900,
                   imageUrl: _cover,
                   fit: BoxFit.cover,
                   placeholder: (_, __) => Container(color: Colors.black12),

@@ -65,7 +65,9 @@ class _FavoritesPageState extends State<FavoritesPage>
   );
 
   Future<void> _load() async {
-    setState(() => _loading = true);
+    // ★ 1101 排雷：首次进入才显示骨架；下拉/手动刷新保持列表，静默换数据，
+    //   否则刷新瞬间整页被骨架替换再弹回（真机截图实锤）
+    if (_software.isEmpty && _tools.isEmpty) setState(() => _loading = true);
     final results = await Future.wait([_fetchSoftware(), _fetchTools()]);
     if (!mounted) return;
     setState(() {

@@ -406,8 +406,12 @@ class _ReportListWidgetState extends State<ReportListWidget>
           children: [
             AspectRatio(
               aspectRatio: 16 / 9,
+              // ★ 1101：举报全宽 16:9 图，400 不够
               child: CachedNetworkImage(
-                         memCacheWidth: 400,imageUrl: img, fit: BoxFit.cover),
+                memCacheWidth: 900,
+                imageUrl: img,
+                fit: BoxFit.cover,
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(12),

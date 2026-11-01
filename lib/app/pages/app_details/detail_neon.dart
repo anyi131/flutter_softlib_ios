@@ -437,7 +437,8 @@ class DetailNeon {
                   maxWidth: MediaQuery.of(c).size.width * 0.82,
                 ),
                 child: CachedNetworkImage(
-                           memCacheWidth: 630,
+                  // ★ 1101：0.82 屏宽×3x≈1080px，630 不够
+                  memCacheWidth: 1080,
                   imageUrl: shots[i],
                   fit: BoxFit.cover,
                   errorWidget: (_, __, ___) => Container(
