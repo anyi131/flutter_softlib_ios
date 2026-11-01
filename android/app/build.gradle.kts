@@ -14,6 +14,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        // ★ 1101：flutter_local_notifications 要求 core library desugaring
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -107,4 +109,6 @@ flutter {
 dependencies {
     // ★ 1015：QQ 登录 SDK（本地 jar，来自腾讯官方）
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    // ★ 1101：flutter_local_notifications desugaring 依赖
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
