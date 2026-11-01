@@ -438,7 +438,7 @@ class AppDownloadLogic extends GetxController {
       ToastUtil.error('任务无效');
       return;
     }
-    final path = await _findPath(taskId);
+    final path = await _findPath(taskId, targetName: dowInfo?.appName);
     if (path == null) {
       ToastUtil.error('找不到文件，可能已被删除');
       return;
@@ -467,7 +467,7 @@ class AppDownloadLogic extends GetxController {
         return;
       }
     }
-    final path = await _findPath(taskId);
+    final path = await _findPath(taskId, targetName: dowInfo?.appName);
     if (path == null) {
       ToastUtil.error('未找到安装包');
       return;
@@ -483,7 +483,8 @@ class AppDownloadLogic extends GetxController {
     ToastUtil.error('无法调起安装，请手动安装');
   }
 
-  Future<String?> _findPath(String taskId) async {
+  Future<String?> _findPath(String taskId, {String? targetName}) async {
+    final List<String> scanned = [];
     try {
       final tasks = await FlutterDownloader.loadTasksWithRawQuery(
         query: "SELECT * FROM task WHERE task_id='$taskId'",
@@ -494,26 +495,26 @@ class AppDownloadLogic extends GetxController {
         if (dir.isNotEmpty) {
           if (name != null && name.isNotEmpty) {
             final f = '$dir/$name';
-            if (File(f).existsSync()) return f;
+            if (File(f).existsSync() &&
+                !ApkInstaller.isOwnUpdatePackage(f)) {
+              return f;
+            }
           }
           final d = Directory(dir);
           if (d.existsSync()) {
-            final apks = d
-                .listSync()
-                .whereType<File>()
-                .where((f) => f.path.toLowerCase().endsWith('.apk'))
-                .toList();
-            if (apks.isNotEmpty) {
-              apks.sort(
-                (a, b) =>
-                    b.statSync().modified.compareTo(a.statSync().modified),
-              );
-              return apks.first.path;
-            }
+            scanned.addAll(
+              d
+                  .listSync()
+                  .whereType<File>()
+                  .map((f) => f.path)
+                  .where((p) => p.toLowerCase().endsWith('.apk')),
+            );
           }
         }
       }
     } catch (_) {}
-    return null;
+    // ★ 1102a：不再取「目录里最新的 apk」——自更新包与业务包同目录，
+    // 只挑与目标应用同名的包，挑不到宁可提示未找到
+    return ApkInstaller.pickMatchingApk(scanned, targetName);
   }
 }

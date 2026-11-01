@@ -643,26 +643,29 @@ class AppDetailsLogic extends GetxController {
         final t = File('$dir/$fn');
         if (t.existsSync()) f = t;
       }
-      // 兜底：下载目录里 5 分钟内更新的 apk
+      // 兜底：在候选 apk 里挑与目标应用同名的包（★ 1102a：
+      // 不再取「5 分钟内最新的 apk」——自更新包 softlib_update_*.apk
+      // 与业务包同目录，会把更新包误当目标包校验/安装）
       if (f == null) {
         final dirs = await DownloadDir.fallbackDirs();
-        File? newest;
+        final List<String> recent = [];
+        final now = DateTime.now();
         for (final d in dirs) {
           final dd = Directory(d);
           if (!dd.existsSync()) continue;
           for (final e in dd.listSync()) {
             if (e is! File || !e.path.toLowerCase().endsWith('.apk')) continue;
-            if (newest == null ||
-                e.statSync().modified.isAfter(newest.statSync().modified)) {
-              newest = e;
+            if (ApkInstaller.isOwnUpdatePackage(e.path)) continue;
+            if (now.difference(e.statSync().modified).inMinutes <= 5) {
+              recent.add(e.path);
             }
           }
         }
-        if (newest != null &&
-            DateTime.now().difference(newest.statSync().modified).inMinutes <=
-                5) {
-          f = newest;
-        }
+        final m = ApkInstaller.pickMatchingApk(
+          recent,
+          fn.isNotEmpty ? fn : (appInfo?.fileName ?? item?.title),
+        );
+        if (m != null) f = File(m);
       }
 
       if (f != null) {
@@ -825,6 +828,44 @@ class AppDetailsLogic extends GetxController {
       switch (t.status) {
         case DownloadTaskStatus.complete:
           phase = phaseDone;
+          // ★ 1102a：完成态先验包还在不在（自更新包不算）——
+          // 一周前的旧任务记录会让详情页永远显示「下载完成·点击即可安装」，
+          // 但文件早被清理；点安装又因找不到同名包失败。包不在 → 回落可重下。
+          if (Platform.isAndroid) {
+            try {
+              final dir = t.savedDir ?? '';
+              final fn = t.filename ?? '';
+              var exists = false;
+              if (dir.isNotEmpty && fn.isNotEmpty) {
+                final f = File('$dir/$fn');
+                exists = f.existsSync() &&
+                    !ApkInstaller.isOwnUpdatePackage(f.path);
+              }
+              if (!exists) {
+                for (final d in await DownloadDir.fallbackDirs()) {
+                  final dd = Directory(d);
+                  if (!dd.existsSync()) continue;
+                  for (final e in dd.listSync()) {
+                    if (e is! File ||
+                        !e.path.toLowerCase().endsWith('.apk') ||
+                        ApkInstaller.isOwnUpdatePackage(e.path)) {
+                      continue;
+                    }
+                    final m = ApkInstaller.pickMatchingApk(
+                      [e.path],
+                      fn.isNotEmpty ? fn : (appInfo?.fileName ?? item?.title),
+                    );
+                    if (m != null) {
+                      exists = true;
+                      break;
+                    }
+                  }
+                  if (exists) break;
+                }
+              }
+              if (!exists) phase = phaseIdle;
+            } catch (_) {}
+          }
           break;
         case DownloadTaskStatus.failed:
         case DownloadTaskStatus.canceled:
@@ -1660,6 +1701,8 @@ class AppDetailsLogic extends GetxController {
 
   /// 查找已下载 APK 的本地路径
   Future<String?> _findApkPath() async {
+    final targetName = item?.title ?? appInfo?.fileName;
+    final List<String> scanned = [];
     try {
       // 优先用 FlutterDownloader 的任务记录
       final tasks = await FlutterDownloader.loadTasksWithRawQuery(
@@ -1671,46 +1714,43 @@ class AppDetailsLogic extends GetxController {
         if (dir.isNotEmpty) {
           if (name != null && name.isNotEmpty) {
             final f = '$dir/$name';
-            if (File(f).existsSync()) return f;
+            if (File(f).existsSync() &&
+                !ApkInstaller.isOwnUpdatePackage(f)) {
+              return f;
+            }
           }
           final d = Directory(dir);
           if (d.existsSync()) {
-            final apks = d
-                .listSync()
-                .whereType<File>()
-                .where((f) => f.path.toLowerCase().endsWith('.apk'))
-                .toList();
-            if (apks.isNotEmpty) {
-              apks.sort(
-                (a, b) =>
-                    b.statSync().modified.compareTo(a.statSync().modified),
-              );
-              return apks.first.path;
-            }
+            scanned.addAll(
+              d
+                  .listSync()
+                  .whereType<File>()
+                  .map((f) => f.path)
+                  .where((p) => p.toLowerCase().endsWith('.apk')),
+            );
           }
         }
       }
     } catch (e) {
       logger.e('find apk path failed: $e');
     }
-    // 兜底：扫描公共下载目录
+    // 兜底：扫描公共下载目录（★ 1102a：不再取「目录里最新的 apk」——
+    // 自更新包 softlib_update_*.apk 与业务包同目录，扫最新的会装错包，
+    // 只在候选里挑与目标应用同名的包，挑不到宁可提示用户重下）
     for (final dir in await DownloadDir.fallbackDirs()) {
       try {
         final d = Directory(dir);
         if (!d.existsSync()) continue;
-        final apks = d
-            .listSync()
-            .whereType<File>()
-            .where((f) => f.path.toLowerCase().endsWith('.apk'))
-            .toList();
-        if (apks.isEmpty) continue;
-        apks.sort(
-          (a, b) => b.statSync().modified.compareTo(a.statSync().modified),
+        scanned.addAll(
+          d
+              .listSync()
+              .whereType<File>()
+              .map((f) => f.path)
+              .where((p) => p.toLowerCase().endsWith('.apk')),
         );
-        return apks.first.path;
       } catch (_) {}
     }
-    return null;
+    return ApkInstaller.pickMatchingApk(scanned, targetName);
   }
 
   /// 分享：会员资源不允许分享下载链接（防止绕过会员校验）
