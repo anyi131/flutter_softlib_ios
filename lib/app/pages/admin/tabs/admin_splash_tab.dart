@@ -739,7 +739,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         // ★ 1101b：保存成功后重新拉取回填，输入框始终对齐服务器真实值。
         // 否则页面保活期间（IndexedStack）别处的改动（网页后台/另一设备/自己 30 分钟前的改动）
         // 会在下次保存时被输入框里的陈旧值静默覆盖——「改了又变回去」的结构性根源。
-        if (bad.isEmpty && mounted) {
+        if (mounted) {
           try {
             await _load();
           } catch (_) {}
