@@ -57,7 +57,7 @@ class _VipPageState extends State<VipPage> {
       if (!mounted) return;
       final cfg = SoftService.instance.cachedConfig?.promo;
       if (cfg == null || !cfg.on) return;
-      final end = DateTime.tryParse(cfg.end.replaceFirst(' ', 'T'));
+      final end = _parsePromoEnd(cfg.end);
       if (end == null) return;
       setState(() {}); // 只为刷新倒计时文本
     });
@@ -71,6 +71,9 @@ class _VipPageState extends State<VipPage> {
 
   Future<void> _loadPlans() async {
     try {
+      // ★ 1101c 排雷：促销/套餐读 cachedConfig（10min TTL）——后台改完促销立刻进会员中心
+      //   显示的还是旧值，被当成「改了又变回去」。进页面强制刷新配置。
+      SoftService.instance.fetchConfig(force: true);
       final r = await PayService.instance.plans();
       final list = (r['planList'] as List?)?.cast<PayPlan>() ?? [];
       if (!mounted) return;
@@ -272,6 +275,20 @@ class _VipPageState extends State<VipPage> {
     );
   }
 
+  /// ★ 1101c 宽容解析促销结束时间：兼容「2026-11-10 23:59:59」「2026.11.10」「2026/11/10」
+  DateTime? _parsePromoEnd(String raw) {
+    if (raw.trim().isEmpty) return null;
+    var s = raw.trim().replaceFirst(' ', 'T');
+    // 点/斜杠分隔的日期 → 横杠（2026.11.10 / 2026/11/10 → 2026-11-10）
+    final m = RegExp(r'^(\d{4})[./](\d{1,2})[./](\d{1,2})(.*)$').firstMatch(s);
+    if (m != null) {
+      final rest = m.group(4)!;
+      final p2 = rest.startsWith('T') ? rest : 'T' + rest;
+      s = '${m.group(1)}-${m.group(2)!.padLeft(2, '0')}-${m.group(3)!.padLeft(2, '0')}$p2';
+    }
+    return DateTime.tryParse(s);
+  }
+
   /// ★ 1031 会员到期时间文本（无 / 解析失败返回空）
   String _vipExpireText() {
     final raw = UserService.instance.user?.vipExpire ?? '';
@@ -311,7 +328,7 @@ class _VipPageState extends State<VipPage> {
     final cfg = SoftService.instance.cachedConfig?.promo;
     if (cfg == null || !cfg.on) return const SizedBox.shrink();
     final title = cfg.title.isNotEmpty ? cfg.title : '限时特惠';
-    final end = DateTime.tryParse(cfg.end.replaceFirst(' ', 'T'));
+    final end = _parsePromoEnd(cfg.end);
     final hasCountdown = end != null;
     return Padding(
       padding: const EdgeInsets.only(top: 12),
