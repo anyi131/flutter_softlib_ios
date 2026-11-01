@@ -3,6 +3,8 @@ import 'dart:async';
 import '../../utils/safe_ctx.dart';
 import '../../utils/net_guard.dart';
 import '../../utils/sound_util.dart';
+import '../../utils/buzz.dart';
+import '../../utils/sys_notify.dart';
 
 import 'dart:io';
 import 'dart:isolate';
@@ -707,6 +709,12 @@ class AppDetailsLogic extends GetxController {
     }
     _askedInstall = true;
     SoundUtil.playDownload(); // ★ 音效：下载完成
+    // ★ 1101 开源批二：下载完成触感 + 系统通知栏提醒（用户切走 App 也能看到）
+    Buzz.medium();
+    SysNotify.show(
+      title: '下载完成',
+      body: '${(item?.title ?? '').isNotEmpty ? item!.title : (appInfo?.fileName ?? '安装包')} 已下载完成，可回到应用内安装',
+    );
     // ★ 1016：上报成功（后台「下载记录」可查）
     SoftService.instance.reportDownloadResult(
       appId: appIdInt,

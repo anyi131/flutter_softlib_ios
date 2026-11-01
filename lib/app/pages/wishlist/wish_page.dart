@@ -271,7 +271,7 @@ class _WishPageState extends State<WishPage> {
                 _header(),
                 Expanded(
                   child: _loading
-                      ? const LoadingState(text: '加载需求…')
+                      ? const LoadingSkeletonList()
                       : (_list.isEmpty
                             ? EmptyState(
                                 icon: Icons.wb_incandescent_outlined,

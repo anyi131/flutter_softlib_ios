@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import 'ui.dart';
 import 'glass.dart';
@@ -782,6 +783,56 @@ class LoadingState extends StatelessWidget {
             Text(text!, style: Ty.small.copyWith(color: context.t3)),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// ★ 1101 开源批二：列表页自动骨架——「转圈文字」升级为布局镜像骨架。
+///   Skeletonizer 自动把子树里的 Text/图标/卡片变成骨架形态，数据到了无缝替换。
+///   落点：LoadingState 用点（收藏/历史/心愿单/卡商城/充值等），双轨不拆旧组件。
+class LoadingSkeletonList extends StatelessWidget {
+  const LoadingSkeletonList({super.key, this.cards = 5});
+
+  final int cards;
+
+  @override
+  Widget build(BuildContext context) {
+    return Skeletonizer(
+      enabled: true,
+      child: ListView.separated(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
+        itemCount: cards,
+        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        itemBuilder: (_, i) => KitCard(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: C.bg2,
+                  borderRadius: BorderRadius.circular(R.md),
+                ),
+              ),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text('条目标题占位一行', style: Ty.small),
+                    SizedBox(height: 9),
+                    Text('副标题内容占位两行副标题内容占位两行副标题内容占位', style: Ty.tiny),
+                    SizedBox(height: 9),
+                    Text('2026-11-01', style: Ty.tiny),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 3.10.31+137
+version: 3.10.31+138
 
 environment:
   sdk: ">=3.10.0 <4.0.0"
@@ -56,12 +56,19 @@ dependencies:
   share_plus: ^10.1.2
   device_info_plus: ^11.2.0
   # ★ 1031r 开源批一：动态取色主题 + 压缩提速 + token 加固 + 动画 DSL
-  dynamic_color: ^1.8.1
+  dynamic_color: 1.8.1
   flutter_image_compress: ^2.4.0
   sentry_flutter: ^9.0.0
   app_links: ^6.3.2
   flutter_secure_storage: ^10.0.0
   flutter_animate: ^4.5.2
+  # ★ 1101 开源批二：机型可读 + 触感 + 防息屏 + 系统通知 + 滑动操作 + 自动骨架
+  device_marketing_names: ^2.0.5
+  vibration: 3.1.8
+  wakelock_plus: 1.5.2
+  flutter_local_notifications: ^22.3.3
+  flutter_slidable: ^4.0.0
+  skeletonizer: ^3.0.0
   qr_flutter: ^4.1.0
   image_gallery_saver_plus: ^4.0.1
   # 存相册到「安逸软件汇」这一层：4.0.1 的 saveFile 没有 album 参数

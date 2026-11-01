@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../../utils/sound_util.dart';
+import '../../../utils/buzz.dart';
 import '../../../utils/app_action.dart';
 import '../../../utils/err_text.dart';
 
@@ -487,6 +488,8 @@ class MineLogic extends GetxController {
       update();
       AppAction.hideLoading();
       SoundUtil.playSign(); // ★ 音效：签到成功
+      // ★ 1101 开源批二：签到成功触感（轻哒）
+      Buzz.light();
       ToastUtil.success('签到成功 +5 积分');
     } catch (e) {
       AppAction.hideLoading();

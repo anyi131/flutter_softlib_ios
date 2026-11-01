@@ -265,7 +265,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 ),
                 Expanded(
                   child: _loading
-                      ? const LoadingState(text: '加载历史…')
+                      ? const LoadingSkeletonList()
                       : (_list.isEmpty
                             ? const EmptyState(
                                 icon: Icons.history_rounded,

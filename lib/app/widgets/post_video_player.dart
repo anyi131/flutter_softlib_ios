@@ -4,6 +4,7 @@ import 'mpv_core.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../api/post_service.dart';
@@ -160,6 +161,10 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
       });
       c.setLooping(true);
       await c.play();
+      // ★ 1101 开源批二：视频播放期间防息屏，退出播放器即恢复
+      try {
+        WakelockPlus.enable();
+      } catch (_) {}
     } catch (e) {
       // v52g #2：直链过期（抖音等有时效）→ 用原始链接重新解析一次再试
       if (mounted &&
@@ -217,6 +222,10 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
     _hideTimer?.cancel();
     _controller?.removeListener(_onTick);
     _controller?.dispose();
+    // ★ 1101 开源批二：离开播放器恢复系统息屏策略
+    try {
+      WakelockPlus.disable();
+    } catch (_) {}
     super.dispose();
   }
 

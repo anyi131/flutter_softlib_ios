@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:device_marketing_names/device_marketing_names.dart';
 import 'package:flutter/foundation.dart';
 
 /// 设备信息（用于后台操作日志的「手机型号 / 系统版本」）
@@ -34,6 +35,19 @@ class DeviceInfo {
         final i = await p.iosInfo;
         model = i.utsname.machine;
         os = 'iOS ${i.systemVersion}';
+      }
+      // ★ 1101 开源批二：注入机型市场名（'Xiaomi M2012K11AC'→'Xiaomi Redmi K40'）。
+      //   失败静默回退原 model，不阻塞启动。
+      try {
+        final names = DeviceMarketingNames();
+        final pretty = await names.getSingleName();
+        if (pretty.isNotEmpty) {
+          // 保留品牌前缀（Android 的 model 无品牌；iOS machine 亦无），
+          // getSingleName() 返回「品牌 机型」，直接用。
+          model = pretty;
+        }
+      } catch (e) {
+        debugPrint('[Softlib] device marketing: $e');
       }
     } catch (e) {
       debugPrint('[Softlib] device info: $e');

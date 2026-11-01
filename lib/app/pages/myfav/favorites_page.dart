@@ -172,7 +172,7 @@ class _FavoritesPageState extends State<FavoritesPage>
                 ),
                 Expanded(
                   child: _loading
-                      ? const LoadingState(text: '加载收藏…')
+                      ? const LoadingSkeletonList()
                       : TabBarView(
                           controller: _tab,
                           children: [_softwareList(), _toolList()],

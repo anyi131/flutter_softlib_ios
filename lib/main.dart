@@ -27,6 +27,7 @@ import 'app/design/ui.dart';
 import 'app/widgets/pro_motion.dart';
 import 'app/api/user_service.dart';
 import 'app/utils/device_info_util.dart';
+import 'app/utils/sys_notify.dart';
 import 'app/design/app_style_controller.dart';
 import 'app/design/glass_theme.dart';
 import 'app/design/glass_perf_guard.dart';
@@ -233,6 +234,8 @@ Future<void> _initializeServices() async {
   await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
   // 设备信息（供后台操作日志记录型号/系统版本，需求 #10）
   await DeviceInfo.init();
+  // ★ 1101 开源批二：系统通知栏（下载完成提醒），失败静默
+  await SysNotify.init();
   // 初始化数据库
   Get.put<AppDatabase>(AppDatabase(), permanent: true);
   // 初始化HTTP服务

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 import '../../design/app_anim.dart';
 import '../../utils/err_text.dart';
@@ -315,7 +316,8 @@ class _MessagePageState extends State<MessagePage> {
       _ => (Icons.campaign_rounded, C.violet),
     };
 
-    return KitCard(
+    // ★ 1101 开源批二：滑动操作——右滑已读、左滑删除（长按批量模式保持原样）
+    final card = KitCard(
       margin: const EdgeInsets.only(bottom: 8),
       radius: R.md,
       padding: const EdgeInsets.all(13),
@@ -409,6 +411,52 @@ class _MessagePageState extends State<MessagePage> {
         ],
       ),
     );
+
+    if (_selecting) return card; // 批量模式下不启用滑动
+    return Slidable(
+      key: ValueKey(mid),
+      // 右滑 → 标记已读
+      startActionPane: unread
+          ? ActionPane(
+              motion: const DrawerMotion(),
+              extentRatio: 0.22,
+              children: [
+                SlidableAction(
+                  onPressed: (_) => _openAndMark(m),
+                  backgroundColor: C.brand,
+                  foregroundColor: Colors.white,
+                  icon: Icons.done_all_rounded,
+                  label: '已读',
+                ),
+              ],
+            )
+          : null,
+      // 左滑 → 删除
+      endActionPane: ActionPane(
+        motion: const DrawerMotion(),
+        extentRatio: 0.22,
+        children: [
+          SlidableAction(
+            onPressed: (_) => _delete(m),
+            backgroundColor: C.danger,
+            foregroundColor: Colors.white,
+            icon: Icons.delete_rounded,
+            label: '删除',
+          ),
+        ],
+      ),
+      child: card,
+    );
+  }
+
+  /// ★ 1101 开源批二：滑动「已读」——调 markRead(id) 并刷新该行
+  Future<void> _openAndMark(Map<String, dynamic> m) async {
+    try {
+      final id = (m['id'] as num?)?.toInt() ?? 0;
+      await MessageService.instance.markRead(id: id);
+      if (!mounted) return;
+      setState(() => m['is_read'] = 1);
+    } catch (_) {}
   }
 
   Widget _topBar(double topInset) {
