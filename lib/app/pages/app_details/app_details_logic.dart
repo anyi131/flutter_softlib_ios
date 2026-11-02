@@ -397,8 +397,43 @@ class AppDetailsLogic extends GetxController {
     }
   }
 
-  Future<void> _showParseFailedDialog(String originUrl) async {
-    final ctx = Get.context;
+  /// ★ 1102h：解析失败给用户看的话。
+  /// 之前直接把服务端原文贴出来（「[解析失效] 解析凭证无效或已过期，请重新从
+  /// 详情页下载」），用户根本不知道要做什么。这里按语义翻成人话，
+  /// 技术原文仍完整上报到后台「解析记录」里，不影响排查。
+  String _friendlyParseError(String raw) {
+    final s = raw
+        .replaceAll('[解析失效]', '')
+        .replaceAll('[本地解析失败]', '')
+        .trim();
+    final t = s.toLowerCase();
+    if (s.isEmpty) return '网盘暂时没有返回下载地址';
+    if (s.contains('凭证') || s.contains('过期') || s.contains('票据')) {
+      return '网盘下载链接已过期，点「重试」会自动换新链接';
+    }
+    if (s.contains('取消') || s.contains('取消分享')) {
+      return '网盘分享已被取消，该文件暂时下不了';
+    }
+    if (s.contains('密码') || s.contains('提取码')) {
+      return '网盘设置了口令，暂时无法自动解析';
+    }
+    if (s.contains('403') || s.contains('404') || s.contains('删除')) {
+      return '网盘里的文件已被删除或链接失效';
+    }
+    if (t.contains('timeout') ||
+        t.contains('超时') ||
+        t.contains('timed out') ||
+        s.contains('网络')) {
+      return '网络不太稳定，解析超时了，请稍后再试';
+    }
+    if (s.contains('频繁') || s.contains('限流') || s.contains('429')) {
+      return '访问太频繁被网盘限流了，等一两分钟再试';
+    }
+    // 没有命中已知类型：截断展示，避免把长串 JSON 糊在用户脸上
+    return s.length > 40 ? '${s.substring(0, 40)}…' : s;
+  }
+
+  Future<void> _showParseFailedDialog(String originUrl) async {    final ctx = Get.context;
     if (ctx == null) {
       ToastUtil.error('直链解析失败，请稍后重试');
       return;
@@ -406,7 +441,9 @@ class AppDetailsLogic extends GetxController {
     // 先取同类替代（失败也不影响弹窗本身）
     final alternatives = await _similarApps();
     if (!ctx.mounted) return;
-    final go = await showDialog<bool>(
+    // ★ 1102h：三态返回。原来「取消」和「重试」都 pop(false)，
+    //   点取消也会去重新下载（弹窗关掉了却自己开始下）。
+    final go = await showDialog<String>(
       context: ctx,
       builder: (c) => AppDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
@@ -432,7 +469,7 @@ class AppDetailsLogic extends GetxController {
             if (SoftService.lastParseError.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                '失败原因：${SoftService.lastParseError}',
+                '失败原因：$_friendlyParseError(SoftService.lastParseError)',
                 style: const TextStyle(
                   fontSize: 12,
                   height: 1.5,
@@ -562,26 +599,26 @@ class AppDetailsLogic extends GetxController {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(c, false),
+            onPressed: () => Navigator.pop(c),
             child: const Text('取消'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(c, false),
+            onPressed: () => Navigator.pop(c, 'retry'),
             child: const Text('重试'),
           ),
           FilledButton.icon(
-            onPressed: () => Navigator.pop(c, true),
+            onPressed: () => Navigator.pop(c, 'browser'),
             icon: const Icon(Icons.open_in_browser_rounded, size: 17),
             label: const Text('浏览器下载'),
           ),
         ],
       ),
     );
-    if (go == true && originUrl.isNotEmpty) {
+    if (go == 'browser' && originUrl.isNotEmpty) {
       // ★ 1014：此处是「解析失败后的浏览器兜底」，属于用户已通过校验
       //   后的降级路径，显式允许直链。
       JumpUtil.openUrl(originUrl, allowDownload: true);
-    } else if (go == false) {
+    } else if (go == 'retry') {
       // 用户选「重试」——★ 1016：令牌现在只在「真正发起下载」时消费，
       //   解析失败时并未消耗，所以这里**不能清零**（清零必然触发
       //   「该资源尚未通过服务端校验」）。
