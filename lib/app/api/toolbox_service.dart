@@ -234,9 +234,12 @@ class ToolboxService {
 
   // ═══════════ 本地工具（纯 Dart，不联网） ═══════════
 
-  /// 随机壁纸直链（第三方直给图片，无需代理）
+  /// 随机壁纸直链
+  /// ★ 1102g：上游 api.btstu.cn 的图床 img.btstu.cn 已挂（只解析到 github.io，
+  ///   整站 404），原来这里直接拼第三方链接 → App 里必然白图。
+  ///   现在统一走自家代理（服务端有图池缓存 + 缩略图），HTTPS 也过了 ATS。
   String randomWallpaper({String type = 'dongman'}) =>
-      'http://api.btstu.cn/sjbz/api.php?lx=$type&format=images';
+      '${ApiHost.base}/api/softlib/wallpaper?lx=$type&n=1';
 
   // ═══════════ 内部 ═══════════
 
