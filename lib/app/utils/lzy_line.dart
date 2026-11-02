@@ -14,10 +14,42 @@ import 'dart:io';
 class LzyLine {
   LzyLine._();
 
+  // ★ 1103：h1056 / h1062 的 DNS 已不存在（换线时踩空=0 字节秒失败），
+  //   实测 206 的只留这 13 个。
   static const List<String> hosts = <String>[
-    'h1051', 'h1052', 'h1053', 'h1054', 'h1055', 'h1056',
-    'h1057', 'h1058', 'h1059', 'h1060', 'h1061', 'h1062',
+    'h1048', 'h1049', 'h1050', 'h1051', 'h1052', 'h1053', 'h1054',
+    'h1055', 'h1057', 'h1058', 'h1059', 'h1060', 'h1061',
   ];
+
+  /// 直链的签发时间（Unix 秒），读不出来返回 0。
+  ///
+  /// ★ 1103：lanosso 直链是 /32位签名/8位时间戳/年/月/日/文件.apk，
+  ///   原来的 `/([0-9a-f]{8})/` 会**先命中 32 位哈希的尾巴**（如 /304e5401/），
+  ///   hexdec 出来只有 8 亿 → 一律判 0 → 「新鲜就不重解析」这条优化从没生效过，
+  ///   每次重试都去重新解析（白烧一次性票据 + 撞回同一个 15 分钟缓存）。
+  static int issuedAt(String url) {
+    final m = RegExp(
+      r'^https?://[^/]+/[0-9a-fA-F]{16,64}/([0-9a-fA-F]{8})(?:/|\?|$)',
+    ).firstMatch(url);
+    if (m != null) {
+      final h = int.tryParse(m.group(1)!, radix: 16);
+      if (h != null && h > 1000000000 && h < 2000000000) return h;
+    }
+    // 兜底：任意段落里的 8 位 hex（老式直链）
+    for (final mm
+        in RegExp(r'/([0-9a-fA-F]{8})(?=/|\.|$)').allMatches(url)) {
+      final h = int.tryParse(mm.group(1)!, radix: 16);
+      if (h != null && h > 1000000000 && h < 2000000000) return h;
+    }
+    return 0;
+  }
+
+  /// 直链剩余寿命（秒），读不出签发时间返回 -1
+  static int remainSec(String url) {
+    final at = issuedAt(url);
+    if (at <= 0) return -1;
+    return at + 1800 - DateTime.now().millisecondsSinceEpoch ~/ 1000;
+  }
 
   static final RegExp _re =
       RegExp(r'^https?://(h\d+)\.lanosso\.com(/[^\s]*)$', caseSensitive: false);

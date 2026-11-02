@@ -1302,6 +1302,10 @@ class AppDetailsLogic extends GetxController {
             if (t0.status == DownloadTaskStatus.canceled) {
               return _userCanceled ? 'USER_CANCEL' : 'SYS_CANCEL';
             }
+            // ★ 1103：过期 / 连不上 / 中途断，三类分开记，后台一眼看出真因
+            final left = LzyLine.remainSec(dowUrl);
+            if (left >= 0 && left <= 0) return 'DL_EXPIRED';
+            if (t0.progress <= 0 && _shownProgress <= 0) return 'DL_NOCONN';
             return 'DL_FAIL';
           }(),
           freeMb: await _freeSpaceMb(),
@@ -1320,6 +1324,13 @@ class AppDetailsLogic extends GetxController {
                 u.contains('lzy') ||
                 u.contains('52yfx.cn/lzy');
             if (u.isEmpty) return '[解析失败] 下载地址为空（解析接口无返回）';
+            // ★ 1103：lanosso 直链只活 30 分钟，先按签发时间判断到底是不是过期，
+            //   别再一律甩锅给运营商
+            final left = u.contains('lanosso.com') ? LzyLine.remainSec(dowUrl) : -1;
+            if (left >= 0 && left <= 0) {
+              return '[链接过期] 直链有效期 30 分钟，下载/重试跨过了有效期'
+                  '\n已自动重新解析，点「重新下载」即可';
+            }
             if (isLzy) {
               return '[解析失效] 蓝奏云直链不可用（解析接口返回异常/链接过期）'
                   '\n解析来源：${u.length > 60 ? u.substring(0, 60) : u}';
@@ -1457,14 +1468,9 @@ class AppDetailsLogic extends GetxController {
             } catch (_) {}
           }
         }
-        int signedAt = 0;
-        try {
-          final m = RegExp(r'/([0-9a-f]{8})/').firstMatch(dowUrl);
-          if (m != null) {
-            final h = int.tryParse(m.group(1)!, radix: 16);
-            if (h != null && h > 1000000000 && h < 2000000000) signedAt = h;
-          }
-        } catch (_) {}
+        // ★ 1103：统一用 LzyLine.issuedAt 读签发时间（原来的正则读的是
+        //   32 位哈希尾巴，永远返回 0，导致「新鲜链接直接复用」从来不生效）
+        final signedAt = LzyLine.issuedAt(dowUrl);
         final freshLink = signedAt > 0 &&
             DateTime.now().millisecondsSinceEpoch ~/ 1000 - signedAt < 1200;
         if (!ok && freshLink && dowUrl.isNotEmpty) {
