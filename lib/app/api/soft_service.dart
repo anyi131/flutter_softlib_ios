@@ -374,8 +374,14 @@ class SoftService {
     final single = await _parseSingle(lzyUrl, token, ticket);
     if (single != null && single.isNotEmpty) return single;
 
+    // ★ 1102e：票据是一次性的（服务端校验通过即置 used=1）。
+    //   ① 已经把它用掉了，若这里沿用同一张，②必然被拒并抛
+    //   「解析凭证无效或已过期」——真机实测复现。故文件夹兜底必须重新申请。
+    final ticket2 = await _applyParseTicket(lzyUrl);
+    if (ticket2 == null) return null;
+
     // ② 单文件失败 → 按文件夹解析，取里面第一个安装包
-    final dirFile = await _parseFolder(lzyUrl, token, ticket);
+    final dirFile = await _parseFolder(lzyUrl, token, ticket2);
     if (dirFile != null && dirFile.isNotEmpty) return dirFile;
 
     return null;

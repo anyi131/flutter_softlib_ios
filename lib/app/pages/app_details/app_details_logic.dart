@@ -1437,7 +1437,9 @@ class AppDetailsLogic extends GetxController {
         if (!ok) {
           // 直链已老 / 复用失败 → 重新解析换新链
           try {
-            final t = item?.url ?? dowUrl;
+            // ★ 1102e：只拿分享页去重新解析；item.url 为空时不要拿 dowUrl
+            //   （直链）去解析，那必然失败还会烧掉一张票据。
+            final t = (item?.url ?? '').trim();
             if (t.isNotEmpty) {
               final fresh = await service.resolveLzy(t);
               if (fresh != null && fresh.isNotEmpty) {
@@ -1563,8 +1565,16 @@ class AppDetailsLogic extends GetxController {
   }
 
   Future<void> retryDownload() async {
-    final origin = dowUrl.isNotEmpty ? dowUrl : (item?.url ?? '');
-    if (origin.isNotEmpty) {
+    // ★ 1102e：原来优先拿 dowUrl（= 已解析出来的**直链**）去重新解析，
+    //   但直链不是分享页，解析必然失败，还会白烧一张一次性票据、并
+    //   触发「解析凭证无效或已过期」的误导提示。分享页（item.url）才是源头。
+    final share = (item?.url ?? '').trim();
+    final origin = share.isNotEmpty ? share : dowUrl;
+    // 直链（以文件扩展名结尾）不送去解析：它本身就是答案
+    final isDirectFile =
+        RegExp(r'\.(apk|apks|xapk|zip|rar|7z|exe)$', caseSensitive: false)
+            .hasMatch(origin);
+    if (origin.isNotEmpty && !isDirectFile) {
       AppAction.showLoading('正在重新获取下载地址…');
       String? fresh;
       try {
