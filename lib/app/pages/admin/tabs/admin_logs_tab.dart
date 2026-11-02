@@ -65,8 +65,14 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
     'pay_ok': '支付',
     'card': '卡密',
     'bind_qq': '绑定QQ',
+    'unbind_qq': '解绑QQ',
     'profile': '资料',
     'admin': '后台操作',
+    // ★ 1102i：补全真实存在的动作，之前这些在列表里直接显示英文原文
+    //   （config / pay_buyer / pay_notify），运营看不懂。
+    'config': '配置修改',
+    'pay_buyer': '下单',
+    'pay_notify': '支付回调',
   };
 
   static const _actionIcons = <String, IconData>{
@@ -76,7 +82,104 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
     'comment': Icons.mode_comment_rounded,
     'buy': Icons.shopping_bag_rounded,
     'download': Icons.download_rounded,
+    'config': Icons.tune_rounded,
+    'pay_ok': Icons.verified_rounded,
+    'pay_notify': Icons.receipt_long_rounded,
+    'pay_buyer': Icons.payments_rounded,
+    'sign': Icons.event_available_rounded,
+    'search': Icons.search_rounded,
+    'card': Icons.credit_card_rounded,
+    'bind_qq': Icons.link_rounded,
+    'unbind_qq': Icons.link_off_rounded,
+    'profile': Icons.badge_rounded,
+    'review': Icons.star_rounded,
   };
+
+  /// ★ 1102i：日志详情美化。
+  ///   服务端存的是 json_encode 过的键值（`promo_on: 0 -> 1`、
+  ///   `about_logo: "" -> "https:\/\/...png"`），原样贴到界面上既难看又看不懂。
+  ///   这里还原转义、去掉多余的引号、把配置键翻成中文。
+  static const _cfgNames = <String, String>{
+    'promo_on': '促销开关',
+    'promo_title': '促销标题',
+    'promo_tip': '促销说明',
+    'promo_badge': '促销角标',
+    'promo_idx': '促销档位',
+    'promo_end': '促销截止',
+    'promo_mul': '促销倍率',
+    'pay_enabled': '支付开关',
+    'pay_alipay': '支付宝',
+    'pay_wxpay': '微信支付',
+    'pay_qqpay': 'QQ钱包',
+    'pay_plan1_name': '套餐 1 名称',
+    'pay_plan1_money': '套餐 1 价格',
+    'pay_plan1_days': '套餐 1 时长',
+    'pay_plan2_name': '套餐 2 名称',
+    'pay_plan2_money': '套餐 2 价格',
+    'pay_plan2_days': '套餐 2 时长',
+    'pay_plan3_name': '套餐 3 名称',
+    'pay_plan3_money': '套餐 3 价格',
+    'pay_plan3_days': '套餐 3 时长',
+    'about_logo': '关于页 Logo',
+    'about_name': '关于页 名称',
+    'about_slogan': '关于页 标语',
+    'about_desc': '关于页 简介',
+    'about_website': '官网地址',
+    'about_contact': '联系方式',
+    'about_copyright': '版权信息',
+    'about_version': '关于页 版本',
+    'about_enable': '关于页 开关',
+    'site_logo': '站点 Logo',
+    'splash_enable': '开屏 开关',
+    'splash_title': '开屏 标题',
+    'splash_desc': '开屏 说明',
+    'splash_image': '开屏 图片',
+    'splash_url': '开屏 链接',
+    'splash_seconds': '开屏 时长',
+    'splash_source': '开屏 来源',
+    'splash_custom_url': '开屏 自定义图',
+    'notice_enable': '公告 开关',
+    'notice_title': '公告 标题',
+    'notice_content': '公告 内容',
+    'notice_force': '公告 强制',
+    'notice_url': '公告 链接',
+    'notice_daily_limit': '公告 每日次数',
+    'theme_palette': '主题配色',
+    'ui_config': '界面配置',
+    'tool_home_style': '工具箱样式',
+    'app_ui_style': 'App 界面风格',
+    'version': '版本号',
+    'sign_guard_mode': '签到守卫模式',
+    'reg_code_on': '注册需要卡密',
+    'register_on': '开放注册',
+    'post_review_on': '发帖审核',
+    'card_shop_on': '卡密商城 开关',
+    'player_float_on': '悬浮播放',
+    'player_island_on': '灵动岛播放',
+    'share_title': '分享标题',
+    'share_desc': '分享描述',
+    'share_url': '分享链接',
+    'maintain_enable': '维护模式',
+    'maintain_text': '维护说明',
+    'weekly_report_last': '周报上次发送',
+    'log_clean_last_count': '日志清理条数',
+    'sec_rate_limit': '接口限流',
+  };
+
+  static String _prettyDetail(String raw) {
+    if (raw.isEmpty) return raw;
+    var s = raw
+        .replaceAll(r'\"', '"')
+        .replaceAll(r'\/', '/')
+        .replaceAll(r'\n', ' ');
+    final m = RegExp(r'^([a-z0-9_]+): ').firstMatch(s);
+    if (m == null) return s;
+    final name = _cfgNames[m.group(1)!];
+    if (name == null) return s;
+    var rest = s.substring(m.end).replaceAll('"', '');
+    if (rest.trim() == 'null' || rest.trim().trim() == '') rest = '未设置';
+    return '$name：$rest';
+  }
 
   @override
   void initState() {
@@ -493,7 +596,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                   ),
                   if (isAdmin) ('权限', '管理员'),
                   ('行为', _actions[action] ?? action),
-                  ('详情', '${r['detail'] ?? '-'}'),
+                  ('详情', _prettyDetail('${r['detail'] ?? '-'}')),
                   // ★ 1016：下载类日志补全 —— 状态 / 解析方式 / App 版本 / 失败原因
                   if ('${r['dl_status'] ?? ''}'.isNotEmpty)
                     ('下载状态', '${r['dl_status']}' == 'ok' ? '✓ 成功' : '✗ 失败'),
@@ -1040,7 +1143,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
           if ('${r['detail'] ?? ''}'.isNotEmpty) ...[
             const SizedBox(height: 7),
             Text(
-              '${r['detail']}',
+              _prettyDetail('${r['detail']}'),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: Ty.small.copyWith(fontSize: 12.5, color: context.t2),
