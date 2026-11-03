@@ -92,6 +92,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  patrol: ^4.11.0
   build_runner: ^2.12.2
   flutter_lints: ^6.0.0
   talker_dio_logger: ^5.1.15
