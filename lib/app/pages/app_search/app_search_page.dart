@@ -101,7 +101,6 @@ class _AppSearchPageState extends State<AppSearchPage> {
                             ],
                     ),
                     child: TextField(
-                      key: const ValueKey('searchField'),
                       controller: _ctrl,
                       autofocus: true,
                       textInputAction: TextInputAction.search,
@@ -254,7 +253,6 @@ class _AppSearchPageState extends State<AppSearchPage> {
       padding: const EdgeInsets.only(top: 8, bottom: 20),
       itemCount: _results.length,
       itemBuilder: (context, index) => AppCard(
-        key: ValueKey('appCard_${_results[index].id}'),
         item: _results[index],
         onTap: () => Get.toNamed(
           Routes.appDetails,

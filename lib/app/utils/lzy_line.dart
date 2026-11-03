@@ -28,6 +28,9 @@ class LzyLine {
   ///   hexdec 出来只有 8 亿 → 一律判 0 → 「新鲜就不重解析」这条优化从没生效过，
   ///   每次重试都去重新解析（白烧一次性票据 + 撞回同一个 15 分钟缓存）。
   static int issuedAt(String url) {
+    // 老式参数直链：?e=10位时间戳（与 Android 端同步）
+    final e = RegExp(r'[?&]e=(\d{10})(?:&|$)').firstMatch(url);
+    if (e != null) return int.parse(e.group(1)!);
     final m = RegExp(
       r'^https?://[^/]+/[0-9a-fA-F]{16,64}/([0-9a-fA-F]{8})(?:/|\?|$)',
     ).firstMatch(url);

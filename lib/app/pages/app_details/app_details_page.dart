@@ -1970,7 +1970,6 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 _bottomHint(icon, sub, color),
                 const SizedBox(height: 9),
                 PrimaryButton(
-                  key: const ValueKey('downloadBtn'),
                   label: label,
                   color: color,
                   icon: icon,
