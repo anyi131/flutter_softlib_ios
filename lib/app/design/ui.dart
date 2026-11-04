@@ -1,7 +1,5 @@
 import 'dart:ui';
 
-import 'package:get/get.dart';
-
 import 'glass_theme.dart';
 import 'theme_controller.dart';
 
@@ -154,7 +152,7 @@ class Deco {
       _promoTextFromPalette(c).withAlpha(200);
 
   static Color _promoFromPalette(BuildContext c, double darkL, double lightL) {
-    final p = Get.find<ThemeController>().palette.value;
+    final p = ThemeController.instance.palette.value; // 1104c: Get.find 运行时炸（从未 Get.put），单例本就存在
     // HSL：低亮度高饱和的「深品牌色」，深浅模式只差一点亮度
     final hsl = HSLColor.fromColor(p.brand);
     final l = dark(c) ? darkL : lightL;
@@ -162,7 +160,7 @@ class Deco {
   }
 
   static Color _promoTextFromPalette(BuildContext c) {
-    final p = Get.find<ThemeController>().palette.value;
+    final p = ThemeController.instance.palette.value; // 1104c: 同上
     final hsl = HSLColor.fromColor(p.brandBright);
     // 文字要亮：亮度 0.78-0.85，饱和度保留
     return hsl.withLightness(dark(c) ? 0.80 : 0.62).toColor();
