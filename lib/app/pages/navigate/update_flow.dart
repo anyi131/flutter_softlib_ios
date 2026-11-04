@@ -362,8 +362,19 @@ class _UpdateCardState extends State<_UpdateCard> {
       return;
     }
     if (mounted) setState(() => _phase = 'downloading');
+    // ★ 1105h：记录中转兜底地址；直连失败（源站风控/连不上）时静默换它重下
+    _proxyUrl = SoftService.lastParseProxyUrl;
+    _proxyTried = false;
+    await _enqueueAndPoll(direct);
+  }
+
+  /// ★ 1105h：中转兜底地址 / 是否已尝试过
+  String _proxyUrl = '';
+  bool _proxyTried = false;
+
+  Future<void> _enqueueAndPoll(String url) async {
     final taskId = await FlutterDownloader.enqueue(
-      url: direct,
+      url: url,
       fileName: 'softlib_update_${DateTime.now().millisecondsSinceEpoch}.apk',
       savedDir: await DownloadDir.path(),
       showNotification: true,
@@ -371,7 +382,7 @@ class _UpdateCardState extends State<_UpdateCard> {
       openFileFromNotification: true,
     );
     if (taskId == null) {
-      setState(() => _phase = 'idle');
+      if (mounted) setState(() => _phase = 'idle');
       _fallbackBrowser();
       return;
     }
@@ -394,6 +405,15 @@ class _UpdateCardState extends State<_UpdateCard> {
       } else if (tk.status == DownloadTaskStatus.failed ||
           tk.status == DownloadTaskStatus.canceled) {
         t.cancel();
+        // ★ 1105h：直连失败先静默换服务器中转地址重下一次，中转也失败才判死
+        if (tk.status == DownloadTaskStatus.failed &&
+            !_proxyTried &&
+            _proxyUrl.isNotEmpty) {
+          _proxyTried = true;
+          if (mounted) setState(() => _phase = 'downloading');
+          await _enqueueAndPoll(_proxyUrl);
+          return;
+        }
         setState(() => _phase = 'failed');
       }
     });

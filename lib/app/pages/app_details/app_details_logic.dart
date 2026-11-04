@@ -227,6 +227,8 @@ class AppDetailsLogic extends GetxController {
     msgError = null;
     _silentRetry = 0;
     _failCount = 0; // ★ 1104e：换软件后失败话术/浏览器兜底从头计
+    _proxyFallbackUrl = ''; // ★ 1105h：换软件清空中转兜底地址
+    _proxyRetried = false;
     _shownProgress = 0;
     _uiPhase = phaseIdle;
     _taskKey = '';
@@ -735,6 +737,9 @@ class AppDetailsLogic extends GetxController {
       _shownProgress = 0;
       _explicitReset = true;
       update(['download']);
+      // ★ 1105h：先静默换服务器中转地址重下一次
+      //   （源站风控验证页被当文件下完 = 必触发「不完整」，直连重试救不回来）
+      if (await _retryWithProxy()) return;
       ToastUtil.error('下载不完整（网络波动），请重新下载');
       // ★ 1104e：不能只 Toast——补弹浏览器兜底窗（典型是源站风控验证页
       //   被当成文件下完，App 内重试也拿不到真文件，得靠浏览器过验证）
@@ -1177,6 +1182,10 @@ class AppDetailsLogic extends GetxController {
       return;
     }
 
+    // ★ 1105h：记下本次解析附带的中转兜底地址（直连被风控时静默换链）
+    _proxyFallbackUrl = SoftService.lastParseProxyUrl;
+    _proxyRetried = false;
+
     // ★ 需求1：标记「刚点过下载」，3 秒内 UI 保持进度条初始态不闪回按钮
     _lastDownloadTap = DateTime.now();
     _renderedTaskId = null;
@@ -1293,6 +1302,9 @@ class AppDetailsLogic extends GetxController {
         //   再失败就永远静默（用户反馈「加强了怎么没弹」的根因之一）。
         //   重复弹不会发生：轮询 t 已在上方 cancel，每次失败事件只走一次。
         if (t0.status == DownloadTaskStatus.failed) {
+          // ★ 1105h：源站风控把用户 IP 拦死（连不上/中断）时，
+          //   先静默换服务器中转地址重下；中转也失败才弹窗
+          if (await _retryWithProxy()) return;
           _showDownloadFailedSheet();
         }
         // ★ 1016：上报失败（后台「下载记录」可查）
@@ -1365,6 +1377,10 @@ class AppDetailsLogic extends GetxController {
   ///   第 2 次起   → 大概率是蓝奏 CDN 风控「网络异常验证页」（App 内怎么重试
   ///   都拿不到文件），主推「浏览器打开原分享页」，由网页侧走完人机验证再下。
   int _failCount = 0;
+
+  /// ★ 1105h：服务端给的中转兜底地址（直连被源站风控时静默换链重下）
+  String _proxyFallbackUrl = '';
+  bool _proxyRetried = false;
 
   void _showDownloadFailedSheet() {
     _failCount++;
@@ -1492,6 +1508,61 @@ class AppDetailsLogic extends GetxController {
         ],
       ),
     );
+  }
+
+  /// ★ 1105h：直连下载被源站风控拦截（下到验证页 HTML / 直接连不上）时，
+  ///   静默换服务端中转地址重下一次；每轮只尝试一次，中转也失败才走弹窗。
+  Future<bool> _retryWithProxy() async {
+    if (_proxyFallbackUrl.isEmpty || _proxyRetried) return false;
+    _proxyRetried = true;
+    try {
+      final old = downloadTask;
+      var name = (old?.filename ?? '').trim();
+      if (name.isEmpty) name = (appInfo?.fileName ?? 'download');
+      name = name.replaceAll(
+        RegExp(r'(_\d+)?\.apk$', caseSensitive: false),
+        '',
+      );
+      if (name.isEmpty) name = 'download';
+      name = '${name}_${DateTime.now().millisecondsSinceEpoch}_p.apk';
+      try {
+        if (old != null) {
+          await FlutterDownloader.remove(
+            taskId: old.taskId,
+            shouldDeleteContent: true,
+          );
+        }
+      } catch (_) {}
+      final nid = await FlutterDownloader.enqueue(
+        url: _proxyFallbackUrl,
+        fileName: name,
+        savedDir: await DownloadDir.path(),
+        showNotification: true,
+        saveInPublicStorage: false,
+        openFileFromNotification: true,
+      );
+      if (nid == null) return false;
+      try {
+        await downloadTaskDao.setDownloadTask(
+          taskId: nid,
+          appId: appId,
+          appIcon: appInfo?.fileIcon ?? '',
+          appName: appInfo?.fileName ?? name,
+          appSize: appInfo?.fileSize ?? '',
+        );
+      } catch (_) {}
+      _uiPhase = phaseDownloading;
+      _shownProgress = 0;
+      _explicitReset = false;
+      _askedInstall = false;
+      update(['download']);
+      await getTaskInfo();
+      _startProgressPolling();
+      return true;
+    } catch (e) {
+      logger.e('proxy retry: $e');
+      return false;
+    }
   }
 
   // ═══════════════ 静默重试（用户待办 #1）═══════════════
@@ -1726,6 +1797,9 @@ class AppDetailsLogic extends GetxController {
         }
         _silentRetry = 0;
         _failCount = 0; // ★ 1104e：重新解析成功，失败话术/浏览器兜底重置
+        // ★ 1105h：重新解析会带新的 proxyUrl，重置中转兜底状态
+        _proxyFallbackUrl = SoftService.lastParseProxyUrl;
+        _proxyRetried = false;
         await addDownload(
           (appInfo?.fileName ?? item?.title ?? 'download'),
           fresh,

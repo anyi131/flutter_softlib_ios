@@ -354,6 +354,8 @@ class SoftService {
 
   /// ★ 1016：本次解析走的通道（local / api / server / direct）
   static String lastParseChannel = '';
+  /// ★ 1105h：最近一次解析附带的中转兜底地址（服务端直连失败时换它重下）
+  static String lastParseProxyUrl = '';
 
   /// ★ 1016：解析接口的原始返回片段（便于后台排查）
   static String lastParseResp = '';
@@ -405,6 +407,11 @@ class SoftService {
       );
       final data = resp.data;
       if (data is Map && data['code'] == 1) {
+        // ★ 1105h：记录中转兜底地址
+        try {
+          final pv = (data['data'] is Map) ? (data['data'] as Map)['proxyUrl'] : null;
+          if (pv is String && pv.startsWith('http')) lastParseProxyUrl = pv;
+        } catch (_) {}
         final u = (data['data'] is Map) ? (data['data']['url'] ?? '') : '';
         if (u.toString().isNotEmpty) return u.toString();
       } else if (data is Map && data['msg'] is String) {
@@ -479,6 +486,7 @@ class SoftService {
   Future<String?> resolveLzy(String lzyUrl) async {
     lastParseError = '';
     lastParseResp = '';
+    lastParseProxyUrl = ''; // ★ 1105h：每次解析重置中转兜底地址
     // ① 先向服务端申请「本次解析放行票据」
     final ticket = await _applyParseTicket(lzyUrl);
     if (ticket == null) return null; // 未登录 / 无权限 / 网络异常 → 一律不解析
@@ -566,6 +574,15 @@ class SoftService {
           lastParseError = d['msg'] as String; // 如「文件取消分享了」
         }
         if (okCode) {
+          // ★ 1105h：记录中转兜底地址（顶层或 data 内都可能给）
+          try {
+            final pvTop = d['proxyUrl'];
+            final pvIn = (d['data'] is Map) ? (d['data'] as Map)['proxyUrl'] : null;
+            final pv = (pvTop is String && pvTop.startsWith('http'))
+                ? pvTop
+                : ((pvIn is String && pvIn.startsWith('http')) ? pvIn : '');
+            if (pv.isNotEmpty) lastParseProxyUrl = pv;
+          } catch (_) {}
           for (final k in [
             'downUrl',
             'downurl',
@@ -678,6 +695,9 @@ class SoftService {
       );
       final d = r.data;
       if (d is Map && d['code'] == 1 && d['data'] is Map) {
+        // ★ 1105h：记录中转兜底地址（更新包同样享受）
+        final pv = (d['data'] as Map)['proxyUrl'];
+        if (pv is String && pv.startsWith('http')) lastParseProxyUrl = pv;
         final u = '${(d['data'] as Map)['url'] ?? ''}';
         if (u.isNotEmpty) return u;
       }
