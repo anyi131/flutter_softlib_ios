@@ -28,7 +28,7 @@ class LzyLine {
   ///   hexdec 出来只有 8 亿 → 一律判 0 → 「新鲜就不重解析」这条优化从没生效过，
   ///   每次重试都去重新解析（白烧一次性票据 + 撞回同一个 15 分钟缓存）。
   static int issuedAt(String url) {
-    // 老式参数直链：?e=10位时间戳（与 Android 端同步）
+    // 老式参数直链：?e=10位时间戳
     final e = RegExp(r'[?&]e=(\d{10})(?:&|$)').firstMatch(url);
     if (e != null) return int.parse(e.group(1)!);
     final m = RegExp(
@@ -47,10 +47,24 @@ class LzyLine {
     return 0;
   }
 
-  /// 直链剩余寿命（秒），读不出签发时间返回 -1
+  /// ★ 1103 更正：lanosso 直链第二段 8 位 hex 是【到期时刻】不是【签发时刻】。
+  ///   实锤：同一次解析（cache timestamp=14:39:54）两跳的 hex 分别为
+  ///   15:07:49 / 15:09:54——都恰好等于 解析时刻+1800s（CDN 给 30 分钟窗口，
+  ///   中间多走一跳差 125s）。之前当成签发时间，remainSec 会多算 30 分钟。
+  /// 返回【到期时刻】；读不出返回 0。?e= 老链的那 10 位仍是签发时间，
+  /// 由 remainSec 里区分处理。
+  static int expiresAt(String url) {
+    return issuedAt(url);
+  }
+
+  /// 直链剩余寿命（秒），读不出返回 -1
   static int remainSec(String url) {
+    final isLano = url.contains('lanosso.com');
     final at = issuedAt(url);
     if (at <= 0) return -1;
+    // lanosso：hex=到期时刻，直接比 now
+    if (isLano) return at - DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    // ?e= 老链：10 位是签发时间，+30 分钟窗口
     return at + 1800 - DateTime.now().millisecondsSinceEpoch ~/ 1000;
   }
 

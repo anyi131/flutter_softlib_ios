@@ -42,6 +42,7 @@ class _VipPageState extends State<VipPage> {
 
   /// 促销倒计时（横幅存在时每秒刷新）
   Timer? _promoTick;
+  final RxInt _promoTickSeq = 0.obs; // ★ 1103 倒计时驱动（Obx 依赖）
 
   @override
   void initState() {
@@ -59,7 +60,9 @@ class _VipPageState extends State<VipPage> {
       if (cfg == null || !cfg.on) return;
       final end = _parsePromoEnd(cfg.end);
       if (end == null) return;
-      setState(() {}); // 只为刷新倒计时文本
+      // ★ 1103：横幅是 Obx(读 cachedConfig.value)，缓存对象不换引用时 Obx 不会重算，
+      //   setState 只影响非 Obx 部分 → 倒计时一直停在「--」。改成直接 bump 一个计数器。
+      _promoTickSeq.value++;
     });
   }
 
@@ -117,7 +120,7 @@ class _VipPageState extends State<VipPage> {
                   padding: EdgeInsets.fromLTRB(14, topInset + 52, 14, 20),
                   children: [
                     _buildHeaderCard(),
-                    _promoBanner(),
+                    Obx(() => _promoBanner()),
                     const SizedBox(height: 18),
                     SectionHeader(title: '选择套餐', accent: C.gold),
                     Row(
@@ -278,13 +281,19 @@ class _VipPageState extends State<VipPage> {
   /// ★ 1101c 宽容解析促销结束时间：兼容「2026-11-10 23:59:59」「2026.11.10」「2026/11/10」
   DateTime? _parsePromoEnd(String raw) {
     if (raw.trim().isEmpty) return null;
-    var s = raw.trim().replaceFirst(' ', 'T');
+    var s = raw.trim();
     // 点/斜杠分隔的日期 → 横杠（2026.11.10 / 2026/11/10 → 2026-11-10）
     final m = RegExp(r'^(\d{4})[./](\d{1,2})[./](\d{1,2})(.*)$').firstMatch(s);
     if (m != null) {
-      final rest = m.group(4)!;
-      final p2 = rest.startsWith('T') ? rest : 'T' + rest;
-      s = '${m.group(1)}-${m.group(2)!.padLeft(2, '0')}-${m.group(3)!.padLeft(2, '0')}$p2';
+      final tail = m.group(4)!; // '' 或 ' 23:59:59' 或 'T23:59'
+      final t = tail.trim();
+      final time = t.startsWith('T')
+          ? t.substring(1).trim()
+          : t;
+      s = '${m.group(1)}-${m.group(2)!.padLeft(2, '0')}-${m.group(3)!.padLeft(2, '0')}'
+          '${time.isEmpty ? '' : ' ' + time}';
+    } else {
+      s = s.replaceFirst(' ', 'T');
     }
     return DateTime.tryParse(s);
   }
@@ -325,6 +334,9 @@ class _VipPageState extends State<VipPage> {
   ///   左侧细金竖条锚点 + 标题/小字 + 右侧「距结束 xx:xx:xx」。
   ///   后台关掉 / 未配置 = 整块不渲染。倒计时走每秒 setState 的 _promoTick。
   Widget _promoBanner() {
+    // ★ 1103：包一层 Obx 依赖 _promoTickSeq，倒计时每秒重算；
+    //   之前横幅不在 Obx 里、setState 也刷不到它 → 「限时特惠」一直挂着但没有倒计时。
+    _promoTickSeq.value; // 显式建立依赖
     final cfg = SoftService.instance.cachedConfig?.promo;
     if (cfg == null || !cfg.on) return const SizedBox.shrink();
     final title = cfg.title.isNotEmpty ? cfg.title : '限时特惠';

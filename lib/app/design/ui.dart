@@ -1,6 +1,9 @@
 import 'dart:ui';
 
+import 'package:get/get.dart';
+
 import 'glass_theme.dart';
+import 'theme_controller.dart';
 
 import 'package:flutter/material.dart';
 
@@ -141,15 +144,29 @@ class Deco {
   static const List<Color> scrimSoft = [Color(0xAA000000), Color(0x00000000)];
 
   /// ★ 1031 促销配色对（浅/深模式各一套，会员页横幅/角签/立省胶囊统一引用）。
-  /// 金色系保持「促销=金」的品牌联想，深色模式降低对比防刺眼。
-  static Color promoBg(BuildContext c) =>
-      dark(c) ? const Color(0xFF1C1812) : const Color(0xFF17130C);
-  static Color promoBg2(BuildContext c) =>
-      dark(c) ? const Color(0xFF2A2418) : const Color(0xFF241C0D);
-  static Color promoText(BuildContext c) =>
-      dark(c) ? const Color(0xFFE8CE93) : const Color(0xFFF7D57A);
+  /// 1103：不再写死金色系，改为从全局配色方案（ThemePalette）派生——
+  /// 横幅底色取 brandDeep 的暗化版、文字取 brandBright，跟随「外观-配色」联动；
+  /// 保留金色系仅作为无方案时的兜底。
+  static Color promoBg(BuildContext c) => _promoFromPalette(c, 0.22, 0.16);
+  static Color promoBg2(BuildContext c) => _promoFromPalette(c, 0.30, 0.24);
+  static Color promoText(BuildContext c) => _promoTextFromPalette(c);
   static Color promoTextDim(BuildContext c) =>
-      dark(c) ? const Color(0xFFB39B6B) : const Color(0xFFB39B6B);
+      _promoTextFromPalette(c).withAlpha(200);
+
+  static Color _promoFromPalette(BuildContext c, double darkL, double lightL) {
+    final p = Get.find<ThemeController>().palette.value;
+    // HSL：低亮度高饱和的「深品牌色」，深浅模式只差一点亮度
+    final hsl = HSLColor.fromColor(p.brand);
+    final l = dark(c) ? darkL : lightL;
+    return hsl.withLightness(l).withSaturation((hsl.saturation * 0.9).clamp(0.0, 1.0)).toColor();
+  }
+
+  static Color _promoTextFromPalette(BuildContext c) {
+    final p = Get.find<ThemeController>().palette.value;
+    final hsl = HSLColor.fromColor(p.brandBright);
+    // 文字要亮：亮度 0.78-0.85，饱和度保留
+    return hsl.withLightness(dark(c) ? 0.80 : 0.62).toColor();
+  }
 
   /// 主背景：浅色页面底 + 柔和彩色光晕（浅色为主）
   /// ★ fit: expand 保证无论父级约束如何都铺满，避免转场/首帧露出底色
