@@ -226,6 +226,7 @@ class AppDetailsLogic extends GetxController {
     isLoadingInfo = true;
     msgError = null;
     _silentRetry = 0;
+    _failCount = 0; // ★ 1104e：换软件后失败话术/浏览器兜底从头计
     _shownProgress = 0;
     _uiPhase = phaseIdle;
     _taskKey = '';
@@ -735,6 +736,9 @@ class AppDetailsLogic extends GetxController {
       _explicitReset = true;
       update(['download']);
       ToastUtil.error('下载不完整（网络波动），请重新下载');
+      // ★ 1104e：不能只 Toast——补弹浏览器兜底窗（典型是源站风控验证页
+      //   被当成文件下完，App 内重试也拿不到真文件，得靠浏览器过验证）
+      _showIncompleteDialog();
       // ★ 1016：上报失败（后台「下载记录」可查）
       SoftService.instance.reportDownloadResult(
         appId: appIdInt,
@@ -1285,8 +1289,10 @@ class AppDetailsLogic extends GetxController {
         }
         // ★★ 1020：静默重试也失败后，给用户两条出路，别只剩一句「下载失败」
         //   （之前用户只能反复点，但用的是已过期的直链，永远失败）
-        if (t0.status == DownloadTaskStatus.failed && !_shownFailDialog) {
-          _shownFailDialog = true;
+        // ★ 1104e：删掉一次性 _shownFailDialog 门禁——原来弹过一次后同一页面
+        //   再失败就永远静默（用户反馈「加强了怎么没弹」的根因之一）。
+        //   重复弹不会发生：轮询 t 已在上方 cancel，每次失败事件只走一次。
+        if (t0.status == DownloadTaskStatus.failed) {
           _showDownloadFailedSheet();
         }
         // ★ 1016：上报失败（后台「下载记录」可查）
@@ -1350,11 +1356,29 @@ class AppDetailsLogic extends GetxController {
     });
   }
 
-  bool _shownFailDialog = false;
-
   /// 下载失败后的可选操作（重新解析下载 / 浏览器打开）
+  ///
+  /// ★ 1104e：原来的 `_shownFailDialog` 是一次性标志——弹过一次后，
+  ///   同一页面内再失败就永远静默（用户 1104 反馈「加强过了怎么没弹」的根因）。
+  ///   现在删掉一次性标志，每次真正落败都可弹；用 `_failCount` 区分话术：
+  ///   第 1 次失败 → 常规提示（重新下载为主）；
+  ///   第 2 次起   → 大概率是蓝奏 CDN 风控「网络异常验证页」（App 内怎么重试
+  ///   都拿不到文件），主推「浏览器打开原分享页」，由网页侧走完人机验证再下。
+  int _failCount = 0;
+
   void _showDownloadFailedSheet() {
-    final origin = dowUrl.isNotEmpty ? dowUrl : (item?.url ?? '');
+    _failCount++;
+    // ★ 1104e：浏览器兜底优先开「原分享页」而不是直链——
+    //   分享页在浏览器里有完整下载按钮 + 能自动过 CDN 人机验证；
+    //   直链在浏览器被风控时只会显示一坨 HTML。分享页为空才退直链。
+    final page = (item?.url ?? '').trim();
+    final origin = page.isNotEmpty ? page : dowUrl;
+    final browserFirst = _failCount >= 2;
+    final tip = browserFirst
+        ? '连续多次重试都失败，大概率是当前网络被下载源风控拦截'
+              '（源站弹出「网络异常，需要验证」页，App 内重试拿不到文件）。\n'
+              '建议直接用浏览器打开原分享页下载：浏览器能自动通过验证。'
+        : '下载中断了，通常是网络波动或源站限速。\n你可以重新获取地址再下一遍，或者直接用浏览器下载。';
     Get.dialog<void>(
       AppDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
@@ -1363,10 +1387,7 @@ class AppDetailsLogic extends GetxController {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '下载中断了，通常是网络波动或源站限速。\n你可以重新获取地址再下一遍，或者直接用浏览器下载。',
-              style: TextStyle(fontSize: 13, height: 1.75),
-            ),
+            Text(tip, style: const TextStyle(fontSize: 13, height: 1.75)),
             if (origin.isNotEmpty) ...[
               const SizedBox(height: 10),
               SelectableText(
@@ -1377,7 +1398,12 @@ class AppDetailsLogic extends GetxController {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('稍后')),
+          TextButton(
+            onPressed: () {
+              Get.back();
+            },
+            child: const Text('稍后'),
+          ),
           if (origin.isNotEmpty)
             TextButton(
               onPressed: () {
@@ -1387,7 +1413,7 @@ class AppDetailsLogic extends GetxController {
               child: const Text('复制链接'),
             ),
           if (origin.isNotEmpty)
-            TextButton(
+            FilledButton.tonal(
               onPressed: () {
                 Get.back();
                 JumpUtil.openUrl(origin);
@@ -1397,8 +1423,68 @@ class AppDetailsLogic extends GetxController {
           FilledButton(
             onPressed: () async {
               Get.back();
-              _shownFailDialog = false;
+              _failCount = 0; // ★ 1104e：用户选了重新下载，重置计数与话术
               _silentRetry = 0; // 允许新一轮静默重试
+              await retryDownload();
+            },
+            child: const Text('重新下载'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ★ 1104e：「下载器报 complete 但文件不完整」（典型 = 蓝奏 CDN 风控把
+  ///   「网络异常验证页」HTML 当成文件下完了，只有几十 KB）原来只弹一句
+  ///   Toast 就完了——用户 1104 反馈「加强了为什么没弹浏览器兜底」的另一半根因。
+  ///   这里补弹与失败弹窗同款的浏览器兜底（文案强调文件不完整）。
+  void _showIncompleteDialog() {
+    _failCount++;
+    final page = (item?.url ?? '').trim();
+    final origin = page.isNotEmpty ? page : dowUrl;
+    if (origin.isEmpty) return;
+    Get.dialog<void>(
+      AppDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text('下载不完整', style: TextStyle(fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '这次拿到的是个坏包（源站可能弹了「网络异常需要验证」的拦截页，'
+              '把验证页当成文件下下来了）。\n'
+              '建议用浏览器打开原分享页重新下载：浏览器能自动通过验证。',
+              style: TextStyle(fontSize: 13, height: 1.75),
+            ),
+            const SizedBox(height: 10),
+            SelectableText(
+              origin,
+              style: TextStyle(fontSize: 10.5, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('稍后')),
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: origin));
+              ToastUtil.success('链接已复制');
+            },
+            child: const Text('复制链接'),
+          ),
+          FilledButton.tonal(
+            onPressed: () {
+              Get.back();
+              JumpUtil.openUrl(origin);
+            },
+            child: const Text('浏览器打开'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Get.back();
+              _failCount = 0;
+              _silentRetry = 0;
               await retryDownload();
             },
             child: const Text('重新下载'),
@@ -1638,8 +1724,8 @@ class AppDetailsLogic extends GetxController {
             );
           } catch (_) {}
         }
-        _shownFailDialog = false;
         _silentRetry = 0;
+        _failCount = 0; // ★ 1104e：重新解析成功，失败话术/浏览器兜底重置
         await addDownload(
           (appInfo?.fileName ?? item?.title ?? 'download'),
           fresh,
