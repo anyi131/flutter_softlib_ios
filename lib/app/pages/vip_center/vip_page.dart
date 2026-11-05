@@ -437,7 +437,9 @@ class _VipPageState extends State<VipPage> {
   String _promoCountdown(DateTime end) {
     final d = end.difference(DateTime.now());
     if (d.isNegative) return '已结束';
-    final h = d.inHours, m = d.inMinutes % 60, s = d.inSeconds % 60;
+    // ★ 1105i：小时必须取当天余数（%24）——原写法 d.inHours 是总小时数，
+    //   距结束 4 天 9 小时会显示成「4天105:48:33」（105=4*24+9），用户反馈的正是这个。
+    final h = d.inHours % 24, m = d.inMinutes % 60, s = d.inSeconds % 60;
     final hh = h.toString().padLeft(2, '0');
     final mm = m.toString().padLeft(2, '0');
     final ss = s.toString().padLeft(2, '0');
