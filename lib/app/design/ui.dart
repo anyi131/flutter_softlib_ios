@@ -151,6 +151,32 @@ class Deco {
   static Color promoTextDim(BuildContext c) =>
       _promoTextFromPalette(c).withAlpha(200);
 
+  /// ★ 1105j 会员页主色：跟随全局配色方案（不再写死金色，避免与主题「格格不入」）
+  ///   accent = 强调色（描边/图标/价格高亮），gradient = 头卡/按钮渐变（浅→深品牌色）
+  static Color vipAccent(BuildContext c) {
+    final p = ThemeController.instance.palette.value;
+    final hsl = HSLColor.fromColor(p.brandBright);
+    return hsl
+        .withLightness(dark(c) ? 0.78 : 0.52)
+        .withSaturation((hsl.saturation * 0.95).clamp(0.0, 1.0))
+        .toColor();
+  }
+
+  static LinearGradient vipGradient(BuildContext c) {
+    final p = ThemeController.instance.palette.value;
+    final a = HSLColor.fromColor(p.brandBright)
+        .withLightness(dark(c) ? 0.70 : 0.80)
+        .toColor();
+    final b = HSLColor.fromColor(p.brand)
+        .withLightness(dark(c) ? 0.52 : 0.60)
+        .toColor();
+    return LinearGradient(
+      colors: [a, b],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+  }
+
   static Color _promoFromPalette(BuildContext c, double darkL, double lightL) {
     final p = ThemeController.instance.palette.value; // 1104c: Get.find 运行时炸（从未 Get.put），单例本就存在
     // HSL：低亮度高饱和的「深品牌色」，深浅模式只差一点亮度

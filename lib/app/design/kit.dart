@@ -175,7 +175,7 @@ class PrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final _c = color ?? C.brand;
     final gradient = gold
-        ? Deco.goldGradient
+        ? Deco.vipGradient(context) // ★ 1105j：会员按钮跟随全局配色
         : LinearGradient(
             colors: [
               Color.lerp(_c, Colors.white, 0.22)!,
@@ -185,7 +185,7 @@ class PrimaryButton extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           );
-    final fg = gold ? const Color(0xFF3A2E10) : Colors.white;
+    final fg = gold ? Deco.promoBg2(context) : Colors.white; // ★ 1105j 与主题渐变同源
     final active = enabled && !loading && onPressed != null;
 
     return Opacity(
@@ -199,7 +199,7 @@ class PrimaryButton extends StatelessWidget {
           boxShadow: active
               ? [
                   BoxShadow(
-                    color: (gold ? C.gold : _c).withAlpha(
+                    color: (gold ? Deco.vipAccent(context) : _c).withAlpha(
                       context.isDark ? 90 : 72,
                     ),
                     blurRadius: 20,

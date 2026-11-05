@@ -122,7 +122,7 @@ class _VipPageState extends State<VipPage> {
                     _buildHeaderCard(),
                     Obx(() => _promoBanner()),
                     const SizedBox(height: 18),
-                    SectionHeader(title: '选择套餐', accent: C.gold),
+                    SectionHeader(title: '选择套餐', accent: Deco.vipAccent(context)),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: List.generate(_plans.length, (i) {
@@ -158,7 +158,7 @@ class _VipPageState extends State<VipPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SectionHeader(title: '会员权益', accent: C.gold),
+                          SectionHeader(title: '会员权益', accent: Deco.vipAccent(context)),
                           _benefit('不限次数下载软件库资源'),
                           _benefit('新功能和资源优先体验'),
                         ],
@@ -249,10 +249,10 @@ class _VipPageState extends State<VipPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.verified_rounded,
                   size: 13,
-                  color: C.gold,
+                  color: Deco.vipAccent(context),
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -365,7 +365,7 @@ class _VipPageState extends State<VipPage> {
               width: 3,
               height: 34,
               decoration: BoxDecoration(
-                gradient: Deco.goldGradient,
+                gradient: Deco.vipGradient(context),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -458,12 +458,12 @@ class _VipPageState extends State<VipPage> {
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
       decoration: BoxDecoration(
-        // 金色渐变 Hero（Deco.goldGradient 为 const 渐变，不可再包 const）
-        gradient: Deco.goldGradient,
+        // ★ 1105j 会员头卡渐变：跟随全局配色（原写死金色与主题冲突）
+        gradient: Deco.vipGradient(context),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: C.gold.withAlpha(isDark ? 60 : 70),
+            color: Deco.vipAccent(context).withAlpha(isDark ? 60 : 70),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -621,19 +621,19 @@ class _VipPageState extends State<VipPage> {
           ),
           decoration: BoxDecoration(
             color: selected
-                ? (context.isDark ? C.bg3 : C.gold.withAlpha(18))
+                ? (context.isDark ? C.bg3 : Deco.vipAccent(context).withAlpha(18))
                 : (context.isDark ? C.bg2 : Colors.white),
             borderRadius: BorderRadius.circular(popular ? 16 : 12),
             border: Border.all(
               color: selected
-                  ? C.gold
-                  : (popular ? C.gold.withAlpha(90) : Colors.transparent),
+                  ? Deco.vipAccent(context)
+                  : (popular ? Deco.vipAccent(context).withAlpha(90) : Colors.transparent),
               width: popular ? 1.6 : 1.5,
             ),
             boxShadow: popular
                 ? [
                     BoxShadow(
-                      color: C.gold.withAlpha(context.isDark ? 50 : 30),
+                      color: Deco.vipAccent(context).withAlpha(context.isDark ? 50 : 30),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -745,11 +745,11 @@ class _VipPageState extends State<VipPage> {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        gradient: Deco.goldGradient,
+                        gradient: Deco.vipGradient(context),
                         borderRadius: BorderRadius.circular(R.full),
                         boxShadow: [
                           BoxShadow(
-                            color: C.gold.withAlpha(70),
+                            color: Deco.vipAccent(context).withAlpha(70),
                             blurRadius: 20,
                             offset: const Offset(0, 4),
                           ),
@@ -878,7 +878,7 @@ class _VipPageState extends State<VipPage> {
       padding: const EdgeInsets.only(bottom: 9),
       child: Row(
         children: [
-          const Icon(Icons.check_circle_rounded, size: 16, color: C.gold),
+          Icon(Icons.check_circle_rounded, size: 16, color: Deco.vipAccent(context)),
           const SizedBox(width: 8),
           Expanded(child: Text(text, style: Ty.body.copyWith(fontSize: 13.5))),
         ],
