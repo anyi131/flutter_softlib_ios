@@ -156,19 +156,22 @@ class Deco {
   static Color vipAccent(BuildContext c) {
     final p = ThemeController.instance.palette.value;
     final hsl = HSLColor.fromColor(p.brandBright);
+    // 浅色模式要「深一点」压在白色卡片上（对比度 ≥3），深色模式要「亮一点」
     return hsl
-        .withLightness(dark(c) ? 0.78 : 0.52)
+        .withLightness(dark(c) ? 0.72 : 0.36)
         .withSaturation((hsl.saturation * 0.95).clamp(0.0, 1.0))
         .toColor();
   }
 
+  /// 会员头卡渐变：深品牌色底（白字压上去对比度 7:1+），
+  /// 与促销横幅「深底亮字」同一套语言，任何配色方案都不刺眼。
   static LinearGradient vipGradient(BuildContext c) {
     final p = ThemeController.instance.palette.value;
     final a = HSLColor.fromColor(p.brandBright)
-        .withLightness(dark(c) ? 0.70 : 0.80)
+        .withLightness(dark(c) ? 0.30 : 0.26)
         .toColor();
     final b = HSLColor.fromColor(p.brand)
-        .withLightness(dark(c) ? 0.52 : 0.60)
+        .withLightness(dark(c) ? 0.13 : 0.16)
         .toColor();
     return LinearGradient(
       colors: [a, b],

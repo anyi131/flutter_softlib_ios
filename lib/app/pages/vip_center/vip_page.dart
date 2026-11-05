@@ -480,13 +480,13 @@ class _VipPageState extends State<VipPage> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: Deco.promoBg2(context),
+                  color: Colors.white.withAlpha(30),
                   borderRadius: BorderRadius.circular(R.full),
                 ),
                 child: Text(
                   'VIP PRO',
                   style: TextStyle(
-                    color: Deco.promoText(context),
+                    color: Colors.white,
                     fontWeight: FontWeight.w900,
                     fontSize: 12,
                     letterSpacing: 0.6,
@@ -496,7 +496,7 @@ class _VipPageState extends State<VipPage> {
               const Spacer(),
               Icon(
                 Icons.workspace_premium_rounded,
-                color: Deco.promoBg2(context),
+                color: Colors.white.withAlpha(215),
                 size: 26,
               ),
             ],
@@ -511,7 +511,7 @@ class _VipPageState extends State<VipPage> {
                 return Text(
                   '解锁完整软件库体验',
                   style: TextStyle(
-                    color: Deco.promoBg2(context),
+                    color: Colors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
                   ),
@@ -524,7 +524,7 @@ class _VipPageState extends State<VipPage> {
                   Text(
                     '您已是尊贵会员',
                     style: TextStyle(
-                      color: Deco.promoBg2(context),
+                      color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
                     ),
@@ -534,7 +534,7 @@ class _VipPageState extends State<VipPage> {
                     Text(
                       '有效期至 $exp · 续费可在到期时间上顺延',
                       style: TextStyle(
-                        color: Deco.promoBg2(context).withAlpha(190),
+                        color: Colors.white.withAlpha(200),
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                       ),
@@ -548,7 +548,7 @@ class _VipPageState extends State<VipPage> {
           Text(
             '会员资源、专属标识、优先服务一次开通，所有套餐均自动对接后台价格。',
             style: TextStyle(
-              color: Deco.promoBg2(context).withAlpha(190),
+              color: Colors.white.withAlpha(200),
               fontSize: 13,
               height: 1.5,
             ),
@@ -572,7 +572,7 @@ class _VipPageState extends State<VipPage> {
                         child: Icon(
                           benefits[i].$1,
                           size: 19,
-                          color: Deco.promoBg2(context),
+                          color: Colors.white.withAlpha(235),
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -581,7 +581,7 @@ class _VipPageState extends State<VipPage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: Deco.promoBg2(context),
+                          color: Colors.white.withAlpha(235),
                           fontSize: 10.5,
                           fontWeight: FontWeight.w800,
                         ),
@@ -758,7 +758,7 @@ class _VipPageState extends State<VipPage> {
                       child: Text(
                         '最受欢迎',
                         style: TextStyle(
-                          color: Deco.promoBg2(context),
+                          color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
                         ),
