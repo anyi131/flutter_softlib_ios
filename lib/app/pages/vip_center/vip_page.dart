@@ -392,7 +392,7 @@ class _VipPageState extends State<VipPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Deco.promoText(context).withAlpha(120),
+                        color: Deco.promoText(context).withAlpha(215),
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                         letterSpacing: 0.3,
@@ -409,7 +409,7 @@ class _VipPageState extends State<VipPage> {
                   Text(
                     '距结束',
                     style: TextStyle(
-                      color: Deco.promoText(context).withAlpha(110),
+                      color: Deco.promoText(context).withAlpha(215),
                       fontSize: 9.5,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1,
@@ -667,7 +667,7 @@ class _VipPageState extends State<VipPage> {
                         style: Ty.small.copyWith(
                           fontSize: 13,
                           fontWeight: FontWeight.w900,
-                          color: C.accentOrange,
+                          color: Deco.priceText(context),
                         ),
                       ),
                       const SizedBox(width: 2),
@@ -678,7 +678,7 @@ class _VipPageState extends State<VipPage> {
                           overflow: TextOverflow.ellipsis,
                           style: Ty.h1.copyWith(
                             fontSize: popular ? 24 : 21,
-                            color: C.accentOrange,
+                            color: Deco.priceText(context),
                           ),
                         ),
                       ),
@@ -831,7 +831,7 @@ class _VipPageState extends State<VipPage> {
     final accent = C.brand;
     return Expanded(
       child: Opacity(
-        opacity: on ? 1 : 0.4,
+        opacity: on ? 1 : 0.55,
         child: GestureDetector(
           onTap: on
               ? () => setState(() => _payMethod = index)

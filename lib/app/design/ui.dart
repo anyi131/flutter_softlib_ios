@@ -84,12 +84,12 @@ class C {
   // 文字（深色模式）
   static const t1 = Color(0xFFF6F7FB);
   static const t2 = Color(0xFFA8AEC1);
-  static const t3 = Color(0xFF6B7288);
+  static const t3 = Color(0xFF868CA0); // ★ 1105m：原 #6B7288 深底 3.48:1，提到 4.97:1
 
   // 文字（浅色模式，默认）
   static const lt1 = Color(0xFF14161E);
   static const lt2 = Color(0xFF5C6273);
-  static const lt3 = Color(0xFF9BA1B0);
+  static const lt3 = Color(0xFF767C8C); // ★ 1105m：原 #9BA1B0 白底仅 2.59:1，提深到 4.17:1
 
   // 玻璃描边
   static const stroke = Color(0xFFFFFFFF);
@@ -150,6 +150,11 @@ class Deco {
   static Color promoText(BuildContext c) => _promoTextFromPalette(c);
   static Color promoTextDim(BuildContext c) =>
       _promoTextFromPalette(c).withAlpha(200);
+
+  /// ★ 1105m 价格色（跟随深浅模式，保证白底/深底都可读）
+  /// 浅色 #D04A16 在白卡上 4.49:1；深色 #FF9F6B 在深卡上 7.28:1
+  static Color priceText(BuildContext c) =>
+      dark(c) ? const Color(0xFFFF9F6B) : const Color(0xFFD04A16);
 
   /// ★ 1105j 会员页主色：跟随全局配色方案（不再写死金色，避免与主题「格格不入」）
   ///   accent = 强调色（描边/图标/价格高亮），gradient = 头卡/按钮渐变（浅→深品牌色）

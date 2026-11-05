@@ -1337,7 +1337,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               indicatorWeight: 2.5,
               indicatorColor: ac,
               labelColor: ac,
-              unselectedLabelColor: Colors.grey[500],
+              unselectedLabelColor: context.t3,
               labelStyle: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
@@ -1503,7 +1503,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           const SizedBox(height: 8),
           Text(
             '共 ${shots.length} 张 · 点击可放大查看',
-            style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+            style: TextStyle(fontSize: 11, color: context.t3),
           ),
         ],
         const SizedBox(height: 20),
@@ -1519,7 +1519,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               Icon(
                 Icons.tips_and_updates_outlined,
                 size: 14,
-                color: Colors.grey[500],
+                color: context.t3,
               ),
               const SizedBox(width: 7),
               Expanded(
@@ -1679,7 +1679,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             const SizedBox(height: 4),
             Text(
               '为你精选更多实用应用',
-              style: TextStyle(fontSize: 11.5, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 11.5, color: context.t3),
             ),
             const SizedBox(height: 12),
             // ★ 1020：改成九宫格（3 列）卡片，不再横向滑动
