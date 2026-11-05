@@ -174,9 +174,9 @@ class PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _c = color ?? C.brand;
-    final gradient = gold
-        ? Deco.vipGradient(context) // ★ 1105j：会员按钮跟随全局配色
-        : LinearGradient(
+    // ★ 1105l：gold 模式不再用深色渐变压一坨黑——改用「亮品牌渐变」，
+    //   浅色主题下也够跳（原来深底在浅色页上像块砖）。
+    final gradient = LinearGradient(
             colors: [
               Color.lerp(_c, Colors.white, 0.22)!,
               _c,
@@ -185,7 +185,7 @@ class PrimaryButton extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           );
-    final fg = gold ? Deco.promoBg2(context) : Colors.white; // ★ 1105j 与主题渐变同源
+    final fg = Colors.white;
     final active = enabled && !loading && onPressed != null;
 
     return Opacity(
