@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../utils/jump_util.dart';
 import '../../design/app_anim.dart';
+import '../../design/lucide.dart';
 
 class ArticleReadingLogic extends GetxController {
   // 统一的颜色样式
@@ -165,7 +166,7 @@ class ArticleReadingLogic extends GetxController {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.broken_image, size: 48, color: Colors.grey[400]),
+            Icon(Lz.imageOff, size: 48, color: Colors.grey[400]),
             const SizedBox(height: 8),
             Text(
               '图片加载失败',

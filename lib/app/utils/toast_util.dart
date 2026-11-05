@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import '../design/ui.dart';
 import '../design/app_anim.dart';
+import '../design/lucide.dart';
 
 /// 统一轻提示（替代原生 Toast）
 ///
@@ -91,9 +92,9 @@ class _ToastWidgetState extends State<_ToastWidget>
   @override
   Widget build(BuildContext context) {
     final (Color color, IconData icon) = switch (widget.tone) {
-      _Tone.success => (C.mint, Icons.check_circle_rounded),
-      _Tone.error => (C.danger, Icons.error_rounded),
-      _Tone.info => (C.brand, Icons.info_rounded),
+      _Tone.success => (C.mint, Lz.checkCircle),
+      _Tone.error => (C.danger, Lz.alertCircle),
+      _Tone.info => (C.brand, Lz.info),
     };
 
     return Positioned(

@@ -9,6 +9,7 @@ import '../../../api/admin_service.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// ★ 1016：概览 · 软件数据（商业化总览卡）
@@ -78,7 +79,7 @@ class _CollectStatsCardState extends State<CollectStatsCard> {
         padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            Icon(Icons.info_outline_rounded, size: 16, color: context.t3),
+            Icon(Lz.info, size: 16, color: context.t3),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -147,7 +148,7 @@ class _CollectStatsCardState extends State<CollectStatsCard> {
               ),
               AppPressable(
                 onTap: _load,
-                child: Icon(Icons.refresh_rounded, size: 18, color: context.t3),
+                child: Icon(Lz.refreshCw, size: 18, color: context.t3),
               ),
             ],
           ),
@@ -158,10 +159,10 @@ class _CollectStatsCardState extends State<CollectStatsCard> {
                 '总启动',
                 _v('启动次数'),
                 C.brandBright,
-                Icons.play_circle_fill_rounded,
+                Lz.playCircle,
               ),
               const SizedBox(width: 8),
-              _cell('总加群', _v('加群次数'), C.mint, Icons.group_add_rounded),
+              _cell('总加群', _v('加群次数'), C.mint, Lz.userPlus),
             ],
           ),
           const SizedBox(height: 8),
@@ -171,10 +172,10 @@ class _CollectStatsCardState extends State<CollectStatsCard> {
                 '联系作者',
                 _v('联系作者'),
                 C.accentOrange,
-                Icons.support_agent_rounded,
+                Lz.headphones,
               ),
               const SizedBox(width: 8),
-              _cell('总分享', _v('分享次数'), C.violet, Icons.share_rounded),
+              _cell('总分享', _v('分享次数'), C.violet, Lz.share),
             ],
           ),
           if (_top.isNotEmpty) ...[

@@ -9,6 +9,7 @@ import '../../../design/ui.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';
 import '../admin_ui_kit.dart';
+import '../../../design/lucide.dart';
 
 /// 后台 · 积分排行榜
 ///
@@ -180,7 +181,7 @@ class _ScoreRankViewState extends State<ScoreRankView> {
         children: [
           Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, size: 15, color: C.amber),
+              const Icon(Lz.alertTriangle, size: 15, color: C.amber),
               const SizedBox(width: 5),
               Text(
                 '异常增长（建议核查）',
@@ -271,7 +272,7 @@ class _ScoreRankViewState extends State<ScoreRankView> {
                       width: 34,
                       height: 34,
                       color: C.brand.withAlpha(20),
-                      child: Icon(Icons.person, size: 18, color: C.brand),
+                      child: Icon(Lz.user, size: 18, color: C.brand),
                     )
                   : CachedNetworkImage(
                         memCacheWidth: 102,
@@ -283,7 +284,7 @@ class _ScoreRankViewState extends State<ScoreRankView> {
                         width: 34,
                         height: 34,
                         color: C.brand.withAlpha(20),
-                        child: Icon(Icons.person, size: 18, color: C.brand),
+                        child: Icon(Lz.user, size: 18, color: C.brand),
                       ),
                     ),
             ),

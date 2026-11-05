@@ -11,6 +11,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// 采集 · 采集日志（站点全部历史任务 + 蓝奏云链接）
 class CollectLogsView extends StatefulWidget {
@@ -212,7 +213,7 @@ class _CollectLogsViewState extends State<CollectLogsView>
           const SizedBox(width: 8),
           MiniAction(
             label: '导入',
-            icon: Icons.download_done_rounded,
+            icon: Lz.download,
             color: C.mint,
             onTap: () => _import(it),
           ),

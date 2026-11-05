@@ -16,6 +16,7 @@ import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import '../navigate/mine/mine_logic.dart';
 import 'widgets/auth_widgets.dart';
+import '../../design/lucide.dart';
 
 /// 注册页（v40 重构）
 ///
@@ -243,7 +244,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return AuthScaffold(
       title: '创建账号',
       subtitle: '填写邮箱即可注册，QQ 号可选（用于获取头像）',
-      icon: Icons.person_add_alt_1_rounded,
+      icon: Lz.userPlus,
       children: [
         AuthCard(
           children: [
@@ -256,7 +257,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     controller: _qq,
                     label: 'QQ 号（选填）',
                     hint: '填写后自动获取 QQ 头像',
-                    icon: Icons.pets_rounded,
+                    icon: Lz.cat,
                     keyboard: TextInputType.number,
                     maxLength: 12,
                     formatters: [FilteringTextInputFormatter.digitsOnly],
@@ -280,7 +281,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   ? Colors.white.withAlpha(12)
                                   : Colors.black.withAlpha(6),
                               child: Icon(
-                                Icons.person_outline_rounded,
+                                Lz.user,
                                 color: context.t3,
                                 size: 24,
                               ),
@@ -306,7 +307,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     ? Colors.white.withAlpha(12)
                                     : Colors.black.withAlpha(6),
                                 child: Icon(
-                                  Icons.person_outline_rounded,
+                                  Lz.user,
                                   color: context.t3,
                                   size: 24,
                                 ),
@@ -331,7 +332,7 @@ class _RegisterPageState extends State<RegisterPage> {
               controller: _email,
               label: '邮箱',
               hint: '用于接收验证码',
-              icon: Icons.mail_outline_rounded,
+              icon: Lz.mail,
               keyboard: TextInputType.emailAddress,
               error: _errEmail.isEmpty ? null : _errEmail,
               onChanged: (_) {
@@ -395,7 +396,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: Row(
                     children: [
                       const Icon(
-                        Icons.info_outline_rounded,
+                        Lz.info,
                         size: 15,
                         color: C.warning,
                       ),
@@ -439,7 +440,7 @@ class _RegisterPageState extends State<RegisterPage> {
               AuthField(
                 controller: _code,
                 label: '邮箱验证码',
-                icon: Icons.verified_outlined,
+                icon: Lz.badgeCheck,
                 keyboard: TextInputType.number,
                 maxLength: 6,
                 error: _errCode.isEmpty ? null : _errCode,
@@ -473,7 +474,7 @@ class _RegisterPageState extends State<RegisterPage> {
               controller: _nick,
               label: '昵称',
               hint: '可自定义，留空自动生成',
-              icon: Icons.badge_outlined,
+              icon: Lz.badge,
               error: _errNick.isEmpty ? null : _errNick,
               onChanged: (v) {
                 _nickTouched = v.trim().isNotEmpty;
@@ -486,7 +487,7 @@ class _RegisterPageState extends State<RegisterPage> {
               controller: _pwd,
               label: '密码',
               hint: '至少 6 位',
-              icon: Icons.lock_outline_rounded,
+              icon: Lz.lock,
               obscure: _obscure,
               onToggleObscure: () => setState(() => _obscure = !_obscure),
               error: _errPwd.isEmpty ? null : _errPwd,
@@ -504,7 +505,7 @@ class _RegisterPageState extends State<RegisterPage> {
               controller: _invite,
               label: '邀请码（选填）',
               hint: '填写好友邀请码，双方各得积分',
-              icon: Icons.card_giftcard_rounded,
+              icon: Lz.gift,
               action: TextInputAction.done,
               onSubmitted: _register,
             ),

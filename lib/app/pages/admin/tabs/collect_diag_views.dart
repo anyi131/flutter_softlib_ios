@@ -6,6 +6,7 @@ import '../../../api/admin_service.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/ui.dart';
 import '../admin_ui_kit.dart';
+import '../../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 后台 · 接口自测（1016）
@@ -77,9 +78,9 @@ class _CollectSelftestViewState extends State<CollectSelftestView> {
                 children: [
                   Icon(
                     _total == 0
-                        ? Icons.science_rounded
+                        ? Lz.flaskConical
                         : (allOk
-                              ? Icons.verified_rounded
+                              ? Lz.badgeCheck
                               : Icons.warning_rounded),
                     size: 20,
                     color: _total == 0 ? C.brand : (allOk ? C.mint : C.warning),
@@ -118,7 +119,7 @@ class _CollectSelftestViewState extends State<CollectSelftestView> {
                             color: Colors.white,
                           ),
                         )
-                      : const Icon(Icons.play_arrow_rounded, size: 18),
+                      : const Icon(Lz.play, size: 18),
                   label: Text(
                     _loading ? '检测中…' : (_total == 0 ? '开始检测' : '重新检测'),
                   ),
@@ -133,7 +134,7 @@ class _CollectSelftestViewState extends State<CollectSelftestView> {
             child: Row(
               children: [
                 const Icon(
-                  Icons.error_outline_rounded,
+                  Lz.alertCircle,
                   size: 18,
                   color: C.rose,
                 ),
@@ -170,8 +171,8 @@ class _CollectSelftestViewState extends State<CollectSelftestView> {
                       children: [
                         Icon(
                           _items[i]['ok'] == true
-                              ? Icons.check_circle_rounded
-                              : Icons.cancel_rounded,
+                              ? Lz.checkCircle
+                              : Lz.xCircle,
                           size: 17,
                           color: _items[i]['ok'] == true ? C.mint : C.rose,
                         ),
@@ -348,7 +349,7 @@ class _CollectParseLogViewState extends State<CollectParseLogView> {
                     label: '今日成功',
                     value: '$_todayOk',
                     color: C.mint,
-                    icon: Icons.check_circle_outline_rounded,
+                    icon: Lz.checkCircle2,
                     compact: true,
                   ),
                 ),
@@ -358,7 +359,7 @@ class _CollectParseLogViewState extends State<CollectParseLogView> {
                     label: '今日失败',
                     value: '$_todayFail',
                     color: C.rose,
-                    icon: Icons.error_outline_rounded,
+                    icon: Lz.alertCircle,
                     compact: true,
                   ),
                 ),
@@ -368,7 +369,7 @@ class _CollectParseLogViewState extends State<CollectParseLogView> {
                     label: '累计记录',
                     value: '$_total',
                     color: C.brand,
-                    icon: Icons.history_rounded,
+                    icon: Lz.history,
                     compact: true,
                   ),
                 ),

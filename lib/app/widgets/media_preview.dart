@@ -9,6 +9,7 @@ import '../design/ui.dart';
 import '../utils/img_saver.dart';
 import '../utils/toast_util.dart';
 import '../design/app_anim.dart';
+import '../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 媒体预览（1015 新增）
@@ -136,7 +137,7 @@ class _GalleryPageState extends State<_GalleryPage> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Colors.white),
+                    icon: const Icon(Lz.x, color: Colors.white),
                     onPressed: () => Get.back(),
                   ),
                   const Spacer(),
@@ -152,7 +153,7 @@ class _GalleryPageState extends State<_GalleryPage> {
                   // ★ 1015：保存到相册
                   IconButton(
                     icon: const Icon(
-                      Icons.download_rounded,
+                      Lz.download,
                       color: Colors.white,
                     ),
                     tooltip: '保存到相册',
@@ -221,7 +222,7 @@ class _GalleryPageState extends State<_GalleryPage> {
                           imageUrl: widget.urls[i],
                           fit: BoxFit.cover,
                           errorWidget: (_, __, ___) => const Icon(
-                            Icons.broken_image_outlined,
+                            Lz.imageOff,
                             size: 18,
                             color: Colors.white38,
                           ),
@@ -281,7 +282,7 @@ class MediaGrid extends StatelessWidget {
               color: context.isDark ? Colors.white10 : Colors.black12,
               alignment: Alignment.center,
               child: Icon(
-                Icons.broken_image_outlined,
+                Lz.imageOff,
                 size: 22,
                 color: context.t3,
               ),

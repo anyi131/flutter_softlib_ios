@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 
 import '../../design/app_anim.dart';
 import '../../design/ui.dart';
+import '../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 下载链路加载动画（v52 #3）
@@ -132,7 +133,7 @@ class _ResolveOverlayState extends State<_ResolveOverlayView>
                               ),
                             ),
                           Icon(
-                            Icons.cloud_download_rounded,
+                            Lz.downloadCloud,
                             color: C.brand,
                             size: 26,
                           ),

@@ -9,6 +9,7 @@ import '../../../design/ui.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';
 import '../admin_ui_kit.dart';
+import '../../../design/lucide.dart';
 
 /// 后台 · 配置历史与回滚
 ///
@@ -207,7 +208,7 @@ class _ConfigHistoryViewState extends State<ConfigHistoryView> {
           ),
           child: Row(
             children: [
-              Icon(Icons.info_outline_rounded, size: 14, color: context.t3),
+              Icon(Lz.info, size: 14, color: context.t3),
               const SizedBox(width: 5),
               Expanded(
                 child: Text(
@@ -217,7 +218,7 @@ class _ConfigHistoryViewState extends State<ConfigHistoryView> {
               ),
               IconButton(
                 onPressed: _load,
-                icon: Icon(Icons.refresh_rounded, size: 18, color: context.t3),
+                icon: Icon(Lz.refreshCw, size: 18, color: context.t3),
               ),
             ],
           ),
@@ -262,7 +263,7 @@ class _ConfigHistoryViewState extends State<ConfigHistoryView> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
-                isRollback ? Icons.restore_rounded : Icons.history_rounded,
+                isRollback ? Lz.undo2 : Lz.history,
                 size: 18,
                 color: isRollback ? C.amber : C.brand,
               ),
@@ -341,7 +342,7 @@ class _ConfigHistoryViewState extends State<ConfigHistoryView> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 6),
                 child: Icon(
-                  Icons.delete_outline_rounded,
+                  Lz.trash2,
                   size: 17,
                   color: context.t3,
                 ),

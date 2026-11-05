@@ -9,6 +9,7 @@ import '../../design/app_anim.dart';
 import '../../api/api_host.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
+import '../../design/lucide.dart';
 
 /// QQ 快捷登录（WebView 走 QQ 网页授权）
 ///
@@ -139,7 +140,7 @@ class _QQLoginPageState extends State<QQLoginPage> {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        Icons.close_rounded,
+                        Lz.x,
                         size: 18,
                         color: context.t1,
                       ),

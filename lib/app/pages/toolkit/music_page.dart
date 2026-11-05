@@ -16,6 +16,7 @@ import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
 import 'tool_player_page.dart';
+import '../../design/lucide.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 音乐模块 · 主页面（1015 重做，对标样本 App）
@@ -128,7 +129,7 @@ class _MusicHomePageState extends State<MusicHomePage> {
               height: 40,
               alignment: Alignment.center,
               child: Icon(
-                Icons.arrow_back_ios_new_rounded,
+                Lz.arrowLeft,
                 size: 18,
                 color: context.t1,
               ),
@@ -225,7 +226,7 @@ class _MusicHomePageState extends State<MusicHomePage> {
                                       height: Ad.h(context, 100),
                                       color: C.brand.withAlpha(20),
                                       child: const Icon(
-                                        Icons.music_note_rounded,
+                                        Lz.music,
                                         size: 28,
                                       ),
                                     ),
@@ -332,7 +333,7 @@ class _MusicHomePageState extends State<MusicHomePage> {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             const Icon(
-                                              Icons.play_arrow_rounded,
+                                              Lz.play,
                                               size: 11,
                                               color: Colors.white,
                                             ),
@@ -405,7 +406,7 @@ class _MusicHomePageState extends State<MusicHomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.favorite_border_rounded,
+                  Lz.heart,
                   size: 46,
                   color: context.t3,
                 ),
@@ -471,14 +472,14 @@ class _MusicHomePageState extends State<MusicHomePage> {
                           width: 46,
                           height: 46,
                           color: C.brand.withAlpha(20),
-                          child: const Icon(Icons.music_note_rounded, size: 20),
+                          child: const Icon(Lz.music, size: 20),
                         ),
                       )
                     : Container(
                         width: 46,
                         height: 46,
                         color: C.brand.withAlpha(20),
-                        child: const Icon(Icons.music_note_rounded, size: 20),
+                        child: const Icon(Lz.music, size: 20),
                       ),
               ),
               const SizedBox(width: 11),
@@ -519,8 +520,8 @@ class _MusicHomePageState extends State<MusicHomePage> {
                     future: MusicSvc.isFav('${s['id'] ?? ''}'),
                     builder: (c, snap) => Icon(
                       snap.data == true
-                          ? Icons.favorite_rounded
-                          : Icons.favorite_border_rounded,
+                          ? Lz.heart
+                          : Lz.heart,
                       size: 19,
                       color: snap.data == true ? C.danger : context.t3,
                     ),
@@ -537,7 +538,7 @@ class _MusicHomePageState extends State<MusicHomePage> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.play_arrow_rounded,
+                    Lz.play,
                     color: Colors.white,
                     size: 20,
                   ),
@@ -626,7 +627,7 @@ class _MusicHomePageState extends State<MusicHomePage> {
                       width: 38,
                       height: 38,
                       color: C.brand.withAlpha(30),
-                      child: const Icon(Icons.music_note_rounded, size: 18),
+                      child: const Icon(Lz.music, size: 18),
                     ),
             ),
             const SizedBox(width: 10),
@@ -653,7 +654,7 @@ class _MusicHomePageState extends State<MusicHomePage> {
                 ],
               ),
             ),
-            Icon(Icons.skip_previous_rounded, size: 24, color: context.t2),
+            Icon(Lz.skipBack, size: 24, color: context.t2),
             const SizedBox(width: 12),
             Container(
               width: 38,
@@ -663,13 +664,13 @@ class _MusicHomePageState extends State<MusicHomePage> {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.play_arrow_rounded,
+                Lz.play,
                 color: Colors.white,
                 size: 22,
               ),
             ),
             const SizedBox(width: 12),
-            Icon(Icons.skip_next_rounded, size: 24, color: context.t2),
+            Icon(Lz.skipForward, size: 24, color: context.t2),
           ],
         ),
       ),
@@ -680,11 +681,11 @@ class _MusicHomePageState extends State<MusicHomePage> {
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.cloud_off_rounded, size: 44, color: context.t3),
+        Icon(Lz.cloudOff, size: 44, color: context.t3),
         const SizedBox(height: 12),
         Text(err, style: Ty.h3.copyWith(color: context.t1)),
         const SizedBox(height: 18),
-        ToolButton(label: '重试', icon: Icons.refresh_rounded, onPressed: _load),
+        ToolButton(label: '重试', icon: Lz.refreshCw, onPressed: _load),
       ],
     ),
   );
@@ -848,7 +849,7 @@ class _MusicListPageState extends State<MusicListPage> {
                           height: 40,
                           alignment: Alignment.center,
                           child: Icon(
-                            Icons.arrow_back_ios_new_rounded,
+                            Lz.arrowLeft,
                             size: 18,
                             color: context.t1,
                           ),
@@ -922,7 +923,7 @@ class _MusicListPageState extends State<MusicListPage> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
-                                        Icons.play_arrow_rounded,
+                                        Lz.play,
                                         size: 17,
                                         color: Colors.white,
                                       ),
@@ -1045,7 +1046,7 @@ class _MusicListPageState extends State<MusicListPage> {
                   ],
                 ),
               ),
-              Icon(Icons.play_arrow_rounded, size: 20, color: C.brand),
+              Icon(Lz.play, size: 20, color: C.brand),
             ],
           ),
         ),

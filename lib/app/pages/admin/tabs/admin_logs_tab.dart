@@ -16,6 +16,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// 后台 · 操作日志
 ///
@@ -76,23 +77,23 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
   };
 
   static const _actionIcons = <String, IconData>{
-    'login': Icons.login_rounded,
-    'register': Icons.person_add_rounded,
-    'post': Icons.article_rounded,
+    'login': Lz.logIn,
+    'register': Lz.userPlus,
+    'post': Lz.fileText,
     'comment': Icons.mode_comment_rounded,
-    'buy': Icons.shopping_bag_rounded,
-    'download': Icons.download_rounded,
-    'config': Icons.tune_rounded,
-    'pay_ok': Icons.verified_rounded,
-    'pay_notify': Icons.receipt_long_rounded,
+    'buy': Lz.shoppingBag,
+    'download': Lz.download,
+    'config': Lz.slidersHorizontal,
+    'pay_ok': Lz.badgeCheck,
+    'pay_notify': Lz.receipt,
     'pay_buyer': Icons.payments_rounded,
     'sign': Icons.event_available_rounded,
-    'search': Icons.search_rounded,
-    'card': Icons.credit_card_rounded,
-    'bind_qq': Icons.link_rounded,
-    'unbind_qq': Icons.link_off_rounded,
-    'profile': Icons.badge_rounded,
-    'review': Icons.star_rounded,
+    'search': Lz.search,
+    'card': Lz.creditCard,
+    'bind_qq': Lz.link,
+    'unbind_qq': Lz.unlink,
+    'profile': Lz.badge,
+    'review': Lz.star,
   };
 
   /// ★ 1102i：日志详情美化。
@@ -292,7 +293,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                           decoration: InputDecoration(
                             hintText: '搜索昵称 / IP / 设备',
                             isDense: true,
-                            prefixIcon: const Icon(Icons.search, size: 18),
+                            prefixIcon: const Icon(Lz.search, size: 18),
                             contentPadding: const EdgeInsets.symmetric(
                               vertical: 8,
                             ),
@@ -441,7 +442,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                       child: Row(
                         children: [
                           Icon(
-                            Icons.date_range_rounded,
+                            Lz.calendarRange,
                             size: 13,
                             color: C.brand,
                           ),
@@ -907,7 +908,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
     final color = isCrash ? C.rose : C.warning;
     final icon = isCrash
         ? Icons.bug_report_rounded
-        : Icons.warning_amber_rounded;
+        : Lz.alertTriangle;
     return AdCard(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -949,7 +950,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
           const SizedBox(height: 6),
           Row(
             children: [
-              Icon(Icons.smartphone_rounded, size: 12, color: context.t3),
+              Icon(Lz.smartphone, size: 12, color: context.t3),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
@@ -1081,7 +1082,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
   Widget _logCard(Map<String, dynamic> r) {
     final action = '${r['action'] ?? ''}';
     final label = _actions[action] ?? action;
-    final icon = _actionIcons[action] ?? Icons.circle_outlined;
+    final icon = _actionIcons[action] ?? Lz.circle;
     final color = action == 'login'
         ? C.brand
         : action == 'register'
@@ -1154,13 +1155,13 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
             spacing: 10,
             runSpacing: 5,
             children: [
-              _meta(Icons.access_time_rounded, '${r['createtime_text'] ?? ''}'),
+              _meta(Lz.clock, '${r['createtime_text'] ?? ''}'),
               _meta(
-                Icons.location_on_outlined,
+                Lz.mapPin,
                 '${r['ip'] ?? ''}${(r['address'] ?? '') != '' ? ' · ${r['address']}' : ''}',
               ),
               if ('${r['device'] ?? ''}'.isNotEmpty)
-                _meta(Icons.phone_android_rounded, '${r['device']}'),
+                _meta(Lz.smartphone, '${r['device']}'),
               if ('${r['os'] ?? ''}'.isNotEmpty)
                 _meta(Icons.settings_suggest_outlined, '${r['os']}'),
             ],

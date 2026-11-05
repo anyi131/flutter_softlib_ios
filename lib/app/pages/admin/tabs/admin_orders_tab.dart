@@ -12,6 +12,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// 后台 · 订单管理
 /// 收入概览 + 状态筛选 + 关键词搜索 + 分页 + 订单详情（补单 / 删除）
@@ -128,7 +129,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                     ? const EmptyState(
                         text: '暂无订单',
                         hint: '用户购买会员或充值余额后订单会显示在这里',
-                        icon: Icons.receipt_long_rounded,
+                        icon: Lz.receipt,
                       )
                     : RefreshIndicator(
                         onRefresh: _load,
@@ -241,10 +242,10 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                   hintText: '搜索订单号 / 买家邮箱 / 昵称',
                   hintStyle: Ty.small.copyWith(color: context.t3),
                   isDense: true,
-                  prefixIcon: const Icon(Icons.search, size: 18),
+                  prefixIcon: const Icon(Lz.search, size: 18),
                   suffixIcon: _kwCtrl.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.close_rounded, size: 16),
+                          icon: const Icon(Lz.x, size: 16),
                           onPressed: () {
                             _kwCtrl.clear();
                             _load();
@@ -262,7 +263,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
           const SizedBox(width: 8),
           SoftButton(
             label: '搜索',
-            icon: Icons.search_rounded,
+            icon: Lz.search,
             height: 40,
             onPressed: _load,
           ),
@@ -322,7 +323,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
           const Spacer(),
           IconButton(
             onPressed: _load,
-            icon: Icon(Icons.refresh_rounded, size: 20, color: context.t2),
+            icon: Icon(Lz.refreshCw, size: 20, color: context.t2),
             tooltip: '刷新',
           ),
         ],
@@ -473,7 +474,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, size: 18, color: context.t3),
+                Icon(Lz.chevronRight, size: 18, color: context.t3),
               ],
             ),
           ),
@@ -489,7 +490,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
             children: [
               MiniAction(
                 label: '复制订单号',
-                icon: Icons.copy_rounded,
+                icon: Lz.copy,
                 color: C.t3,
                 onTap: () async {
                   await Clipboard.setData(ClipboardData(text: no));
@@ -500,7 +501,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                 const SizedBox(width: 8),
                 MiniAction(
                   label: '补单',
-                  icon: Icons.check_circle_outline_rounded,
+                  icon: Lz.checkCircle2,
                   color: C.success,
                   onTap: () => _deliver(no),
                 ),
@@ -508,14 +509,14 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
               const Spacer(),
               MiniAction(
                 label: '详情',
-                icon: Icons.info_outline_rounded,
+                icon: Lz.info,
                 color: C.brand,
                 onTap: () => _showDetail(o),
               ),
               const SizedBox(width: 8),
               MiniAction(
                 label: '删除',
-                icon: Icons.delete_outline_rounded,
+                icon: Lz.trash2,
                 color: C.danger,
                 onTap: () => _delete((o['id'] ?? 0) as int),
               ),
@@ -578,7 +579,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
             children: [
               Row(
                 children: [
-                  Icon(Icons.receipt_long_rounded, size: 20, color: C.brand),
+                  Icon(Lz.receipt, size: 20, color: C.brand),
                   const SizedBox(width: 8),
                   Text(
                     '订单详情',
@@ -588,7 +589,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                   IconButton(
                     onPressed: () => Get.back(),
                     icon: Icon(
-                      Icons.close_rounded,
+                      Lz.x,
                       size: 20,
                       color: context.t3,
                     ),
@@ -638,7 +639,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                   Expanded(
                     child: SoftButton(
                       label: '复制订单号',
-                      icon: Icons.copy_rounded,
+                      icon: Lz.copy,
                       height: 44,
                       onPressed: () async {
                         await Clipboard.setData(
@@ -653,7 +654,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                     Expanded(
                       child: PrimaryButton(
                         label: '补单',
-                        icon: Icons.check_circle_outline_rounded,
+                        icon: Lz.checkCircle2,
                         height: 44,
                         color: C.success,
                         onPressed: () {

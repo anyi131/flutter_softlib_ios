@@ -9,6 +9,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// ★ 1016：版权梦 · 软件数据统计（商业化展示）
@@ -97,7 +98,7 @@ class _CollectStatsViewState extends State<CollectStatsView> {
       return EmptyState(
         text: _err,
         hint: '下拉重试',
-        icon: Icons.error_outline_rounded,
+        icon: Lz.alertCircle,
       );
     }
     return RefreshIndicator(
@@ -146,11 +147,11 @@ class _CollectStatsViewState extends State<CollectStatsView> {
   /// 顶部总览（商业化数据卡）
   Widget _summaryCard() {
     final cards = [
-      ('软件总数', '${_items.length}', C.brand, Icons.apps_rounded),
-      ('总启动', '${_sum('启动次数')}', C.brandBright, Icons.play_circle_fill_rounded),
-      ('总加群', '${_sum('加群次数')}', C.mint, Icons.group_add_rounded),
-      ('联系作者', '${_sum('联系作者')}', C.accentOrange, Icons.support_agent_rounded),
-      ('总分享', '${_sum('分享次数')}', C.violet, Icons.share_rounded),
+      ('软件总数', '${_items.length}', C.brand, Lz.layoutGrid),
+      ('总启动', '${_sum('启动次数')}', C.brandBright, Lz.playCircle),
+      ('总加群', '${_sum('加群次数')}', C.mint, Lz.userPlus),
+      ('联系作者', '${_sum('联系作者')}', C.accentOrange, Lz.headphones),
+      ('总分享', '${_sum('分享次数')}', C.violet, Lz.share),
     ];
     return AdCard(
       radius: R.xl,
@@ -179,7 +180,7 @@ class _CollectStatsViewState extends State<CollectStatsView> {
               ),
               IconButton(
                 onPressed: () => _load(reset: true),
-                icon: Icon(Icons.refresh_rounded, size: 19, color: context.t3),
+                icon: Icon(Lz.refreshCw, size: 19, color: context.t3),
                 visualDensity: VisualDensity.compact,
               ),
             ],

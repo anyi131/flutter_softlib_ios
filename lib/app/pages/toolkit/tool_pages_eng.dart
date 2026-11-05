@@ -9,6 +9,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
+import '../../design/lucide.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 工具箱 · 第六批（1015）：工程估算 + 更多换算
@@ -415,7 +416,7 @@ class _UnitPageGenericState extends State<UnitPageGeneric> {
                     onChanged: (v) => setState(() => _from = v ?? 0),
                   ),
                 ),
-                Icon(Icons.arrow_forward_rounded, size: 17, color: C.brand),
+                Icon(Lz.arrowRight, size: 17, color: C.brand),
                 Expanded(
                   child: DropdownButton<int>(
                     value: _to,
@@ -466,7 +467,7 @@ class _UnitPageGenericState extends State<UnitPageGeneric> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.copy_rounded, size: 15, color: context.t3),
+                      Icon(Lz.copy, size: 15, color: context.t3),
                       const SizedBox(width: 4),
                       Text('复制', style: Ty.tiny.copyWith(color: context.t3)),
                     ],
@@ -547,7 +548,7 @@ class _WorkdayPageState extends State<WorkdayPage> {
     },
     child: Row(
       children: [
-        Icon(Icons.calendar_month_rounded, size: 19, color: C.brand),
+        Icon(Lz.calendar, size: 19, color: C.brand),
         const SizedBox(width: 10),
         Text(label, style: Ty.small.copyWith(color: context.t3)),
         const Spacer(),
@@ -641,7 +642,7 @@ class _NumCnPageState extends State<NumCnPage> {
             controller: _c,
             label: '数字',
             keyboard: TextInputType.number,
-            icon: Icons.translate_rounded,
+            icon: Lz.languages,
             onChanged: (_) => setState(() {}),
           ),
           ToolCard(
@@ -666,7 +667,7 @@ class _NumCnPageState extends State<NumCnPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.copy_rounded, size: 15, color: context.t3),
+                      Icon(Lz.copy, size: 15, color: context.t3),
                       const SizedBox(width: 4),
                       Text('复制', style: Ty.tiny.copyWith(color: context.t3)),
                     ],

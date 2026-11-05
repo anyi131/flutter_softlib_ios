@@ -16,6 +16,7 @@ import '../../api/user_service.dart';
 import '../navigate/mine/mine_logic.dart';
 import 'qq_login_page.dart';
 import 'widgets/auth_widgets.dart';
+import '../../design/lucide.dart';
 
 /// 登录页（v40 重构）
 ///
@@ -326,7 +327,7 @@ class _LoginPageState extends State<LoginPage> {
     return AuthScaffold(
       title: '欢迎回来',
       subtitle: '登录后可下载资源、参与社区互动',
-      icon: Icons.person_rounded,
+      icon: Lz.user,
       children: [
         AuthCard(
           children: [
@@ -334,7 +335,7 @@ class _LoginPageState extends State<LoginPage> {
               controller: _account,
               label: '邮箱 / 用户名',
               hint: '请输入注册邮箱或用户名',
-              icon: Icons.alternate_email_rounded,
+              icon: Lz.atSign,
               keyboard: TextInputType.emailAddress,
               action: TextInputAction.next,
               error: _errAccount.isEmpty ? null : _errAccount,
@@ -347,7 +348,7 @@ class _LoginPageState extends State<LoginPage> {
             AuthField(
               controller: _pwd,
               label: '密码',
-              icon: Icons.lock_outline_rounded,
+              icon: Lz.lock,
               obscure: _obscure,
               onToggleObscure: () => setState(() => _obscure = !_obscure),
               action: TextInputAction.done,
@@ -415,7 +416,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           )
                         : const Icon(
-                            Icons.pets_rounded,
+                            Lz.cat,
                             color: Color(0xFF12B7F5),
                             size: 26,
                           ),

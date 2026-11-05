@@ -7,6 +7,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/ui.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// ★ 1016：后台 · 任务活动配置
 ///
@@ -220,7 +221,7 @@ class _CollectTaskViewState extends State<CollectTaskView> {
                       ),
                       IconButton(
                         icon: const Icon(
-                          Icons.delete_outline_rounded,
+                          Lz.trash2,
                           size: 18,
                         ),
                         onPressed: () => setState(() => _tasks.removeAt(i)),
@@ -230,7 +231,7 @@ class _CollectTaskViewState extends State<CollectTaskView> {
                 ),
               TextButton.icon(
                 onPressed: _addTask,
-                icon: const Icon(Icons.add_rounded, size: 16),
+                icon: const Icon(Lz.plus, size: 16),
                 label: const Text('添加一项'),
               ),
             ],

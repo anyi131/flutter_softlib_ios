@@ -27,6 +27,7 @@ import '../../utils/jump_util.dart';
 import '../../utils/local_splash.dart';
 import 'maintain_page.dart';
 import '../../design/kit.dart';
+import '../../design/lucide.dart';
 
 /// 启动页：远程开屏图 + 倒计时 + 公告弹窗（后台可下发，无需发版）
 class SplashPage extends StatefulWidget {
@@ -1161,7 +1162,7 @@ class _SplashPageState extends State<SplashPage> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
-                                Icons.campaign_rounded,
+                                Lz.megaphone,
                                 color: Colors.white,
                                 size: 22,
                               ),
@@ -1288,7 +1289,7 @@ class _SplashPageState extends State<SplashPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
-                            Icons.notifications_active_rounded,
+                            Lz.bellRing,
                             color: Colors.white,
                             size: 22,
                           ),
@@ -1630,7 +1631,7 @@ class _SplashPageState extends State<SplashPage> {
                               borderRadius: BorderRadius.circular(13),
                             ),
                             child: const Icon(
-                              Icons.campaign_rounded,
+                              Lz.megaphone,
                               color: Colors.white,
                               size: 24,
                             ),
@@ -1681,7 +1682,7 @@ class _SplashPageState extends State<SplashPage> {
                         child: IconButton(
                           onPressed: () => Navigator.of(ctx).pop(),
                           icon: const Icon(
-                            Icons.close_rounded,
+                            Lz.x,
                             color: Colors.white,
                             size: 26,
                           ),
@@ -1938,7 +1939,7 @@ class _SplashPageState extends State<SplashPage> {
                       children: [
                         const SizedBox(width: 12),
                         const Icon(
-                          Icons.info_outline_rounded,
+                          Lz.info,
                           color: Colors.white,
                           size: 17,
                         ),
@@ -2036,7 +2037,7 @@ class _SplashPageState extends State<SplashPage> {
           ),
           title: Row(
             children: [
-              const Icon(Icons.campaign, color: Color(0xFF465CFF)),
+              const Icon(Lz.megaphone, color: Color(0xFF465CFF)),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

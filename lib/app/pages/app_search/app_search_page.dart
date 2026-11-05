@@ -12,6 +12,7 @@ import '../../models/app_item.dart';
 import '../../api/soft_service.dart';
 import '../../utils/toast_util.dart';
 import '../../widgets/app_card.dart';
+import '../../design/lucide.dart';
 
 /// 软件搜索页（搜索已入库软件，含服务器直传 + 蓝奏云两种来源）
 class AppSearchPage extends StatefulWidget {
@@ -112,7 +113,7 @@ class _AppSearchPageState extends State<AppSearchPage> {
                           color: Colors.grey[500],
                         ),
                         prefixIcon: Icon(
-                          Icons.search,
+                          Lz.search,
                           size: 20,
                           color: Colors.grey[500],
                         ),
@@ -157,7 +158,7 @@ class _AppSearchPageState extends State<AppSearchPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.search_rounded,
+              Lz.search,
               size: 64,
               color: Colors.grey.withAlpha(90),
             ),
@@ -186,7 +187,7 @@ class _AppSearchPageState extends State<AppSearchPage> {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.travel_explore_rounded,
+                  Lz.globe,
                   size: 42,
                   color: C.brand.withAlpha(170),
                 ),

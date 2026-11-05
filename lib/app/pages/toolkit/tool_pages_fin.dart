@@ -9,6 +9,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
+import '../../design/lucide.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 工具箱 · 第八批（1015）：补齐到 150 个真工具
@@ -178,7 +179,7 @@ class _BonusTaxPageState extends State<BonusTaxPage> {
             controller: _c,
             label: '年终奖金额（元）',
             keyboard: TextInputType.number,
-            icon: Icons.card_giftcard_rounded,
+            icon: Lz.gift,
             onChanged: (_) => setState(() {}),
           ),
           ToolCard(
@@ -259,7 +260,7 @@ class _SocialPageState extends State<SocialPage> {
             controller: _base,
             label: '缴费基数（元）',
             keyboard: TextInputType.number,
-            icon: Icons.work_rounded,
+            icon: Lz.briefcase,
             onChanged: (_) => setState(() {}),
           ),
           ToolCard(
@@ -712,7 +713,7 @@ class _MsTimePageState extends State<MsTimePage> {
             controller: _c,
             label: '毫秒数',
             keyboard: TextInputType.number,
-            icon: Icons.timer_rounded,
+            icon: Lz.timer,
             onChanged: (_) => setState(() {}),
           ),
           ToolCard(

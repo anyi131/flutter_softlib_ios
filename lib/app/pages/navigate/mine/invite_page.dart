@@ -14,6 +14,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:get/get.dart';
 
 import '../../../routes/app_pages.dart';
+import '../../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 邀请好友页（v52q）—— 三套模板 classic / hero / minimal
@@ -175,7 +176,7 @@ class _InvitePageState extends State<InvitePage> {
                       : Colors.black.withAlpha(8),
                 ),
               ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16),
+              child: const Icon(Lz.arrowLeft, size: 16),
             ),
           ),
           const Spacer(),
@@ -195,7 +196,7 @@ class _InvitePageState extends State<InvitePage> {
                       : Colors.black.withAlpha(8),
                 ),
               ),
-              child: const Icon(Icons.refresh_rounded, size: 18),
+              child: const Icon(Lz.refreshCw, size: 18),
             ),
           ),
         ],
@@ -208,7 +209,7 @@ class _InvitePageState extends State<InvitePage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline_rounded, size: 42, color: context.t3),
+          Icon(Lz.alertCircle, size: 42, color: context.t3),
           const SizedBox(height: 10),
           Text(_err, style: TextStyle(fontSize: 13, color: context.t2)),
           const SizedBox(height: 14),
@@ -250,7 +251,7 @@ class _InvitePageState extends State<InvitePage> {
         child: Column(
           children: [
             const Icon(
-              Icons.emoji_events_rounded,
+              Lz.trophy,
               color: Colors.white,
               size: 34,
             ),
@@ -454,7 +455,7 @@ class _InvitePageState extends State<InvitePage> {
         children: [
           Row(
             children: [
-              Icon(Icons.info_outline_rounded, size: 15, color: C.brandBright),
+              Icon(Lz.info, size: 15, color: C.brandBright),
               const SizedBox(width: 6),
               Text(
                 '活动规则',
@@ -533,7 +534,7 @@ class _InvitePageState extends State<InvitePage> {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.share_rounded, color: Colors.white, size: 18),
+                  Icon(Lz.share, color: Colors.white, size: 18),
                   SizedBox(width: 7),
                   Text(
                     '立即邀请好友',
@@ -574,7 +575,7 @@ class _InvitePageState extends State<InvitePage> {
                       borderRadius: BorderRadius.circular(13),
                     ),
                     child: const Icon(
-                      Icons.confirmation_number_rounded,
+                      Lz.ticket,
                       color: Colors.white,
                       size: 22,
                     ),
@@ -698,7 +699,7 @@ class _InvitePageState extends State<InvitePage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            Icons.image_rounded,
+                            Lz.image,
                             size: 15,
                             color: Colors.white,
                           ),
@@ -755,7 +756,7 @@ class _InvitePageState extends State<InvitePage> {
           children: [
             Row(
               children: [
-                Icon(Icons.bolt_rounded, color: C.brandBright, size: 20),
+                Icon(Lz.zap, color: C.brandBright, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(

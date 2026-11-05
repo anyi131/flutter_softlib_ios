@@ -9,6 +9,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../models/http/results/lzy_file_info_model.dart';
 import 'posters_logic.dart';
+import '../../design/lucide.dart';
 
 class PostersWidget extends StatefulWidget {
   final String? dowUrl;
@@ -76,7 +77,7 @@ class _PostersWidgetState extends State<PostersWidget> {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          Icons.close_rounded,
+                          Lz.x,
                           size: 16,
                           color: context.t2,
                         ),
@@ -92,7 +93,7 @@ class _PostersWidgetState extends State<PostersWidget> {
                 const SizedBox(height: 14),
                 PrimaryButton(
                   label: '保存到相册',
-                  icon: Icons.download_rounded,
+                  icon: Lz.download,
                   height: 48,
                   onPressed: () => logic.savePosterToGallery(context, posterKey),
                 ),

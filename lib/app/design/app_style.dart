@@ -1,3 +1,4 @@
+import 'lucide.dart';
 import 'package:flutter/material.dart';
 
 /// 软件列表 / 详情页的**多模块样式**
@@ -36,9 +37,9 @@ extension AppListStyleX on AppListStyle {
 
   IconData get icon => switch (this) {
     AppListStyle.glass => Icons.view_agenda_rounded,
-    AppListStyle.compact => Icons.view_list_rounded,
-    AppListStyle.grid => Icons.grid_view_rounded,
-    AppListStyle.large => Icons.image_rounded,
+    AppListStyle.compact => Lz.list,
+    AppListStyle.grid => Lz.layoutGrid,
+    AppListStyle.large => Lz.image,
     AppListStyle.minimal => Icons.line_weight_rounded,
   };
 

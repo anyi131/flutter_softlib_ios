@@ -12,6 +12,7 @@ import '../../api/soft_service.dart';
 import '../../api/user_service.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
+import '../../design/lucide.dart';
 import '../../utils/toast_util.dart';
 import 'pay_notice_dialog.dart';
 
@@ -144,12 +145,12 @@ class _VipPageState extends State<VipPage> {
                         _buildPayItem(
                           0,
                           '支付宝',
-                          Icons.account_balance_wallet_outlined,
+                          Lz.payWallet,
                         ),
                         const SizedBox(width: 10),
-                        _buildPayItem(1, '微信', Icons.chat_bubble_outline),
+                        _buildPayItem(1, '微信', Lz.payWechat),
                         const SizedBox(width: 10),
-                        _buildPayItem(2, 'QQ', Icons.pets_outlined),
+                        _buildPayItem(2, 'QQ', Lz.payQq),
                       ],
                     ),
                     const SizedBox(height: 22),
@@ -199,7 +200,7 @@ class _VipPageState extends State<VipPage> {
                   ),
                 ),
                 child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
+                  Lz.back,
                   size: 16,
                   color: context.t1,
                 ),
@@ -250,7 +251,7 @@ class _VipPageState extends State<VipPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.verified_rounded,
+                  Lz.badge,
                   size: 13,
                   color: Deco.vipAccent(context),
                 ),
@@ -268,7 +269,7 @@ class _VipPageState extends State<VipPage> {
           ],
           PrimaryButton(
             label: label,
-            icon: Icons.workspace_premium_rounded,
+            icon: Lz.vip,
             gold: true,
             loading: _submitting,
             onPressed: _submitting ? null : _onBuy,
@@ -450,10 +451,10 @@ class _VipPageState extends State<VipPage> {
   Widget _buildHeaderCard() {
     final isDark = context.isDark;
     final benefits = const [
-      (Icons.download_done_rounded, '无限下载'),
-      (Icons.bolt_rounded, '极速通道'),
-      (Icons.verified_rounded, '专属标识'),
-      (Icons.support_agent_rounded, '优先客服'),
+      (Lz.benefitDownload, '无限下载'),
+      (Lz.benefitSpeed, '极速通道'),
+      (Lz.badge, '专属标识'),
+      (Lz.benefitSupport, '优先客服'),
     ];
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
@@ -495,7 +496,7 @@ class _VipPageState extends State<VipPage> {
               ),
               const Spacer(),
               Icon(
-                Icons.workspace_premium_rounded,
+                Lz.vip,
                 color: Colors.white.withAlpha(215),
                 size: 26,
               ),
@@ -878,7 +879,7 @@ class _VipPageState extends State<VipPage> {
       padding: const EdgeInsets.only(bottom: 9),
       child: Row(
         children: [
-          Icon(Icons.check_circle_rounded, size: 16, color: Deco.vipAccent(context)),
+          Icon(Lz.check, size: 16, color: Deco.vipAccent(context)),
           const SizedBox(width: 8),
           Expanded(child: Text(text, style: Ty.body.copyWith(fontSize: 13.5))),
         ],
@@ -908,10 +909,8 @@ class _VipPageState extends State<VipPage> {
       amount: plan.money,
       methodLabel: methodLabel,
       methodIcon: ['alipay', 'wxpay', 'qqpay'].indexOf(payType) == 0
-          ? Icons.account_balance_wallet_rounded
-          : (payType == 'wxpay'
-                ? Icons.chat_bubble_rounded
-                : Icons.pets_rounded),
+          ? Lz.payWallet
+          : (payType == 'wxpay' ? Lz.payWechat : Lz.payQq),
     );
     if (!confirmed) return;
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../design/app_anim.dart';
 import '../../design/ui.dart';
+import '../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 维护模式页 —— v3.3.4 共 5 款**骨架级**模板
@@ -163,7 +164,7 @@ class _MaintainPageState extends State<MaintainPage>
                       ],
                     ),
                     child: const Icon(
-                      Icons.settings_rounded,
+                      Lz.settings,
                       color: Colors.white,
                       size: 36,
                     ),
@@ -293,7 +294,7 @@ class _MaintainPageState extends State<MaintainPage>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.timer_outlined, size: 13, color: C.amber),
+                      Icon(Lz.timer, size: 13, color: C.amber),
                       const SizedBox(width: 5),
                       Text(
                         '维护中',
@@ -443,7 +444,7 @@ class _MaintainPageState extends State<MaintainPage>
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Icon(
-                          Icons.construction_rounded,
+                          Lz.hammer,
                           size: 30,
                           color: Colors.white,
                         ),
@@ -576,7 +577,7 @@ class _MaintainPageState extends State<MaintainPage>
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      Icons.warning_amber_rounded,
+                      Lz.alertTriangle,
                       size: 19,
                       color: C.amber,
                     ),

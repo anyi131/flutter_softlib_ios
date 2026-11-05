@@ -23,6 +23,7 @@ import 'collect_account_card.dart';
 import 'collect_dirs_view.dart';
 import 'collect_logs_view.dart';
 import 'collect_lzy_account_view.dart';
+import '../../../design/lucide.dart';
 
 /// 后台 · 采集（版权梦）
 ///
@@ -393,7 +394,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.info_outline_rounded, size: 18, color: C.brand),
+                Icon(Lz.info, size: 18, color: C.brand),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -455,7 +456,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               const SizedBox(width: 8),
               IconButton(
                 onPressed: _init,
-                icon: Icon(Icons.refresh_rounded, color: context.t2, size: 20),
+                icon: Icon(Lz.refreshCw, color: context.t2, size: 20),
               ),
             ],
           ),
@@ -540,7 +541,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                 onTap: () => _annotateLib(_items),
                 child: Row(
                   children: [
-                    Icon(Icons.refresh_rounded, size: 13, color: C.brand),
+                    Icon(Lz.refreshCw, size: 13, color: C.brand),
                     const SizedBox(width: 3),
                     Text(
                       '重新检测',
@@ -593,7 +594,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
       return EmptyState(
         text: '没有采集到数据',
         hint: '可能是 Cookie 已过期，请重新登录采集账号',
-        icon: Icons.cloud_download_outlined,
+        icon: Lz.downloadCloud,
         action: SoftButton(label: '重新检测', onPressed: _init),
       );
     }
@@ -648,7 +649,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
       onTap: _showAccountSheet,
       child: Row(
         children: [
-          Icon(Icons.verified_user_rounded, size: 17, color: C.success),
+          Icon(Lz.shieldCheck, size: 17, color: C.success),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -665,7 +666,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               fontWeight: FontWeight.w800,
             ),
           ),
-          Icon(Icons.chevron_right_rounded, size: 16, color: C.brand),
+          Icon(Lz.chevronRight, size: 16, color: C.brand),
         ],
       ),
     );
@@ -696,7 +697,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                   Text('采集账号设置', style: Ty.h3.copyWith(color: ctx.t1)),
                   const Spacer(),
                   IconButton(
-                    icon: Icon(Icons.close, size: 20, color: ctx.t2),
+                    icon: Icon(Lz.x, size: 20, color: ctx.t2),
                     onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
@@ -748,8 +749,8 @@ class _AdminCollectTabState extends State<AdminCollectTab>
             opacity: matched ? 1 : 0.4,
             child: Icon(
               sel
-                  ? Icons.check_circle_rounded
-                  : Icons.radio_button_unchecked_rounded,
+                  ? Lz.checkCircle
+                  : Lz.circle,
               size: 20,
               color: sel ? C.brand : context.t3,
             ),
@@ -1294,7 +1295,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 else
-                  Icon(Icons.check_circle_rounded, size: 17, color: C.success),
+                  Icon(Lz.checkCircle, size: 17, color: C.success),
                 const SizedBox(width: 8),
                 Text(
                   _running ? '正在上传到你的蓝奏云…' : '采集结束',
@@ -1336,7 +1337,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               const SizedBox(height: 10),
               Row(
                 children: [
-                  Icon(Icons.terminal_rounded, size: 13, color: context.t3),
+                  Icon(Lz.terminal, size: 13, color: context.t3),
                   const SizedBox(width: 5),
                   Text(
                     '实时日志',
@@ -1380,7 +1381,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                       child: Row(
                         children: [
                           Icon(
-                            Icons.check_circle_outline_rounded,
+                            Lz.checkCircle2,
                             size: 13,
                             color: C.success,
                           ),
@@ -1400,7 +1401,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               const SizedBox(height: 10),
               PrimaryButton(
                 label: '导入软件库（${doneLinks.length}）',
-                icon: Icons.download_done_rounded,
+                icon: Lz.download,
                 height: 42,
                 onPressed: () => _import(doneLinks),
               ),
@@ -1410,7 +1411,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               const SizedBox(height: 10),
               Row(
                 children: [
-                  Icon(Icons.error_outline_rounded, size: 14, color: C.danger),
+                  Icon(Lz.alertCircle, size: 14, color: C.danger),
                   const SizedBox(width: 5),
                   Text(
                     '失败（${_failedResults.length}）',
@@ -1452,7 +1453,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                       Padding(
                         padding: const EdgeInsets.only(top: 2),
                         child: Icon(
-                          Icons.cancel_outlined,
+                          Lz.xCircle,
                           size: 13,
                           color: C.danger,
                         ),
@@ -1652,7 +1653,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               Row(
                 children: [
                   Icon(
-                    Icons.workspace_premium_rounded,
+                    Lz.crown,
                     size: 18,
                     color: C.gold,
                   ),

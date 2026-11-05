@@ -34,6 +34,7 @@ import '../../../utils/local_splash.dart';
 import '../../../routes/app_pages.dart';
 import '../../../utils/toast_util.dart';
 import '../../../widgets/blocking_dialog.dart';
+import '../../../design/lucide.dart';
 
 /// 我的页逻辑：登录态 + 本地资料
 /// ★ 1031q：生命周期观察者（前台才轮询红点）
@@ -673,7 +674,7 @@ class MineLogic extends GetxController {
                         ],
                       ),
                       child: const Icon(
-                        Icons.emoji_events_rounded,
+                        Lz.trophy,
                         color: Colors.white,
                         size: 20,
                       ),
@@ -703,7 +704,7 @@ class MineLogic extends GetxController {
                     const Spacer(),
                     IconButton(
                       icon: Icon(
-                        Icons.close,
+                        Lz.x,
                         size: 20,
                         color: Colors.white.withAlpha(180),
                       ),
@@ -1007,7 +1008,7 @@ class MineLogic extends GetxController {
         title: const Row(
           children: [
             Icon(
-              Icons.monetization_on_rounded,
+              Lz.circleDollarSign,
               color: C.accentOrange,
               size: 21,
             ),
@@ -1121,7 +1122,7 @@ class MineLogic extends GetxController {
           child: Row(
             children: [
               Icon(
-                Icons.card_giftcard_rounded,
+                Lz.gift,
                 size: 18,
                 color: enough ? warn : sub,
               ),

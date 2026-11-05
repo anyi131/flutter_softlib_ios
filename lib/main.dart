@@ -19,6 +19,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_softlib/app/database/database.dart';
 import 'package:flutter_softlib/app/http/http_api.dart';
 import 'package:get/get.dart';
+import 'package:flutter_quill/flutter_quill.dart' show FlutterQuillLocalizations;
 
 import 'app/routes/app_pages.dart';
 import 'app/design/app_theme.dart';
@@ -36,6 +37,7 @@ import 'app/utils/deep_links.dart';
 import 'app/api/wish_service.dart';
 import 'app/api/app_sign.dart';
 import 'app/design/app_anim.dart';
+import 'app/design/lucide.dart';
 
 /// 应用程序主入口
 Future<void> main() async {
@@ -420,6 +422,7 @@ class SoftLibApp extends StatelessWidget {
           GlobalMaterialLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
+          FlutterQuillLocalizations.delegate,
         ],
         supportedLocales: const [Locale("zh", "CN"), Locale("en", "US")],
         locale: const Locale("zh", "CN"),
@@ -442,7 +445,7 @@ Widget _buildErrorApp(String error) {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+              Icon(Lz.alertCircle, size: 64, color: Colors.red[400]),
               const SizedBox(height: 16),
               Text(
                 '应用启动失败',
@@ -501,7 +504,7 @@ class _UiFallbackState extends State<_UiFallback> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
-                Icons.error_outline_rounded,
+                Lz.alertCircle,
                 size: 34,
                 color: Color(0xFFB0B5BD),
               ),

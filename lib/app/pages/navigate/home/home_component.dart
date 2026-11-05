@@ -1,3 +1,4 @@
+import '../../../design/lucide.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
@@ -132,7 +133,7 @@ class _HomeComponentState extends State<HomeComponent> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            trailing: Icon(Icons.chevron_right_rounded, color: context.t3),
+            trailing: Icon(Lz.chevronRight, color: context.t3),
             onTap: id > 0
                 ? () => Get.toNamed(
                     Routes.appDetails,
@@ -350,7 +351,7 @@ class _HomeComponentState extends State<HomeComponent> {
               ),
             ),
             alignment: Alignment.center,
-            child: Icon(Icons.widgets_outlined, size: 32, color: C.brand),
+            child: Icon(Lz.widgets, size: 32, color: C.brand),
           ),
           const SizedBox(height: 14),
           Text(
@@ -470,13 +471,13 @@ class _HomeComponentState extends State<HomeComponent> {
                   child: Row(
                     children: [
                       if (logic.configData?.groupBtnOn != false)
-                        _circleBtnGlass(Icons.group_add_outlined, () {
+                        _circleBtnGlass(Lz.groupAdd, () {
                           logic.joinGroup();
                         }),
                       if (logic.configData?.userBtnOn != false) ...[
                         const SizedBox(width: 8),
                         _circleBtnGlass(
-                          Icons.support_agent_outlined,
+                          Lz.support,
                           () => logic.joinUser(),
                         ),
                       ],
@@ -570,13 +571,13 @@ class _HomeComponentState extends State<HomeComponent> {
                 child: Row(
                   children: [
                     if (logic.configData?.groupBtnOn != false)
-                      _circleBtnGlass(Icons.group_add_outlined, () {
+                      _circleBtnGlass(Lz.groupAdd, () {
                         logic.joinGroup();
                       }),
                     if (logic.configData?.userBtnOn != false) ...[
                       const SizedBox(width: 8),
                       _circleBtnGlass(
-                        Icons.support_agent_outlined,
+                        Lz.support,
                         () => logic.joinUser(),
                       ),
                     ],
@@ -717,7 +718,7 @@ class _HomeComponentState extends State<HomeComponent> {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, size: 20, color: context.t3),
+            Icon(Lz.chevronRight, size: 20, color: context.t3),
           ],
         ),
       ),
@@ -774,7 +775,7 @@ class _HomeComponentState extends State<HomeComponent> {
                                   errorWidget: (_, __, ___) => Container(
                                     color: C.brand.withAlpha(18),
                                     child: Icon(
-                                      Icons.image_not_supported_outlined,
+                                      Lz.imageOff,
                                       color: context.t3,
                                     ),
                                   ),
@@ -782,7 +783,7 @@ class _HomeComponentState extends State<HomeComponent> {
                               : Container(
                                   color: C.brand.withAlpha(18),
                                   child: Icon(
-                                    Icons.apps_rounded,
+                                    Lz.apps,
                                     color: C.brand.withAlpha(140),
                                     size: 34,
                                   ),
@@ -891,7 +892,7 @@ class _HomeComponentState extends State<HomeComponent> {
                                 errorWidget: (_, __, ___) => Container(
                                   color: C.brand.withAlpha(16),
                                   child: Icon(
-                                    Icons.apps_rounded,
+                                    Lz.apps,
                                     color: C.brand.withAlpha(140),
                                   ),
                                 ),
@@ -899,7 +900,7 @@ class _HomeComponentState extends State<HomeComponent> {
                             : Container(
                                 color: C.brand.withAlpha(16),
                                 child: Icon(
-                                  Icons.apps_rounded,
+                                  Lz.apps,
                                   color: C.brand.withAlpha(140),
                                   size: 26,
                                 ),
@@ -1008,13 +1009,13 @@ class _HomeComponentState extends State<HomeComponent> {
                             ),
                           ),
                           if (logic.configData?.groupBtnOn != false)
-                            _circleBtn(Icons.group_add_outlined, () {
+                            _circleBtn(Lz.groupAdd, () {
                               logic.joinGroup();
                             }),
                           if (logic.configData?.userBtnOn != false) ...[
                             const SizedBox(width: 6),
                             _circleBtn(
-                              Icons.support_agent_outlined,
+                              Lz.support,
                               () => logic.joinUser(),
                             ),
                           ],
@@ -1045,53 +1046,53 @@ class _HomeComponentState extends State<HomeComponent> {
       ),
       child: Column(
         children: [
-          _drawerGroup('快捷功能', Icons.bolt_rounded, C.amber, [
+          _drawerGroup('快捷功能', Lz.zap, C.amber, [
             if (logic.configData?.uiConfig.quickSign ?? true)
               _drawerItem(
                 '每日签到',
-                Icons.emoji_events_rounded,
+                Lz.trophy,
                 C.amber,
                 () => Get.find<NavigateLogic>().goMine(),
               ),
             if (logic.configData?.uiConfig.quickVip ?? true)
               _drawerItem(
                 'VIP会员',
-                Icons.workspace_premium_rounded,
+                Lz.vip,
                 C.gold,
                 () => Get.toNamed(Routes.vip),
               ),
             if (logic.configData?.uiConfig.quickService ?? true)
               _drawerItem(
                 '联系客服',
-                Icons.headset_mic_rounded,
+                Lz.headphones,
                 C.cyan,
                 () => logic.joinUser(),
               ),
             if (logic.configData?.uiConfig.quickUpdate ?? true)
               _drawerItem(
                 '检查更新',
-                Icons.auto_awesome_rounded,
+                Lz.sparkles,
                 C.violet,
                 () => UpdateFlow.check(showLatestTip: true),
               ),
           ]),
           const SizedBox(height: 10),
-          _drawerGroup('我的资产', Icons.account_balance_wallet_rounded, C.mint, [
+          _drawerGroup('我的资产', Lz.wallet, C.mint, [
             _drawerItem(
               '充值余额',
-              Icons.add_card_rounded,
+              Lz.card,
               C.mint,
               () => Get.toNamed(Routes.recharge),
             ),
             _drawerItem(
               '下载管理',
-              Icons.download_rounded,
+              Lz.download,
               C.cyan,
               () => Get.toNamed(Routes.appDownload),
             ),
             _drawerItem(
               '卡密商城',
-              Icons.storefront_rounded,
+              Lz.store,
               C.gold,
               () => Get.toNamed(Routes.cardShop),
             ),
@@ -1143,7 +1144,7 @@ class _HomeComponentState extends State<HomeComponent> {
                     turns: open ? 0.5 : 0,
                     duration: AppAnim.base,
                     child: Icon(
-                      Icons.keyboard_arrow_down_rounded,
+                      Lz.chevronDown,
                       color: context.t3,
                       size: 20,
                     ),
@@ -1187,7 +1188,7 @@ class _HomeComponentState extends State<HomeComponent> {
                 style: TextStyle(fontSize: 13.5, color: context.t1),
               ),
             ),
-            Icon(Icons.chevron_right_rounded, size: 17, color: context.t3),
+            Icon(Lz.chevronRight, size: 17, color: context.t3),
           ],
         ),
       ),
@@ -1291,7 +1292,7 @@ class _HomeComponentState extends State<HomeComponent> {
                         ),
                       ),
                       Icon(
-                        Icons.arrow_forward_ios_rounded,
+                        Lz.arrowRight,
                         size: 12,
                         color: context.t3,
                       ),
@@ -1321,7 +1322,7 @@ class _HomeComponentState extends State<HomeComponent> {
           Expanded(child: _searchInline()),
           if (logic.configData?.userBtnOn != false) ...[
             const SizedBox(width: 10),
-            _circleBtn(Icons.support_agent_outlined, () => logic.joinUser()),
+            _circleBtn(Lz.support, () => logic.joinUser()),
           ],
         ],
       ),
@@ -1346,7 +1347,7 @@ class _HomeComponentState extends State<HomeComponent> {
         ),
         child: Row(
           children: [
-            Icon(Icons.search_rounded, size: 18, color: context.t3),
+            Icon(Lz.search, size: 18, color: context.t3),
             const SizedBox(width: 8),
             Text('搜软件、找工具', style: Ty.small.copyWith(color: context.t3)),
           ],
@@ -1358,13 +1359,13 @@ class _HomeComponentState extends State<HomeComponent> {
   Widget _storeCats() {
     final ui = logic.configData?.uiConfig;
     final cats = <(String, IconData)>[
-      if (ui?.quickSign ?? true) ('签到', Icons.emoji_events_rounded),
-      if (ui?.quickVip ?? true) ('会员', Icons.workspace_premium_rounded),
-      ('充值', Icons.add_card_rounded),
-      ('下载', Icons.download_rounded),
-      ('卡密', Icons.storefront_rounded),
-      if (ui?.quickService ?? true) ('客服', Icons.headset_mic_rounded),
-      if (ui?.quickUpdate ?? true) ('更新', Icons.auto_awesome_rounded),
+      if (ui?.quickSign ?? true) ('签到', Lz.trophy),
+      if (ui?.quickVip ?? true) ('会员', Lz.vip),
+      ('充值', Lz.card),
+      ('下载', Lz.download),
+      ('卡密', Lz.store),
+      if (ui?.quickService ?? true) ('客服', Lz.headphones),
+      if (ui?.quickUpdate ?? true) ('更新', Lz.sparkles),
     ];
     return SizedBox(
       height: 78,
@@ -1474,7 +1475,7 @@ class _HomeComponentState extends State<HomeComponent> {
                                     errorWidget: (_, __, ___) => Container(
                                       color: C.brand.withAlpha(16),
                                       child: Icon(
-                                        Icons.apps_rounded,
+                                        Lz.apps,
                                         color: C.brand.withAlpha(140),
                                       ),
                                     ),
@@ -1482,7 +1483,7 @@ class _HomeComponentState extends State<HomeComponent> {
                                 : Container(
                                     color: C.brand.withAlpha(16),
                                     child: Icon(
-                                      Icons.apps_rounded,
+                                      Lz.apps,
                                       color: C.brand.withAlpha(140),
                                     ),
                                   ),
@@ -1579,13 +1580,13 @@ class _HomeComponentState extends State<HomeComponent> {
           const SizedBox(width: 12),
           // 两个按钮可在后台配置（开关 + 链接）
           if (logic.configData?.groupBtnOn != false) ...[
-            _circleBtn(Icons.group_add_outlined, () {
+            _circleBtn(Lz.groupAdd, () {
               logic.joinGroup();
             }),
             const SizedBox(width: 8),
           ],
           if (logic.configData?.userBtnOn != false)
-            _circleBtn(Icons.support_agent_outlined, () => logic.joinUser()),
+            _circleBtn(Lz.support, () => logic.joinUser()),
         ],
       ),
     );
@@ -1671,7 +1672,7 @@ class _HomeComponentState extends State<HomeComponent> {
         onTap: () => Get.toNamed(Routes.appSearch),
         child: Row(
           children: [
-            Icon(Icons.search_rounded, size: 20, color: C.brandBright),
+            Icon(Lz.search, size: 20, color: C.brandBright),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -1694,22 +1695,22 @@ class _HomeComponentState extends State<HomeComponent> {
     final ui = logic.configData?.uiConfig;
     final all = [
       (
-        _QI(Icons.emoji_events_rounded, '每日签到', C.amber),
+        _QI(Lz.trophy, '每日签到', C.amber),
         () => Get.find<NavigateLogic>().goMine(),
         ui?.quickSign ?? true,
       ),
       (
-        _QI(Icons.workspace_premium_rounded, 'VIP会员', C.gold),
+        _QI(Lz.vip, 'VIP会员', C.gold),
         () => Get.toNamed(Routes.vip),
         ui?.quickVip ?? true,
       ),
       (
-        _QI(Icons.headset_mic_rounded, '联系客服', C.cyan),
+        _QI(Lz.headphones, '联系客服', C.cyan),
         () => logic.joinUser(),
         ui?.quickService ?? true,
       ),
       (
-        _QI(Icons.auto_awesome_rounded, '检查更新', C.violet),
+        _QI(Lz.sparkles, '检查更新', C.violet),
         () => UpdateFlow.check(showLatestTip: true),
         ui?.quickUpdate ?? true,
       ),
@@ -1938,7 +1939,7 @@ class _HomeComponentState extends State<HomeComponent> {
                     borderRadius: BorderRadius.circular(R.xs - 1),
                   ),
                   child: const Icon(
-                    Icons.campaign_rounded,
+                    Lz.megaphone,
                     size: 13,
                     color: Colors.white,
                   ),

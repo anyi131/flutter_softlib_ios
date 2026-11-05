@@ -1,3 +1,4 @@
+import '../../design/lucide.dart';
 import 'dart:typed_data';
 import '../../api/api_http.dart';
 
@@ -353,8 +354,8 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                         ),
                         Icon(
                           _descExpanded
-                              ? Icons.keyboard_arrow_up_rounded
-                              : Icons.keyboard_arrow_down_rounded,
+                              ? Lz.chevronUp
+                              : Lz.chevronDown,
                           size: 15,
                           color: C.brand,
                         ),
@@ -598,7 +599,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             color: (context.isDark ? C.bg0 : C.lbg0).withAlpha(150),
             child: Row(
               children: [
-                _topBtn(Icons.arrow_back_ios_new_rounded, () => Get.back()),
+                _topBtn(Lz.arrowLeft, () => Get.back()),
                 // ★★ 1020：标题两侧各有一个 Spacer（各占 1 份弹性空间），
                 //   标题只能分到 1/3 宽度 → 永远显示成 "Tomato Vi..."。
                 //   改成固定小间距，让 Expanded 吃满剩余空间。
@@ -619,7 +620,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   _favBtn(),
                 const SizedBox(width: 8),
                 _topBtn(
-                  Icons.ios_share_rounded,
+                  Lz.share,
                   () => logic.showSharePopUps(context),
                 ),
               ],
@@ -657,7 +658,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               ),
             ),
             child: Icon(
-              on ? Icons.star_rounded : Icons.star_border_rounded,
+              on ? Lz.star : Lz.star,
               size: 19,
               color: on ? C.amber : context.t2,
             ),
@@ -753,10 +754,10 @@ class _AppDetailsPageState extends State<AppDetailsPage>
         : (isVipItem ? '会员专享' : '免费下载');
     final Color topColor = hasP ? C.mint : (isVipItem ? C.amber : C.mint);
     final IconData topIcon = hasP
-        ? Icons.paid_rounded
+        ? Lz.price
         : (isVipItem
-              ? Icons.workspace_premium_rounded
-              : Icons.download_done_rounded);
+              ? Lz.vip
+              : Lz.download);
     final icon = info?.fileIcon ?? '';
     // ★ 详情页美化（需求 #7）：顶部加品牌渐变头图 + 更大的图标 + 光晕
     return Column(
@@ -957,13 +958,13 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               const SizedBox(height: 8),
               Row(
                 children: [
-                  _chip('人工亲测', C.brandBright, Icons.verified_rounded),
+                  _chip('人工亲测', C.brandBright, Lz.badge),
                   const SizedBox(width: 6),
                   if (isVipItem && !hasP)
-                    _chip('会员专享', C.amber, Icons.workspace_premium_rounded),
+                    _chip('会员专享', C.amber, Lz.vip),
                   const Spacer(),
                   if ((it?.scoreCount ?? 0) > 0) ...[
-                    Icon(Icons.star_rounded, size: 16, color: C.amber),
+                    Icon(Lz.star, size: 16, color: C.amber),
                     const SizedBox(width: 3),
                     Text(
                       it!.scoreAvg.toStringAsFixed(1),
@@ -1011,7 +1012,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   color: C.mint.withAlpha(40),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.shield_rounded, size: 13, color: C.mint),
+                child: Icon(Lz.shield, size: 13, color: C.mint),
               ),
               const SizedBox(width: 9),
               Expanded(
@@ -1081,13 +1082,13 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     final cells = linkType
         ? [
             (
-              Icons.language_rounded,
+              Lz.languages,
               (it?.linkUrl ?? '').replaceFirst(RegExp(r'^https?://'), ''),
               '链接',
               C.cyan,
             ),
             (
-              Icons.schedule_rounded,
+              Lz.clock,
               _shortDate(it?.uploadDate ?? ''),
               '上传',
               C.violet,
@@ -1095,25 +1096,25 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           ]
         : [
             (
-              Icons.sd_storage_rounded,
+              Lz.hardDrive,
               info?.fileSize ?? it?.size ?? '-',
               '大小',
               C.brandBright,
             ),
-            (Icons.visibility_rounded, '${it?.views ?? 0}', '浏览', C.cyan),
+            (Lz.eye, '${it?.views ?? 0}', '浏览', C.cyan),
             (
-              Icons.download_rounded,
+              Lz.download,
               _fmtCount(it?.downCount ?? 0),
               '下载',
               C.mint,
             ),
             (
-              Icons.schedule_rounded,
+              Lz.clock,
               _shortDate(it?.uploadDate ?? ''),
               '上传',
               C.violet,
             ),
-            (Icons.face_rounded, it?.ageRating ?? '16+', '年龄', C.mint),
+            (Lz.smile, it?.ageRating ?? '16+', '年龄', C.mint),
           ];
     // ★ 1014 重做：5 格信息条改为「一行均分」，不再折行错位。
     //   关键：用 Expanded 均分 + 小图标 + 缩小字号，让日期（10-12）也放得下，
@@ -1179,18 +1180,18 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     final cells = linkType
         ? [
             (
-              Icons.language_rounded,
+              Lz.languages,
               (it?.linkUrl ?? '').replaceFirst(RegExp(r'^https?://'), ''),
               '链接',
             ),
-            (Icons.schedule_rounded, _shortDate(it?.uploadDate ?? ''), '上传'),
+            (Lz.clock, _shortDate(it?.uploadDate ?? ''), '上传'),
           ]
         : [
-            (Icons.sd_storage_rounded, info?.fileSize ?? it?.size ?? '-', '大小'),
-            (Icons.visibility_rounded, '${it?.views ?? 0}', '浏览'),
-            (Icons.download_rounded, _fmtCount(it?.downCount ?? 0), '下载'),
-            (Icons.schedule_rounded, _shortDate(it?.uploadDate ?? ''), '上传'),
-            (Icons.face_rounded, it?.ageRating ?? '16+', '年龄'),
+            (Lz.hardDrive, info?.fileSize ?? it?.size ?? '-', '大小'),
+            (Lz.eye, '${it?.views ?? 0}', '浏览'),
+            (Lz.download, _fmtCount(it?.downCount ?? 0), '下载'),
+            (Lz.clock, _shortDate(it?.uploadDate ?? ''), '上传'),
+            (Lz.smile, it?.ageRating ?? '16+', '年龄'),
           ];
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 6),
@@ -1293,12 +1294,12 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 const SizedBox(height: 7),
                 Row(
                   children: [
-                    _chip(topLabel, topColor, Icons.sell_outlined),
+                    _chip(topLabel, topColor, Lz.tag),
                     const SizedBox(width: 6),
                     _chip(
                       'v${it?.version.isNotEmpty == true ? it!.version : '?'}',
                       C.brandBright,
-                      Icons.tag_rounded,
+                      Lz.tag,
                     ),
                   ],
                 ),
@@ -1429,8 +1430,8 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 ),
                 Icon(
                   _descExpanded
-                      ? Icons.keyboard_arrow_up_rounded
-                      : Icons.keyboard_arrow_down_rounded,
+                      ? Lz.chevronUp
+                      : Lz.chevronDown,
                   size: 16,
                   color: C.brand,
                 ),
@@ -1491,7 +1492,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                         errorWidget: (_, __, ___) => const SizedBox(
                           width: 150,
                           height: 230,
-                          child: Icon(Icons.broken_image_outlined),
+                          child: Icon(Lz.imageOff),
                         ),
                       ),
                     ),
@@ -1517,7 +1518,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
-                Icons.tips_and_updates_outlined,
+                Lz.lightbulb,
                 size: 14,
                 color: context.t3,
               ),
@@ -1562,7 +1563,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               Row(
                 children: [
                   Icon(
-                    Icons.auto_awesome_outlined,
+                    Lz.sparkles,
                     size: 13,
                     color: accent ?? context.t3,
                   ),
@@ -1864,14 +1865,14 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _bottomHint(
-                    Icons.check_circle_outline_rounded,
+                    Lz.checkCircle2,
                     '下载完成 · 点击即可安装',
                     C.success,
                   ),
                   const SizedBox(height: 9),
                   PrimaryButton(
                     label: '安装',
-                    icon: Icons.install_mobile_rounded,
+                    icon: Lz.smartphone,
                     // v52f #4：安装按钮统一品牌渐变（绿色仅用于状态标识）
                     onPressed: download.openDownloadFile,
                   ),
@@ -1898,7 +1899,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                   _bottomHint(
                     isBrowser
                         ? Icons.open_in_browser_rounded
-                        : Icons.language_rounded,
+                        : Lz.languages,
                     isBrowser ? '跳转系统浏览器打开' : 'App 内置浏览器打开',
                     C.cyan,
                   ),
@@ -1907,8 +1908,8 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                     label: isBrowser ? '打开链接' : '打开页面',
                     color: C.cyan,
                     icon: isBrowser
-                        ? Icons.open_in_new_rounded
-                        : Icons.language_rounded,
+                        ? Lz.externalLink
+                        : Lz.languages,
                     onPressed: () {
                       final u = item?.linkUrl ?? '';
                       if (u.isEmpty) {
@@ -1939,28 +1940,28 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               // ★ 只要涉及付费/会员，都必须校验（不再只看 isVipItem）
               if (hasP && !isVipUser) {
                 label = '购买下载 ¥$priceTxt';
-                icon = Icons.paid_rounded;
+                icon = Lz.price;
                 color = C.mint;
                 sub = '余额支付 · 购买后永久可下载';
               } else if (hasP && isVipUser) {
                 label = '会员免费下载';
-                icon = Icons.workspace_premium_rounded;
+                icon = Lz.vip;
                 color = C.gold;
                 sub = '会员专享 · 高速下载';
               } else {
                 label = isVipUser ? '会员下载' : '开通会员下载';
-                icon = Icons.workspace_premium_rounded;
+                icon = Lz.vip;
                 color = C.gold;
                 sub = isVipUser ? '会员专享 · 高速下载' : '该资源仅会员可下载';
               }
             } else if (item?.isLocal == true) {
               label = '下载安装';
-              icon = Icons.download_rounded;
+              icon = Lz.download;
               color = C.brand;
               sub = '服务器直连 · 极速下载';
             } else {
               label = '解析并下载';
-              icon = Icons.cloud_download_rounded;
+              icon = Lz.downloadCloud;
               color = C.brand;
               sub = '来自蓝奏云 · 解析后自动开始下载';
             }
@@ -2041,12 +2042,12 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               ),
               child: Icon(
                 retrying
-                    ? Icons.sync_rounded
+                    ? Lz.refreshCw
                     : (isFailed
-                          ? Icons.error_outline_rounded
+                          ? Lz.alertCircle
                           : (isPaused
-                                ? Icons.pause_rounded
-                                : Icons.downloading_rounded)),
+                                ? Lz.pause
+                                : Lz.downloadCloud)),
                 size: 14,
                 color: accent,
               ),
@@ -2080,28 +2081,28 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             if (isFailed)
               MiniAction(
                 label: '重试',
-                icon: Icons.refresh_rounded,
+                icon: Lz.refreshCw,
                 onTap: download.retryDownload,
                 color: accent,
               )
             else if (isPaused)
               MiniAction(
                 label: '继续',
-                icon: Icons.play_arrow_rounded,
+                icon: Lz.play,
                 onTap: download.resumeDownload,
                 color: accent,
               )
             else
               MiniAction(
                 label: '暂停',
-                icon: Icons.pause_rounded,
+                icon: Lz.pause,
                 onTap: download.pauseDownload,
                 color: accent,
               ),
             const SizedBox(width: 8),
             MiniAction(
               label: '取消',
-              icon: Icons.close_rounded,
+              icon: Lz.x,
               onTap: download.cancelDownload,
               color: C.lt2,
             ),
@@ -2125,7 +2126,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 color: C.brand.withAlpha(38),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.downloading_rounded, size: 14, color: C.brand),
+              child: Icon(Lz.downloadCloud, size: 14, color: C.brand),
             ),
             const SizedBox(width: 8),
             Text(
@@ -2555,7 +2556,7 @@ class _GalleryDialogState extends State<_GalleryDialog> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                     errorWidget: (_, __, ___) => const Icon(
-                      Icons.broken_image_outlined,
+                      Lz.imageOff,
                       color: Colors.white38,
                       size: 48,
                     ),
@@ -2580,7 +2581,7 @@ class _GalleryDialogState extends State<_GalleryDialog> {
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
-                      Icons.close,
+                      Lz.x,
                       color: Colors.white,
                       size: 20,
                     ),
@@ -2625,7 +2626,7 @@ class _GalleryDialogState extends State<_GalleryDialog> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.download_rounded,
+                        Lz.download,
                         color: Colors.white,
                         size: 18,
                       ),

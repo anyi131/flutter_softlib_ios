@@ -18,6 +18,7 @@ import 'config_history_view.dart';
 import '../admin_template.dart';
 import '../../../utils/toast_util.dart';
 import '../../../pages/navigate/navigate_logic.dart';
+import '../../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 界面配置 Tab（v52 #6 / #10）
@@ -390,7 +391,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 40, color: context.t3),
+            Icon(Lz.alertCircle, size: 40, color: context.t3),
             const SizedBox(height: 10),
             Text(
               '配置加载失败',
@@ -461,7 +462,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
                           body: SafeArea(child: ConfigHistoryView()),
                         ),
                       ),
-                      icon: const Icon(Icons.history_rounded, size: 17),
+                      icon: const Icon(Lz.history, size: 17),
                       label: const Text('查看历史版本'),
                     ),
                   ),
@@ -603,8 +604,8 @@ class _AdminUiTabState extends State<AdminUiTab> {
 
   Widget _modePicker() {
     const opts = [
-      ('light', '浅色', Icons.light_mode_rounded),
-      ('dark', '深色', Icons.dark_mode_rounded),
+      ('light', '浅色', Lz.sun),
+      ('dark', '深色', Lz.moon),
       ('system', '跟随系统', Icons.settings_brightness_rounded),
     ];
     return Row(
@@ -844,7 +845,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              on ? Icons.check_circle : Icons.radio_button_unchecked,
+              on ? Lz.checkCircle : Lz.circle,
               size: 14,
               color: on ? C.brand : context.t3,
             ),
@@ -941,7 +942,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
       children: [
         Row(
           children: [
-            Icon(Icons.verified_user_rounded, size: 18, color: C.brand),
+            Icon(Lz.shieldCheck, size: 18, color: C.brand),
             const SizedBox(width: 8),
             const Expanded(child: Text('启用支付确认弹窗')),
             Switch(
@@ -1237,13 +1238,13 @@ class _AdminUiTabState extends State<AdminUiTab> {
   Widget _templatePicker() {
     // ★ 1016：整套重做为 6 款（旧模板名会自动映射到最接近的新模板，不会白屏）
     const opts = [
-      ('meta', '信息双列', '版本/大小/日期/类型 2×2 数据网格', Icons.grid_view_rounded),
+      ('meta', '信息双列', '版本/大小/日期/类型 2×2 数据网格', Lz.layoutGrid),
       ('triple', '三列数据条', '版本 | 大小 | 日期 横排三格', Icons.view_week_rounded),
       ('timeline', '更新时间线', '左侧竖线 + 节点，逐条更新', Icons.timeline_rounded),
       ('classic', '经典卡', '居中图标 + 标题 + 正文', Icons.crop_square_rounded),
-      ('banner', '通栏条', '顶部满宽渐变条 + 大留白正文', Icons.campaign_rounded),
-      ('poster', '海报大字', '版本号当主角（34号字）', Icons.wallpaper_rounded),
-      ('list', '更新清单', '逐条圆点清单（信息密度最高）', Icons.checklist_rounded),
+      ('banner', '通栏条', '顶部满宽渐变条 + 大留白正文', Lz.megaphone),
+      ('poster', '海报大字', '版本号当主角（34号字）', Lz.image),
+      ('list', '更新清单', '逐条圆点清单（信息密度最高）', Lz.listChecks),
       ('split', '左右分栏', '左窄栏放版本 + 右侧正文按钮', Icons.view_sidebar_rounded),
       ('sheet', '底部抽屉', '拖拽手柄 + 大图标行', Icons.vertical_align_bottom_rounded),
     ];

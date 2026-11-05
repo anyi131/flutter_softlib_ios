@@ -5,6 +5,7 @@ import '../../api/soft_service.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../models/ui_config.dart';
+import '../../design/lucide.dart';
 
 /// 支付确认弹窗（美化版，替代系统风格弹窗）
 ///
@@ -16,7 +17,7 @@ class PayNoticeDialog extends StatelessWidget {
     required this.notice,
     required this.amount,
     required this.methodLabel,
-    this.methodIcon = Icons.account_balance_wallet_rounded,
+    this.methodIcon = Lz.wallet,
   });
 
   final PayNoticeConfig notice;
@@ -29,7 +30,7 @@ class PayNoticeDialog extends StatelessWidget {
   static Future<bool> confirm({
     required String amount,
     required String methodLabel,
-    IconData methodIcon = Icons.account_balance_wallet_rounded,
+    IconData methodIcon = Lz.wallet,
   }) async {
     final cfg = SoftService.instance.cachedConfig?.uiConfig;
     final raw = cfg?.payNotice ?? const PayNoticeConfig();
@@ -88,7 +89,7 @@ class PayNoticeDialog extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
-                          Icons.verified_user_rounded,
+                          Lz.shieldCheck,
                           size: 18,
                           color: Colors.white,
                         ),
@@ -197,7 +198,7 @@ class PayNoticeDialog extends StatelessWidget {
                   _noteCard(
                     context,
                     cardBg,
-                    Icons.language_rounded,
+                    Lz.languages,
                     '网站支付',
                     notice.cardNote,
                   ),
@@ -205,7 +206,7 @@ class PayNoticeDialog extends StatelessWidget {
                   _noteCard(
                     context,
                     cardBg,
-                    Icons.smartphone_rounded,
+                    Lz.smartphone,
                     'APP 支付',
                     notice.appNote,
                   ),

@@ -13,6 +13,7 @@ import '../jicun_prefs.dart';
 import 'jicun_auto_paste_page.dart';
 import 'jicun_notify_page.dart';
 import 'jicun_storage_page.dart';
+import '../../design/lucide.dart';
 
 /// 「即存设置」主页。
 class JicunSettingsPage extends StatelessWidget {
@@ -73,7 +74,7 @@ class JicunSettingsPage extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
+                  Lz.arrowLeft,
                   size: 18,
                   color: context.t1,
                 ),
@@ -117,7 +118,7 @@ class JicunSettingsPage extends StatelessWidget {
                   children: [
                     _row(
                       context,
-                      icon: Icons.content_paste_rounded,
+                      icon: Lz.clipboardPaste,
                       title: '自动粘贴',
                       subtitle: prefs.autoPaste ? '已开启' : '已关闭',
                       onTap: () => _open(context, const JicunAutoPastePage()),
@@ -125,7 +126,7 @@ class JicunSettingsPage extends StatelessWidget {
                     _divider(context),
                     _row(
                       context,
-                      icon: Icons.folder_rounded,
+                      icon: Lz.folder,
                       title: '存储位置',
                       subtitle: prefs.saveDirName,
                       onTap: () => _open(context, const JicunStoragePage()),
@@ -133,7 +134,7 @@ class JicunSettingsPage extends StatelessWidget {
                     _divider(context),
                     _row(
                       context,
-                      icon: Icons.notifications_active_rounded,
+                      icon: Lz.bellRing,
                       title: '通知管理',
                       subtitle: '下载完成、失败提醒',
                       onTap: () => _open(context, const JicunNotifyPage()),
@@ -205,7 +206,7 @@ class JicunSettingsPage extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Icon(
-                Icons.chevron_right_rounded,
+                Lz.chevronRight,
                 size: 20,
                 color: context.t3,
               ),

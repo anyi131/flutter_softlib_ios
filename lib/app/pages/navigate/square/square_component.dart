@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_quill/flutter_quill.dart' as fq;
 
 import '../../../api/post_service.dart';
 import '../../../api/user_service.dart';
@@ -21,6 +22,7 @@ import '../../../design/ui.dart';
 import '../../../widgets/tab_bottom_pad.dart';
 import 'emoji_panel.dart';
 import '../../../widgets/post_video_player.dart';
+import '../../../design/lucide.dart';
 
 /// 广场 - 社区动态
 class SquareComponent extends StatefulWidget {
@@ -180,7 +182,7 @@ class _SquareComponentState extends State<SquareComponent> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.edit_rounded, size: 15, color: C.brand),
+                  Icon(Lz.pencil, size: 15, color: C.brand),
                   const SizedBox(width: 5),
                   Text(
                     '发布',
@@ -520,8 +522,8 @@ class _SquareComponentState extends State<SquareComponent> {
                     children: [
                       _action(
                         icon: _liked.contains(p.id)
-                            ? Icons.favorite_rounded
-                            : Icons.favorite_border_rounded,
+                            ? Lz.heart
+                            : Lz.heart,
                         color: _liked.contains(p.id) ? C.danger : null,
                         label: '${p.likeCount}',
                         onTap: () async {
@@ -558,7 +560,7 @@ class _SquareComponentState extends State<SquareComponent> {
                       ),
                       const SizedBox(width: 20),
                       _action(
-                        icon: Icons.chat_bubble_outline_rounded,
+                        icon: Lz.messageCircle,
                         label: '${p.commentCount}',
                         onTap: () async {
                           await Get.toNamed(
@@ -570,7 +572,7 @@ class _SquareComponentState extends State<SquareComponent> {
                       ),
                       const Spacer(),
                       Icon(
-                        Icons.visibility_outlined,
+                        Lz.eye,
                         size: 13,
                         color: context.t3,
                       ),
@@ -624,7 +626,7 @@ class _SquareComponentState extends State<SquareComponent> {
           placeholder: (_, __) => Container(color: Colors.black12),
           errorWidget: (_, __, ___) => Container(
             color: Colors.black12,
-            child: const Icon(Icons.broken_image, size: 18),
+            child: const Icon(Lz.imageOff, size: 18),
           ),
         ),
       ),
@@ -657,7 +659,7 @@ class _SquareComponentState extends State<SquareComponent> {
     width: 38,
     height: 38,
     color: C.brand.withAlpha(26),
-    child: Icon(Icons.person, size: 20, color: C.brand),
+    child: Icon(Lz.user, size: 20, color: C.brand),
   );
 
   /// 视频模式选择胶囊
@@ -712,7 +714,7 @@ class _SquareComponentState extends State<SquareComponent> {
       if (!UserService.instance.isLoggedIn) return;
     }
     final user = UserService.instance.user;
-    final contentCtrl = TextEditingController();
+    final contentCtrl = fq.QuillController.basic(); // ★ 1105q 富文本发帖
     final videoLinkCtrl = TextEditingController();
     final List<String> images = [];
     final List<File> localImages = [];
@@ -779,7 +781,7 @@ class _SquareComponentState extends State<SquareComponent> {
                       Text('发布动态', style: Ty.h3.copyWith(color: ctx.t1)),
                       const Spacer(),
                       IconButton(
-                        icon: Icon(Icons.close, size: 20, color: ctx.t2),
+                        icon: Icon(Lz.x, size: 20, color: ctx.t2),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
@@ -821,16 +823,57 @@ class _SquareComponentState extends State<SquareComponent> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  TextField(
-                    controller: contentCtrl,
-                    maxLines: 5,
-                    maxLength: 2000,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: '分享你的想法…',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(R.sm),
+                  // ★ 1105q：富文本编辑（加粗/斜体/下划线/列表/引用/链接）
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: ctx.isDark
+                            ? Colors.white.withAlpha(26)
+                            : Colors.black.withAlpha(20),
                       ),
+                      borderRadius: BorderRadius.circular(R.sm),
+                    ),
+                    child: Column(
+                      children: [
+                        fq.QuillSimpleToolbar(
+                          controller: contentCtrl,
+                          config: const fq.QuillSimpleToolbarConfig(
+                            showFontFamily: false,
+                            showFontSize: false,
+                            showBackgroundColorButton: false,
+                            showClearFormat: false,
+                            showCodeBlock: false,
+                            showIndent: false,
+                            showInlineCode: false,
+                            showSubscript: false,
+                            showSuperscript: false,
+                            showStrikeThrough: true,
+                            showLink: true,
+                            showSearchButton: false,
+                            showUndo: false,
+                            showRedo: false,
+                            showColorButton: false,
+                            multiRowsDisplay: false,
+                          ),
+                        ),
+                        Divider(
+                          height: 1,
+                          color: ctx.isDark
+                              ? Colors.white.withAlpha(18)
+                              : Colors.black.withAlpha(12),
+                        ),
+                        SizedBox(
+                          height: 140,
+                          child: fq.QuillEditor.basic(
+                            controller: contentCtrl,
+                            config: const fq.QuillEditorConfig(
+                              placeholder: '分享你的想法…',
+                              padding: EdgeInsets.all(12),
+                              expands: true,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   // 已选图片
@@ -867,7 +910,7 @@ class _SquareComponentState extends State<SquareComponent> {
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
-                                      Icons.close,
+                                      Lz.x,
                                       size: 13,
                                       color: Colors.white,
                                     ),
@@ -967,7 +1010,7 @@ class _SquareComponentState extends State<SquareComponent> {
                       children: [
                         SoftButton(
                           label: '解析预览',
-                          icon: Icons.link_rounded,
+                          icon: Lz.link,
                           height: 38,
                           onPressed: () async {
                             final u = videoLinkCtrl.text.trim();
@@ -1038,9 +1081,16 @@ class _SquareComponentState extends State<SquareComponent> {
                       padding: const EdgeInsets.only(top: 8),
                       child: EmojiPanel(
                         onPick: (e) {
-                          contentCtrl.text += e;
-                          contentCtrl.selection = TextSelection.fromPosition(
-                            TextPosition(offset: contentCtrl.text.length),
+                          // ★ 1105q：Quill 插入表情（光标位置，无光标则末尾）
+                          final doc = contentCtrl.document;
+                          final sel = contentCtrl.selection;
+                          final idx = sel.baseOffset >= 0
+                              ? sel.baseOffset
+                              : doc.length - 1;
+                          doc.insert(idx, e);
+                          contentCtrl.updateSelection(
+                            TextSelection.collapsed(offset: idx + e.length),
+                            fq.ChangeSource.local,
                           );
                           setSheet(() {});
                         },
@@ -1073,13 +1123,13 @@ class _SquareComponentState extends State<SquareComponent> {
                     children: [
                       IconButton(
                         onPressed: pickImage,
-                        icon: Icon(Icons.image_outlined, color: ctx.t2),
+                        icon: Icon(Lz.image, color: ctx.t2),
                         tooltip: '添加图片',
                       ),
                       IconButton(
                         onPressed: () => setSheet(() => showEmoji = !showEmoji),
                         icon: Icon(
-                          Icons.emoji_emotions_outlined,
+                          Lz.smile,
                           color: showEmoji ? C.brand : ctx.t2,
                         ),
                         tooltip: '表情',
@@ -1089,11 +1139,11 @@ class _SquareComponentState extends State<SquareComponent> {
                         width: 116,
                         child: PrimaryButton(
                           label: '发布',
-                          icon: Icons.send_rounded,
+                          icon: Lz.send,
                           loading: sending,
                           height: 44,
                           onPressed: () async {
-                            final text = contentCtrl.text.trim();
+                            final text = contentCtrl.document.toPlainText().trim();
                             final hasVideo =
                                 (videoMode == 'local' && videoFile != null) ||
                                 (videoMode == 'link' &&

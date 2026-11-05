@@ -6,6 +6,7 @@ import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../models/app_item.dart';
+import '../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 详情页 · 霓虹（第 7 套模板）
@@ -444,7 +445,7 @@ class DetailNeon {
                   errorWidget: (_, __, ___) => Container(
                     width: 210,
                     color: dark ? Colors.white10 : Colors.black.withAlpha(6),
-                    child: Icon(Icons.broken_image_outlined, color: context.t3),
+                    child: Icon(Lz.imageOff, color: context.t3),
                   ),
                 ),
               ),
@@ -481,7 +482,7 @@ class DetailNeon {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.file_download_rounded,
+              Lz.download,
               size: 19,
               color: dark ? const Color(0xFF001A14) : Colors.white,
             ),

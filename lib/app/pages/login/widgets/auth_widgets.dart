@@ -8,6 +8,7 @@ import '../../../models/ui_config.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../design/lucide.dart';
 
 /// 认证页共用组件（登录 / 注册 / 找回）
 ///
@@ -81,7 +82,7 @@ class AuthScaffold extends StatelessWidget {
           ),
         ),
         child: Icon(
-          Icons.arrow_back_ios_new_rounded,
+          Lz.arrowLeft,
           size: 16,
           color: fg ?? context.t1,
         ),
@@ -643,8 +644,8 @@ class AuthField extends StatelessWidget {
                   onTap: onToggleObscure,
                   child: Icon(
                     obscure
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
+                        ? Lz.eyeOff
+                        : Lz.eye,
                     size: 19,
                     color: context.t3,
                   ),
@@ -659,7 +660,7 @@ class AuthField extends StatelessWidget {
             child: Row(
               children: [
                 const Icon(
-                  Icons.error_outline_rounded,
+                  Lz.alertCircle,
                   size: 13,
                   color: C.danger,
                 ),
@@ -697,7 +698,7 @@ class AuthError extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline_rounded, size: 17, color: C.danger),
+          const Icon(Lz.alertCircle, size: 17, color: C.danger),
           const SizedBox(width: 9),
           Expanded(
             child: Text(

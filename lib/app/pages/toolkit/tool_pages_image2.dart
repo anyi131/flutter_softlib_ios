@@ -17,6 +17,7 @@ import '../../utils/toast_util.dart';
 import 'tool_img_isolate.dart';
 import 'tool_kit.dart';
 import 'tool_pages_image.dart';
+import '../../design/lucide.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 工具箱 · 图片工具第二批（1015）
@@ -95,7 +96,7 @@ class _ImgRotatePageState extends State<ImgRotatePage> with ImgToolMixin {
           const SizedBox(height: 12),
           ToolButton(
             label: '应用',
-            icon: Icons.rotate_right_rounded,
+            icon: Lz.rotateCw,
             onPressed: _go,
           ),
           previewCard(),
@@ -290,7 +291,7 @@ class _ImgAdjustPageState extends State<ImgAdjustPage> with ImgToolMixin {
             ),
           ),
           const SizedBox(height: 12),
-          ToolButton(label: '应用调整', icon: Icons.tune_rounded, onPressed: _go),
+          ToolButton(label: '应用调整', icon: Lz.slidersHorizontal, onPressed: _go),
           previewCard(),
           saveBtn(),
         ],
@@ -512,7 +513,7 @@ class _ImgInfoPageState extends State<ImgInfoPage> with ImgToolMixin {
             },
             child: Row(
               children: [
-                Icon(Icons.info_outline_rounded, size: 22, color: C.brand),
+                Icon(Lz.info, size: 22, color: C.brand),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(

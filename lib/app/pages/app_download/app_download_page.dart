@@ -1,3 +1,4 @@
+import '../../design/lucide.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
@@ -300,7 +301,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
                 ),
               ),
               child: Icon(
-                Icons.arrow_back_ios_new_rounded,
+                Lz.back,
                 size: 16,
                 color: context.t1,
               ),
@@ -397,7 +398,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
               ),
             ),
             child: Icon(
-              Icons.download_done_rounded,
+              Lz.download,
               size: 44,
               color: C.brand.withAlpha(200),
             ),
@@ -412,7 +413,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
           const SizedBox(height: 20),
           SoftButton(
             label: '去逛逛',
-            icon: Icons.explore_rounded,
+            icon: Lz.compass,
             onPressed: () => Get.back(),
           ),
         ],
@@ -458,8 +459,8 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
                         }),
                         child: Icon(
                           isSelected
-                              ? Icons.check_circle_rounded
-                              : Icons.radio_button_unchecked_rounded,
+                              ? Lz.checkCircle
+                              : Lz.circle,
                           size: 22,
                           color: isSelected ? C.brand : context.t3,
                         ),
@@ -498,7 +499,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
-                                Icons.check_circle_rounded,
+                                Lz.checkCircle,
                                 size: 16,
                                 color: C.success,
                               ),
@@ -558,7 +559,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
                   children: [
                     Expanded(
                       child: _miniBtn(
-                        icon: Icons.refresh_rounded,
+                        icon: Lz.refresh,
                         label: '重试',
                         color: C.brand,
                         onTap: () => logic.retryDownload(d),
@@ -567,7 +568,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: _miniBtn(
-                        icon: Icons.delete_outline_rounded,
+                        icon: Lz.trash,
                         label: '删除',
                         color: C.danger,
                         onTap: () => logic.deleteDownload(d),
@@ -583,7 +584,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
                   children: [
                     Expanded(
                       child: _miniBtn(
-                        icon: Icons.ios_share_rounded,
+                        icon: Lz.share,
                         label: '分享',
                         color: C.cyan,
                         onTap: () => logic.shareDownload(d),
@@ -592,7 +593,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: _miniBtn(
-                        icon: Icons.delete_outline_rounded,
+                        icon: Lz.trash,
                         label: '删除',
                         color: C.danger,
                         onTap: () async {
@@ -711,37 +712,37 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
     String tip;
     switch (d.status) {
       case DownloadTaskStatus.enqueued:
-        icon = Icons.hourglass_top_rounded;
+        icon = Lz.hourglass;
         color = C.warning;
         tip = '等待中';
         onTap = () {};
         break;
       case DownloadTaskStatus.running:
-        icon = Icons.pause_rounded;
+        icon = Lz.pause;
         color = C.brand;
         tip = '暂停';
         onTap = () => logic.pauseDownload(d);
         break;
       case DownloadTaskStatus.paused:
-        icon = Icons.play_arrow_rounded;
+        icon = Lz.play;
         color = C.warning;
         tip = '继续';
         onTap = () => logic.resumeDownload(d);
         break;
       case DownloadTaskStatus.failed:
-        icon = Icons.refresh_rounded;
+        icon = Lz.refresh;
         color = C.danger;
         tip = '重试';
         onTap = () => logic.retryDownload(d);
         break;
       case DownloadTaskStatus.complete:
-        icon = Icons.install_mobile_rounded;
+        icon = Lz.smartphone;
         color = C.brand; // v52f #4：安装动作用品牌色
         tip = '安装';
         onTap = () => logic.openDownloadFile(d);
         break;
       default:
-        icon = Icons.more_horiz_rounded;
+        icon = Lz.more;
         color = context.t3;
         tip = '';
         onTap = () {};

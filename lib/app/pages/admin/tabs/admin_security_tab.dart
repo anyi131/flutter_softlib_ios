@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import '../../../api/admin_service.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// 管理后台 · 安全防护 Tab
 ///
@@ -688,9 +689,9 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
 
   Widget _localRow(_SecItem it) {
     final (icon, color) = it.pass == null
-        ? (Icons.info_outline_rounded, C.stroke)
+        ? (Lz.info, C.stroke)
         : (
-            it.pass! ? Icons.check_circle_rounded : Icons.cancel_rounded,
+            it.pass! ? Lz.checkCircle : Lz.xCircle,
             it.pass! ? C.success : (it.warn ? C.warning : C.danger),
           );
     return ListTile(
@@ -827,7 +828,7 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
               _toggleMaintain,
             ),
             const SizedBox(width: 10),
-            btn('签名远程比对', Icons.fingerprint_rounded, C.brand, _remoteSignCheck),
+            btn('签名远程比对', Lz.fingerprint, C.brand, _remoteSignCheck),
           ],
         ),
         const SizedBox(height: 12),
@@ -888,9 +889,9 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
         const SizedBox(height: 10),
         Row(
           children: [
-            btn('封禁 IP', Icons.block_rounded, C.danger, _banDialog),
+            btn('封禁 IP', Lz.ban, C.danger, _banDialog),
             const SizedBox(width: 10),
-            btn('强制全员下线', Icons.logout_rounded, C.danger, _killAll),
+            btn('强制全员下线', Lz.logOut, C.danger, _killAll),
           ],
         ),
         const SizedBox(height: 10),
@@ -910,9 +911,9 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
             children: [
               Icon(
                 _signCheckOk == null
-                    ? Icons.info_outline
+                    ? Lz.info
                     : (_signCheckOk!
-                          ? Icons.verified_rounded
+                          ? Lz.badgeCheck
                           : Icons.gpp_bad_rounded),
                 size: 16,
                 color: _signCheckOk == null
@@ -1078,8 +1079,8 @@ class _AdminSecurityTabState extends State<AdminSecurityTab> {
                   children: [
                     Icon(
                       (int.tryParse('${f['locked'] ?? 0}') ?? 0) == 1
-                          ? Icons.lock_rounded
-                          : Icons.lock_open_rounded,
+                          ? Lz.lock
+                          : Lz.unlock,
                       size: 15,
                       color: (int.tryParse('${f['locked'] ?? 0}') ?? 0) == 1
                           ? C.danger

@@ -13,6 +13,7 @@ import '../../api/user_service.dart';
 import '../../utils/toast_util.dart';
 import '../../routes/app_pages.dart';
 import '../vip_center/pay_notice_dialog.dart';
+import '../../design/lucide.dart';
 
 /// 余额充值（与「开通会员」完全分开的独立页面）
 class RechargePage extends StatefulWidget {
@@ -91,10 +92,10 @@ class _RechargePageState extends State<RechargePage> {
             {'alipay': '支付宝', 'wxpay': '微信', 'qqpay': 'QQ'}[_payType] ??
             _payType,
         methodIcon: _payType == 'wxpay'
-            ? Icons.chat_bubble_rounded
+            ? Lz.messageCircle
             : (_payType == 'qqpay'
-                  ? Icons.pets_rounded
-                  : Icons.account_balance_wallet_rounded),
+                  ? Lz.cat
+                  : Lz.wallet),
       );
       if (!mounted) return;
       if (!confirmed) {
@@ -222,19 +223,19 @@ class _RechargePageState extends State<RechargePage> {
                       _payChip(
                         '支付宝',
                         'alipay',
-                        Icons.account_balance_wallet_rounded,
+                        Lz.wallet,
                       ),
                       const SizedBox(width: 10),
-                      _payChip('微信', 'wxpay', Icons.chat_rounded),
+                      _payChip('微信', 'wxpay', Lz.messageCircle),
                       const SizedBox(width: 10),
-                      _payChip('QQ', 'qqpay', Icons.pets_rounded),
+                      _payChip('QQ', 'qqpay', Lz.cat),
                     ],
                   ),
                 ),
                 const SizedBox(height: 20),
                 PrimaryButton(
                   label: '立即充值',
-                  icon: Icons.account_balance_wallet_rounded,
+                  icon: Lz.wallet,
                   height: 52,
                   loading: _busy,
                   onPressed: _enabled ? _submit : null,
@@ -281,7 +282,7 @@ class _RechargePageState extends State<RechargePage> {
           Row(
             children: [
               const Icon(
-                Icons.account_balance_wallet_rounded,
+                Lz.wallet,
                 color: Colors.white,
                 size: 20,
               ),
@@ -359,7 +360,7 @@ class _RechargePageState extends State<RechargePage> {
                   border: Border.all(color: C.stroke),
                 ),
                 child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
+                  Lz.arrowLeft,
                   size: 16,
                   color: context.t1,
                 ),

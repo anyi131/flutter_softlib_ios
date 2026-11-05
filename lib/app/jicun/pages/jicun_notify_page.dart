@@ -9,6 +9,7 @@ import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../jicun_prefs.dart';
+import '../../design/lucide.dart';
 
 /// 「通知管理」二级页。
 class JicunNotifyPage extends StatefulWidget {
@@ -181,7 +182,7 @@ class _JicunNotifyPageState extends State<JicunNotifyPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, size: 14, color: context.t3),
+          Icon(Lz.info, size: 14, color: context.t3),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
@@ -213,7 +214,7 @@ class _JicunNotifyPageState extends State<JicunNotifyPage> {
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
+                  Lz.arrowLeft,
                   size: 18,
                   color: context.t1,
                 ),

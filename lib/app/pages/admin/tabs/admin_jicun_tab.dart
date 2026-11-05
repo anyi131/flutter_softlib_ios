@@ -22,6 +22,7 @@ import '../../../api/soft_service.dart';
 import '../../../design/adaptive.dart';
 import '../../../jicun/jicun_config.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// 平台名单(与客户端 jicun_platform.dart 对齐;未列出的走 unknown,不受开关控制)。
 const List<String> kJicunPlatforms = [
@@ -446,7 +447,7 @@ class _AdminJicunTabState extends State<AdminJicunTab> {
         const SizedBox(height: 16),
         PrimaryButton(
           label: '保存解析配置',
-          icon: Icons.save_rounded,
+          icon: Lz.save,
           loading: _saving,
           onPressed: _saving ? null : _save,
         ),

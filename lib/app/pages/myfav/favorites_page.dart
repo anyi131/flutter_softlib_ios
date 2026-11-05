@@ -18,6 +18,7 @@ import '../../utils/tool_ctx.dart';
 import '../../routes/app_pages.dart';
 import '../../utils/err_text.dart';
 import '../../utils/toast_util.dart';
+import '../../design/lucide.dart';
 
 /// 我的收藏（统一收藏夹）
 ///
@@ -201,7 +202,7 @@ class _FavoritesPageState extends State<FavoritesPage>
           AppPressable(
             onTap: () => Get.back(),
             child: Icon(
-              Icons.arrow_back_ios_new_rounded,
+              Lz.arrowLeft,
               size: 19,
               color: context.t1,
             ),
@@ -235,7 +236,7 @@ class _FavoritesPageState extends State<FavoritesPage>
           const Spacer(),
           IconButton(
             onPressed: _load,
-            icon: Icon(Icons.refresh_rounded, size: 19, color: context.t3),
+            icon: Icon(Lz.refreshCw, size: 19, color: context.t3),
           ),
         ],
       ),
@@ -307,7 +308,7 @@ class _FavoritesPageState extends State<FavoritesPage>
               ),
             ),
             alignment: Alignment.center,
-            child: Icon(Icons.star_border_rounded, size: 38, color: C.amber),
+            child: Icon(Lz.star, size: 38, color: C.amber),
           ),
           const SizedBox(height: 16),
           Text(
@@ -437,7 +438,7 @@ class _FavoritesPageState extends State<FavoritesPage>
         ),
         child: isEmoji
             ? Text(icon, style: const TextStyle(fontSize: 21))
-            : Icon(Icons.widgets_rounded, size: 21, color: C.brand),
+            : Icon(Lz.layoutGrid, size: 21, color: C.brand),
       ),
       title: '${t['title'] ?? ''}',
       subtitle: '${t['subtitle'] ?? t['cat'] ?? ''}',
@@ -465,7 +466,7 @@ class _FavoritesPageState extends State<FavoritesPage>
             color: C.danger,
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Icon(Icons.delete_rounded, color: Colors.white),
+          child: const Icon(Lz.trash2, color: Colors.white),
         ),
         onDismissed: (_) => onUnfav(),
         child: AppPressable(
@@ -517,7 +518,7 @@ class _FavoritesPageState extends State<FavoritesPage>
                   onTap: onUnfav,
                   child: Padding(
                     padding: const EdgeInsets.all(4),
-                    child: Icon(Icons.star_rounded, size: 21, color: C.amber),
+                    child: Icon(Lz.star, size: 21, color: C.amber),
                   ),
                 ),
               ],

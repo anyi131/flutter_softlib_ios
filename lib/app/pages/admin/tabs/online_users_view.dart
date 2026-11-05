@@ -8,6 +8,7 @@ import '../../../design/ui.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';
 import '../admin_ui_kit.dart';
+import '../../../design/lucide.dart';
 
 /// 后台 · 全部在线用户
 ///
@@ -107,7 +108,7 @@ class _OnlineUsersViewState extends State<OnlineUsersView> {
                       IconButton(
                         onPressed: () => Navigator.of(context).maybePop(),
                         icon: Icon(
-                          Icons.arrow_back_ios_new_rounded,
+                          Lz.arrowLeft,
                           size: 18,
                           color: context.t1,
                         ),
@@ -143,7 +144,7 @@ class _OnlineUsersViewState extends State<OnlineUsersView> {
                       IconButton(
                         onPressed: () => _load(),
                         icon: Icon(
-                          Icons.refresh_rounded,
+                          Lz.refreshCw,
                           size: 19,
                           color: context.t3,
                         ),
@@ -192,7 +193,7 @@ class _OnlineUsersViewState extends State<OnlineUsersView> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.search_rounded, size: 16, color: context.t3),
+                        Icon(Lz.search, size: 16, color: context.t3),
                         const SizedBox(width: 7),
                         Expanded(
                           child: TextField(
@@ -221,7 +222,7 @@ class _OnlineUsersViewState extends State<OnlineUsersView> {
                               _load();
                             },
                             child: Icon(
-                              Icons.close_rounded,
+                              Lz.x,
                               size: 15,
                               color: context.t3,
                             ),
@@ -381,7 +382,7 @@ class _OnlineUsersViewState extends State<OnlineUsersView> {
                         width: 34,
                         height: 34,
                         color: C.brand.withAlpha(22),
-                        child: Icon(Icons.person, size: 17, color: C.brand),
+                        child: Icon(Lz.user, size: 17, color: C.brand),
                       ),
                     ),
                   ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../api/admin_service.dart';
 import '../../design/ui.dart';
 import 'admin_ui_kit.dart';
+import '../../design/lucide.dart';
 
 /// 下载记录全量页
 ///
@@ -122,7 +123,7 @@ class _AdminDownloadsPageState extends State<AdminDownloadsPage> {
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).maybePop(),
-            icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: context.t1),
+            icon: Icon(Lz.arrowLeft, size: 18, color: context.t1),
           ),
           Text(
             '下载记录',
@@ -307,7 +308,7 @@ class _AdminDownloadsPageState extends State<AdminDownloadsPage> {
           const SizedBox(height: 6),
           Row(
             children: [
-              Icon(Icons.person_outline_rounded, size: 13, color: context.t3),
+              Icon(Lz.user, size: 13, color: context.t3),
               const SizedBox(width: 3),
               Flexible(
                 child: Text(

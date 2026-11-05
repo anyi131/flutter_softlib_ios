@@ -9,6 +9,7 @@ import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../jicun_prefs.dart';
+import '../../design/lucide.dart';
 
 /// 「自动粘贴」二级页。
 class JicunAutoPastePage extends StatefulWidget {
@@ -121,7 +122,7 @@ class _JicunAutoPastePageState extends State<JicunAutoPastePage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.lock_outline_rounded, size: 14, color: context.t3),
+          Icon(Lz.lock, size: 14, color: context.t3),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
@@ -153,7 +154,7 @@ class _JicunAutoPastePageState extends State<JicunAutoPastePage> {
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
+                  Lz.arrowLeft,
                   size: 18,
                   color: context.t1,
                 ),

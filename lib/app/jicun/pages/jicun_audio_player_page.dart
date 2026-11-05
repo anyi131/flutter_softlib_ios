@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../jicun_playback_headers.dart';
+import '../../design/lucide.dart';
 
 /// 即存 · 音频播放页
 ///
@@ -333,7 +334,7 @@ class _JicunAudioPlayerPageState extends State<JicunAudioPlayerPage> {
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
+                  Lz.arrowLeft,
                   size: 18,
                   color: context.t1,
                 ),
@@ -449,7 +450,7 @@ class _JicunAudioPlayerPageState extends State<JicunAudioPlayerPage> {
   Widget _errorArea(BuildContext context) {
     return Column(
       children: [
-        Icon(Icons.error_outline_rounded, size: 34, color: C.danger),
+        Icon(Lz.alertCircle, size: 34, color: C.danger),
         const SizedBox(height: 10),
         Text(
           '音频加载失败',
@@ -471,7 +472,7 @@ class _JicunAudioPlayerPageState extends State<JicunAudioPlayerPage> {
         const SizedBox(height: 18),
         PrimaryButton(
           label: '重试',
-          icon: Icons.refresh_rounded,
+          icon: Lz.refreshCw,
           expand: false,
           height: 46,
           onPressed: () => _init(),
@@ -599,7 +600,7 @@ class _JicunAudioPlayerPageState extends State<JicunAudioPlayerPage> {
           ],
         ),
         child: Icon(
-          _playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+          _playing ? Lz.pause : Lz.play,
           size: 40,
           color: Colors.white,
         ),
@@ -688,7 +689,7 @@ class _CoverArt extends StatelessWidget {
                 ),
               )
             : Icon(
-                Icons.music_note_rounded,
+                Lz.music,
                 size: size * 0.32,
                 color: Colors.white.withAlpha(235),
               ),
@@ -721,7 +722,7 @@ class _SkipButton extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             Icon(
-              forward ? Icons.refresh_rounded : Icons.replay_rounded,
+              forward ? Lz.refreshCw : Lz.rotateCcw,
               size: 34,
               color: color,
             ),

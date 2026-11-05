@@ -16,6 +16,7 @@ import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../navigate/navigate_logic.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// 开屏与远程控制管理
 class AdminSplashTab extends StatefulWidget {
@@ -39,11 +40,11 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
   String _maintainTemplate = 'engineer';
 
   static const _maintainTpls = [
-    ('engineer', '工程进度', '深色+呼吸发光图标', Icons.settings_rounded),
-    ('countdown', '维护倒计时', '金色徽标+进度条', Icons.timer_outlined),
+    ('engineer', '工程进度', '深色+呼吸发光图标', Lz.settings),
+    ('countdown', '维护倒计时', '金色徽标+进度条', Lz.timer),
     ('glass', '毛玻璃', '双色光晕+模糊卡', Icons.blur_on_rounded),
     ('brand', '品牌静默', 'LOGO+品牌字居中', Icons.branding_watermark_rounded),
-    ('checklist', '服务清单', '提示条+编号列表', Icons.checklist_rounded),
+    ('checklist', '服务清单', '提示条+编号列表', Lz.listChecks),
   ];
 
   final imgCtrl = TextEditingController();
@@ -390,7 +391,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
           title: Row(
             children: [
               Icon(
-                ok ? Icons.check_circle_rounded : Icons.error_rounded,
+                ok ? Lz.checkCircle : Lz.alertCircle,
                 color: ok ? C.success : C.danger,
                 size: 20,
               ),
@@ -478,7 +479,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: C.warning, size: 20),
+            const Icon(Lz.alertTriangle, color: C.warning, size: 20),
             const SizedBox(width: 8),
             const Text('有字段未生效', style: TextStyle(fontSize: 16)),
           ],
@@ -901,7 +902,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
                 const Spacer(),
                 SoftButton(
                   label: '添加商品',
-                  icon: Icons.add_rounded,
+                  icon: Lz.plus,
                   height: 32,
                   onPressed: _addCardGoods,
                 ),
@@ -1075,8 +1076,8 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
                 children: [
                   Icon(
                     payKeySet
-                        ? Icons.verified_user_rounded
-                        : Icons.warning_amber_rounded,
+                        ? Lz.shieldCheck
+                        : Lz.alertTriangle,
                     size: 14,
                     color: payKeySet ? C.success : C.warning,
                   ),
@@ -1271,7 +1272,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
                                   Icon(
                                     cur().contains(i)
                                         ? Icons.check_box_rounded
-                                        : Icons.check_box_outline_blank_rounded,
+                                        : Lz.square,
                                     size: 17,
                                     color: cur().contains(i)
                                         ? C.gold
@@ -1445,7 +1446,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
         const SizedBox(height: 16),
         PrimaryButton(
           label: '保存全部配置',
-          icon: Icons.save_rounded,
+          icon: Lz.save,
           onPressed: _save,
         ),
         const SizedBox(height: 30),
@@ -1493,7 +1494,7 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
               AppPressable(
                 onTap: () => setState(() => _cardGoods.removeAt(i)),
                 child: const Icon(
-                  Icons.close_rounded,
+                  Lz.x,
                   size: 17,
                   color: C.danger,
                 ),

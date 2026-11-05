@@ -13,6 +13,7 @@ import '../../design/ui.dart';
 import '../../api/message_service.dart';
 import '../../routes/app_pages.dart';
 import '../../utils/toast_util.dart';
+import '../../design/lucide.dart';
 
 /// 消息通知中心
 class MessagePage extends StatefulWidget {
@@ -144,7 +145,7 @@ class _MessagePageState extends State<MessagePage> {
                 ? const EmptyState(
                     text: '暂无消息',
                     hint: '收到评论、点赞、订单通知时会显示在这里',
-                    icon: Icons.notifications_none_rounded,
+                    icon: Lz.bell,
                   )
                 : RefreshIndicator(
                     onRefresh: () => _load(reset: true),
@@ -308,12 +309,12 @@ class _MessagePageState extends State<MessagePage> {
     final mid = (m['id'] as num?)?.toInt() ?? 0;
     final type = (m['type'] ?? 'system').toString();
     final (IconData icon, Color color) = switch (type) {
-      'comment' => (Icons.chat_bubble_rounded, C.brand),
-      'reply' => (Icons.reply_rounded, C.brandBright),
-      'like' => (Icons.favorite_rounded, C.rose),
-      'order' => (Icons.receipt_long_rounded, C.mint),
-      'vip' => (Icons.workspace_premium_rounded, C.gold),
-      _ => (Icons.campaign_rounded, C.violet),
+      'comment' => (Lz.messageCircle, C.brand),
+      'reply' => (Lz.reply, C.brandBright),
+      'like' => (Lz.heart, C.rose),
+      'order' => (Lz.receipt, C.mint),
+      'vip' => (Lz.crown, C.gold),
+      _ => (Lz.megaphone, C.violet),
     };
 
     // ★ 1101 开源批二：滑动操作——右滑已读、左滑删除（长按批量模式保持原样）
@@ -328,8 +329,8 @@ class _MessagePageState extends State<MessagePage> {
           if (_selecting) ...[
             Icon(
               _sel.contains(mid)
-                  ? Icons.check_circle_rounded
-                  : Icons.radio_button_unchecked_rounded,
+                  ? Lz.checkCircle
+                  : Lz.circle,
               size: 20,
               color: _sel.contains(mid) ? C.brand : context.t3,
             ),
@@ -425,7 +426,7 @@ class _MessagePageState extends State<MessagePage> {
                   onPressed: (_) => _openAndMark(m),
                   backgroundColor: C.brand,
                   foregroundColor: Colors.white,
-                  icon: Icons.done_all_rounded,
+                  icon: Lz.checkCheck,
                   label: '已读',
                 ),
               ],
@@ -440,7 +441,7 @@ class _MessagePageState extends State<MessagePage> {
             onPressed: (_) => _delete(m),
             backgroundColor: C.danger,
             foregroundColor: Colors.white,
-            icon: Icons.delete_rounded,
+            icon: Lz.trash2,
             label: '删除',
           ),
         ],
@@ -487,7 +488,7 @@ class _MessagePageState extends State<MessagePage> {
                   border: Border.all(color: C.stroke),
                 ),
                 child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
+                  Lz.arrowLeft,
                   size: 16,
                   color: context.t1,
                 ),
@@ -504,7 +505,7 @@ class _MessagePageState extends State<MessagePage> {
               child: SizedBox(
                 width: 36,
                 child: unread > 0
-                    ? Icon(Icons.done_all_rounded, size: 19, color: C.brand)
+                    ? Icon(Lz.checkCheck, size: 19, color: C.brand)
                     : const SizedBox.shrink(),
               ),
             ),
@@ -574,7 +575,7 @@ class _MessagePageState extends State<MessagePage> {
                     ),
                     AppPressable(
                       onTap: Get.back,
-                      child: Icon(Icons.close_rounded, size: 20, color: context.t3),
+                      child: Icon(Lz.x, size: 20, color: context.t3),
                     ),
                   ],
                 ),

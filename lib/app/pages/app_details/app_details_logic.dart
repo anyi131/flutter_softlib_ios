@@ -45,6 +45,7 @@ import '../../widgets/posters/posters_widget.dart';
 import '../../design/kit.dart';
 import '../../utils/disk_space.dart';
 import '../../utils/lzy_line.dart';
+import '../../design/lucide.dart';
 
 @pragma('vm:entry-point')
 class AppDetailsLogic extends GetxController {
@@ -452,7 +453,7 @@ class AppDetailsLogic extends GetxController {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Row(
           children: [
-            Icon(Icons.link_off_rounded, color: C.danger, size: 22),
+            Icon(Lz.unlink, color: C.danger, size: 22),
             SizedBox(width: 8),
             Text(
               '直链解析失败',
@@ -504,7 +505,7 @@ class AppDetailsLogic extends GetxController {
               const SizedBox(height: 14),
               Row(
                 children: [
-                  const Icon(Icons.swap_horiz_rounded, size: 15, color: C.mint),
+                  const Icon(Lz.arrowLeftRight, size: 15, color: C.mint),
                   const SizedBox(width: 5),
                   const Text(
                     '试试这些同类软件',
@@ -587,7 +588,7 @@ class AppDetailsLogic extends GetxController {
                             ),
                           ),
                           const Icon(
-                            Icons.chevron_right_rounded,
+                            Lz.chevronRight,
                             size: 16,
                             color: Colors.grey,
                           ),
@@ -784,7 +785,7 @@ class AppDetailsLogic extends GetxController {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
-            Icon(Icons.check_circle, color: C.success, size: 22),
+            Icon(Lz.checkCircle, color: C.success, size: 22),
             SizedBox(width: 8),
             Text(
               '下载完成',

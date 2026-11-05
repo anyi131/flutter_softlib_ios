@@ -37,6 +37,7 @@ import 'jicun_history_page.dart';
 import 'jicun_settings_page.dart';
 import 'jicun_video_player_page.dart';
 import '../../design/glass.dart';
+import '../../design/lucide.dart';
 
 class JicunPage extends StatefulWidget {
   const JicunPage({super.key});
@@ -309,7 +310,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
             borderRadius: BorderRadius.circular(14),
           ),
           child: const Icon(
-            Icons.download_rounded,
+            Lz.download,
             color: Colors.white,
             size: 24,
           ),
@@ -335,7 +336,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
           ),
         ),
         MiniAction(
-          icon: Icons.tune_rounded,
+          icon: Lz.slidersHorizontal,
           label: '设置',
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(
@@ -361,7 +362,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Icon(
-              Icons.campaign_rounded,
+              Lz.megaphone,
               color: C.warning,
               size: 18,
             ),
@@ -405,13 +406,13 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
               Expanded(
                 child: PrimaryButton(
                   label: _parsing ? '解析中…' : '开始解析',
-                  icon: Icons.travel_explore_rounded,
+                  icon: Lz.globe,
                   onPressed: _parsing ? null : _parse,
                 ),
               ),
               const SizedBox(width: 10),
               MiniAction(
-                icon: Icons.content_paste_rounded,
+                icon: Lz.clipboardPaste,
                 label: '粘贴',
                 onTap: _autoPaste,
               ),
@@ -519,7 +520,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.tune_rounded, size: 16, color: context.t2),
+                        Icon(Lz.slidersHorizontal, size: 16, color: context.t2),
                         const SizedBox(width: 6),
                         Text(
                           '清晰度:${quality?.label ?? '点击选择'}',
@@ -527,7 +528,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
                         ),
                         const Spacer(),
                         Icon(
-                          Icons.keyboard_arrow_down_rounded,
+                          Lz.chevronDown,
                           size: 18,
                           color: context.t3,
                         ),
@@ -539,7 +540,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
             const SizedBox(height: 12),
             PrimaryButton(
               label: '下载到应用目录',
-              icon: Icons.save_alt_rounded,
+              icon: Lz.download,
               onPressed: _download,
             ),
           ],
@@ -591,7 +592,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
             ),
             const Spacer(),
             Text('音频', style: TextStyle(fontSize: 12, color: context.t3)),
-            Icon(Icons.chevron_right_rounded, size: 18, color: C.t3),
+            Icon(Lz.chevronRight, size: 18, color: C.t3),
           ],
         ),
       ),
@@ -630,7 +631,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
         ),
         child: Row(
           children: [
-            Icon(Icons.play_circle_fill_rounded, size: 22, color: C.brand),
+            Icon(Lz.playCircle, size: 22, color: C.brand),
             const SizedBox(width: 8),
             Text(
               '在线播放',
@@ -646,7 +647,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
                 label,
                 style: TextStyle(fontSize: 12, color: context.t3),
               ),
-            Icon(Icons.chevron_right_rounded, size: 18, color: C.t3),
+            Icon(Lz.chevronRight, size: 18, color: C.t3),
           ],
         ),
       ),
@@ -728,7 +729,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
-                      Icons.play_arrow_rounded,
+                      Lz.play,
                       color: Colors.white,
                       size: 34,
                     ),
@@ -776,14 +777,14 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
         return Container(
           color: context.isDark ? C.bg0 : C.lbg2,
           alignment: Alignment.center,
-          child: Icon(Icons.image_outlined, size: 24, color: context.t3),
+          child: Icon(Lz.image, size: 24, color: context.t3),
         );
       },
       errorBuilder: (context, error, stackTrace) {
         return Container(
           color: context.isDark ? C.bg0 : C.lbg2,
           alignment: Alignment.center,
-          child: Icon(Icons.broken_image_outlined, size: 28, color: context.t3),
+          child: Icon(Lz.imageOff, size: 28, color: context.t3),
         );
       },
     );
@@ -875,10 +876,10 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
                 children: [
                   Icon(
                     status == JicunTaskStatus.done
-                        ? Icons.check_circle_rounded
+                        ? Lz.checkCircle
                         : status == JicunTaskStatus.failed
-                        ? Icons.error_rounded
-                        : Icons.downloading_rounded,
+                        ? Lz.alertCircle
+                        : Lz.downloadCloud,
                     size: 18,
                     color: color,
                   ),
@@ -938,7 +939,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
                     padding: const EdgeInsets.only(top: 2),
                     child: MiniAction(
                       icon: _savingIds.contains(t.id)
-                          ? Icons.hourglass_top_rounded
+                          ? Lz.hourglass
                           : Icons.photo_library_rounded,
                       label: _savingIds.contains(t.id) ? '保存中…' : '存到相册',
                       onTap: () => _saveTaskToAlbum(t),
@@ -1023,7 +1024,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
-          Icon(Icons.history_rounded, size: 20, color: C.brand),
+          Icon(Lz.history, size: 20, color: C.brand),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -1035,7 +1036,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
               ),
             ),
           ),
-          Icon(Icons.chevron_right_rounded, size: 20, color: context.t3),
+          Icon(Lz.chevronRight, size: 20, color: context.t3),
         ],
       ),
     );

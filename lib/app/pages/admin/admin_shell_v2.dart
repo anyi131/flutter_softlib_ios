@@ -6,6 +6,7 @@ import '../../design/app_anim.dart';
 import 'admin_save_bus.dart';
 import 'admin_ui_kit.dart';
 import 'admin_preview.dart';
+import '../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// ★ 1016：管理后台外壳 · 5 套**真实架构差异**模板（不是换色）
@@ -44,18 +45,18 @@ class _AdminShellV2State extends State<AdminShellV2> {
     // ★★ 必须与 admin_page.dart 的 children 顺序**逐一对齐**！
     //    之前顺序写错（内容/工具/采集/解析 位置颠倒）→ 点「内容」显示的是采集页。
     //    children 实际顺序：概览 软件 用户 订单 采集 内容 界面 日志 配置 安全 解析 工具
-    ('概览', Icons.dashboard_rounded, '数据'),
-    ('软件', Icons.apps_rounded, '数据'),
+    ('概览', Lz.layoutDashboard, '数据'),
+    ('软件', Lz.layoutGrid, '数据'),
     ('用户', Icons.people_alt_rounded, '数据'),
-    ('订单', Icons.receipt_long_rounded, '数据'),
-    ('采集', Icons.cloud_download_rounded, '运营'),
-    ('内容', Icons.article_rounded, '内容'),
-    ('界面', Icons.palette_rounded, '系统'),
-    ('日志', Icons.history_rounded, '系统'),
-    ('配置', Icons.tune_rounded, '系统'),
-    ('安全', Icons.shield_rounded, '系统'),
-    ('解析', Icons.link_rounded, '运营'),
-    ('工具', Icons.widgets_rounded, '内容'),
+    ('订单', Lz.receipt, '数据'),
+    ('采集', Lz.downloadCloud, '运营'),
+    ('内容', Lz.fileText, '内容'),
+    ('界面', Lz.palette, '系统'),
+    ('日志', Lz.history, '系统'),
+    ('配置', Lz.slidersHorizontal, '系统'),
+    ('安全', Lz.shield, '系统'),
+    ('解析', Lz.link, '运营'),
+    ('工具', Lz.layoutGrid, '内容'),
   ];
 
   @override
@@ -137,7 +138,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                 ],
               ),
               child: const Icon(
-                Icons.visibility_rounded,
+                Lz.eye,
                 size: 20,
                 color: Colors.white,
               ),
@@ -176,7 +177,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                         color: Colors.white,
                       ),
                     )
-                  : const Icon(Icons.save_rounded, size: 18),
+                  : const Icon(Lz.save, size: 18),
               label: Text(busy ? '保存中' : '保存'),
             ),
           );
@@ -241,7 +242,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                         color: Colors.white,
                       ),
                     )
-                  : const Icon(Icons.save_rounded, size: 18),
+                  : const Icon(Lz.save, size: 18),
               label: Text(busy ? '保存中' : '保存'),
             ),
           );
@@ -330,7 +331,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 14, top: 6),
                       child: Icon(
-                        Icons.refresh_rounded,
+                        Lz.refreshCw,
                         size: 19,
                         color: Colors.white.withAlpha(150),
                       ),
@@ -410,7 +411,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                         color: Colors.white,
                       ),
                     )
-                  : const Icon(Icons.save_rounded, size: 18),
+                  : const Icon(Lz.save, size: 18),
               label: Text(busy ? '保存中' : '保存'),
             ),
           );
@@ -507,7 +508,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                         color: Colors.white,
                       ),
                     )
-                  : const Icon(Icons.save_rounded, size: 18),
+                  : const Icon(Lz.save, size: 18),
               label: Text(busy ? '保存中' : '保存'),
             ),
           );
@@ -564,7 +565,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
-                        Icons.refresh_rounded,
+                        Lz.refreshCw,
                         size: 17,
                         color: Colors.white,
                       ),
@@ -631,7 +632,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            inMore ? _items[_i].$2 : Icons.more_horiz_rounded,
+            inMore ? _items[_i].$2 : Lz.moreHorizontal,
             size: 19,
             color: inMore ? C.brand : context.t3,
           ),
@@ -740,7 +741,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                         color: Colors.white,
                       ),
                     )
-                  : const Icon(Icons.save_rounded, size: 18),
+                  : const Icon(Lz.save, size: 18),
               label: Text(busy ? '保存中' : '保存'),
             ),
           );
@@ -865,7 +866,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
         shape: BoxShape.circle,
         border: Border.all(color: Ad.stroke(context)),
       ),
-      child: Icon(Icons.refresh_rounded, size: 18, color: context.t2),
+      child: Icon(Lz.refreshCw, size: 18, color: context.t2),
     ),
   );
 

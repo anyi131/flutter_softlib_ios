@@ -12,6 +12,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'widgets/auth_widgets.dart';
+import '../../design/lucide.dart';
 
 /// 找回密码（v40 重构）
 ///
@@ -134,7 +135,7 @@ class _ResetPageState extends State<ResetPage> {
               controller: _email,
               label: '注册邮箱',
               hint: '请输入注册时使用的邮箱',
-              icon: Icons.mail_outline_rounded,
+              icon: Lz.mail,
               keyboard: TextInputType.emailAddress,
               error: _errEmail.isEmpty ? null : _errEmail,
               onChanged: (_) {
@@ -144,7 +145,7 @@ class _ResetPageState extends State<ResetPage> {
             AuthField(
               controller: _code,
               label: '邮箱验证码',
-              icon: Icons.verified_outlined,
+              icon: Lz.badgeCheck,
               keyboard: TextInputType.number,
               maxLength: 6,
               error: _errCode.isEmpty ? null : _errCode,
@@ -176,7 +177,7 @@ class _ResetPageState extends State<ResetPage> {
               controller: _pwd,
               label: '新密码',
               hint: '至少 6 位',
-              icon: Icons.lock_outline_rounded,
+              icon: Lz.lock,
               obscure: _obscure,
               onToggleObscure: () => setState(() => _obscure = !_obscure),
               error: _errPwd.isEmpty ? null : _errPwd,

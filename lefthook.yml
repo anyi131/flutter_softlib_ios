@@ -1,0 +1,38 @@
+# ★ 1105r Lefthook 提交前检查（Flutter 双仓）
+# 安装：
+#   macOS:  brew install lefthook && lefthook install
+#   Linux:  go install github.com/evilmartians/lefthook@latest  或下载二进制后 lefthook install
+# 说明：`lefthook install` 会写入 .git/hooks/pre-commit（需在本仓库根目录执行一次）。
+
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      glob: "*.dart"
+      run: |
+        if command -v dart >/dev/null 2>&1; then
+          dart format {staged_files}
+        elif command -v flutter >/dev/null 2>&1; then
+          flutter format {staged_files}
+        else
+          echo "[lefthook] 未找到 dart/flutter，跳过格式化"
+        fi
+      stage_fixed: true
+
+    analyze:
+      glob: "*.dart"
+      run: |
+        if command -v flutter >/dev/null 2>&1; then
+          flutter analyze --no-fatal-infos --no-fatal-warnings lib
+        else
+          echo "[lefthook] 未找到 flutter，跳过 analyze"
+        fi
+
+# 推送前额外拦一道（可选，慢，默认只跑 analyze）
+pre-push:
+  commands:
+    analyze:
+      run: |
+        if command -v flutter >/dev/null 2>&1; then
+          flutter analyze --no-fatal-infos --no-fatal-warnings lib
+        fi

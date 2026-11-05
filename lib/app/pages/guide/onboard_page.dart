@@ -5,6 +5,7 @@ import '../../design/adaptive.dart';
 import '../../design/ui.dart';
 import '../../routes/app_pages.dart';
 import '../../design/app_anim.dart';
+import '../../design/lucide.dart';
 
 /// 首次启动引导
 ///
@@ -29,19 +30,19 @@ class _OnboardPageState extends State<OnboardPage> {
   static List<({IconData icon, Color color, String title, String desc})>
   get _pages => [
     (
-      icon: Icons.search_rounded,
+      icon: Lz.search,
       color: C.brand,
       title: '找到你要的软件',
       desc: '顶部搜索框输入名字，或按分类浏览。\n支持拼音首字母，输入 wx 就能找到微信。',
     ),
     (
-      icon: Icons.download_rounded,
+      icon: Lz.download,
       color: C.mint,
       title: '点一下就能下载',
       desc: '详情页点「解析并下载」，系统会自动解析\n蓝奏云直链并开始下载，不需要跳浏览器。',
     ),
     (
-      icon: Icons.verified_user_rounded,
+      icon: Lz.shieldCheck,
       color: C.amber,
       title: '允许安装未知来源',
       desc: '首次安装需要允许本应用安装软件：\n设置 → 应用 → 特殊权限 → 安装未知应用。\n只需设置一次。',

@@ -10,6 +10,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../api/post_service.dart';
 import '../design/ui.dart';
 import '../design/app_anim.dart';
+import '../design/lucide.dart';
 
 /// 动态视频播放器
 ///
@@ -330,8 +331,8 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
                   ),
                   child: Icon(
                     c.value.isPlaying
-                        ? Icons.pause_rounded
-                        : Icons.play_arrow_rounded,
+                        ? Lz.pause
+                        : Lz.play,
                     size: 40,
                     color: Colors.white,
                   ),
@@ -367,8 +368,8 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
                         },
                         child: Icon(
                           _muted
-                              ? Icons.volume_off_rounded
-                              : Icons.volume_up_rounded,
+                              ? Lz.volumeX
+                              : Lz.volume2,
                           size: 17,
                           color: Colors.white,
                         ),
@@ -452,7 +453,7 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.play_arrow_rounded,
+                    Lz.play,
                     size: 34,
                     color: Colors.white,
                   ),

@@ -6,6 +6,7 @@ import '../../design/ui.dart';
 import '../../design/kit.dart';
 import 'admin_ui_kit.dart';
 import '../../utils/jump_util.dart';
+import '../../design/lucide.dart';
 
 /// ★ 1016：后台「链接预览」—— 粘贴图片/视频链接即可预览
 /// 支持：.png/.jpg/.jpeg/.gif/.webp（图片）、.mp4/.mov/.m4v/.webm（视频）
@@ -64,7 +65,7 @@ class _AdminLinkPreviewSheetState extends State<AdminLinkPreviewSheet> {
         children: [
           Row(
             children: [
-              Icon(Icons.visibility_outlined, size: 18, color: C.brand),
+              Icon(Lz.eye, size: 18, color: C.brand),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -74,7 +75,7 @@ class _AdminLinkPreviewSheetState extends State<AdminLinkPreviewSheet> {
               ),
               AppPressable(
                 onTap: () => Navigator.pop(context),
-                child: Icon(Icons.close_rounded, size: 18, color: context.t3),
+                child: Icon(Lz.x, size: 18, color: context.t3),
               ),
             ],
           ),
@@ -156,7 +157,7 @@ class _AdminLinkPreviewSheetState extends State<AdminLinkPreviewSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.info_outline_rounded, size: 26, color: context.t3),
+          Icon(Lz.info, size: 26, color: context.t3),
           const SizedBox(height: 8),
           Text(
             msg,

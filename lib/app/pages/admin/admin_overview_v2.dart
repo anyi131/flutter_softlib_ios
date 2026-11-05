@@ -9,6 +9,7 @@ import '../../design/ui.dart';
 import '../../utils/err_text.dart';
 import 'mini_chart.dart';
 import 'tabs/online_users_view.dart';
+import '../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 管理后台 · 概览（★ 1020 重构版）
@@ -160,7 +161,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
     }
     if (_err.isNotEmpty) {
       return EmptyState(
-        icon: Icons.cloud_off_rounded,
+        icon: Lz.cloudOff,
         text: '概览加载失败',
         hint: _err,
       );
@@ -709,7 +710,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
                         ),
                       ),
                       Icon(
-                        Icons.chevron_right_rounded,
+                        Lz.chevronRight,
                         size: 13,
                         color: C.brand,
                       ),

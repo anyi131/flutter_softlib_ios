@@ -22,6 +22,7 @@ import '../../utils/toast_util.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../design/kit.dart';
+import '../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 更新体验 v52 —— 精美更新弹窗 + 应用内下载进度（需求 #4）
@@ -762,7 +763,7 @@ class _UpdateCardState extends State<_UpdateCard> {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.rocket_launch_rounded,
+                  Lz.rocket,
                   color: Colors.white,
                   size: 26,
                 ),
@@ -802,7 +803,7 @@ class _UpdateCardState extends State<_UpdateCard> {
           decoration: BoxDecoration(gradient: C.brandGradient),
           child: Row(
             children: [
-              const Icon(Icons.campaign_rounded, color: Colors.white, size: 19),
+              const Icon(Lz.megaphone, color: Colors.white, size: 19),
               const SizedBox(width: 9),
               Expanded(
                 child: Text(
@@ -903,7 +904,7 @@ class _UpdateCardState extends State<_UpdateCard> {
                   color: C.brand.withAlpha(isDark ? 40 : 22),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.checklist_rounded, size: 19, color: C.brand),
+                child: Icon(Lz.listChecks, size: 19, color: C.brand),
               ),
               const SizedBox(width: 11),
               Expanded(
@@ -1028,7 +1029,7 @@ class _UpdateCardState extends State<_UpdateCard> {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
-                  Icons.downloading_rounded,
+                  Lz.downloadCloud,
                   color: Colors.white,
                   size: 24,
                 ),
@@ -1115,7 +1116,7 @@ class _UpdateCardState extends State<_UpdateCard> {
         child: Row(
           children: [
             const Icon(
-              Icons.check_circle_rounded,
+              Lz.checkCircle,
               color: C.success,
               size: 36,
             ),
@@ -1147,7 +1148,7 @@ class _UpdateCardState extends State<_UpdateCard> {
         child: Row(
           children: [
             const Icon(
-              Icons.error_outline_rounded,
+              Lz.alertCircle,
               color: C.danger,
               size: 34,
             ),

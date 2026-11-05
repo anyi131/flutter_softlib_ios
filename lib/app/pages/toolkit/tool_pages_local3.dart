@@ -9,6 +9,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
+import '../../design/lucide.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 工具箱 · 生活实用类（1015 新增第二批）
@@ -303,7 +304,7 @@ class _IdCardPageState extends State<IdCardPage> {
             controller: _in,
             label: '身份证号（18 位）',
             hint: '输入后自动解析',
-            icon: Icons.badge_rounded,
+            icon: Lz.badge,
             onChanged: (_) => setState(() {}),
           ),
           if (s.isNotEmpty)
@@ -529,7 +530,7 @@ class _MoneyPageState extends State<MoneyPage> {
             controller: _in,
             label: '金额（元）',
             keyboard: const TextInputType.numberWithOptions(decimal: true),
-            icon: Icons.attach_money_rounded,
+            icon: Lz.dollarSign,
             onChanged: (_) => setState(() {}),
           ),
           ToolCard(
@@ -556,7 +557,7 @@ class _MoneyPageState extends State<MoneyPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.copy_rounded, size: 15, color: context.t3),
+                      Icon(Lz.copy, size: 15, color: context.t3),
                       const SizedBox(width: 4),
                       Text('复制', style: Ty.tiny.copyWith(color: context.t3)),
                     ],
@@ -646,7 +647,7 @@ class _DayCountPageState extends State<DayCountPage> {
             },
             child: Row(
               children: [
-                Icon(Icons.calendar_month_rounded, size: 19, color: C.brand),
+                Icon(Lz.calendar, size: 19, color: C.brand),
                 const SizedBox(width: 10),
                 Text('目标日期', style: Ty.small.copyWith(color: context.t3)),
                 const Spacer(),
@@ -767,7 +768,7 @@ class _RomanPageState extends State<RomanPage> {
             controller: _in,
             label: '数字（1-3999）',
             keyboard: TextInputType.number,
-            icon: Icons.pin_rounded,
+            icon: Lz.pin,
             onChanged: (_) => setState(() {}),
           ),
           ToolCard(
@@ -1164,7 +1165,7 @@ class _PassphrasePageState extends State<PassphrasePage> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.copy_rounded, size: 15, color: context.t3),
+                        Icon(Lz.copy, size: 15, color: context.t3),
                         const SizedBox(width: 4),
                         Text('复制', style: Ty.tiny.copyWith(color: context.t3)),
                       ],

@@ -15,6 +15,7 @@ import '../../utils/toast_util.dart';
 import 'tool_browser_page.dart';
 import 'tool_cache.dart';
 import 'tool_kit.dart';
+import '../../design/lucide.dart';
 
 /// 工具箱 · 通用接口工具（1015 新增）
 ///
@@ -279,7 +280,7 @@ class _ApiToolPageState extends State<ApiToolPage> {
           onTap: loading ? null : load,
           child: Padding(
             padding: const EdgeInsets.all(8),
-            child: Icon(Icons.refresh_rounded, size: 20, color: context.t1),
+            child: Icon(Lz.refreshCw, size: 20, color: context.t1),
           ),
         ),
       ],
@@ -452,7 +453,7 @@ class _ApiToolPageState extends State<ApiToolPage> {
             Padding(
               padding: const EdgeInsets.only(left: 6),
               child: Icon(
-                Icons.chevron_right_rounded,
+                Lz.chevronRight,
                 size: 18,
                 color: context.t3,
               ),
@@ -468,7 +469,7 @@ class _ApiToolPageState extends State<ApiToolPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.cloud_off_rounded, size: 44, color: context.t3),
+          Icon(Lz.cloudOff, size: 44, color: context.t3),
           const SizedBox(height: 12),
           Text('接口暂时取不到数据', style: Ty.h3.copyWith(color: context.t1)),
           const SizedBox(height: 8),
@@ -478,7 +479,7 @@ class _ApiToolPageState extends State<ApiToolPage> {
             style: Ty.tiny.copyWith(color: context.t3),
           ),
           const SizedBox(height: 18),
-          ToolButton(label: '重试', icon: Icons.refresh_rounded, onPressed: load),
+          ToolButton(label: '重试', icon: Lz.refreshCw, onPressed: load),
         ],
       ),
     ),
@@ -488,11 +489,11 @@ class _ApiToolPageState extends State<ApiToolPage> {
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.inbox_rounded, size: 44, color: context.t3),
+        Icon(Lz.inbox, size: 44, color: context.t3),
         const SizedBox(height: 12),
         Text('暂无数据', style: Ty.h3.copyWith(color: context.t1)),
         const SizedBox(height: 18),
-        ToolButton(label: '刷新', icon: Icons.refresh_rounded, onPressed: load),
+        ToolButton(label: '刷新', icon: Lz.refreshCw, onPressed: load),
       ],
     ),
   );

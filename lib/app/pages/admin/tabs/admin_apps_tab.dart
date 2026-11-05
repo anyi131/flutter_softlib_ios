@@ -16,6 +16,7 @@ import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../design/glass.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// 软件管理
 class AdminAppsTab extends StatefulWidget {
@@ -78,7 +79,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
             ),
             ListTile(
               leading: const Icon(
-                Icons.vertical_align_top_rounded,
+                Lz.arrowUpToLine,
                 color: C.gold,
                 size: 21,
               ),
@@ -179,8 +180,8 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
   /// 打开方式选项：(图标, 名称, 颜色, 说明, 值)
   List<(IconData, String, Color, String, String)> _urlTypeOptions() => [
     (Icons.android_rounded, '安装包下载', C.brand, '常规 apk 下载安装流程', 'apk'),
-    (Icons.open_in_new_rounded, '跳转浏览器', C.cyan, '用系统浏览器打开链接', 'browser'),
-    (Icons.language_rounded, '内置浏览器', C.violet, 'App 内嵌网页打开', 'webview'),
+    (Lz.externalLink, '跳转浏览器', C.cyan, '用系统浏览器打开链接', 'browser'),
+    (Lz.languages, '内置浏览器', C.violet, 'App 内嵌网页打开', 'webview'),
   ];
 
   void _toggleSel(int id) {
@@ -287,8 +288,8 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                           children: [
                             Icon(
                               success
-                                  ? Icons.check_circle_rounded
-                                  : Icons.error_rounded,
+                                  ? Lz.checkCircle
+                                  : Lz.alertCircle,
                               size: 16,
                               color: success ? C.success : C.danger,
                             ),
@@ -366,7 +367,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                 children: [
                   ListTile(
                     leading: const Icon(
-                      Icons.category_outlined,
+                      Lz.shapes,
                       color: C.t3,
                       size: 20,
                     ),
@@ -376,7 +377,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                   ...cats.map(
                     (c) => ListTile(
                       leading: const Icon(
-                        Icons.category_rounded,
+                        Lz.shapes,
                         color: C.violet,
                         size: 20,
                       ),
@@ -574,7 +575,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
           children: [
             ListTile(
               leading: const Icon(
-                Icons.category_rounded,
+                Lz.shapes,
                 color: C.violet,
                 size: 20,
               ),
@@ -583,7 +584,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
             ),
             ListTile(
               leading: const Icon(
-                Icons.workspace_premium_rounded,
+                Lz.crown,
                 color: C.gold,
                 size: 20,
               ),
@@ -592,7 +593,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
             ),
             ListTile(
               leading: const Icon(
-                Icons.vertical_align_top_rounded,
+                Lz.arrowUpToLine,
                 color: C.gold,
                 size: 20,
               ),
@@ -601,7 +602,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
             ),
             ListTile(
               leading: const Icon(
-                Icons.language_rounded,
+                Lz.languages,
                 color: C.cyan,
                 size: 20,
               ),
@@ -680,7 +681,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                         decoration: InputDecoration(
                           hintText: '搜索软件名称',
                           isDense: true,
-                          prefixIcon: const Icon(Icons.search, size: 18),
+                          prefixIcon: const Icon(Lz.search, size: 18),
                           contentPadding: const EdgeInsets.symmetric(
                             vertical: 8,
                           ),
@@ -694,7 +695,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                   const SizedBox(width: 8),
                   SoftButton(
                     label: '新增',
-                    icon: Icons.add_rounded,
+                    icon: Lz.plus,
                     height: 40,
                     onPressed: () => _edit(null),
                   ),
@@ -702,7 +703,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                   IconButton(
                     tooltip: '分类管理',
                     icon: const Icon(
-                      Icons.category_rounded,
+                      Lz.shapes,
                       size: 21,
                       color: C.violet,
                     ),
@@ -715,7 +716,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
               Row(
                 children: [
                   _miniBtn(
-                    icon: Icons.auto_fix_high_rounded,
+                    icon: Lz.wand2,
                     label: _filling ? '补全中…' : '一键补全',
                     color: C.success,
                     onTap: _filling ? null : _confirmFillAll,
@@ -723,14 +724,14 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                   const SizedBox(width: 8),
                   if (!_selMode)
                     _miniBtn(
-                      icon: Icons.checklist_rounded,
+                      icon: Lz.listChecks,
                       label: '多选',
                       color: C.brand,
                       onTap: () => setState(() => _selMode = true),
                     )
                   else ...[
                     _miniBtn(
-                      icon: Icons.auto_fix_high_rounded,
+                      icon: Lz.wand2,
                       label: '补全选中(${_sel.length})',
                       color: C.success,
                       onTap: (_filling || _sel.isEmpty)
@@ -739,7 +740,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                     ),
                     const SizedBox(width: 8),
                     _miniBtn(
-                      icon: Icons.category_rounded,
+                      icon: Lz.shapes,
                       label: '设分类',
                       color: C.violet,
                       onTap: _sel.isEmpty
@@ -748,7 +749,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                     ),
                     const SizedBox(width: 8),
                     _miniBtn(
-                      icon: Icons.workspace_premium_rounded,
+                      icon: Lz.crown,
                       label: '设会员',
                       color: C.gold,
                       onTap: _sel.isEmpty
@@ -757,7 +758,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                     ),
                     const SizedBox(width: 8),
                     _miniBtn(
-                      icon: Icons.vertical_align_top_rounded,
+                      icon: Lz.arrowUpToLine,
                       label: '置顶',
                       color: C.gold,
                       onTap: _sel.isEmpty
@@ -766,7 +767,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                     ),
                     const SizedBox(width: 8),
                     _miniBtn(
-                      icon: Icons.language_rounded,
+                      icon: Lz.languages,
                       label: '打开方式',
                       color: C.cyan,
                       onTap: _sel.isEmpty
@@ -775,7 +776,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                     ),
                     const SizedBox(width: 8),
                     _miniBtn(
-                      icon: Icons.delete_sweep_rounded,
+                      icon: Lz.trash,
                       label: '删除',
                       color: C.danger,
                       onTap: _sel.isEmpty
@@ -804,7 +805,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                     ),
                     const SizedBox(width: 8),
                     _miniBtn(
-                      icon: Icons.close_rounded,
+                      icon: Lz.x,
                       label: '取消',
                       color: C.danger,
                       onTap: () => setState(() {
@@ -857,8 +858,8 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                             if (_selMode) ...[
                               Icon(
                                 picked
-                                    ? Icons.check_circle_rounded
-                                    : Icons.radio_button_unchecked,
+                                    ? Lz.checkCircle
+                                    : Lz.circle,
                                 size: 20,
                                 color: picked ? C.brand : context.t3,
                               ),
@@ -929,7 +930,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                               IconButton(
                                 tooltip: '快速设置分类/会员',
                                 icon: const Icon(
-                                  Icons.tune_rounded,
+                                  Lz.slidersHorizontal,
                                   size: 19,
                                   color: C.violet,
                                 ),
@@ -938,7 +939,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                               IconButton(
                                 tooltip: '补全此软件',
                                 icon: const Icon(
-                                  Icons.auto_fix_high_rounded,
+                                  Lz.wand2,
                                   size: 19,
                                   color: C.success,
                                 ),
@@ -948,7 +949,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                               ),
                               IconButton(
                                 icon: Icon(
-                                  Icons.edit_outlined,
+                                  Lz.pencil,
                                   size: 19,
                                   color: C.brand,
                                 ),
@@ -956,7 +957,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                               ),
                               IconButton(
                                 icon: const Icon(
-                                  Icons.delete_outline,
+                                  Lz.trash2,
                                   size: 19,
                                   color: C.danger,
                                 ),
@@ -1091,7 +1092,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                 Row(
                   children: [
                     const Icon(
-                      Icons.category_rounded,
+                      Lz.shapes,
                       color: C.violet,
                       size: 21,
                     ),
@@ -1103,7 +1104,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                     const Spacer(),
                     SoftButton(
                       label: '新增分类',
-                      icon: Icons.add_rounded,
+                      icon: Lz.plus,
                       height: 36,
                       onPressed: () => editCat(null),
                     ),
@@ -1147,7 +1148,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                   ),
                                   IconButton(
                                     icon: Icon(
-                                      Icons.edit_outlined,
+                                      Lz.pencil,
                                       size: 19,
                                       color: C.brand,
                                     ),
@@ -1155,7 +1156,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                   ),
                                   IconButton(
                                     icon: const Icon(
-                                      Icons.delete_outline,
+                                      Lz.trash2,
                                       size: 19,
                                       color: C.danger,
                                     ),
@@ -1311,7 +1312,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.close, size: 20),
+                      icon: const Icon(Lz.x, size: 20),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
@@ -1365,7 +1366,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                         strokeWidth: 2,
                                       ),
                                     )
-                                  : const Icon(Icons.auto_fix_high, size: 19),
+                                  : const Icon(Lz.wand2, size: 19),
                               onPressed: parsing ? null : doParse,
                             ),
                           ),
@@ -1378,7 +1379,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                           child: OutlinedButton.icon(
                             onPressed: parsing ? null : doParse,
                             icon: const Icon(
-                              Icons.cloud_download_outlined,
+                              Lz.downloadCloud,
                               size: 17,
                             ),
                             label: Text(
@@ -1430,7 +1431,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                 });
                               }
                             },
-                            icon: const Icon(Icons.upload_file, size: 17),
+                            icon: const Icon(Lz.upload, size: 17),
                             label: Text(
                               parsing
                                   ? '上传中…'
@@ -1579,7 +1580,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                             Row(
                               children: [
                                 const Icon(
-                                  Icons.workspace_premium_rounded,
+                                  Lz.crown,
                                   size: 18,
                                   color: C.gold,
                                 ),

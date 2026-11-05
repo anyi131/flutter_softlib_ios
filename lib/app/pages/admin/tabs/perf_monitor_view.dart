@@ -7,6 +7,7 @@ import '../../../design/ui.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';
 import '../admin_ui_kit.dart';
+import '../../../design/lucide.dart';
 
 /// 后台 · 性能监控
 ///
@@ -83,7 +84,7 @@ class _PerfMonitorViewState extends State<PerfMonitorView> {
               const Spacer(),
               IconButton(
                 onPressed: _load,
-                icon: Icon(Icons.refresh_rounded, size: 18, color: context.t3),
+                icon: Icon(Lz.refreshCw, size: 18, color: context.t3),
               ),
             ],
           ),

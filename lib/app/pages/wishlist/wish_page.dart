@@ -10,6 +10,7 @@ import '../../design/ui.dart';
 import '../../utils/err_text.dart';
 import '../../utils/toast_util.dart';
 import '../../design/glass.dart';
+import '../../design/lucide.dart';
 
 /// 求软件 · 需求投票
 ///
@@ -325,7 +326,7 @@ class _WishPageState extends State<WishPage> {
             child: FloatingActionButton.extended(
               onPressed: _openSubmit,
               backgroundColor: C.brand,
-              icon: const Icon(Icons.add_rounded),
+              icon: const Icon(Lz.plus),
               label: const Text(
                 '求软件',
                 style: TextStyle(fontWeight: FontWeight.w800),
@@ -353,7 +354,7 @@ class _WishPageState extends State<WishPage> {
               AppPressable(
                 onTap: () => Get.back(),
                 child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
+                  Lz.arrowLeft,
                   size: 19,
                   color: context.t1,
                 ),
@@ -405,7 +406,7 @@ class _WishPageState extends State<WishPage> {
             ),
             child: Row(
               children: [
-                Icon(Icons.search_rounded, size: 17, color: context.t3),
+                Icon(Lz.search, size: 17, color: context.t3),
                 const SizedBox(width: 7),
                 Expanded(
                   child: TextField(
@@ -493,7 +494,7 @@ class _WishPageState extends State<WishPage> {
                 child: Column(
                   children: [
                     Icon(
-                      voted ? Icons.thumb_up_rounded : Icons.thumb_up_outlined,
+                      voted ? Lz.thumbsUp : Lz.thumbsUp,
                       size: 16,
                       color: voted ? Colors.white : C.brand,
                     ),

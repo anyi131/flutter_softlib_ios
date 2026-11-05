@@ -14,6 +14,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
+import '../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 工具箱 · 本地工具（v3.3.4）—— 纯 Dart，不联网，打开即用
@@ -52,7 +53,7 @@ class _QrcodePageState extends State<QrcodePage> {
             controller: _ctrl,
             label: '内容',
             hint: '网址 / 文本 / 联系方式',
-            icon: Icons.link_rounded,
+            icon: Lz.link,
             lines: 3,
             onChanged: (v) => setState(() => _data = v.trim()),
           ),
@@ -165,8 +166,8 @@ class _StopwatchPageState extends State<StopwatchPage> {
                 child: ToolButton(
                   label: _ms == 0 ? '开始' : (_running ? '暂停' : '继续'),
                   icon: _running
-                      ? Icons.pause_rounded
-                      : Icons.play_arrow_rounded,
+                      ? Lz.pause
+                      : Lz.play,
                   onPressed: _running ? _pause : _go,
                 ),
               ),
@@ -174,7 +175,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
               Expanded(
                 child: ToolButton(
                   label: _running ? '计次' : '重置',
-                  icon: _running ? Icons.flag_rounded : Icons.refresh_rounded,
+                  icon: _running ? Lz.flag : Lz.refreshCw,
                   outline: true,
                   onPressed: () {
                     if (_running) {
@@ -334,8 +335,8 @@ class _CountdownPageState extends State<CountdownPage> {
                 child: ToolButton(
                   label: _timer == null ? '开始' : '暂停',
                   icon: _timer == null
-                      ? Icons.play_arrow_rounded
-                      : Icons.pause_rounded,
+                      ? Lz.play
+                      : Lz.pause,
                   onPressed: _toggle,
                 ),
               ),
@@ -343,7 +344,7 @@ class _CountdownPageState extends State<CountdownPage> {
               Expanded(
                 child: ToolButton(
                   label: '重置',
-                  icon: Icons.refresh_rounded,
+                  icon: Lz.refreshCw,
                   outline: true,
                   onPressed: () {
                     _timer?.cancel();
@@ -545,7 +546,7 @@ class _UnitPageState extends State<UnitPage> {
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
-                          Icons.swap_vert_rounded,
+                          Lz.arrowUpDown,
                           size: 19,
                           color: Colors.white,
                         ),
@@ -579,7 +580,7 @@ class _UnitPageState extends State<UnitPage> {
           const SizedBox(height: 16),
           ToolButton(
             label: '复制结果',
-            icon: Icons.copy_rounded,
+            icon: Lz.copy,
             onPressed: () {
               Clipboard.setData(ClipboardData(text: _fmt(_result)));
               ToastUtil.success('已复制');
@@ -631,7 +632,7 @@ class _UnitPageState extends State<UnitPage> {
                   color: C.brand,
                 ),
               ),
-              Icon(Icons.arrow_drop_down_rounded, size: 18, color: C.brand),
+              Icon(Lz.chevronDown, size: 18, color: C.brand),
             ],
           ),
         ),
@@ -832,14 +833,14 @@ class _LoanPageState extends State<LoanPage> {
             controller: _years,
             label: '贷款年限（年）',
             keyboard: const TextInputType.numberWithOptions(decimal: true),
-            icon: Icons.calendar_month_rounded,
+            icon: Lz.calendar,
             onChanged: (_) => setState(() {}),
           ),
           ToolField(
             controller: _rate,
             label: '年利率（%）',
             keyboard: const TextInputType.numberWithOptions(decimal: true),
-            icon: Icons.percent_rounded,
+            icon: Lz.percent,
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 8),
@@ -934,7 +935,7 @@ class _Base64PageState extends State<Base64Page> {
             controller: _in,
             label: '原文',
             hint: '要编码的文本，或要解码的 Base64',
-            icon: Icons.text_fields_rounded,
+            icon: Lz.type,
             lines: 5,
           ),
           const SizedBox(height: 12),
@@ -943,7 +944,7 @@ class _Base64PageState extends State<Base64Page> {
               Expanded(
                 child: ToolButton(
                   label: '编码',
-                  icon: Icons.arrow_downward_rounded,
+                  icon: Lz.arrowDown,
                   onPressed: () {
                     try {
                       setState(
@@ -959,7 +960,7 @@ class _Base64PageState extends State<Base64Page> {
               Expanded(
                 child: ToolButton(
                   label: '解码',
-                  icon: Icons.arrow_upward_rounded,
+                  icon: Lz.arrowUp,
                   outline: true,
                   onPressed: () {
                     try {
@@ -981,7 +982,7 @@ class _Base64PageState extends State<Base64Page> {
             controller: _out,
             label: '结果',
             lines: 6,
-            suffixIcon: Icons.copy_rounded,
+            suffixIcon: Lz.copy,
             onSuffixTap: () {
               Clipboard.setData(ClipboardData(text: _out.text));
               ToastUtil.success('已复制');
@@ -1076,7 +1077,7 @@ class _RandomPageState extends State<RandomPage> {
               Expanded(
                 child: ToolButton(
                   label: '生成',
-                  icon: Icons.casino_rounded,
+                  icon: Lz.dice5,
                   onPressed: _gen,
                 ),
               ),
@@ -1280,7 +1281,7 @@ class _PasswordPageState extends State<PasswordPage> {
               Expanded(
                 child: ToolButton(
                   label: '重新生成',
-                  icon: Icons.refresh_rounded,
+                  icon: Lz.refreshCw,
                   onPressed: _gen,
                 ),
               ),
@@ -1288,7 +1289,7 @@ class _PasswordPageState extends State<PasswordPage> {
               Expanded(
                 child: ToolButton(
                   label: '复制',
-                  icon: Icons.copy_rounded,
+                  icon: Lz.copy,
                   outline: true,
                   onPressed: () {
                     if (_pwd.isEmpty) return;
@@ -1449,7 +1450,7 @@ class _RelativePageState extends State<RelativePage> {
           const SizedBox(height: 6),
           ToolButton(
             label: '计算称呼',
-            icon: Icons.search_rounded,
+            icon: Lz.search,
             onPressed: _calc,
           ),
           const SizedBox(height: 18),
@@ -1476,7 +1477,7 @@ class _RelativePageState extends State<RelativePage> {
             ToolCard(
               child: Row(
                 children: [
-                  Icon(Icons.info_outline_rounded, size: 17, color: C.warning),
+                  Icon(Lz.info, size: 17, color: C.warning),
                   const SizedBox(width: 9),
                   Expanded(
                     child: Text(

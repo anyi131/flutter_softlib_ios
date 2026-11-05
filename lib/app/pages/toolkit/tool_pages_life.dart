@@ -9,6 +9,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
+import '../../design/lucide.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 工具箱 · 第五批（1015）：生活健康 + 更多实用
@@ -485,7 +486,7 @@ class _PeriodPageState extends State<PeriodPage> {
             },
             child: Row(
               children: [
-                Icon(Icons.event_rounded, size: 19, color: C.brand),
+                Icon(Lz.calendar, size: 19, color: C.brand),
                 const SizedBox(width: 10),
                 Text('上次开始日', style: Ty.small.copyWith(color: context.t3)),
                 const Spacer(),
@@ -646,7 +647,7 @@ class _BookkeepPageState extends State<BookkeepPage> {
               ),
             ],
           ),
-          ToolButton(label: '记一笔', icon: Icons.add_rounded, onPressed: _add),
+          ToolButton(label: '记一笔', icon: Lz.plus, onPressed: _add),
           const SizedBox(height: 14),
           ToolCard(
             child: Row(
@@ -689,7 +690,7 @@ class _BookkeepPageState extends State<BookkeepPage> {
                             AppPressable(
                               onTap: () => setState(() => list.removeAt(e.key)),
                               child: Icon(
-                                Icons.close_rounded,
+                                Lz.x,
                                 size: 16,
                                 color: context.t3,
                               ),
@@ -793,7 +794,7 @@ class _BankCardPageState extends State<BankCardPage> {
             controller: _c,
             label: '银行卡号',
             hint: '输入后自动校验',
-            icon: Icons.credit_card_rounded,
+            icon: Lz.creditCard,
             keyboard: TextInputType.number,
             onChanged: (_) => setState(() {}),
           ),
@@ -938,7 +939,7 @@ class _PhoneAreaPageState extends State<PhoneAreaPage> {
             controller: _c,
             label: '手机号',
             hint: '输入 11 位手机号',
-            icon: Icons.phone_android_rounded,
+            icon: Lz.smartphone,
             keyboard: TextInputType.phone,
             onChanged: (_) => setState(() {}),
           ),
@@ -1067,7 +1068,7 @@ class _PwdCheckPageState extends State<PwdCheckPage> {
           ToolField(
             controller: _c,
             label: '输入密码',
-            icon: Icons.lock_rounded,
+            icon: Lz.lock,
             onChanged: (_) => setState(() {}),
           ),
           if (s.isNotEmpty) ...[
@@ -1127,7 +1128,7 @@ class _PwdCheckPageState extends State<PwdCheckPage> {
                         child: Row(
                           children: [
                             Icon(
-                              Icons.arrow_right_rounded,
+                              Lz.arrowRight,
                               size: 16,
                               color: C.warning,
                             ),

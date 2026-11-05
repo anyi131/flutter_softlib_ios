@@ -13,6 +13,7 @@ import '../../design/ui.dart';
 import '../../utils/err_text.dart';
 import '../../utils/toast_util.dart';
 import '../../design/glass.dart';
+import '../../design/lucide.dart';
 
 /// 使用历史
 ///
@@ -214,7 +215,7 @@ class _HistoryPageState extends State<HistoryPage> {
                       AppPressable(
                         onTap: () => Get.back(),
                         child: Icon(
-                          Icons.arrow_back_ios_new_rounded,
+                          Lz.arrowLeft,
                           size: 19,
                           color: context.t1,
                         ),
@@ -253,7 +254,7 @@ class _HistoryPageState extends State<HistoryPage> {
                         TextButton.icon(
                           onPressed: _clearAll,
                           icon: const Icon(
-                            Icons.delete_sweep_rounded,
+                            Lz.trash,
                             size: 17,
                           ),
                           label: const Text(
@@ -269,7 +270,7 @@ class _HistoryPageState extends State<HistoryPage> {
                       ? const LoadingSkeletonList()
                       : (_list.isEmpty
                             ? const EmptyState(
-                                icon: Icons.history_rounded,
+                                icon: Lz.history,
                                 text: '还没有使用记录',
                                 hint: '打开过的工具会记录在这里',
                               )
@@ -315,7 +316,7 @@ class _HistoryPageState extends State<HistoryPage> {
             color: C.danger,
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Icon(Icons.delete_rounded, color: Colors.white),
+          child: const Icon(Lz.trash2, color: Colors.white),
         ),
         onDismissed: (_) => _deleteOne(h),
         child: Container(
@@ -346,7 +347,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 ),
                 child: isEmoji
                     ? Text(icon, style: const TextStyle(fontSize: 20))
-                    : Icon(Icons.widgets_rounded, size: 20, color: C.brand),
+                    : Icon(Lz.layoutGrid, size: 20, color: C.brand),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -376,7 +377,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 onTap: () => _deleteOne(h),
                 child: Padding(
                   padding: const EdgeInsets.all(6),
-                  child: Icon(Icons.close_rounded, size: 17, color: context.t3),
+                  child: Icon(Lz.x, size: 17, color: context.t3),
                 ),
               ),
             ],

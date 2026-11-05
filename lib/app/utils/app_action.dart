@@ -6,6 +6,7 @@ import '../design/ui.dart';
 import '../utils/err_text.dart';
 import '../utils/toast_util.dart';
 import '../design/kit.dart';
+import '../design/lucide.dart';
 
 /// 统一的操作反馈
 ///
@@ -124,7 +125,7 @@ class AppAction {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
-            const Icon(Icons.error_outline_rounded, color: C.danger, size: 20),
+            const Icon(Lz.alertCircle, color: C.danger, size: 20),
             const SizedBox(width: 8),
             Expanded(
               child: Text(

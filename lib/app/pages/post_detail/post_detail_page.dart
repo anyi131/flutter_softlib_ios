@@ -22,6 +22,7 @@ import '../../api/user_service.dart';
 import '../../models/post_item.dart';
 import '../navigate/square/emoji_panel.dart';
 import '../../widgets/post_video_player.dart';
+import '../../design/lucide.dart';
 
 /// 动态详情页（正文 + 图片 + 评论区）
 class PostDetailPage extends StatefulWidget {
@@ -98,7 +99,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                       ? const EmptyState(
                           text: '动态不存在或已删除',
                           hint: '内容可能已被作者删除',
-                          icon: Icons.article_outlined,
+                          icon: Lz.fileText,
                         )
                       : Column(
                           children: [
@@ -121,7 +122,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                                       child: EmptyState(
                                         text: '还没有评论，快来抢沙发~',
                                         hint: '说说你的看法吧',
-                                        icon: Icons.chat_bubble_outline_rounded,
+                                        icon: Lz.messageCircle,
                                       ),
                                     )
                                   else
@@ -159,7 +160,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
             color: (context.isDark ? C.bg0 : C.lbg0).withAlpha(150),
             child: Row(
               children: [
-                _topBtn(Icons.arrow_back_ios_new_rounded, () => Get.back()),
+                _topBtn(Lz.arrowLeft, () => Get.back()),
                 const Spacer(),
                 Text(
                   '动态详情',
@@ -167,7 +168,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                 ),
                 const Spacer(),
                 if (_canDelete())
-                  _topBtn(Icons.delete_outline_rounded, _deletePost)
+                  _topBtn(Lz.trash2, _deletePost)
                 else
                   const SizedBox(width: 36),
               ],
@@ -219,7 +220,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                         width: 40,
                         height: 40,
                         color: C.brand.withAlpha(26),
-                        child: Icon(Icons.person, size: 21, color: C.brand),
+                        child: Icon(Lz.user, size: 21, color: C.brand),
                       ),
               ),
               const SizedBox(width: 10),
@@ -317,7 +318,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                         ),
                         const SizedBox(width: 8),
                         Icon(
-                          Icons.visibility_outlined,
+                          Lz.eye,
                           size: 12,
                           color: context.t3,
                         ),
@@ -376,7 +377,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                       errorWidget: (_, __, ___) => Container(
                         height: 180,
                         color: Colors.black12,
-                        child: const Icon(Icons.broken_image_outlined),
+                        child: const Icon(Lz.imageOff),
                       ),
                     ),
                   ),
@@ -394,7 +395,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
           Row(
             children: [
               _action(
-                _liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                _liked ? Lz.heart : Lz.heart,
                 '${p.likeCount}',
                 () async {
                   if (_likeBusy) return; // ★ P0：防连点
@@ -420,7 +421,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
               ),
               const SizedBox(width: 20),
               _action(
-                Icons.chat_bubble_outline_rounded,
+                Lz.messageCircle,
                 '${p.commentCount}',
                 () {},
               ),
@@ -491,7 +492,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     width: 32,
                     height: 32,
                     color: C.brand.withAlpha(26),
-                    child: Icon(Icons.person, size: 17, color: C.brand),
+                    child: Icon(Lz.user, size: 17, color: C.brand),
                   ),
           ),
           const SizedBox(width: 10),
@@ -582,7 +583,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                                     color: Colors.black12,
                                     alignment: Alignment.center,
                                     child: const Icon(
-                                      Icons.broken_image_outlined,
+                                      Lz.imageOff,
                                       size: 18,
                                     ),
                                   ),
@@ -831,7 +832,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                       ),
                       const Spacer(),
                       IconButton(
-                        icon: Icon(Icons.close, size: 20, color: ctx.t2),
+                        icon: Icon(Lz.x, size: 20, color: ctx.t2),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
@@ -888,7 +889,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
-                                      Icons.close,
+                                      Lz.x,
                                       size: 12,
                                       color: Colors.white,
                                     ),
@@ -933,7 +934,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           child: Icon(
-                            Icons.image_outlined,
+                            Lz.image,
                             size: 22,
                             color: ctx.t3,
                           ),
@@ -945,7 +946,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           child: Icon(
-                            Icons.emoji_emotions_outlined,
+                            Lz.smile,
                             size: 22,
                             color: showEmoji ? C.brand : ctx.t3,
                           ),
@@ -961,7 +962,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                         width: 104,
                         child: PrimaryButton(
                           label: '发送',
-                          icon: Icons.send_rounded,
+                          icon: Lz.send,
                           height: 42,
                           loading: sending,
                           expand: false,
@@ -1026,7 +1027,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.edit_outlined, size: 16, color: context.t3),
+                      Icon(Lz.pencil, size: 16, color: context.t3),
                       const SizedBox(width: 8),
                       Text('写评论…', style: Ty.small.copyWith(color: context.t3)),
                       const Spacer(),
@@ -1057,7 +1058,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   ],
                 ),
                 child: const Icon(
-                  Icons.send_rounded,
+                  Lz.send,
                   size: 18,
                   color: Colors.white,
                 ),

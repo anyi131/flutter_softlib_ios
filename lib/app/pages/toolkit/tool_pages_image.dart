@@ -15,6 +15,7 @@ import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_img_isolate.dart';
 import 'tool_kit.dart';
+import '../../design/lucide.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 工具箱 · 图片工具（1015 新增）
@@ -155,7 +156,7 @@ class _ImgCropPageState extends State<ImgCropPage> with ImgToolMixin {
             onPick: (v) => setState(() => _ratio = v),
           ),
           const SizedBox(height: 12),
-          ToolButton(label: '裁剪', icon: Icons.crop_rounded, onPressed: _go),
+          ToolButton(label: '裁剪', icon: Lz.crop, onPressed: _go),
           previewCard(),
           saveBtn(),
         ],
@@ -203,7 +204,7 @@ class _ImgConvPageState extends State<ImgConvPage> with ImgToolMixin {
           const SizedBox(height: 12),
           ToolButton(
             label: '转换',
-            icon: Icons.swap_horiz_rounded,
+            icon: Lz.arrowLeftRight,
             onPressed: _go,
           ),
           previewCard(),
@@ -386,7 +387,7 @@ class _ImgWaterPageState extends State<ImgWaterPage> with ImgToolMixin {
           ToolField(
             controller: _txt,
             label: '水印文字',
-            icon: Icons.text_fields_rounded,
+            icon: Lz.type,
           ),
           ToolChips<int>(
             items: const [
@@ -598,7 +599,7 @@ mixin ImgToolMixin<T extends StatefulWidget> on State<T> {
           padding: const EdgeInsets.only(top: 12),
           child: ToolButton(
             label: '保存到相册',
-            icon: Icons.download_rounded,
+            icon: Lz.download,
             onPressed: saveOut,
           ),
         );

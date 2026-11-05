@@ -17,6 +17,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import '../jicun_history_store.dart';
+import '../../design/lucide.dart';
 
 class JicunHistoryPage extends StatefulWidget {
   const JicunHistoryPage({super.key});
@@ -135,7 +136,7 @@ class _JicunHistoryPageState extends State<JicunHistoryPage> {
             ? IconButton(
                 tooltip: '退出多选',
                 onPressed: _exitSelecting,
-                icon: const Icon(Icons.close_rounded),
+                icon: const Icon(Lz.x),
               )
             : null,
         title: Text(_selecting ? '已选 ${_selected.length} 条' : '解析历史'),
@@ -156,7 +157,7 @@ class _JicunHistoryPageState extends State<JicunHistoryPage> {
             IconButton(
               tooltip: '清空',
               onPressed: _entries.isEmpty ? null : _clearAll,
-              icon: const Icon(Icons.delete_sweep_rounded),
+              icon: const Icon(Lz.trash),
             ),
         ],
       ),
@@ -164,7 +165,7 @@ class _JicunHistoryPageState extends State<JicunHistoryPage> {
           ? const Center(child: CircularProgressIndicator())
           : _entries.isEmpty
           ? EmptyState(
-              icon: Icons.history_rounded,
+              icon: Lz.history,
               text: '还没有解析记录',
               hint: '去「即存」Tab 解析一条分享链接吧',
             )
@@ -230,8 +231,8 @@ class _HistoryTile extends StatelessWidget {
             if (selecting) ...[
               Icon(
                 selected
-                    ? Icons.check_circle_rounded
-                    : Icons.radio_button_unchecked_rounded,
+                    ? Lz.checkCircle
+                    : Lz.circle,
                 size: 22,
                 color: selected ? C.brand : context.t3,
               ),
@@ -246,7 +247,7 @@ class _HistoryTile extends StatelessWidget {
                     ? Container(
                         color: context.isDark ? C.bg2 : C.lbg2,
                         child: Icon(
-                          Icons.movie_creation_outlined,
+                          Lz.clapperboard,
                           size: 20,
                           color: context.t3,
                         ),
@@ -257,7 +258,7 @@ class _HistoryTile extends StatelessWidget {
                         errorBuilder: (_, _, _) => Container(
                           color: context.isDark ? C.bg2 : C.lbg2,
                           child: Icon(
-                            Icons.movie_creation_outlined,
+                            Lz.clapperboard,
                             size: 20,
                             color: context.t3,
                           ),
@@ -291,7 +292,7 @@ class _HistoryTile extends StatelessWidget {
               ),
             ),
             if (!selecting)
-              Icon(Icons.refresh_rounded, size: 18, color: context.t3),
+              Icon(Lz.refreshCw, size: 18, color: context.t3),
           ],
         ),
       ),

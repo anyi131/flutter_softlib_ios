@@ -18,6 +18,7 @@ import '../../models/review_item.dart';
 import '../../routes/app_pages.dart';
 import 'star_rating.dart';
 import '../../design/app_anim.dart';
+import '../../design/lucide.dart';
 
 /// 评价 Tab（评分卡 + 筛选 + 评论列表）
 class ReviewTab extends StatefulWidget {
@@ -80,7 +81,7 @@ class _ReviewTabState extends State<ReviewTab> {
                     _sort == 'latest' ? '最新' : '最热',
                     style: Ty.small.copyWith(color: context.t2),
                   ),
-                  Icon(Icons.swap_vert, size: 15, color: context.t3),
+                  Icon(Lz.arrowUpDown, size: 15, color: context.t3),
                 ],
               ),
             ),
@@ -94,7 +95,7 @@ class _ReviewTabState extends State<ReviewTab> {
               child: EmptyState(
                 text: '还没有评价，来写第一条吧',
                 hint: '你的评价会帮助更多人',
-                icon: Icons.rate_review_outlined,
+                icon: Lz.messageSquare,
               ),
             )
           else
@@ -283,7 +284,7 @@ class _ReviewTabState extends State<ReviewTab> {
                         width: 36,
                         height: 36,
                         color: C.brand.withAlpha(26),
-                        child: Icon(Icons.person, size: 19, color: C.brand),
+                        child: Icon(Lz.user, size: 19, color: C.brand),
                       ),
               ),
               const SizedBox(width: 10),
@@ -363,7 +364,7 @@ class _ReviewTabState extends State<ReviewTab> {
                             width: 76,
                             height: 76,
                             color: Colors.black12,
-                            child: const Icon(Icons.broken_image, size: 18),
+                            child: const Icon(Lz.imageOff, size: 18),
                           ),
                         ),
                       ),
@@ -453,7 +454,7 @@ class _ReviewTabState extends State<ReviewTab> {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.favorite_border_rounded,
+                      Lz.heart,
                       size: 15,
                       color: context.t3,
                     ),
@@ -753,7 +754,7 @@ class _ReviewTabState extends State<ReviewTab> {
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
-                                Icons.close_rounded,
+                                Lz.x,
                                 size: 16,
                                 color: context.t2,
                               ),
@@ -888,7 +889,7 @@ class _ReviewTabState extends State<ReviewTab> {
                                           ),
                                         ),
                                         child: const Icon(
-                                          Icons.close_rounded,
+                                          Lz.x,
                                           size: 11,
                                           color: Colors.white,
                                         ),
@@ -940,7 +941,7 @@ class _ReviewTabState extends State<ReviewTab> {
                         Row(
                           children: [
                             Icon(
-                              Icons.error_outline_rounded,
+                              Lz.alertCircle,
                               size: 13,
                               color: C.danger,
                             ),
@@ -963,7 +964,7 @@ class _ReviewTabState extends State<ReviewTab> {
                         children: [
                           SoftButton(
                             label: '图片',
-                            icon: Icons.image_outlined,
+                            icon: Lz.image,
                             height: 46,
                             onPressed: sending ? null : pick,
                           ),

@@ -11,6 +11,7 @@ import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
+import '../../design/lucide.dart';
 
 /// ★ 1014 需求5：卡密商城
 ///
@@ -85,7 +86,7 @@ class _CardShopPageState extends State<CardShopPage>
         actions: [
           IconButton(
             onPressed: _load,
-            icon: Icon(Icons.refresh_rounded, size: 20, color: context.t2),
+            icon: Icon(Lz.refreshCw, size: 20, color: context.t2),
             tooltip: '刷新',
           ),
         ],
@@ -129,7 +130,7 @@ class _CardShopPageState extends State<CardShopPage>
             const EmptyState(
               text: '卡密商城未开启',
               hint: '管理员已关闭卡密购买功能',
-              icon: Icons.storefront_outlined,
+              icon: Lz.store,
             )
           else ...[
             Text(
@@ -200,7 +201,7 @@ class _CardShopPageState extends State<CardShopPage>
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.add_rounded, size: 15, color: Colors.white),
+                  Icon(Lz.plus, size: 15, color: Colors.white),
                   SizedBox(width: 4),
                   Text(
                     '充值',
@@ -246,7 +247,7 @@ class _CardShopPageState extends State<CardShopPage>
                 borderRadius: BorderRadius.circular(R.md),
               ),
               child: Icon(
-                isVip ? Icons.workspace_premium_rounded : Icons.stars_rounded,
+                isVip ? Lz.crown : Lz.sparkles,
                 color: Colors.white,
                 size: 24,
               ),
@@ -323,7 +324,7 @@ class _CardShopPageState extends State<CardShopPage>
       return const EmptyState(
         text: '还没有购买过卡密',
         hint: '去「购买卡密」看看，买完会出现在这里',
-        icon: Icons.confirmation_number_outlined,
+        icon: Lz.ticket,
       );
     }
     return RefreshIndicator(
@@ -403,7 +404,7 @@ class _CardShopPageState extends State<CardShopPage>
                     await Clipboard.setData(ClipboardData(text: code));
                     ToastUtil.success('卡密已复制');
                   },
-                  child: Icon(Icons.copy_rounded, size: 17, color: C.brand),
+                  child: Icon(Lz.copy, size: 17, color: C.brand),
                 ),
               ],
             ),

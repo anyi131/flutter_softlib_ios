@@ -14,6 +14,7 @@ import '../../design/ui.dart';
 import '../../models/app_config.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
+import '../../design/lucide.dart';
 
 /// 关于软件（v40 重做）
 ///
@@ -117,7 +118,7 @@ class _AboutPageState extends State<AboutPage> {
               ),
             ),
             child: Icon(
-              Icons.arrow_back_ios_new_rounded,
+              Lz.arrowLeft,
               size: 16,
               color: context.t1,
             ),
@@ -629,29 +630,29 @@ class _AboutPageState extends State<AboutPage> {
     final website = cfg?.aboutWebsite ?? '';
     final updateUrl = cfg?.aboutUpdateUrl ?? '';
     add(
-      Icons.alternate_email_rounded,
+      Lz.atSign,
       C.cyan,
       '联系方式',
       contact,
       onTap: contact.isEmpty ? null : () => _copy(contact),
     );
     add(
-      Icons.language_rounded,
+      Lz.languages,
       C.mint,
       '官方网站',
       website,
       onTap: website.isEmpty ? null : () => _openUrl(website),
     );
     add(
-      Icons.system_update_rounded,
+      Lz.download,
       C.violet,
       '检查更新',
       updateUrl.isEmpty ? '' : '前往下载最新版',
       onTap: updateUrl.isEmpty ? null : () => _openUrl(updateUrl),
     );
-    add(Icons.share_rounded, C.brandBright, '分享本软件', '推荐给朋友', onTap: _shareApp);
+    add(Lz.share, C.brandBright, '分享本软件', '推荐给朋友', onTap: _shareApp);
     add(
-      Icons.description_rounded,
+      Lz.fileText,
       C.violet,
       '用户协议',
       '查看详情',
@@ -790,7 +791,7 @@ class _AboutPageState extends State<AboutPage> {
                     ),
                     const SizedBox(width: 2),
                     Icon(
-                      Icons.chevron_right_rounded,
+                      Lz.chevronRight,
                       size: 16,
                       color: context.t3,
                     ),
@@ -902,7 +903,7 @@ class _AboutPageState extends State<AboutPage> {
                 ),
                 if ((it['url'] ?? '').isNotEmpty)
                   Icon(
-                    Icons.chevron_right_rounded,
+                    Lz.chevronRight,
                     size: 18,
                     color: context.t3,
                   ),

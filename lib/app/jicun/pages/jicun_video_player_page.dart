@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../../widgets/mpv_core.dart';
 import '../jicun_playback_headers.dart';
+import '../../design/lucide.dart';
 
 /// 即存解析 · 全屏视频播放页
 ///
@@ -301,7 +302,7 @@ class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage>
               alignment: Alignment.topLeft,
               child: IconButton(
                 icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
+                  Lz.arrowLeft,
                   color: Colors.white,
                   size: 24,
                 ),
@@ -352,7 +353,7 @@ class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage>
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.error_outline_rounded,
+            Lz.alertCircle,
             color: Colors.white.withAlpha(220),
             size: 42,
           ),
@@ -372,7 +373,7 @@ class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage>
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
             onPressed: () => _initPlayer(),
-            icon: const Icon(Icons.refresh_rounded, size: 18),
+            icon: const Icon(Lz.refreshCw, size: 18),
             label: const Text('重试'),
           ),
         ],
@@ -395,7 +396,7 @@ class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage>
             shape: BoxShape.circle,
           ),
           child: Icon(
-            atEnd ? Icons.replay_rounded : Icons.play_arrow_rounded,
+            atEnd ? Lz.rotateCcw : Lz.play,
             color: Colors.white,
             size: 40,
           ),
@@ -486,10 +487,10 @@ class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage>
                     onPressed: _togglePlay,
                     icon: Icon(
                       _atEnd
-                          ? Icons.replay_rounded
+                          ? Lz.rotateCcw
                           : (v.isPlaying
-                                ? Icons.pause_rounded
-                                : Icons.play_arrow_rounded),
+                                ? Lz.pause
+                                : Lz.play),
                     ),
                   ),
                   IconButton(
@@ -498,8 +499,8 @@ class _JicunVideoPlayerPageState extends State<JicunVideoPlayerPage>
                     onPressed: _toggleFullscreen,
                     icon: Icon(
                       _fullscreen
-                          ? Icons.fullscreen_exit_rounded
-                          : Icons.fullscreen_rounded,
+                          ? Lz.minimize
+                          : Lz.maximize,
                     ),
                   ),
                 ],

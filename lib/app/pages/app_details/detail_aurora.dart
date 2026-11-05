@@ -8,6 +8,7 @@ import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../models/app_item.dart';
+import '../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 详情页 · 极光渐变（第 6 套模板）
@@ -501,7 +502,7 @@ class DetailAurora {
                     color: context.isDark
                         ? Colors.white10
                         : Colors.black.withAlpha(6),
-                    child: Icon(Icons.broken_image_outlined, color: context.t3),
+                    child: Icon(Lz.imageOff, color: context.t3),
                   ),
                 ),
               ),
@@ -542,7 +543,7 @@ class DetailAurora {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(
-              Icons.file_download_rounded,
+              Lz.download,
               size: 19,
               color: Colors.white,
             ),

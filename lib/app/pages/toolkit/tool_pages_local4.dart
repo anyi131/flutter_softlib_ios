@@ -9,6 +9,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
+import '../../design/lucide.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 工具箱 · 第三批（1015）：单位换算全集 + 常用计算
@@ -102,7 +103,7 @@ class _UnitConvPageState extends State<_UnitConvPage> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                Icon(Icons.arrow_forward_rounded, size: 18, color: C.brand),
+                Icon(Lz.arrowRight, size: 18, color: C.brand),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -137,7 +138,7 @@ class _UnitConvPageState extends State<_UnitConvPage> {
             controller: _ctrl,
             label: '数值',
             keyboard: const TextInputType.numberWithOptions(decimal: true),
-            icon: Icons.tag_rounded,
+            icon: Lz.tag,
             onChanged: (_) => setState(() {}),
           ),
           ToolCard(
@@ -167,7 +168,7 @@ class _UnitConvPageState extends State<_UnitConvPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.copy_rounded, size: 15, color: context.t3),
+                      Icon(Lz.copy, size: 15, color: context.t3),
                       const SizedBox(width: 4),
                       Text('复制结果', style: Ty.tiny.copyWith(color: context.t3)),
                     ],
@@ -365,7 +366,7 @@ class _TempPageState extends State<TempPage> {
               decimal: true,
               signed: true,
             ),
-            icon: Icons.thermostat_rounded,
+            icon: Lz.thermometer,
             onChanged: (_) => setState(() {}),
           ),
           ToolCard(
@@ -864,7 +865,7 @@ class _AgePageState extends State<AgePage> {
             },
             child: Row(
               children: [
-                Icon(Icons.cake_rounded, size: 19, color: C.brand),
+                Icon(Lz.cake, size: 19, color: C.brand),
                 const SizedBox(width: 10),
                 Text('出生日期', style: Ty.small.copyWith(color: context.t3)),
                 const Spacer(),

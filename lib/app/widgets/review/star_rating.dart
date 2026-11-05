@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../design/ui.dart';
+import '../../design/lucide.dart';
 
 /// 星级显示（只读）
 class StarRating extends StatelessWidget {
@@ -25,10 +26,10 @@ class StarRating extends StatelessWidget {
             padding: const EdgeInsets.only(right: 1.5),
             child: Icon(
               i <= score.round()
-                  ? Icons.star_rounded
+                  ? Lz.star
                   : (i - 0.5 <= score
-                        ? Icons.star_half_rounded
-                        : Icons.star_border_rounded),
+                        ? Lz.starHalf
+                        : Lz.star),
               size: size,
               color: C.amber,
             ),
@@ -73,7 +74,7 @@ class StarInput extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2),
               child: Icon(
-                i <= value ? Icons.star_rounded : Icons.star_border_rounded,
+                i <= value ? Lz.star : Lz.star,
                 size: size,
                 color: C.amber,
               ),

@@ -15,6 +15,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/glass.dart';
 import '../../../design/theme_controller.dart';
 import '../../../design/kit.dart';
+import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
 import '../../../routes/app_pages.dart';
 import '../../navigate/navigate_logic.dart';
@@ -107,7 +108,7 @@ class MineComponent extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(Icons.home_rounded, size: 14, color: context.t3),
+                Icon(Lz.home, size: 14, color: context.t3),
                 const SizedBox(width: 5),
                 Text('回首页', style: Ty.tiny.copyWith(color: context.t3)),
               ],
@@ -166,7 +167,7 @@ class MineComponent extends StatelessWidget {
             ],
           ),
         ),
-        Icon(Icons.chevron_right_rounded, color: context.t3, size: 20),
+        Icon(Lz.chevronRight, color: context.t3, size: 20),
       ],
     );
   }
@@ -247,7 +248,7 @@ class MineComponent extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(Icons.chevron_right_rounded, size: 18, color: context.t3),
+            Icon(Lz.chevronRight, size: 18, color: context.t3),
           ],
         ),
       ),
@@ -569,12 +570,12 @@ class MineComponent extends StatelessWidget {
   // ═══════ v3.3.4 新增：wallet 模板的三块数据仪表盘 ═══════
   Widget _dashboardCard(BuildContext context, MineLogic logic) {
     final cells = <(String, String, IconData, Color)>[
-      ('余额', logic.money, Icons.account_balance_wallet_rounded, C.mint),
-      ('积分', '${logic.points}', Icons.stars_rounded, C.amber),
+      ('余额', logic.money, Lz.payWallet, C.mint),
+      ('积分', '${logic.points}', Lz.sparkles, C.amber),
       (
         '会员',
         logic.isVip ? '已开通' : '未开通',
-        Icons.workspace_premium_rounded,
+        Lz.vip,
         C.gold,
       ),
     ];
@@ -694,7 +695,7 @@ class MineComponent extends StatelessWidget {
                       ),
                     ),
                     Icon(
-                      Icons.chevron_right_rounded,
+                      Lz.chevronRight,
                       size: 18,
                       color: context.t3,
                     ),
@@ -836,7 +837,7 @@ class MineComponent extends StatelessWidget {
                       ),
                     ),
                     Icon(
-                      Icons.chevron_right_rounded,
+                      Lz.chevronRight,
                       size: 17,
                       color: context.t3,
                     ),
@@ -946,7 +947,7 @@ class MineComponent extends StatelessWidget {
                       context,
                       '积分 ${logic.points}',
                       C.violet,
-                      icon: Icons.monetization_on_rounded,
+                      icon: Lz.money,
                       onTap: _uiCfg.featureExchange
                           ? () => logic.pointsExchange()
                           : null,
@@ -955,21 +956,21 @@ class MineComponent extends StatelessWidget {
                       context,
                       '余额 ¥${logic.money}',
                       C.mint,
-                      icon: Icons.account_balance_wallet_rounded,
+                      icon: Lz.payWallet,
                     ),
                   ],
                   _badge(
                     context,
                     logic.isVip ? 'VIP 会员' : '未开通 VIP',
                     logic.isVip ? C.amber : C.t3,
-                    icon: Icons.workspace_premium_rounded,
+                    icon: Lz.vip,
                   ),
                 ],
               ),
             ],
           ),
         ),
-        Icon(Icons.chevron_right_rounded, color: context.t3, size: 22),
+        Icon(Lz.chevronRight, color: context.t3, size: 22),
       ],
     );
   }
@@ -1010,7 +1011,7 @@ class MineComponent extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Icon(
-              logged ? Icons.waving_hand_rounded : Icons.person_add_alt_rounded,
+              logged ? Lz.hand : Lz.userPlus,
               color: Colors.white,
               size: 22,
             ),
@@ -1080,7 +1081,7 @@ class MineComponent extends StatelessWidget {
   Widget _defaultAvatar(BuildContext context) => Container(
     color: context.isDark ? C.bg2 : C.lbg2,
     alignment: Alignment.center,
-    child: Icon(Icons.person_rounded, size: 34, color: C.brandBright),
+    child: Icon(Lz.user, size: 34, color: C.brandBright),
   );
 
   Widget _badge(
@@ -1113,13 +1114,13 @@ class MineComponent extends StatelessWidget {
         !logic.isLoggedIn
             ? '-'
             : (logic.messageCount > 0 ? '${logic.messageCount}' : '0'),
-        Icons.chat_bubble_rounded,
+        Lz.messageCircle,
         C.brandBright,
       ),
       (
         '关注',
         logic.isLoggedIn ? '${logic.followCount}' : '-',
-        Icons.person_add_rounded,
+        Lz.userPlus,
         C.cyan,
       ),
       (
@@ -1137,7 +1138,7 @@ class MineComponent extends StatelessWidget {
                   ? '-'
                   : (logic.signedToday ? logic.signedDate : '未签'))
             : '',
-        Icons.verified_rounded,
+        Lz.badge,
         C.amber,
       ),
     ];
@@ -1221,7 +1222,7 @@ class MineComponent extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.workspace_premium_rounded,
+                Lz.vip,
                 color: Colors.white,
                 size: 21,
               ),
@@ -1325,14 +1326,14 @@ class MineComponent extends StatelessWidget {
       // ★ 1016：做任务领会员 —— 放在最前面，方便普通用户「白嫖」
       _S(
         '免费领会员',
-        Icons.card_giftcard_rounded,
+        Lz.gift,
         C.accentOrange,
         () => Get.toNamed(Routes.task),
       ),
       if (_uiCfg.featureInvite)
         _S(
           '邀请好友',
-          Icons.card_giftcard_rounded,
+          Lz.gift,
           C.rose,
           () => Get.toNamed(Routes.invite),
         ),
@@ -1340,7 +1341,7 @@ class MineComponent extends StatelessWidget {
       if (_uiCfg.featureFavorites)
         _S(
           '我的收藏',
-          Icons.star_rounded,
+          Lz.star,
           C.amber,
           () => Get.toNamed(Routes.favorites),
         ),
@@ -1348,13 +1349,13 @@ class MineComponent extends StatelessWidget {
       if (_uiCfg.featureHistory)
         _S(
           '使用历史',
-          Icons.history_rounded,
+          Lz.history,
           C.violet,
           () => Get.toNamed(Routes.history),
         ),
       _S(
         '充值余额',
-        Icons.account_balance_wallet_rounded,
+        Lz.payWallet,
         C.mint,
         () => logic.recharge(),
       ),
@@ -1363,7 +1364,7 @@ class MineComponent extends StatelessWidget {
       if (logic.isLoggedIn)
         _S(
           logic.qqBound ? 'QQ 已绑定' : '绑定QQ',
-          logic.qqBound ? Icons.verified_rounded : Icons.link_rounded,
+          logic.qqBound ? Lz.badge : Lz.link,
           logic.qqBound ? C.brand : C.brand,
           () {
             if (logic.qqBound) {
@@ -1413,14 +1414,14 @@ class MineComponent extends StatelessWidget {
       if (_uiCfg.featureDonateRank)
         _S(
           '赞助排行',
-          Icons.emoji_events_rounded,
+          Lz.trophy,
           C.amber,
           () => logic.sponsorRank(),
         ),
       if (_uiCfg.featureCardRedeem)
         _S(
           '使用卡密',
-          Icons.confirmation_number_rounded,
+          Lz.ticket,
           C.rose,
           () => logic.redeem(),
         ),
@@ -1428,13 +1429,13 @@ class MineComponent extends StatelessWidget {
       if (_uiCfg.featureCardShop)
         _S(
           '卡密商城',
-          Icons.storefront_rounded,
+          Lz.store,
           C.gold,
           () => Get.toNamed(Routes.cardShop),
         ),
       _S(
         '下载管理',
-        Icons.download_rounded,
+        Lz.download,
         C.mint,
         () => Get.toNamed(Routes.appDownload),
       ),
@@ -1444,11 +1445,11 @@ class MineComponent extends StatelessWidget {
         }),
       // ★ 1014 需求3：分享本软件（分享文案后台可配）
       if (_uiCfg.featureShareApp)
-        _S('分享软件', Icons.share_rounded, C.brandBright, () => logic.shareApp()),
+        _S('分享软件', Lz.share, C.brandBright, () => logic.shareApp()),
       if (_uiCfg.featureExchange)
         _S(
           '积分兑换',
-          Icons.monetization_on_rounded,
+          Lz.money,
           C.accentOrange,
           () => logic.pointsExchange(),
         ),
@@ -1456,7 +1457,7 @@ class MineComponent extends StatelessWidget {
       if (_uiCfg.allowUserThemeToggle)
         _S(
           '外观',
-          Icons.dark_mode_rounded,
+          Lz.moon,
           C.violet,
           () {
             final c = SafeCtx.of();
@@ -1465,24 +1466,24 @@ class MineComponent extends StatelessWidget {
         ),
       // 后台「关于页开关」关掉后不再出现
       if (SoftService.instance.cachedConfig?.aboutEnable ?? true)
-        _S('关于软件', Icons.info_rounded, C.brandBright, () {
+        _S('关于软件', Lz.info, C.brandBright, () {
           final c = SafeCtx.of();
           if (c != null) logic.about(c);
         }),
       _S(
         '用户协议',
-        Icons.description_rounded,
+        Lz.fileText,
         C.violet,
         () => logic.showAgreementPage('agreement'),
       ),
       _S(
         '隐私政策',
-        Icons.privacy_tip_rounded,
+        Lz.shield,
         C.pink,
         () => logic.showAgreementPage('privacy'),
       ),
       if (_uiCfg.featureReplaceSplash)
-        _S('替换开屏', Icons.image_rounded, C.mint, () => logic.replaceSplash()),
+        _S('替换开屏', Lz.image, C.mint, () => logic.replaceSplash()),
       if (logic.isAdmin)
         _S(
           '后台管理',
@@ -1539,7 +1540,7 @@ class MineComponent extends StatelessWidget {
           )
         : PrimaryButton(
             label: '登录 / 注册',
-            icon: Icons.login_rounded,
+            icon: Lz.logIn,
             height: 52,
             onPressed: logic.openLogin,
           );
@@ -1561,8 +1562,8 @@ class MineComponent extends StatelessWidget {
             ),
           ),
           for (final e in const <(String, ThemeMode, IconData)>[
-            ('浅色', ThemeMode.light, Icons.light_mode_rounded),
-            ('深色', ThemeMode.dark, Icons.dark_mode_rounded),
+            ('浅色', ThemeMode.light, Lz.sun),
+            ('深色', ThemeMode.dark, Lz.moon),
             ('跟随系统', ThemeMode.system, Icons.brightness_auto_rounded),
           ])
             ListTile(
@@ -1570,7 +1571,7 @@ class MineComponent extends StatelessWidget {
               leading: Icon(e.$3, size: 20, color: ctx.t2),
               title: Text(e.$1, style: Ty.small.copyWith(color: ctx.t1)),
               trailing: cur == e.$2
-                  ? Icon(Icons.check_rounded, size: 18, color: C.brand)
+                  ? Icon(Lz.check, size: 18, color: C.brand)
                   : null,
               onTap: () => Navigator.pop(ctx, e.$1),
             ),

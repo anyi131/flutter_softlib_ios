@@ -7,6 +7,7 @@ import '../../api/soft_service.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
+import '../../design/lucide.dart';
 
 /// 用户协议 / 隐私政策（v40 重构）
 ///
@@ -140,7 +141,7 @@ class _AgreementPageState extends State<AgreementPage> {
                 ),
               ),
               child: Icon(
-                Icons.arrow_back_ios_new_rounded,
+                Lz.arrowLeft,
                 size: 16,
                 color: context.t1,
               ),
@@ -157,7 +158,7 @@ class _AgreementPageState extends State<AgreementPage> {
     final color = isPrivacy ? C.pink : C.violet;
     final icon = isPrivacy
         ? Icons.privacy_tip_rounded
-        : Icons.description_rounded;
+        : Lz.fileText;
     final desc = isPrivacy
         ? '我们非常重视你的隐私。本政策说明我们收集哪些信息、如何使用与保护它们。'
         : '使用本软件即表示你已阅读并同意以下条款，请仔细阅读。';
@@ -218,7 +219,7 @@ class _AgreementPageState extends State<AgreementPage> {
       padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 20),
       child: Column(
         children: [
-          Icon(Icons.article_outlined, size: 40, color: context.t3),
+          Icon(Lz.fileText, size: 40, color: context.t3),
           const SizedBox(height: 14),
           Text(
             '${isPrivacy ? '隐私政策' : '用户协议'}暂未配置',

@@ -11,6 +11,7 @@ import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../design/glass.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 后台 · 工具箱管理（v3.3.4）
@@ -96,7 +97,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 38, color: context.t3),
+            Icon(Lz.alertCircle, size: 38, color: context.t3),
             const SizedBox(height: 10),
             Text(
               _err,
@@ -208,7 +209,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.search_rounded, size: 18, color: context.t3),
+                    Icon(Lz.search, size: 18, color: context.t3),
                     const SizedBox(width: 7),
                     Expanded(
                       child: TextField(
@@ -226,7 +227,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                     AppPressable(
                       onTap: _load,
                       child: Icon(
-                        Icons.arrow_forward_rounded,
+                        Lz.arrowRight,
                         size: 17,
                         color: C.brand,
                       ),
@@ -249,7 +250,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                    Icon(Lz.plus, size: 16, color: Colors.white),
                     SizedBox(width: 4),
                     Text(
                       '新增',
@@ -280,7 +281,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
         const SizedBox(height: 12),
         if (_tools.isEmpty)
           const EmptyState(
-            icon: Icons.widgets_outlined,
+            icon: Lz.layoutGrid,
             text: '还没有工具',
             hint: '点右上「新增」添加，或先在「分类」里建分类',
           )
@@ -356,7 +357,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                         ),
                       )
                     : Icon(
-                        Icons.widgets_rounded,
+                        Lz.layoutGrid,
                         size: 19,
                         color: on ? C.brand : context.t3,
                       ),
@@ -442,17 +443,17 @@ class _AdminToolsTabState extends State<AdminToolsTab>
           const SizedBox(height: 6),
           Row(
             children: [
-              _miniBtn('上移', Icons.arrow_upward_rounded, () async {
+              _miniBtn('上移', Lz.arrowUp, () async {
                 await _svc.moveJzsTool(t, -1);
                 _load();
               }),
-              _miniBtn('下移', Icons.arrow_downward_rounded, () async {
+              _miniBtn('下移', Lz.arrowDown, () async {
                 await _svc.moveJzsTool(t, 1);
                 _load();
               }),
-              _miniBtn('编辑', Icons.edit_outlined, () => _editTool(t)),
+              _miniBtn('编辑', Lz.pencil, () => _editTool(t)),
               const Spacer(),
-              _miniBtn('删除', Icons.delete_outline_rounded, () async {
+              _miniBtn('删除', Lz.trash2, () async {
                 await _svc.deleteJzsTool(_int(t['id']));
                 ToastUtil.success('已删除');
                 _load();
@@ -527,7 +528,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.add_rounded, size: 15, color: Colors.white),
+                    Icon(Lz.plus, size: 15, color: Colors.white),
                     SizedBox(width: 4),
                     Text(
                       '新增分类',
@@ -546,7 +547,7 @@ class _AdminToolsTabState extends State<AdminToolsTab>
         const SizedBox(height: 10),
         if (_cats.isEmpty)
           const EmptyState(
-            icon: Icons.category_outlined,
+            icon: Lz.shapes,
             text: '还没有分类',
             hint: '先建分类，再往里面加工具',
           )
@@ -610,17 +611,17 @@ class _AdminToolsTabState extends State<AdminToolsTab>
           const SizedBox(height: 6),
           Row(
             children: [
-              _miniBtn('上移', Icons.arrow_upward_rounded, () async {
+              _miniBtn('上移', Lz.arrowUp, () async {
                 await _svc.moveJzsCat(c, -1);
                 _load();
               }),
-              _miniBtn('下移', Icons.arrow_downward_rounded, () async {
+              _miniBtn('下移', Lz.arrowDown, () async {
                 await _svc.moveJzsCat(c, 1);
                 _load();
               }),
-              _miniBtn('编辑', Icons.edit_outlined, () => _editCat(c)),
+              _miniBtn('编辑', Lz.pencil, () => _editCat(c)),
               const Spacer(),
-              _miniBtn('删除', Icons.delete_outline_rounded, () async {
+              _miniBtn('删除', Lz.trash2, () async {
                 await _svc.deleteJzsCat(_int(c['id']));
                 ToastUtil.success('已删除分类及其工具');
                 _load();

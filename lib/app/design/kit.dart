@@ -9,6 +9,7 @@ import 'ui.dart';
 import 'glass.dart';
 import 'glass_theme.dart';
 import 'app_anim.dart';
+import 'lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 ///  统一组件库（Design Kit）
@@ -687,7 +688,7 @@ class EmptyState extends StatelessWidget {
     super.key,
     this.text = '暂无数据',
     this.hint,
-    this.icon = Icons.inbox_rounded,
+    this.icon = Lz.inbox,
     this.action,
   });
 
@@ -749,12 +750,12 @@ class ErrorState extends StatelessWidget {
     return EmptyState(
       text: text,
       hint: hint,
-      icon: Icons.cloud_off_rounded,
+      icon: Lz.cloudOff,
       action: onRetry == null
           ? null
           : SoftButton(
               label: '重试',
-              icon: Icons.refresh_rounded,
+              icon: Lz.refreshCw,
               onPressed: onRetry,
             ),
     );
@@ -1032,8 +1033,8 @@ class AppImage extends StatelessWidget {
     this.height,
     this.radius = R.md,
     this.fit = BoxFit.cover,
-    this.placeholderIcon = Icons.image_outlined,
-    this.errorIcon = Icons.broken_image_outlined,
+    this.placeholderIcon = Lz.image,
+    this.errorIcon = Lz.imageOff,
     this.bg,
   });
 

@@ -11,6 +11,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// 采集 · 目录配置（可增删改，直接同步到采集平台）
 ///
@@ -121,7 +122,7 @@ class _CollectDirsViewState extends State<CollectDirsView>
                   padding: const EdgeInsets.only(bottom: 8),
                   child: PrimaryButton(
                     label: '添加目录配置',
-                    icon: Icons.add_rounded,
+                    icon: Lz.plus,
                     height: 44,
                     onPressed: () => _editDir(null),
                   ),
@@ -153,7 +154,7 @@ class _CollectDirsViewState extends State<CollectDirsView>
             Row(
               children: [
                 Icon(
-                  Icons.folder_rounded,
+                  Lz.folder,
                   size: 19,
                   color: enabled ? C.brand : context.t3,
                 ),
@@ -185,26 +186,26 @@ class _CollectDirsViewState extends State<CollectDirsView>
               ],
             ),
             const SizedBox(height: 7),
-            _kv(Icons.tag_rounded, '目录 ID  ${d['dir_id']}'),
+            _kv(Lz.tag, '目录 ID  ${d['dir_id']}'),
             if ((d['path'] ?? '').toString().isNotEmpty)
               _kv(Icons.account_tree_outlined, '${d['path']}'),
-            _kv(Icons.sort_rounded, '优先级  ${d['priority'] ?? 0}'),
+            _kv(Lz.arrowUpDown, '优先级  ${d['priority'] ?? 0}'),
             if (kw.isNotEmpty)
               _kv(Icons.filter_alt_outlined, '关键词  $kw', color: C.mint),
             if (block.isNotEmpty)
-              _kv(Icons.block_rounded, '屏蔽  $block', color: C.warning),
+              _kv(Lz.ban, '屏蔽  $block', color: C.warning),
             const SizedBox(height: 8),
             Row(
               children: [
                 MiniAction(
                   label: '编辑',
-                  icon: Icons.edit_outlined,
+                  icon: Lz.pencil,
                   onTap: () => _editDir(d),
                 ),
                 const SizedBox(width: 7),
                 MiniAction(
                   label: '删除',
-                  icon: Icons.delete_outline_rounded,
+                  icon: Lz.trash2,
                   color: C.danger,
                   onTap: configId <= 0 ? () {} : () => _delete(d),
                 ),

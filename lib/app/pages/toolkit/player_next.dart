@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../../design/ui.dart';
 import '../../widgets/mpv_core.dart';
 import '../../design/app_anim.dart';
+import '../../design/lucide.dart';
 
 /// ★ 1028：播放页推翻重做（音乐 / 影视共用一套）
 ///
@@ -368,7 +369,7 @@ class _VideoPageState extends State<VideoPage> {
             ),
             child: Row(
               children: [
-                _roundBtn(Icons.arrow_back_ios_new_rounded, _back, size: 17),
+                _roundBtn(Lz.arrowLeft, _back, size: 17),
                 const SizedBox(width: 2),
                 Expanded(
                   child: Column(
@@ -400,7 +401,7 @@ class _VideoPageState extends State<VideoPage> {
                   ),
                 ),
                 _roundBtn(
-                  _land ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
+                  _land ? Lz.minimize : Lz.maximize,
                   _toggleLandscape,
                   size: 22,
                 ),
@@ -449,7 +450,7 @@ class _VideoPageState extends State<VideoPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _miniBtn(Icons.skip_previous_rounded, _idx > 0 ? _prev : null),
+                    _miniBtn(Lz.skipBack, _idx > 0 ? _prev : null),
                     const SizedBox(width: 18),
                     _miniBtn(Icons.replay_10_rounded, () => _seekBy(-10)),
                     const SizedBox(width: 10),
@@ -458,7 +459,7 @@ class _VideoPageState extends State<VideoPage> {
                     _miniBtn(Icons.forward_10_rounded, () => _seekBy(10)),
                     const SizedBox(width: 18),
                     _miniBtn(
-                      Icons.skip_next_rounded,
+                      Lz.skipForward,
                       _idx + 1 < widget.episodes.length ? _next : null,
                     ),
                   ],
@@ -518,7 +519,7 @@ class _VideoPageState extends State<VideoPage> {
               padding: const EdgeInsets.fromLTRB(6, 4, 10, 0),
               child: Row(
                 children: [
-                  _roundBtn(Icons.keyboard_arrow_down_rounded, _back, size: 26),
+                  _roundBtn(Lz.chevronDown, _back, size: 26),
                   const Spacer(),
                   _rotatingDot(v?.isPlaying ?? false),
                 ],
@@ -577,12 +578,12 @@ class _VideoPageState extends State<VideoPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _miniBtn(Icons.skip_previous_rounded, _idx > 0 ? _prev : null, size: 32),
+                      _miniBtn(Lz.skipBack, _idx > 0 ? _prev : null, size: 32),
                       const SizedBox(width: 34),
                       _playBtn(v?.isPlaying ?? false, 72),
                       const SizedBox(width: 34),
                       _miniBtn(
-                        Icons.skip_next_rounded,
+                        Lz.skipForward,
                         _idx + 1 < widget.episodes.length ? _next : null,
                         size: 32,
                       ),
@@ -647,7 +648,7 @@ class _VideoPageState extends State<VideoPage> {
         ),
       ),
       child: Center(
-        child: Icon(Icons.music_note_rounded, size: 76, color: Colors.white.withAlpha(102)),
+        child: Icon(Lz.music, size: 76, color: Colors.white.withAlpha(102)),
       ),
     );
   }
@@ -665,7 +666,7 @@ class _VideoPageState extends State<VideoPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                playing ? Icons.graphic_eq_rounded : Icons.pause_rounded,
+                playing ? Icons.graphic_eq_rounded : Lz.pause,
                 size: 13,
                 color: Colors.white,
               ),
@@ -732,7 +733,7 @@ class _VideoPageState extends State<VideoPage> {
           boxShadow: [BoxShadow(color: Colors.black.withAlpha(77), blurRadius: 20, offset: Offset(0, 8))],
         ),
         child: Icon(
-          playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+          playing ? Lz.pause : Lz.play,
           size: size * .56,
           color: Colors.black,
         ),
@@ -849,7 +850,7 @@ class _VideoPageState extends State<VideoPage> {
                   ),
                 ),
                 trailing: s == _speed
-                    ? const Icon(Icons.check_rounded, size: 18, color: C.mint)
+                    ? const Icon(Lz.check, size: 18, color: C.mint)
                     : null,
                 onTap: () => Navigator.pop(ctx, s),
               ),
@@ -896,7 +897,7 @@ class _VideoPageState extends State<VideoPage> {
                       style: TextStyle(color: Colors.white.withAlpha(102), fontSize: 11.5),
                     ),
                     const Spacer(),
-                    _roundBtn(Icons.close_rounded, () => Navigator.pop(ctx), size: 18),
+                    _roundBtn(Lz.x, () => Navigator.pop(ctx), size: 18),
                   ],
                 ),
               ),
@@ -954,7 +955,7 @@ class _VideoPageState extends State<VideoPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.wifi_off_rounded, color: Colors.white.withAlpha(204), size: 38),
+                Icon(Lz.wifiOff, color: Colors.white.withAlpha(204), size: 38),
                 const SizedBox(height: 14),
                 const Text(
                   '播放失败',

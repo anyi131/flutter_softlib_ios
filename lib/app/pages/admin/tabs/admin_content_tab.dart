@@ -17,6 +17,7 @@ import '../../../design/ui.dart';
 import '../../../design/glass.dart';
 import '../../../utils/app_action.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// 内容管理：动态 / 评价 / 协议配置
 class AdminContentTab extends StatefulWidget {
@@ -298,12 +299,12 @@ class _AdminContentTabState extends State<AdminContentTab>
                 const Spacer(),
                 IconButton(
                   tooltip: '编辑内容',
-                  icon: Icon(Icons.edit_outlined, size: 18, color: C.brand),
+                  icon: Icon(Lz.pencil, size: 18, color: C.brand),
                   onPressed: () => _editPost(p),
                 ),
                 IconButton(
                   icon: const Icon(
-                    Icons.delete_outline,
+                    Lz.trash2,
                     size: 18,
                     color: C.danger,
                   ),
@@ -358,14 +359,14 @@ class _AdminContentTabState extends State<AdminContentTab>
                 if (pending) ...[
                   _reviewBtn(
                     '通过',
-                    Icons.check_rounded,
+                    Lz.check,
                     C.success,
                     () => _doReview(p, 'pass'),
                   ),
                   const SizedBox(width: 8),
                   _reviewBtn(
                     '驳回',
-                    Icons.close_rounded,
+                    Lz.x,
                     C.danger,
                     () => _doReview(p, 'reject'),
                   ),
@@ -580,7 +581,7 @@ class _AdminContentTabState extends State<AdminContentTab>
 
   Widget _reviewList() {
     if (_reviews.isEmpty) {
-      return const EmptyState(text: '暂无评价', icon: Icons.rate_review_outlined);
+      return const EmptyState(text: '暂无评价', icon: Lz.messageSquare);
     }
     return ListView.builder(
       padding: const EdgeInsets.all(14),
@@ -608,8 +609,8 @@ class _AdminContentTabState extends State<AdminContentTab>
                       5,
                       (j) => Icon(
                         j < (int.tryParse('${r['score']}') ?? 0)
-                            ? Icons.star_rounded
-                            : Icons.star_border_rounded,
+                            ? Lz.star
+                            : Lz.star,
                         size: 13,
                         color: C.amber,
                       ),
@@ -618,7 +619,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                   const Spacer(),
                   IconButton(
                     icon: const Icon(
-                      Icons.delete_outline,
+                      Lz.trash2,
                       size: 18,
                       color: C.danger,
                     ),
@@ -657,7 +658,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       children: [
         PrimaryButton(
           label: '新增分类',
-          icon: Icons.add,
+          icon: Lz.plus,
           height: 46,
           onPressed: () => _editCat(null),
         ),
@@ -689,12 +690,12 @@ class _AdminContentTabState extends State<AdminContentTab>
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 19),
+                  icon: const Icon(Lz.pencil, size: 19),
                   onPressed: () => _editCat(c),
                 ),
                 IconButton(
                   icon: const Icon(
-                    Icons.delete_outline,
+                    Lz.trash2,
                     size: 19,
                     color: C.danger,
                   ),
@@ -769,7 +770,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       children: [
         PrimaryButton(
           label: '新增轮播图',
-          icon: Icons.add,
+          icon: Lz.plus,
           height: 46,
           onPressed: () => _editCarousel(null),
         ),
@@ -806,12 +807,12 @@ class _AdminContentTabState extends State<AdminContentTab>
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 19),
+                  icon: const Icon(Lz.pencil, size: 19),
                   onPressed: () => _editCarousel(c),
                 ),
                 IconButton(
                   icon: const Icon(
-                    Icons.delete_outline,
+                    Lz.trash2,
                     size: 19,
                     color: C.danger,
                   ),
@@ -888,7 +889,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Icon(Icons.image_outlined, size: 21),
+                            : const Icon(Lz.image, size: 21),
                         onPressed: uploading
                             ? null
                             : () async {
@@ -987,7 +988,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       children: [
         PrimaryButton(
           label: '新增线报文章',
-          icon: Icons.add,
+          icon: Lz.plus,
           height: 46,
           onPressed: () => _editReport(null),
         ),
@@ -1037,11 +1038,11 @@ class _AdminContentTabState extends State<AdminContentTab>
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.edit_outlined, size: 19),
+            icon: const Icon(Lz.pencil, size: 19),
             onPressed: () => _editReport(r),
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline, size: 19, color: C.danger),
+            icon: const Icon(Lz.trash2, size: 19, color: C.danger),
             onPressed: () async {
               await AppAction.act(
                 () => _svc.deleteReport(int.tryParse('${r['id']}') ?? 0),
@@ -1110,7 +1111,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const Icon(Icons.image_outlined, size: 21),
+                              : const Icon(Lz.image, size: 21),
                           onPressed: uploading
                               ? null
                               : () async {
@@ -1196,7 +1197,7 @@ class _AdminContentTabState extends State<AdminContentTab>
         ),
         PrimaryButton(
           label: '添加蓝奏云文件夹',
-          icon: Icons.add,
+          icon: Lz.plus,
           height: 46,
           onPressed: () => _editSource(null),
         ),
@@ -1215,7 +1216,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                     borderRadius: BorderRadius.circular(9),
                   ),
                   child: const Icon(
-                    Icons.cloud_outlined,
+                    Lz.cloud,
                     size: 18,
                     color: C.cyan,
                   ),
@@ -1246,19 +1247,19 @@ class _AdminContentTabState extends State<AdminContentTab>
                 IconButton(
                   tooltip: '同步文件夹内容',
                   icon: const Icon(
-                    Icons.sync_rounded,
+                    Lz.refreshCw,
                     size: 19,
                     color: C.success,
                   ),
                   onPressed: () => _syncSource(s),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 19),
+                  icon: const Icon(Lz.pencil, size: 19),
                   onPressed: () => _editSource(s),
                 ),
                 IconButton(
                   icon: const Icon(
-                    Icons.delete_outline,
+                    Lz.trash2,
                     size: 19,
                     color: C.danger,
                   ),
@@ -1552,7 +1553,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       children: [
         PrimaryButton(
           label: '新增推荐位',
-          icon: Icons.add,
+          icon: Lz.plus,
           height: 46,
           onPressed: () => _editReferral(null),
         ),
@@ -1589,12 +1590,12 @@ class _AdminContentTabState extends State<AdminContentTab>
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 19),
+                  icon: const Icon(Lz.pencil, size: 19),
                   onPressed: () => _editReferral(r),
                 ),
                 IconButton(
                   icon: const Icon(
-                    Icons.delete_outline,
+                    Lz.trash2,
                     size: 19,
                     color: C.danger,
                   ),
@@ -1672,7 +1673,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Icon(Icons.image_outlined, size: 21),
+                            : const Icon(Lz.image, size: 21),
                         onPressed: uploading
                             ? null
                             : () async {
@@ -1766,7 +1767,7 @@ class _AdminContentTabState extends State<AdminContentTab>
         ),
         PrimaryButton(
           label: '发布新版本',
-          icon: Icons.add,
+          icon: Lz.plus,
           height: 46,
           onPressed: () => _editVersion(null),
         ),
@@ -1805,12 +1806,12 @@ class _AdminContentTabState extends State<AdminContentTab>
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 19),
+                  icon: const Icon(Lz.pencil, size: 19),
                   onPressed: () => _editVersion(v),
                 ),
                 IconButton(
                   icon: const Icon(
-                    Icons.delete_outline,
+                    Lz.trash2,
                     size: 19,
                     color: C.danger,
                   ),
@@ -1939,7 +1940,7 @@ class _AdminContentTabState extends State<AdminContentTab>
       children: [
         PrimaryButton(
           label: '批量生成卡密',
-          icon: Icons.add_card,
+          icon: Lz.creditCard,
           height: 46,
           onPressed: _genCards,
         ),
@@ -1974,7 +1975,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                 ),
                 IconButton(
                   icon: const Icon(
-                    Icons.delete_outline,
+                    Lz.trash2,
                     size: 19,
                     color: C.danger,
                   ),
@@ -2113,7 +2114,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                   Row(
                     children: [
                       const Icon(
-                        Icons.info_outline_rounded,
+                        Lz.info,
                         size: 15,
                         color: C.amber,
                       ),
@@ -2144,7 +2145,7 @@ class _AdminContentTabState extends State<AdminContentTab>
             const SizedBox(height: 14),
             PrimaryButton(
               label: '保存配置',
-              icon: Icons.save_rounded,
+              icon: Lz.save,
               height: 46,
               onPressed: () async {
                 try {

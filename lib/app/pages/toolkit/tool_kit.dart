@@ -13,6 +13,7 @@ import '../../utils/err_text.dart';
 import '../../utils/toast_util.dart';
 import '../../design/ui.dart';
 import '../../utils/tool_ctx.dart';
+import '../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 工具箱公共件（v3.3.4）：图标映射 + 页面骨架 + 卡片/按钮/输入框/胶囊
@@ -25,62 +26,62 @@ class ToolIcons {
   static IconData of(String kind, [String route = '']) {
     switch (kind.isNotEmpty ? kind : route) {
       case 'hotsearch':
-        return Icons.local_fire_department_rounded;
+        return Lz.flame;
       case 'news':
-        return Icons.newspaper_rounded;
+        return Lz.newspaper;
       case 'epic':
         return Icons.videogame_asset_rounded;
       case 'earthquake':
-        return Icons.public_rounded;
+        return Lz.globe;
       case 'poem':
         return Icons.auto_stories_rounded;
       case 'hitokoto':
-        return Icons.format_quote_rounded;
+        return Lz.quote;
       case 'movie':
       case 'moviesearch':
-        return Icons.movie_rounded;
+        return Lz.clapperboard;
       case 'music':
         return Icons.library_music_rounded;
       case 'shortvideo':
       case 'drama':
         return Icons.smart_display_rounded;
       case 'comic':
-        return Icons.menu_book_rounded;
+        return Lz.bookOpen;
       case 'heroes':
       case 'herogallery':
         return Icons.sports_martial_arts_rounded;
       case 'wallpaper':
-        return Icons.wallpaper_rounded;
+        return Lz.image;
       case 'translate':
-        return Icons.translate_rounded;
+        return Lz.languages;
       case 'exchange':
         return Icons.currency_exchange_rounded;
       case 'ipquery':
-        return Icons.location_on_rounded;
+        return Lz.mapPin;
       case 'weather':
         return Icons.wb_sunny_rounded;
       case 'qrcode':
         return Icons.qr_code_2_rounded;
       case 'stopwatch':
-        return Icons.timer_rounded;
+        return Lz.timer;
       case 'countdown':
-        return Icons.hourglass_bottom_rounded;
+        return Lz.hourglass;
       case 'unit':
-        return Icons.swap_horiz_rounded;
+        return Lz.arrowLeftRight;
       case 'bmi':
         return Icons.monitor_weight_rounded;
       case 'loan':
         return Icons.home_work_rounded;
       case 'base64':
-        return Icons.code_rounded;
+        return Lz.code;
       case 'random':
-        return Icons.casino_rounded;
+        return Lz.dice5;
       case 'password':
-        return Icons.key_rounded;
+        return Lz.key;
       case 'relative':
         return Icons.family_restroom_rounded;
       default:
-        return Icons.widgets_rounded;
+        return Lz.layoutGrid;
     }
   }
 
@@ -88,35 +89,35 @@ class ToolIcons {
   static IconData cat(String name) {
     switch (name) {
       case '实时热榜':
-        return Icons.local_fire_department_rounded;
+        return Lz.flame;
       case '影视动漫画':
         return Icons.movie_filter_rounded;
       case '实用查询':
-        return Icons.travel_explore_rounded;
+        return Lz.globe;
       case '效率小工具':
         return Icons.build_circle_rounded;
       case '趣味娱乐':
-        return Icons.sports_esports_rounded;
+        return Lz.gamepad2;
       case '资源解析':
-        return Icons.inventory_2_rounded;
+        return Lz.package;
       case '美图壁纸':
-        return Icons.image_rounded;
+        return Lz.image;
       case '生活便捷':
-        return Icons.work_rounded;
+        return Lz.briefcase;
       case '信息资讯':
-        return Icons.newspaper_rounded;
+        return Lz.newspaper;
       case '图片处理':
-        return Icons.auto_fix_high_rounded;
+        return Lz.wand2;
       case '文本工具':
-        return Icons.text_fields_rounded;
+        return Lz.type;
       case '计算换算':
         return Icons.calculate_rounded;
       case '查询工具':
-        return Icons.search_rounded;
+        return Lz.search;
       case '系统工具':
         return Icons.settings_suggest_rounded;
       default:
-        return Icons.widgets_rounded;
+        return Lz.layoutGrid;
     }
   }
 }
@@ -169,7 +170,7 @@ class ToolScaffold extends StatelessWidget {
                           height: 40,
                           alignment: Alignment.center,
                           child: Icon(
-                            Icons.arrow_back_ios_new_rounded,
+                            Lz.arrowLeft,
                             size: 18,
                             color: context.t1,
                           ),
@@ -258,7 +259,7 @@ class ToolScaffold extends StatelessWidget {
                 alignment: Alignment.center,
                 margin: const EdgeInsets.only(right: 4),
                 child: Icon(
-                  fav ? Icons.star_rounded : Icons.star_border_rounded,
+                  fav ? Lz.star : Lz.star,
                   size: 21,
                   color: fav ? C.amber : context.t2,
                 ),

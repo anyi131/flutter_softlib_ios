@@ -1,3 +1,4 @@
+import '../../design/lucide.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -169,7 +170,7 @@ class _JicunGalleryPageState extends State<JicunGalleryPage> {
                     tooltip: '关闭',
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(
-                      Icons.close_rounded,
+                      Lz.x,
                       color: Colors.white,
                       size: 24,
                     ),
@@ -236,7 +237,7 @@ class _LoadFailed extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.broken_image_outlined, size: 44, color: Colors.white60),
+          Icon(Lz.imageOff, size: 44, color: Colors.white60),
           SizedBox(height: 10),
           Text(
             '图片加载失败',

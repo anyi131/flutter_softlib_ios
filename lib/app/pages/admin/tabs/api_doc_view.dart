@@ -7,6 +7,7 @@ import '../../../design/ui.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';
 import '../admin_ui_kit.dart';
+import '../../../design/lucide.dart';
 
 /// 后台 · 接口文档
 ///
@@ -103,7 +104,7 @@ class _ApiDocViewState extends State<ApiDocView> {
               IconButton(
                 tooltip: '重新扫描',
                 onPressed: () => _load(regen: true),
-                icon: Icon(Icons.refresh_rounded, size: 19, color: context.t3),
+                icon: Icon(Lz.refreshCw, size: 19, color: context.t3),
               ),
             ],
           ),
@@ -130,7 +131,7 @@ class _ApiDocViewState extends State<ApiDocView> {
             ),
             child: Row(
               children: [
-                Icon(Icons.search_rounded, size: 15, color: context.t3),
+                Icon(Lz.search, size: 15, color: context.t3),
                 const SizedBox(width: 7),
                 Expanded(
                   child: TextField(
@@ -152,7 +153,7 @@ class _ApiDocViewState extends State<ApiDocView> {
                       setState(() => _kw = '');
                     },
                     child: Icon(
-                      Icons.close_rounded,
+                      Lz.x,
                       size: 14,
                       color: context.t3,
                     ),

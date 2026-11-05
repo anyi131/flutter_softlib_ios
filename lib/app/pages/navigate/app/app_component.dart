@@ -1,3 +1,4 @@
+import '../../../design/lucide.dart';
 import 'dart:async';
 
 import '../../../utils/err_text.dart';
@@ -329,7 +330,7 @@ class _AppComponentState extends State<AppComponent> {
           autofocus: true,
           decoration: const InputDecoration(
             hintText: '输入软件名称',
-            prefixIcon: Icon(Icons.search_rounded),
+            prefixIcon: Icon(Lz.search),
           ),
           onSubmitted: (s) => Get.back(result: s.trim()),
         ),
@@ -403,7 +404,7 @@ class _AppComponentState extends State<AppComponent> {
             ),
           ),
           _circleBtn(
-            _kw.isEmpty ? Icons.search_rounded : Icons.close_rounded,
+            _kw.isEmpty ? Lz.search : Lz.close,
             () {
               if (_kw.isEmpty) {
                 _search();
@@ -418,7 +419,7 @@ class _AppComponentState extends State<AppComponent> {
             },
           ),
           _circleBtn(
-            Icons.download_rounded,
+            Lz.download,
             () => Get.toNamed(Routes.appDownload),
           ),
         ],
@@ -520,7 +521,7 @@ class _AppComponentState extends State<AppComponent> {
                     Padding(
                       padding: const EdgeInsets.only(right: 4),
                       child: Icon(
-                        Icons.cloud_outlined,
+                        Lz.cloud,
                         size: 13,
                         color: sel ? Colors.white : C.cyan,
                       ),
@@ -566,7 +567,7 @@ class _AppComponentState extends State<AppComponent> {
       return EmptyState(
         text: _err,
         hint: '下拉或点右侧按钮重试',
-        icon: Icons.error_outline_rounded,
+        icon: Lz.alert,
       );
     }
     if (_loading) {
@@ -581,7 +582,7 @@ class _AppComponentState extends State<AppComponent> {
       return EmptyState(
         text: _kw.isEmpty ? '该分类暂无软件' : '没有找到「$_kw」',
         hint: _kw.isEmpty ? '换个分类看看吧' : '试试更换关键词搜索',
-        icon: _kw.isEmpty ? Icons.inbox_rounded : Icons.search_off_rounded,
+        icon: _kw.isEmpty ? Lz.inbox : Lz.searchX,
       );
     }
     // ★★ 1020：滚动到底自动加载
@@ -769,7 +770,7 @@ class _AppComponentState extends State<AppComponent> {
                     ),
                   ),
                   Icon(
-                    Icons.chevron_right_rounded,
+                    Lz.chevronRight,
                     size: 20,
                     color: context.t3,
                   ),
@@ -850,7 +851,7 @@ class _AppComponentState extends State<AppComponent> {
                 ),
               ),
               if (a.isVipItem)
-                Icon(Icons.workspace_premium_rounded, size: 15, color: C.gold)
+                Icon(Lz.vip, size: 15, color: C.gold)
               else if (a.isNew)
                 Container(
                   width: 6,
@@ -1215,7 +1216,7 @@ class _AppComponentState extends State<AppComponent> {
                       const SizedBox(width: 7),
                       if (a.scoreCount > 0) ...[
                         const Icon(
-                          Icons.star_rounded,
+                          Lz.star,
                           size: 12,
                           color: C.amber,
                         ),
@@ -1254,7 +1255,7 @@ class _AppComponentState extends State<AppComponent> {
               ),
             ),
             const SizedBox(width: 8),
-            Icon(Icons.chevron_right_rounded, size: 20, color: context.t3),
+            Icon(Lz.chevronRight, size: 20, color: context.t3),
           ],
         ),
       ),
@@ -1269,6 +1270,6 @@ class _AppComponentState extends State<AppComponent> {
         colors: [C.brand.withAlpha(50), C.violet.withAlpha(50)],
       ),
     ),
-    child: Icon(Icons.android_rounded, color: Colors.white, size: size * 0.48),
+    child: Icon(Lz.smartphone, color: Colors.white, size: size * 0.48),
   );
 }

@@ -7,6 +7,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 
 import '../../design/app_anim.dart';
 import 'article_reading_logic.dart';
+import '../../design/lucide.dart';
 
 class ArticleReadingPage extends StatelessWidget {
   const ArticleReadingPage({super.key});
@@ -73,7 +74,7 @@ class ArticleReadingPage extends StatelessWidget {
             mini: true,
             backgroundColor: Theme.of(context).primaryColor,
             child: const Icon(
-              Icons.keyboard_arrow_up,
+              Lz.chevronUp,
               color: Colors.white,
               size: 28,
             ),
@@ -108,7 +109,7 @@ class ArticleReadingPage extends StatelessWidget {
                 ),
                 errorBuilder: (context, error, stackTrace) {
                   return const Center(
-                    child: Icon(Icons.error, color: Colors.white, size: 64),
+                    child: Icon(Lz.alertCircle, color: Colors.white, size: 64),
                   );
                 },
               );
@@ -144,7 +145,7 @@ class ArticleReadingPage extends StatelessWidget {
                   color: Colors.black.withOpacity(0.7),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.close, color: Colors.white, size: 24),
+                child: const Icon(Lz.x, color: Colors.white, size: 24),
               ),
             ),
           ),

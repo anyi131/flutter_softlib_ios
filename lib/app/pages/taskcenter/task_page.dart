@@ -16,6 +16,7 @@ import '../../design/ui.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
 import '../../design/kit.dart';
+import '../../design/lucide.dart';
 
 /// ★ 1016：赏帮赚新手任务 → 领会员
 class TaskPage extends StatefulWidget {
@@ -244,7 +245,7 @@ class _TaskPageState extends State<TaskPage> {
                 ],
               ),
               child: Icon(
-                Icons.arrow_back_ios_new_rounded,
+                Lz.arrowLeft,
                 size: 16,
                 color: context.t1,
               ),
@@ -690,7 +691,7 @@ class _TaskPageState extends State<TaskPage> {
                                 ? Colors.white.withAlpha(14)
                                 : C.lbg2,
                             child: Icon(
-                              Icons.image_rounded,
+                              Lz.image,
                               size: 20,
                               color: context.t3,
                             ),

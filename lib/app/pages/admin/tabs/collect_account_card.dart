@@ -11,6 +11,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// 采集账号（版权梦）—— 配置 / 修改 / 解除登录
 ///
@@ -243,7 +244,7 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
     return Row(
       children: [
         Icon(
-          _loggedIn ? Icons.verified_user_rounded : Icons.link_off_rounded,
+          _loggedIn ? Lz.shieldCheck : Lz.unlink,
           color: _loggedIn ? C.success : C.warning,
           size: 20,
         ),
@@ -274,7 +275,7 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
             Expanded(
               child: SoftButton(
                 label: '修改账号',
-                icon: Icons.edit_outlined,
+                icon: Lz.pencil,
                 height: 40,
                 onPressed: _busy
                     ? null
@@ -291,7 +292,7 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
             Expanded(
               child: SoftButton(
                 label: '解除登录',
-                icon: Icons.logout_rounded,
+                icon: Lz.logOut,
                 height: 40,
                 color: C.danger,
                 onPressed: _busy ? null : _logout,
@@ -340,7 +341,7 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
               child: _field(
                 ctrl: _userCtrl,
                 label: '账号',
-                icon: Icons.person_outline_rounded,
+                icon: Lz.user,
               ),
             ),
             const SizedBox(width: 10),
@@ -348,13 +349,13 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
               child: _field(
                 ctrl: _passCtrl,
                 label: _hasPass ? '密码（留空不改）' : '密码',
-                icon: Icons.lock_outline_rounded,
+                icon: Lz.lock,
                 obscure: !_showPass,
                 suffix: IconButton(
                   icon: Icon(
                     _showPass
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
+                        ? Lz.eyeOff
+                        : Lz.eye,
                     size: 18,
                     color: context.t3,
                   ),
@@ -383,7 +384,7 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
               flex: 2,
               child: PrimaryButton(
                 label: _loggedIn ? '保存并重新登录' : '保存并登录',
-                icon: Icons.login_rounded,
+                icon: Lz.logIn,
                 height: 46,
                 loading: _busy,
                 onPressed: _loginByPassword,
@@ -396,7 +397,7 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
         TextButton.icon(
           onPressed: () => setState(() => _showCookie = !_showCookie),
           icon: Icon(
-            _showCookie ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+            _showCookie ? Lz.chevronUp : Lz.chevronDown,
             size: 18,
           ),
           label: const Text('登录失败？改用浏览器 Cookie 方式'),
@@ -424,7 +425,7 @@ class _CollectAccountCardState extends State<CollectAccountCard> {
           const SizedBox(height: 10),
           SoftButton(
             label: '保存 Cookie 并验证',
-            icon: Icons.check_circle_outline_rounded,
+            icon: Lz.checkCircle2,
             height: 42,
             onPressed: _busy ? null : _saveCookie,
           ),

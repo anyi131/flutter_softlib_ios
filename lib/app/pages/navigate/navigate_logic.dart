@@ -32,6 +32,7 @@ import '../splash/maintain_page.dart';
 import '../../api/user_service.dart';
 import '../../utils/permission_utils.dart';
 import '../../widgets/icon_font.dart';
+import '../../design/lucide.dart';
 
 class NavigateLogic extends GetxController with WidgetsBindingObserver {
   /// 底部 Tab —— 由后台「界面配置」动态决定（默认全开）
@@ -49,14 +50,14 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
     ),
     // ★ v3.3.4：工具箱 Tab（分类大卡 + 胶囊工具，约 30 个真实工具）
     NavigationDestination(
-      icon: Icon(Icons.widgets_outlined),
+      icon: Icon(Lz.layoutGrid),
       label: '工具',
-      selectedIcon: Icon(Icons.widgets_rounded),
+      selectedIcon: Icon(Lz.layoutGrid),
     ),
     NavigationDestination(
-      icon: Icon(Icons.explore_outlined),
+      icon: Icon(Lz.compass),
       label: '广场',
-      selectedIcon: Icon(Icons.explore),
+      selectedIcon: Icon(Lz.compass),
     ),
     NavigationDestination(
       icon: Icon(Icons.tips_and_updates_outlined),
@@ -64,14 +65,14 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
       selectedIcon: Icon(Icons.tips_and_updates),
     ),
     NavigationDestination(
-      icon: const Icon(Icons.download_outlined),
+      icon: const Icon(Lz.download),
       label: '即存',
-      selectedIcon: const Icon(Icons.download),
+      selectedIcon: const Icon(Lz.download),
     ),
     NavigationDestination(
-      icon: Icon(Icons.person_outline),
+      icon: Icon(Lz.user),
       label: '我的',
-      selectedIcon: Icon(Icons.person),
+      selectedIcon: Icon(Lz.user),
     ),
   ];
   static List<Widget> _basePages() => [
@@ -172,9 +173,9 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
       add(
         jicunOn,
         NavigationDestination(
-          icon: const Icon(Icons.download_outlined),
+          icon: const Icon(Lz.download),
           label: jicunName,
-          selectedIcon: const Icon(Icons.download),
+          selectedIcon: const Icon(Lz.download),
         ),
         _basePages()[5],
       );

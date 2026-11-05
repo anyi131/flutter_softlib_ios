@@ -10,6 +10,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
+import '../../design/lucide.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 工具箱 · 第九批（1015）：补齐 150 个真工具
@@ -403,7 +404,7 @@ class _VisionPageState extends State<VisionPage> {
             controller: _c,
             label: '对数视力（如 4.8 / 5.0）',
             keyboard: const TextInputType.numberWithOptions(decimal: true),
-            icon: Icons.remove_red_eye_rounded,
+            icon: Lz.eye,
             onChanged: (_) => setState(() {}),
           ),
           ToolCard(
@@ -555,7 +556,7 @@ class _ZodiacPageState extends State<ZodiacPage> {
             controller: _c,
             label: '年份（如 1995）',
             keyboard: TextInputType.number,
-            icon: Icons.pets_rounded,
+            icon: Lz.cat,
             onChanged: (_) => setState(() {}),
           ),
           ToolCard(
@@ -1064,8 +1065,8 @@ class _PomodoroPageState extends State<PomodoroPage> {
                 child: ToolButton(
                   label: _running ? '暂停' : '开始',
                   icon: _running
-                      ? Icons.pause_rounded
-                      : Icons.play_arrow_rounded,
+                      ? Lz.pause
+                      : Lz.play,
                   onPressed: _run,
                 ),
               ),
@@ -1073,7 +1074,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
               Expanded(
                 child: ToolButton(
                   label: '重置',
-                  icon: Icons.refresh_rounded,
+                  icon: Lz.refreshCw,
                   outline: true,
                   onPressed: () => setState(() {
                     _running = false;

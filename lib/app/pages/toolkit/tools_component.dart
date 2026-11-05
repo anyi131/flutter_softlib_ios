@@ -23,6 +23,7 @@ import 'tool_api_page.dart';
 import 'tool_cache.dart';
 import 'tool_browser_page.dart';
 import 'tool_router.dart';
+import '../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 工具箱 Tab 主页面（v3.3.4）
@@ -261,7 +262,7 @@ class _ToolsComponentState extends State<ToolsComponent>
                       ? const LoadingState(text: '正在加载工具箱…')
                       : (_groups.isEmpty
                             ? EmptyState(
-                                icon: Icons.widgets_outlined,
+                                icon: Lz.layoutGrid,
                                 text: _err.isEmpty ? '暂无工具' : _err,
                                 hint: '下拉重试',
                               )
@@ -350,7 +351,7 @@ class _ToolsComponentState extends State<ToolsComponent>
                       children: [
                         Pill(
                           '${_meta['total'] ?? _count} 个工具',
-                          icon: Icons.auto_awesome_rounded,
+                          icon: Lz.sparkles,
                           small: true,
                         ),
                         const SizedBox(width: 6),
@@ -358,7 +359,7 @@ class _ToolsComponentState extends State<ToolsComponent>
                           Pill(
                             '${_groups.length} 个分类',
                             color: C.mint,
-                            icon: Icons.folder_rounded,
+                            icon: Lz.folder,
                             small: true,
                           ),
                       ],
@@ -367,14 +368,14 @@ class _ToolsComponentState extends State<ToolsComponent>
                 ),
               ),
               _actionBtn(
-                Icons.search_rounded,
+                Lz.search,
                 '搜索',
                 () => Get.to(() => const ToolSearchPage()),
               ),
               const SizedBox(width: 8),
               // ★ 1020：一键只看收藏（再点一次回到全部）
               _actionBtn(
-                _favOnly ? Icons.star_rounded : Icons.star_border_rounded,
+                _favOnly ? Lz.star : Lz.star,
                 _favOnly ? '显示全部' : '只看收藏',
                 () => setState(() => _favOnly = !_favOnly),
                 active: _favOnly,
@@ -491,7 +492,7 @@ class _ToolsComponentState extends State<ToolsComponent>
           20,
         ),
         child: const EmptyState(
-          icon: Icons.star_border_rounded,
+          icon: Lz.star,
           text: '还没有收藏工具',
           hint: '长按任意工具图标即可收藏',
         ),
@@ -543,7 +544,7 @@ class _ToolsComponentState extends State<ToolsComponent>
                 ),
                 alignment: Alignment.center,
                 child: const Icon(
-                  Icons.star_rounded,
+                  Lz.star,
                   size: 16,
                   color: Colors.white,
                 ),
@@ -573,7 +574,7 @@ class _ToolsComponentState extends State<ToolsComponent>
                     children: [
                       Text('全部', style: Ty.tiny.copyWith(color: C.amber)),
                       Icon(
-                        Icons.chevron_right_rounded,
+                        Lz.chevronRight,
                         size: 15,
                         color: C.amber,
                       ),
@@ -806,7 +807,7 @@ class _ToolsComponentState extends State<ToolsComponent>
                           : null,
                     ),
                     child: Icon(
-                      fav ? Icons.star_rounded : Icons.star_border_rounded,
+                      fav ? Lz.star : Lz.star,
                       size: 13,
                       color: fav ? Colors.white : context.t3,
                     ),
@@ -896,14 +897,14 @@ class _ToolsComponentState extends State<ToolsComponent>
                     child: Padding(
                       padding: const EdgeInsets.only(left: 6, right: 2),
                       child: Icon(
-                        fav ? Icons.star_rounded : Icons.star_border_rounded,
+                        fav ? Lz.star : Lz.star,
                         size: 20,
                         color: fav ? C.amber : context.t3,
                       ),
                     ),
                   ),
                   Icon(
-                    Icons.chevron_right_rounded,
+                    Lz.chevronRight,
                     size: 20,
                     color: context.t3,
                   ),
@@ -991,7 +992,7 @@ class _ToolsComponentState extends State<ToolsComponent>
                       ),
                     ),
                   ),
-                  Icon(Icons.arrow_forward_rounded, size: 16, color: C.brand),
+                  Icon(Lz.arrowRight, size: 16, color: C.brand),
                 ],
               ),
             ),
@@ -1196,7 +1197,7 @@ class _ToolSearchPageState extends State<ToolSearchPage> {
             ),
             child: Row(
               children: [
-                Icon(Icons.search_rounded, size: 20, color: context.t3),
+                Icon(Lz.search, size: 20, color: context.t3),
                 const SizedBox(width: 9),
                 Expanded(
                   child: TextField(
@@ -1221,7 +1222,7 @@ class _ToolSearchPageState extends State<ToolSearchPage> {
                       _do('');
                     },
                     child: Icon(
-                      Icons.cancel_rounded,
+                      Lz.xCircle,
                       size: 18,
                       color: context.t3,
                     ),
@@ -1240,14 +1241,14 @@ class _ToolSearchPageState extends State<ToolSearchPage> {
     if (_loading) return const LoadingState(text: '搜索中…');
     if (!_searched) {
       return EmptyState(
-        icon: Icons.search_rounded,
+        icon: Lz.search,
         text: '输入关键词搜索工具',
         hint: '共 ${_svc.cachedConfig?['total'] ?? 0} 个工具可用',
       );
     }
     if (_list.isEmpty) {
       return const EmptyState(
-        icon: Icons.search_off_rounded,
+        icon: Lz.searchX,
         text: '没有找到相关工具',
         hint: '换个关键词试试',
       );
@@ -1349,7 +1350,7 @@ class _ToolSearchPageState extends State<ToolSearchPage> {
               ],
             ),
           ),
-          Icon(Icons.chevron_right_rounded, color: context.t3),
+          Icon(Lz.chevronRight, color: context.t3),
         ],
       ),
     );

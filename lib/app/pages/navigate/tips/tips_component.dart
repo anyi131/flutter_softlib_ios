@@ -7,6 +7,7 @@ import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../models/http/results/report_cat_model.dart';
 import 'tips_logic.dart';
+import '../../../design/lucide.dart';
 
 class TipsComponent extends StatefulWidget {
   const TipsComponent({super.key});
@@ -31,7 +32,7 @@ class _TipsComponentState extends State<TipsComponent> {
           return const EmptyState(
             text: '暂无数据',
             hint: '线报分类还没有内容，稍后再来看看',
-            icon: Icons.campaign_outlined,
+            icon: Lz.megaphone,
           );
         }
         return DefaultTabController(

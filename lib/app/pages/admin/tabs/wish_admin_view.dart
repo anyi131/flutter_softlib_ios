@@ -10,6 +10,7 @@ import '../../../utils/app_action.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';
 import '../admin_ui_kit.dart';
+import '../../../design/lucide.dart';
 
 /// 后台 · 需求投票（求软件）
 ///
@@ -288,7 +289,7 @@ class _WishAdminViewState extends State<WishAdminView>
                 const SizedBox(width: 8),
                 Row(
                   children: [
-                    Icon(Icons.thumb_up_rounded, size: 13, color: C.brand),
+                    Icon(Lz.thumbsUp, size: 13, color: C.brand),
                     const SizedBox(width: 3),
                     Text(
                       '$votes',
@@ -362,7 +363,7 @@ class _WishAdminViewState extends State<WishAdminView>
                   child: Padding(
                     padding: const EdgeInsets.all(4),
                     child: Icon(
-                      Icons.delete_outline_rounded,
+                      Lz.trash2,
                       size: 17,
                       color: C.danger,
                     ),

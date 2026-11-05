@@ -26,6 +26,7 @@ import '../../widgets/media_preview.dart';
 import 'tool_browser_page.dart';
 import 'tool_kit.dart';
 import 'tool_player_page.dart';
+import '../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 工具箱 · 联网工具（v3.3.4）
@@ -180,7 +181,7 @@ class _HotPageState extends State<HotPage> {
                 ? const LoadingState(text: '正在拉取榜单…')
                 : _list.isEmpty
                 ? EmptyState(
-                    icon: Icons.local_fire_department_outlined,
+                    icon: Lz.flame,
                     text: _err.isEmpty ? '暂无数据' : _err,
                     hint: '点击右上角刷新重试',
                   )
@@ -293,7 +294,7 @@ Widget _refresh(Future<void> Function() onTap, BuildContext context) =>
         width: 40,
         height: 40,
         alignment: Alignment.center,
-        child: Icon(Icons.refresh_rounded, size: 21, color: context.t2),
+        child: Icon(Lz.refreshCw, size: 21, color: context.t2),
       ),
     );
 
@@ -354,7 +355,7 @@ class _Daily60PageState extends State<Daily60Page> {
           ? const LoadingState(text: '正在拉取日报…')
           : news.isEmpty
           ? EmptyState(
-              icon: Icons.newspaper_outlined,
+              icon: Lz.newspaper,
               text: _err.isEmpty ? '暂无日报' : _err,
               hint: '点击右上角刷新重试',
             )
@@ -639,7 +640,7 @@ class _EpicPageState extends State<EpicPage> {
                                 const Spacer(),
                                 if (end.isNotEmpty) ...[
                                   Icon(
-                                    Icons.schedule_rounded,
+                                    Lz.clock,
                                     size: 13,
                                     color: context.t3,
                                   ),
@@ -869,7 +870,7 @@ class _PoemPageState extends State<PoemPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.format_quote_rounded,
+                      Lz.quote,
                       size: 30,
                       color: C.brand.withAlpha(120),
                     ),
@@ -962,7 +963,7 @@ class _HitokotoPageState extends State<HitokotoPage> {
                     const SizedBox(height: 20),
                     ToolButton(
                       label: '复制',
-                      icon: Icons.copy_rounded,
+                      icon: Lz.copy,
                       outline: true,
                       height: 42,
                       onPressed: () {
@@ -1053,7 +1054,7 @@ class _TranslatePageState extends State<TranslatePage> {
             children: [
               Expanded(child: _pick(_from, true)),
               const SizedBox(width: 10),
-              Icon(Icons.arrow_forward_rounded, size: 18, color: context.t3),
+              Icon(Lz.arrowRight, size: 18, color: context.t3),
               const SizedBox(width: 10),
               Expanded(child: _pick(_to, false)),
             ],
@@ -1062,7 +1063,7 @@ class _TranslatePageState extends State<TranslatePage> {
           ToolField(controller: _in, label: '原文', hint: '输入要翻译的文本', lines: 4),
           ToolButton(
             label: '翻译',
-            icon: Icons.translate_rounded,
+            icon: Lz.languages,
             loading: _loading,
             onPressed: _go,
           ),
@@ -1071,7 +1072,7 @@ class _TranslatePageState extends State<TranslatePage> {
             controller: _out,
             label: '译文',
             lines: 5,
-            suffixIcon: Icons.copy_rounded,
+            suffixIcon: Lz.copy,
             onSuffixTap: () {
               if (_out.text.isEmpty) return;
               Clipboard.setData(ClipboardData(text: _out.text));
@@ -1125,7 +1126,7 @@ class _TranslatePageState extends State<TranslatePage> {
               color: C.brand,
             ),
           ),
-          Icon(Icons.arrow_drop_down_rounded, size: 18, color: C.brand),
+          Icon(Lz.chevronDown, size: 18, color: C.brand),
         ],
       ),
     ),
@@ -1235,7 +1236,7 @@ class _ExchangePageState extends State<ExchangePage> {
                     child: Row(
                       children: [
                         Icon(
-                          Icons.info_outline_rounded,
+                          Lz.info,
                           size: 17,
                           color: C.warning,
                         ),
@@ -1298,7 +1299,7 @@ class _ExchangePageState extends State<ExchangePage> {
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
-                                Icons.swap_vert_rounded,
+                                Lz.arrowUpDown,
                                 size: 19,
                                 color: Colors.white,
                               ),
@@ -1420,7 +1421,7 @@ class _ExchangePageState extends State<ExchangePage> {
               color: C.brand,
             ),
           ),
-          Icon(Icons.arrow_drop_down_rounded, size: 18, color: C.brand),
+          Icon(Lz.chevronDown, size: 18, color: C.brand),
         ],
       ),
     ),
@@ -1486,12 +1487,12 @@ class _IpPageState extends State<IpPage> {
             controller: _ctrl,
             label: 'IP 地址',
             hint: '例：8.8.8.8',
-            icon: Icons.location_on_outlined,
+            icon: Lz.mapPin,
             onSubmitted: (_) => _go(),
           ),
           ToolButton(
             label: '查询',
-            icon: Icons.search_rounded,
+            icon: Lz.search,
             loading: _loading,
             onPressed: _go,
           ),
@@ -1500,7 +1501,7 @@ class _IpPageState extends State<IpPage> {
             ToolCard(
               child: Row(
                 children: [
-                  Icon(Icons.error_outline_rounded, size: 17, color: C.danger),
+                  Icon(Lz.alertCircle, size: 17, color: C.danger),
                   const SizedBox(width: 9),
                   Expanded(
                     child: Text(
@@ -1630,7 +1631,7 @@ class _WeatherPageState extends State<WeatherPage> {
           ),
           ToolButton(
             label: '查询',
-            icon: Icons.search_rounded,
+            icon: Lz.search,
             loading: _loading,
             onPressed: _go,
           ),
@@ -1668,7 +1669,7 @@ class _WeatherPageState extends State<WeatherPage> {
             ToolCard(
               child: Row(
                 children: [
-                  Icon(Icons.error_outline_rounded, size: 17, color: C.danger),
+                  Icon(Lz.alertCircle, size: 17, color: C.danger),
                   const SizedBox(width: 9),
                   Expanded(
                     child: Text(
@@ -1885,7 +1886,7 @@ class _MoviePageState extends State<MoviePage> {
               width: 40,
               height: 40,
               alignment: Alignment.center,
-              child: Icon(Icons.close_rounded, size: 20, color: context.t2),
+              child: Icon(Lz.x, size: 20, color: context.t2),
             ),
           ),
       ],
@@ -1910,7 +1911,7 @@ class _MoviePageState extends State<MoviePage> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.search_rounded, size: 19, color: context.t3),
+                      Icon(Lz.search, size: 19, color: context.t3),
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextField(
@@ -1986,7 +1987,7 @@ class _MoviePageState extends State<MoviePage> {
                                       ? Container(
                                           color: C.brand.withAlpha(16),
                                           child: Icon(
-                                            Icons.movie_outlined,
+                                            Lz.clapperboard,
                                             color: C.brand.withAlpha(120),
                                           ),
                                         )
@@ -2001,7 +2002,7 @@ class _MoviePageState extends State<MoviePage> {
                                               Container(
                                                 color: C.brand.withAlpha(14),
                                                 child: Icon(
-                                                  Icons.broken_image_outlined,
+                                                  Lz.imageOff,
                                                   color: context.t3,
                                                   size: 20,
                                                 ),
@@ -2199,7 +2200,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                   height: Ad.h(context, 155),
                                   color: C.brand.withAlpha(24),
                                   child: const Icon(
-                                    Icons.movie_rounded,
+                                    Lz.clapperboard,
                                     size: 34,
                                   ),
                                 ),
@@ -2209,7 +2210,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 height: Ad.h(context, 155),
                                 color: C.brand.withAlpha(24),
                                 child: const Icon(
-                                  Icons.movie_rounded,
+                                  Lz.clapperboard,
                                   size: 34,
                                 ),
                               ),
@@ -2339,7 +2340,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                   const SizedBox(height: 14),
                   ToolButton(
                     label: '从第 1 集开始播放',
-                    icon: Icons.play_arrow_rounded,
+                    icon: Lz.play,
                     onPressed: () => _play(0),
                   ),
                 ] else if (!_loading)
@@ -2347,7 +2348,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                     child: Row(
                       children: [
                         Icon(
-                          Icons.info_outline_rounded,
+                          Lz.info,
                           size: 19,
                           color: C.warning,
                         ),
@@ -2545,7 +2546,7 @@ class _MusicPageState extends State<MusicPage> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.search_rounded, size: 19, color: context.t3),
+                      Icon(Lz.search, size: 19, color: context.t3),
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextField(
@@ -2609,7 +2610,7 @@ class _MusicPageState extends State<MusicPage> {
                                     ? Container(
                                         color: C.brand.withAlpha(16),
                                         child: Icon(
-                                          Icons.music_note_rounded,
+                                          Lz.music,
                                           color: C.brand.withAlpha(140),
                                         ),
                                       )
@@ -2655,7 +2656,7 @@ class _MusicPageState extends State<MusicPage> {
                                     ),
                                   )
                                 : Icon(
-                                    Icons.play_circle_fill_rounded,
+                                    Lz.playCircle,
                                     size: 30,
                                     color: C.brand,
                                   ),
@@ -2730,13 +2731,13 @@ class _HeroGalleryPageState extends State<HeroGalleryPage> {
               width: 40,
               height: 40,
               alignment: Alignment.center,
-              child: Icon(Icons.grid_view_rounded, size: 20, color: context.t2),
+              child: Icon(Lz.layoutGrid, size: 20, color: context.t2),
             ),
           ),
         ],
         child: skins.isEmpty
             ? const EmptyState(
-                icon: Icons.image_not_supported_outlined,
+                icon: Lz.imageOff,
                 text: '该英雄暂无皮肤图',
                 hint: '换一个英雄看看',
               )
@@ -2770,7 +2771,7 @@ class _HeroGalleryPageState extends State<HeroGalleryPage> {
                               height: Ad.h(context, 170),
                               color: C.brand.withAlpha(14),
                               child: Icon(
-                                Icons.broken_image_outlined,
+                                Lz.imageOff,
                                 color: context.t3,
                               ),
                             ),
@@ -2846,7 +2847,7 @@ class _HeroGalleryPageState extends State<HeroGalleryPage> {
                               errorWidget: (_, __, ___) => Container(
                                 color: C.brand.withAlpha(14),
                                 child: Icon(
-                                  Icons.person_outline_rounded,
+                                  Lz.user,
                                   color: context.t3,
                                 ),
                               ),
@@ -2956,7 +2957,7 @@ class _ComicPageState extends State<ComicPage> {
                 ? const LoadingState(text: '正在加载漫画…')
                 : _list.isEmpty
                 ? EmptyState(
-                    icon: Icons.menu_book_outlined,
+                    icon: Lz.bookOpen,
                     text: _err.isEmpty ? '暂无数据' : _err,
                     hint: '换个分类试试',
                   )
@@ -2997,7 +2998,7 @@ class _ComicPageState extends State<ComicPage> {
                                     errorWidget: (_, __, ___) => Container(
                                       color: C.brand.withAlpha(14),
                                       child: Icon(
-                                        Icons.menu_book_outlined,
+                                        Lz.bookOpen,
                                         color: context.t3,
                                         size: 20,
                                       ),
@@ -3103,7 +3104,7 @@ class _ComicReadPageState extends State<ComicReadPage> {
       child: _loading
           ? const LoadingState(text: '正在加载章节…')
           : _err.isNotEmpty
-          ? EmptyState(icon: Icons.menu_book_outlined, text: _err, hint: '稍后重试')
+          ? EmptyState(icon: Lz.bookOpen, text: _err, hint: '稍后重试')
           : Column(
               children: [
                 SizedBox(
@@ -3152,7 +3153,7 @@ class _ComicReadPageState extends State<ComicReadPage> {
                         )
                       : _images.isEmpty
                       ? const EmptyState(
-                          icon: Icons.image_not_supported_outlined,
+                          icon: Lz.imageOff,
                           text: '本话没有图片',
                           hint: '换一话看看',
                         )
@@ -3177,7 +3178,7 @@ class _ComicReadPageState extends State<ComicReadPage> {
                                 height: Ad.h(context, 120),
                                 color: C.brand.withAlpha(12),
                                 child: Icon(
-                                  Icons.broken_image_outlined,
+                                  Lz.imageOff,
                                   color: context.t3,
                                 ),
                               ),
@@ -3310,7 +3311,7 @@ class _WallpaperPageState extends State<WallpaperPage> {
                           errorWidget: () => Container(
                             color: C.brand.withAlpha(14),
                             child: Icon(
-                              Icons.broken_image_outlined,
+                              Lz.imageOff,
                               color: context.t3,
                               size: 20,
                             ),
@@ -3323,7 +3324,7 @@ class _WallpaperPageState extends State<WallpaperPage> {
           const SizedBox(height: 10),
           ToolButton(
             label: '换一批',
-            icon: Icons.refresh_rounded,
+            icon: Lz.refreshCw,
             outline: true,
             loading: _busy,
             onPressed: _more,

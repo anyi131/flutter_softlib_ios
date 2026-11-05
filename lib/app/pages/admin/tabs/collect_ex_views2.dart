@@ -10,6 +10,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// ★ 1016：版权梦 · 自动采集配置
@@ -120,7 +121,7 @@ class _CollectAutoViewState extends State<CollectAutoView> {
       return EmptyState(
         text: _err,
         hint: '下拉重试',
-        icon: Icons.error_outline_rounded,
+        icon: Lz.alertCircle,
       );
     }
     return ListView(
@@ -143,7 +144,7 @@ class _CollectAutoViewState extends State<CollectAutoView> {
                   color: C.mint.withAlpha(context.isDark ? 40 : 24),
                   borderRadius: BorderRadius.circular(11),
                 ),
-                child: Icon(Icons.autorenew_rounded, size: 19, color: C.mint),
+                child: Icon(Lz.refreshCw, size: 19, color: C.mint),
               ),
               const SizedBox(width: 11),
               Expanded(
@@ -433,7 +434,7 @@ class _CollectConfigViewState extends State<CollectConfigView> {
       return EmptyState(
         text: _err,
         hint: '下拉重试',
-        icon: Icons.error_outline_rounded,
+        icon: Lz.alertCircle,
       );
     }
     return RefreshIndicator(

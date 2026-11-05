@@ -9,6 +9,7 @@ import '../../design/ui.dart';
 import '../../api/soft_service.dart';
 import '../../widgets/tab_bottom_pad.dart';
 import 'report_list_logic.dart';
+import '../../design/lucide.dart';
 
 class ReportListWidget extends StatefulWidget {
   final int? id;
@@ -46,7 +47,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.article_outlined,
+                  Lz.fileText,
                   size: 64,
                   color: Theme.of(context).disabledColor.withAlpha(100),
                 ),
@@ -172,7 +173,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
                             Row(
                               children: [
                                 Icon(
-                                  Icons.visibility_outlined,
+                                  Lz.eye,
                                   size: 14,
                                   color: secondaryTextColor,
                                 ),
@@ -261,7 +262,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
             ),
             const SizedBox(width: 4),
             Icon(
-              Icons.chevron_right_rounded,
+              Lz.chevronRight,
               size: 16,
               color: isDark ? C.t3 : C.lt3,
             ),
@@ -358,7 +359,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
         child: Row(
           children: [
             Icon(
-              Icons.flash_on_rounded,
+              Lz.zap,
               size: 14,
               color: C.brand.withAlpha(200),
             ),
@@ -372,7 +373,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
               ),
             ),
             Icon(
-              Icons.chevron_right_rounded,
+              Lz.chevronRight,
               size: 15,
               color: isDark ? C.t3 : C.lt3,
             ),
@@ -523,7 +524,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
                           ),
                         const SizedBox(width: 8),
                         Icon(
-                          Icons.visibility_outlined,
+                          Lz.eye,
                           size: 12,
                           color: Colors.white.withAlpha(200),
                         ),
@@ -613,7 +614,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
                   Row(
                     children: [
                       Icon(
-                        Icons.visibility_outlined,
+                        Lz.eye,
                         size: 11,
                         color: isDark ? C.t3 : C.lt3,
                       ),
@@ -664,7 +665,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
         children: [
           CircleAvatar(
             radius: 15,
-            child: Icon(Icons.campaign_rounded, size: 15, color: Colors.white),
+            child: Icon(Lz.megaphone, size: 15, color: Colors.white),
             backgroundColor: C.brand.withAlpha(200),
           ),
           const SizedBox(width: 9),

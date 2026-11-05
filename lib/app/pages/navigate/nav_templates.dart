@@ -8,6 +8,7 @@ import 'navigate_logic.dart';
 import 'glass_elastic_bar.dart';
 import 'liquid26_bar.dart';
 import '../../design/app_anim.dart';
+import '../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 底部导航栏模板（v55）：classic / glass / float / dock / curve / liquid
@@ -51,9 +52,9 @@ class NavTemplates {
               .map(
                 (d) => NavDest(
                   label: d.label,
-                  icon: (d.icon as Icon).icon ?? Icons.circle_outlined,
+                  icon: (d.icon as Icon).icon ?? Lz.circle,
                   activeIcon:
-                      ((d.selectedIcon ?? d.icon) as Icon).icon ?? Icons.circle,
+                      ((d.selectedIcon ?? d.icon) as Icon).icon ?? Lz.circle,
                 ),
               )
               .toList(),

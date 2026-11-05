@@ -15,6 +15,7 @@ import '../../utils/img_saver.dart';
 import '../../utils/toast_util.dart';
 import '../../widgets/media_preview.dart';
 import 'tool_kit.dart';
+import '../../design/lucide.dart';
 
 /// 工具箱 · 内置浏览器（1015 新增）
 ///
@@ -375,7 +376,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
         ),
         leading: IconButton(
           icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
+            Lz.arrowLeft,
             size: 19,
             color: context.t1,
           ),
@@ -391,7 +392,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
           // ★ 1029：内置浏览器兜底入口常驻 —— 页面里有 App 处理不了的操作时，
           //   用户不用先「失败」才能找到系统浏览器
           IconButton(
-            icon: Icon(Icons.open_in_new_rounded, size: 19, color: context.t1),
+            icon: Icon(Lz.externalLink, size: 19, color: context.t1),
             tooltip: '用浏览器打开',
             onPressed: () async {
               final u = await _c.currentUrl() ?? widget.url;
@@ -399,7 +400,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
             },
           ),
           IconButton(
-            icon: Icon(Icons.refresh_rounded, size: 20, color: context.t1),
+            icon: Icon(Lz.refreshCw, size: 20, color: context.t1),
             onPressed: () => _c.reload(),
           ),
         ],
@@ -426,7 +427,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.wifi_off_rounded, size: 44, color: context.t3),
+                  Icon(Lz.wifiOff, size: 44, color: context.t3),
                   const SizedBox(height: 12),
                   Text('页面打不开', style: Ty.h3.copyWith(color: context.t1)),
                   const SizedBox(height: 6),
@@ -444,7 +445,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
                     children: [
                       ToolButton(
                         label: '重试',
-                        icon: Icons.refresh_rounded,
+                        icon: Lz.refreshCw,
                         onPressed: () {
                           setState(() => _err = null);
                           _c.reload();
@@ -454,7 +455,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
                       // ★ 1016：内置 WebView 打不开时，允许用系统浏览器打开（兜底可用）
                       ToolButton(
                         label: '用浏览器打开',
-                        icon: Icons.open_in_new_rounded,
+                        icon: Lz.externalLink,
                         onPressed: () => launchUrlString(
                           widget.url,
                           mode: LaunchMode.externalApplication,

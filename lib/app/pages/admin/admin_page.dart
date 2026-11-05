@@ -28,6 +28,7 @@ import 'tabs/admin_security_tab.dart';
 import 'tabs/admin_ui_tab.dart';
 import 'tabs/admin_tools_tab.dart';
 import 'tabs/admin_users_tab.dart';
+import '../../design/lucide.dart';
 
 /// 软件内嵌管理系统（管理员专用）
 class AdminPage extends StatefulWidget {
@@ -102,7 +103,7 @@ class _AdminPageState extends State<AdminPage>
           children: [
             Deco.pageBackground(context),
             const EmptyState(
-              icon: Icons.lock_outline_rounded,
+              icon: Lz.lock,
               text: '仅管理员可访问',
               hint: '请使用管理员账号登录后重试',
             ),
@@ -188,7 +189,7 @@ class _OverviewTabState extends State<_OverviewTab> {
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
-              Icons.shield_outlined,
+              Lz.shield,
               color: Colors.white,
               size: 22,
             ),
@@ -208,7 +209,7 @@ class _OverviewTabState extends State<_OverviewTab> {
             ),
           ),
           const Icon(
-            Icons.chevron_right_rounded,
+            Lz.chevronRight,
             size: 20,
             color: Colors.transparent,
           ),
@@ -217,14 +218,14 @@ class _OverviewTabState extends State<_OverviewTab> {
     );
 
     final items = [
-      ('软件总数', _d['apps'], C.brandBright, Icons.apps_rounded),
-      ('用户总数', _d['users'], C.mint, Icons.people_rounded),
-      ('今日注册', _d['today_users'], C.accentOrange, Icons.person_add_rounded),
-      ('会员数', _d['vip_users'], C.amber, Icons.workspace_premium_rounded),
+      ('软件总数', _d['apps'], C.brandBright, Lz.layoutGrid),
+      ('用户总数', _d['users'], C.mint, Lz.users),
+      ('今日注册', _d['today_users'], C.accentOrange, Lz.userPlus),
+      ('会员数', _d['vip_users'], C.amber, Lz.crown),
       ('动态数', _d['posts'], C.violet, Icons.forum_rounded),
-      ('评价数', _d['reviews'], C.pink, Icons.rate_review_rounded),
-      ('线报', _d['reports'], C.cyan, Icons.article_rounded),
-      ('卡密', _d['cards'], C.rose, Icons.confirmation_number_rounded),
+      ('评价数', _d['reviews'], C.pink, Lz.messageSquare),
+      ('线报', _d['reports'], C.cyan, Lz.fileText),
+      ('卡密', _d['cards'], C.rose, Lz.ticket),
     ];
     // 经营数据（收入 / 订单 / 浏览）
     final biz = [
@@ -232,19 +233,19 @@ class _OverviewTabState extends State<_OverviewTab> {
         '累计收入',
         '¥${_d['total_money'] ?? '0.00'}',
         C.gold,
-        Icons.account_balance_wallet_rounded,
+        Lz.wallet,
       ),
       (
         '今日收入',
         '¥${_d['today_money'] ?? '0.00'}',
         C.success,
-        Icons.trending_up_rounded,
+        Lz.trendingUp,
       ),
       (
         '已付订单',
         '${_d['paid_orders'] ?? 0}',
         C.brand,
-        Icons.receipt_long_rounded,
+        Lz.receipt,
       ),
       (
         '待付订单',
@@ -580,7 +581,7 @@ class _OverviewTabState extends State<_OverviewTab> {
                                     ),
                                   ),
                                   const Icon(
-                                    Icons.chevron_right_rounded,
+                                    Lz.chevronRight,
                                     size: 16,
                                     color: Colors.transparent,
                                   ),

@@ -10,6 +10,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/ui.dart';
 import '../../../utils/img_saver.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// ★ 1016：邀请海报（生成图片 → 保存 / 分享）
 ///
@@ -130,7 +131,7 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
                               height: 15,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.download_rounded, size: 17),
+                          : const Icon(Lz.download, size: 17),
                       label: Text(_saving ? '生成中…' : '保存图片'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
@@ -146,7 +147,7 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
                   Expanded(
                     child: FilledButton.icon(
                       onPressed: _saving ? null : _share,
-                      icon: const Icon(Icons.share_rounded, size: 17),
+                      icon: const Icon(Lz.share, size: 17),
                       label: const Text('分享'),
                       style: FilledButton.styleFrom(
                         backgroundColor: C.brand,
@@ -229,12 +230,12 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: widget.logoUrl.isEmpty
-                            ? Icon(Icons.apps_rounded, color: C.brand, size: 24)
+                            ? Icon(Lz.layoutGrid, color: C.brand, size: 24)
                             : Image.network(
                                 widget.logoUrl,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) => Icon(
-                                  Icons.apps_rounded,
+                                  Lz.layoutGrid,
                                   color: C.brand,
                                   size: 24,
                                 ),

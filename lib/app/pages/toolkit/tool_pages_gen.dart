@@ -9,6 +9,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
+import '../../design/lucide.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 工具箱 · 第七批（1015）：生成器 + 实用查询
@@ -145,13 +146,13 @@ class _TimerPageState extends State<TimerPage> {
           if (!_running)
             ToolButton(
               label: '开始倒计时',
-              icon: Icons.play_arrow_rounded,
+              icon: Lz.play,
               onPressed: _start,
             )
           else
             ToolButton(
               label: '停止',
-              icon: Icons.stop_rounded,
+              icon: Lz.square,
               outline: true,
               onPressed: () => setState(() => _running = false),
             ),
@@ -254,7 +255,7 @@ class _DicePageState extends State<DicePage> {
           const SizedBox(height: 16),
           ToolButton(
             label: '掷骰子',
-            icon: Icons.casino_rounded,
+            icon: Lz.dice5,
             onPressed: _roll,
           ),
           if (out.isNotEmpty) ...[
@@ -355,11 +356,11 @@ class _DecidePageState extends State<DecidePage> {
             controller: _c,
             label: '选项（每行一个）',
             lines: 6,
-            icon: Icons.list_rounded,
+            icon: Lz.list,
           ),
           ToolButton(
             label: '帮我选一个',
-            icon: Icons.shuffle_rounded,
+            icon: Lz.shuffle,
             onPressed: _pick,
           ),
           if (_out.isNotEmpty) ...[
@@ -586,7 +587,7 @@ class _GroupPageState extends State<GroupPage> {
               Expanded(
                 child: ToolButton(
                   label: '开始分组',
-                  icon: Icons.shuffle_rounded,
+                  icon: Lz.shuffle,
                   onPressed: _split,
                 ),
               ),
@@ -715,7 +716,7 @@ class _LapTimerPageState extends State<LapTimerPage> {
               Expanded(
                 child: ToolButton(
                   label: _run ? '暂停' : '开始',
-                  icon: _run ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  icon: _run ? Lz.pause : Lz.play,
                   onPressed: () {
                     setState(() {
                       if (_sw.isRunning) {
@@ -733,7 +734,7 @@ class _LapTimerPageState extends State<LapTimerPage> {
               Expanded(
                 child: ToolButton(
                   label: '计次',
-                  icon: Icons.flag_rounded,
+                  icon: Lz.flag,
                   outline: true,
                   onPressed: () =>
                       setState(() => laps.insert(0, _sw.elapsedMilliseconds)),
@@ -744,7 +745,7 @@ class _LapTimerPageState extends State<LapTimerPage> {
           const SizedBox(height: 10),
           ToolButton(
             label: '重置',
-            icon: Icons.refresh_rounded,
+            icon: Lz.refreshCw,
             outline: true,
             onPressed: () => setState(() {
               _sw.reset();

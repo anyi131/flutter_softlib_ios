@@ -16,6 +16,7 @@ import '../../design/ui.dart';
 /// 使用方式：新页面直接用下面这些组件；老页面可逐步替换。
 /// ═══════════════════════════════════════════════════════════════
 import '../../design/glass_theme.dart';
+import '../../design/lucide.dart';
 
 class Ad {
   Ad._();
@@ -512,7 +513,7 @@ class AdEmpty extends StatelessWidget {
       child: Column(
         children: [
           Icon(
-            icon ?? Icons.inbox_rounded,
+            icon ?? Lz.inbox,
             size: 30,
             color: context.t3.withAlpha(140),
           ),

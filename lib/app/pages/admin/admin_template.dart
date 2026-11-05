@@ -7,6 +7,7 @@ import '../../api/soft_service.dart';
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
+import '../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 管理后台整体界面模板（v54）：5 套骨架
@@ -69,18 +70,18 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
   }
 
   static const _tabItems = [
-    (Icons.dashboard_rounded, '概览'),
-    (Icons.apps_rounded, '软件'),
-    (Icons.people_rounded, '用户'),
-    (Icons.receipt_long_rounded, '订单'),
-    (Icons.cloud_download_rounded, '采集'),
-    (Icons.article_rounded, '内容'),
-    (Icons.palette_rounded, '界面'),
-    (Icons.history_rounded, '日志'),
-    (Icons.settings_rounded, '配置'),
-    (Icons.security_rounded, '安全'),
-    (Icons.download_rounded, '解析'),
-    (Icons.widgets_rounded, '工具'),
+    (Lz.layoutDashboard, '概览'),
+    (Lz.layoutGrid, '软件'),
+    (Lz.users, '用户'),
+    (Lz.receipt, '订单'),
+    (Lz.downloadCloud, '采集'),
+    (Lz.fileText, '内容'),
+    (Lz.palette, '界面'),
+    (Lz.history, '日志'),
+    (Lz.settings, '配置'),
+    (Lz.shield, '安全'),
+    (Lz.download, '解析'),
+    (Lz.layoutGrid, '工具'),
   ];
 
   @override
@@ -179,7 +180,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
             ],
           ),
         ),
-        _roundBtn(context, Icons.refresh_rounded, widget.onRefresh),
+        _roundBtn(context, Lz.refreshCw, widget.onRefresh),
       ],
     ),
   );
@@ -346,7 +347,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                       ),
                     ),
                     const Spacer(),
-                    _conBtn(context, Icons.refresh_rounded, widget.onRefresh),
+                    _conBtn(context, Lz.refreshCw, widget.onRefresh),
                   ],
                 ),
               ),
@@ -465,7 +466,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                       AppPressable(
                         onTap: widget.onRefresh,
                         child: Icon(
-                          Icons.refresh_rounded,
+                          Lz.refreshCw,
                           size: 22,
                           color: context.t3,
                         ),
@@ -607,7 +608,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.refresh_rounded,
+                            Lz.refreshCw,
                             size: 19,
                             color: Colors.white,
                           ),
@@ -794,7 +795,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                             AppPressable(
                               onTap: widget.onRefresh,
                               child: Icon(
-                                Icons.refresh_rounded,
+                                Lz.refreshCw,
                                 size: 20,
                                 color: context.t3,
                               ),
@@ -847,7 +848,7 @@ class _AdminTemplateShellState extends State<AdminTemplateShell> {
                                   ),
                                 ),
                                 child: Icon(
-                                  Icons.refresh_rounded,
+                                  Lz.refreshCw,
                                   size: 19,
                                   color: context.t2,
                                 ),

@@ -11,6 +11,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// 采集 · 蓝奏云账号（对应采集平台站点的「蓝奏云Cookie获取」页）
 ///
@@ -141,7 +142,7 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
                 Icon(
                   _configured
                       ? Icons.cloud_done_rounded
-                      : Icons.cloud_off_rounded,
+                      : Lz.cloudOff,
                   size: 22,
                   color: _configured ? C.success : C.warning,
                 ),
@@ -167,7 +168,7 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
                 if (_configured)
                   MiniAction(
                     label: '清空',
-                    icon: Icons.delete_outline_rounded,
+                    icon: Lz.trash2,
                     color: C.danger,
                     onTap: _busy ? () {} : _clear,
                   ),
@@ -196,7 +197,7 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
                     labelText: '蓝奏云账号',
                     isDense: true,
                     prefixIcon: const Icon(
-                      Icons.person_outline_rounded,
+                      Lz.user,
                       size: 18,
                     ),
                     border: OutlineInputBorder(
@@ -213,14 +214,14 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
                     labelText: '蓝奏云密码',
                     isDense: true,
                     prefixIcon: const Icon(
-                      Icons.lock_outline_rounded,
+                      Lz.lock,
                       size: 18,
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _showPass
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
+                            ? Lz.eyeOff
+                            : Lz.eye,
                         size: 18,
                         color: context.t3,
                       ),
@@ -249,7 +250,7 @@ class _CollectLzyAccountViewState extends State<CollectLzyAccountView>
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.shield_outlined, size: 17, color: C.warning),
+                Icon(Lz.shield, size: 17, color: C.warning),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(

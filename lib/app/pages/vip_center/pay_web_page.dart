@@ -10,6 +10,7 @@ import '../../api/user_service.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
+import '../../design/lucide.dart';
 
 /// App 内支付页（不跳转外部浏览器）
 ///
@@ -165,7 +166,7 @@ class _PayWebPageState extends State<PayWebPage> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Icons.close_rounded,
+                      Lz.x,
                       size: 18,
                       color: context.t1,
                     ),

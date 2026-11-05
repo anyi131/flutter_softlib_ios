@@ -16,6 +16,7 @@ import '../../../design/ui.dart';
 import '../../../design/glass.dart';
 import '../../../utils/app_action.dart';
 import '../../../utils/toast_util.dart';
+import '../../../design/lucide.dart';
 
 /// 用户管理（统计概览 + 筛选 + 分页 + 批量操作 + CSV 导出）
 class AdminUsersTab extends StatefulWidget {
@@ -166,7 +167,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                 decoration: InputDecoration(
                   hintText: '搜索昵称 / 邮箱 / QQ / 账号',
                   isDense: true,
-                  prefixIcon: const Icon(Icons.search, size: 18),
+                  prefixIcon: const Icon(Lz.search, size: 18),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(R.full),
                   ),
@@ -176,7 +177,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
           ),
           const SizedBox(width: 8),
           _iconBtn(
-            _selectMode ? Icons.close_rounded : Icons.checklist_rounded,
+            _selectMode ? Lz.x : Lz.listChecks,
             () => setState(() {
               _selectMode = !_selectMode;
               _selected.clear();
@@ -185,7 +186,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
             tip: '批量操作',
           ),
           const SizedBox(width: 6),
-          _iconBtn(Icons.ios_share_rounded, _exportCsv, tip: '导出 CSV'),
+          _iconBtn(Lz.share, _exportCsv, tip: '导出 CSV'),
         ],
       ),
     );
@@ -384,28 +385,28 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                 children: [
                   MiniAction(
                     label: '送30天VIP',
-                    icon: Icons.workspace_premium_outlined,
+                    icon: Lz.crown,
                     color: C.gold,
                     onTap: n == 0 ? () {} : () => _batch('vip', 30),
                   ),
                   const SizedBox(width: 7),
                   MiniAction(
                     label: '解禁',
-                    icon: Icons.lock_open_rounded,
+                    icon: Lz.unlock,
                     color: C.mint,
                     onTap: n == 0 ? () {} : () => _batch('unban'),
                   ),
                   const SizedBox(width: 7),
                   MiniAction(
                     label: '封禁',
-                    icon: Icons.block_rounded,
+                    icon: Lz.ban,
                     color: C.warning,
                     onTap: n == 0 ? () {} : () => _batch('ban'),
                   ),
                   const SizedBox(width: 7),
                   MiniAction(
                     label: '删除',
-                    icon: Icons.delete_outline_rounded,
+                    icon: Lz.trash2,
                     color: C.danger,
                     onTap: n == 0 ? () {} : () => _batch('delete'),
                   ),
@@ -537,8 +538,8 @@ class _AdminUsersTabState extends State<AdminUsersTab>
               if (_selectMode) ...[
                 Icon(
                   sel
-                      ? Icons.check_circle_rounded
-                      : Icons.radio_button_unchecked_rounded,
+                      ? Lz.checkCircle
+                      : Lz.circle,
                   size: 20,
                   color: sel ? C.brand : context.t3,
                 ),
@@ -550,7 +551,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                         width: 40,
                         height: 40,
                         color: C.brand.withAlpha(context.isDark ? 40 : 26),
-                        child: Icon(Icons.person, size: 21, color: C.brand),
+                        child: Icon(Lz.user, size: 21, color: C.brand),
                       )
                     : CachedNetworkImage(
                           memCacheWidth: 120,
@@ -612,25 +613,25 @@ class _AdminUsersTabState extends State<AdminUsersTab>
             spacing: 12,
             runSpacing: 4,
             children: [
-              _meta(Icons.stars_outlined, '积分 ${u['score'] ?? 0}'),
+              _meta(Lz.sparkles, '积分 ${u['score'] ?? 0}'),
               _meta(
-                Icons.account_balance_wallet_outlined,
+                Lz.wallet,
                 '余额 ¥${u['money'] ?? '0.00'}',
               ),
-              _meta(Icons.event_outlined, '注册 ${u['createtime_text'] ?? '-'}'),
+              _meta(Lz.calendar, '注册 ${u['createtime_text'] ?? '-'}'),
               if (isVip)
                 _meta(
-                  Icons.workspace_premium_outlined,
+                  Lz.crown,
                   vipForever ? '永久会员' : '会员至 ${u['vip_expire_text']}',
                   color: C.gold,
                 ),
               if (!isVip && vipRaw > 0)
                 _meta(
-                  Icons.history_rounded,
+                  Lz.history,
                   '会员已过期 ${u['vip_expire_text']}',
                   color: C.warning,
                 ),
-              _meta(Icons.login_rounded, '${u['login_time_text'] ?? '-'}'),
+              _meta(Lz.logIn, '${u['login_time_text'] ?? '-'}'),
             ],
           ),
           if (_selectMode)
@@ -643,41 +644,41 @@ class _AdminUsersTabState extends State<AdminUsersTab>
               children: [
                 MiniAction(
                   label: '详情',
-                  icon: Icons.info_outline_rounded,
+                  icon: Lz.info,
                   onTap: () => _showDetail(u),
                 ),
                 MiniAction(
                   label: '操作日志',
-                  icon: Icons.history_rounded,
+                  icon: Lz.history,
                   color: C.cyan,
                   onTap: () => _showUserLogs(id, '${u['nickname']}'),
                 ),
                 MiniAction(
                   label: '编辑',
-                  icon: Icons.edit_outlined,
+                  icon: Lz.pencil,
                   onTap: () => _editUser(u),
                 ),
                 MiniAction(
                   label: '自定义IP',
-                  icon: Icons.location_on_outlined,
+                  icon: Lz.mapPin,
                   color: C.cyan,
                   onTap: () => _editCustomIp(u),
                 ),
                 MiniAction(
                   label: '重置密码',
-                  icon: Icons.key_rounded,
+                  icon: Lz.key,
                   color: C.violet,
                   onTap: () => _resetPassword(u),
                 ),
                 MiniAction(
                   label: '余额',
-                  icon: Icons.account_balance_wallet_outlined,
+                  icon: Lz.wallet,
                   color: C.success,
                   onTap: () => _editMoney(u),
                 ),
                 MiniAction(
                   label: '会员',
-                  icon: Icons.workspace_premium_outlined,
+                  icon: Lz.crown,
                   color: C.gold,
                   onTap: () => _grantVip(id, 30),
                 ),
@@ -697,7 +698,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                 ),
                 MiniAction(
                   label: banned ? '解禁' : '禁用',
-                  icon: banned ? Icons.lock_open_rounded : Icons.block_rounded,
+                  icon: banned ? Lz.unlock : Lz.ban,
                   color: C.warning,
                   onTap: () async {
                     await AppAction.run(
@@ -710,7 +711,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                 ),
                 MiniAction(
                   label: '删除',
-                  icon: Icons.delete_outline_rounded,
+                  icon: Lz.trash2,
                   color: C.danger,
                   onTap: () async {
                     final ok = await Get.dialog<bool>(
@@ -792,28 +793,28 @@ class _AdminUsersTabState extends State<AdminUsersTab>
           ),
           _qaRow(
             ctx,
-            icon: banned ? Icons.lock_open_rounded : Icons.block_rounded,
+            icon: banned ? Lz.unlock : Lz.ban,
             color: banned ? C.mint : C.warning,
             label: banned ? '解除封禁' : '封禁该用户',
             value: banned ? 'unban' : 'ban',
           ),
           _qaRow(
             ctx,
-            icon: Icons.workspace_premium_rounded,
+            icon: Lz.crown,
             color: C.gold,
             label: '赠送 30 天会员',
             value: 'vip',
           ),
           _qaRow(
             ctx,
-            icon: Icons.fingerprint_rounded,
+            icon: Lz.fingerprint,
             color: C.brand,
             label: '复制用户 ID',
             value: 'copy',
           ),
           _qaRow(
             ctx,
-            icon: Icons.receipt_long_rounded,
+            icon: Lz.receipt,
             color: C.violet,
             label: '查看详情',
             value: 'detail',
@@ -858,7 +859,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       dense: true,
       leading: Icon(icon, size: 20, color: color),
       title: Text(label, style: Ty.small.copyWith(color: ctx.t1)),
-      trailing: Icon(Icons.chevron_right_rounded, size: 18, color: ctx.t3),
+      trailing: Icon(Lz.chevronRight, size: 18, color: ctx.t3),
       onTap: () => Navigator.pop(ctx, value),
     );
   }
@@ -963,7 +964,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                           child: Row(
                             children: [
                               Icon(
-                                Icons.calendar_month_rounded,
+                                Lz.calendar,
                                 size: 18,
                                 color: pickDate == null ? ctx.t3 : C.brand,
                               ),
@@ -1219,7 +1220,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Icon(
-                        Icons.lock_outline_rounded,
+                        Lz.lock,
                         size: 15,
                         color: C.warning,
                       ),
@@ -1253,8 +1254,8 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                     suffixIcon: IconButton(
                       icon: Icon(
                         hide
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
+                            ? Lz.eye
+                            : Lz.eyeOff,
                         size: 18,
                       ),
                       onPressed: () => setD(() => hide = !hide),
@@ -1508,7 +1509,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
           children: [
             Row(
               children: [
-                const Icon(Icons.history_rounded, color: C.cyan, size: 21),
+                const Icon(Lz.history, color: C.cyan, size: 21),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -1517,7 +1518,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, size: 20),
+                  icon: const Icon(Lz.x, size: 20),
                   onPressed: () => Navigator.pop(ctx),
                 ),
               ],
@@ -1623,24 +1624,24 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                                       children: [
                                         _miniMeta(
                                           ctx,
-                                          Icons.access_time_rounded,
+                                          Lz.clock,
                                           '${L['createtime_text'] ?? ''}',
                                         ),
                                         _miniMeta(
                                           ctx,
-                                          Icons.location_on_outlined,
+                                          Lz.mapPin,
                                           '${L['ip']} ${L['address']}',
                                         ),
                                         if ('${L['device'] ?? ''}'.isNotEmpty)
                                           _miniMeta(
                                             ctx,
-                                            Icons.phone_android_rounded,
+                                            Lz.smartphone,
                                             '${L['device']}',
                                           ),
                                         if ('${L['os'] ?? ''}'.isNotEmpty)
                                           _miniMeta(
                                             ctx,
-                                            Icons.memory_rounded,
+                                            Lz.cpu,
                                             '${L['os']}',
                                           ),
                                       ],
@@ -2097,7 +2098,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                           Row(
                             children: [
                               const Icon(
-                                Icons.workspace_premium_outlined,
+                                Lz.crown,
                                 size: 14,
                                 color: C.gold,
                               ),
@@ -2149,7 +2150,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         const Icon(
-                                          Icons.event_rounded,
+                                          Lz.calendar,
                                           size: 15,
                                           color: C.gold,
                                         ),

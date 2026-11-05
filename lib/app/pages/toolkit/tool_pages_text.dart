@@ -11,6 +11,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
+import '../../design/lucide.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 工具箱 · 第四批（1015）：文本处理全集 + 生成器
@@ -151,7 +152,7 @@ class _JsonPageState extends State<JsonPage> {
               Expanded(
                 child: ToolButton(
                   label: '格式化',
-                  icon: Icons.format_align_left_rounded,
+                  icon: Lz.alignLeft,
                   onPressed: () => _fmt(pretty: true),
                 ),
               ),
@@ -178,7 +179,7 @@ class _JsonPageState extends State<JsonPage> {
             controller: _out,
             label: '结果',
             lines: 8,
-            suffixIcon: Icons.copy_rounded,
+            suffixIcon: Lz.copy,
             onSuffixTap: () {
               Clipboard.setData(ClipboardData(text: _out.text));
               ToastUtil.success('已复制');
@@ -220,14 +221,14 @@ class _UrlPageState extends State<UrlPage> {
             controller: _in,
             label: '原文',
             lines: 4,
-            icon: Icons.link_rounded,
+            icon: Lz.link,
           ),
           Row(
             children: [
               Expanded(
                 child: ToolButton(
                   label: '编码',
-                  icon: Icons.lock_rounded,
+                  icon: Lz.lock,
                   onPressed: () =>
                       setState(() => _out.text = Uri.encodeComponent(_in.text)),
                 ),
@@ -236,7 +237,7 @@ class _UrlPageState extends State<UrlPage> {
               Expanded(
                 child: ToolButton(
                   label: '解码',
-                  icon: Icons.lock_open_rounded,
+                  icon: Lz.unlock,
                   outline: true,
                   onPressed: () {
                     try {
@@ -256,7 +257,7 @@ class _UrlPageState extends State<UrlPage> {
             controller: _out,
             label: '结果',
             lines: 5,
-            suffixIcon: Icons.copy_rounded,
+            suffixIcon: Lz.copy,
             onSuffixTap: () {
               Clipboard.setData(ClipboardData(text: _out.text));
               ToastUtil.success('已复制');
@@ -338,11 +339,11 @@ class _HashPageState extends State<HashPage> {
             controller: _in,
             label: '输入文本',
             lines: 4,
-            icon: Icons.tag_rounded,
+            icon: Lz.tag,
           ),
           ToolButton(
             label: '计算',
-            icon: Icons.fingerprint_rounded,
+            icon: Lz.fingerprint,
             onPressed: _calc,
           ),
           if (res.isNotEmpty) ...[
@@ -379,7 +380,7 @@ class _HashPageState extends State<HashPage> {
                                 ToastUtil.success('已复制');
                               },
                               child: Icon(
-                                Icons.copy_rounded,
+                                Lz.copy,
                                 size: 16,
                                 color: context.t3,
                               ),
@@ -442,11 +443,11 @@ class _RegexPageState extends State<RegexPage> {
       scrollable: true,
       child: Column(
         children: [
-          ToolField(controller: _re, label: '正则表达式', icon: Icons.code_rounded),
+          ToolField(controller: _re, label: '正则表达式', icon: Lz.code),
           ToolField(controller: _txt, label: '测试文本', lines: 4),
           ToolButton(
             label: '运行匹配',
-            icon: Icons.play_arrow_rounded,
+            icon: Lz.play,
             onPressed: _run,
           ),
           if (err.isNotEmpty) ...[
@@ -549,7 +550,7 @@ class _RandStrPageState extends State<RandStrPage> {
             ],
           ),
           const SizedBox(height: 12),
-          ToolButton(label: '生成', icon: Icons.casino_rounded, onPressed: _gen),
+          ToolButton(label: '生成', icon: Lz.dice5, onPressed: _gen),
           if (_out.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 14),
@@ -574,7 +575,7 @@ class _RandStrPageState extends State<RandStrPage> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.copy_rounded, size: 15, color: context.t3),
+                          Icon(Lz.copy, size: 15, color: context.t3),
                           const SizedBox(width: 4),
                           Text(
                             '复制',
@@ -689,7 +690,7 @@ class _RandNumPageState extends State<RandNumPage> {
             ],
           ),
           const SizedBox(height: 8),
-          ToolButton(label: '生成', icon: Icons.casino_rounded, onPressed: _gen),
+          ToolButton(label: '生成', icon: Lz.dice5, onPressed: _gen),
           if (out.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 14),
@@ -834,7 +835,7 @@ class _PalettePageState extends State<PalettePage> {
             controller: _base,
             label: '基准色 HEX',
             hint: '例：465CFF',
-            icon: Icons.palette_rounded,
+            icon: Lz.palette,
           ),
           Wrap(
             spacing: 10,
@@ -992,7 +993,7 @@ class _LoremPageState extends State<LoremPage> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.copy_rounded, size: 15, color: context.t3),
+                          Icon(Lz.copy, size: 15, color: context.t3),
                           const SizedBox(width: 4),
                           Text(
                             '复制全文',

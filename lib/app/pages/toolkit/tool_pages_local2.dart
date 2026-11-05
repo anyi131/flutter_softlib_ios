@@ -10,6 +10,7 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
+import '../../design/lucide.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 工具箱 · 扩展本地工具（1015 新增）
@@ -90,7 +91,7 @@ class _CalcPageState extends State<CalcPage> {
           ),
           ToolButton(
             label: '计算',
-            icon: Icons.play_arrow_rounded,
+            icon: Lz.play,
             onPressed: _run,
           ),
           const SizedBox(height: 14),
@@ -371,7 +372,7 @@ class _HexConvPageState extends State<HexConvPage> {
             Clipboard.setData(ClipboardData(text: v));
             ToastUtil.success('已复制');
           },
-          child: Icon(Icons.copy_rounded, size: 17, color: context.t3),
+          child: Icon(Lz.copy, size: 17, color: context.t3),
         ),
       ],
     ),
@@ -456,7 +457,7 @@ class _TimestampPageState extends State<TimestampPage> {
                     );
                     ToastUtil.success('已复制');
                   },
-                  child: Icon(Icons.copy_rounded, size: 19, color: context.t3),
+                  child: Icon(Lz.copy, size: 19, color: context.t3),
                 ),
               ],
             ),
@@ -466,7 +467,7 @@ class _TimestampPageState extends State<TimestampPage> {
             controller: _in,
             label: '时间戳或日期',
             hint: '输入时间戳 → 转日期；输入日期 → 转时间戳',
-            icon: Icons.schedule_rounded,
+            icon: Lz.clock,
             keyboard: TextInputType.text,
           ),
           Row(
@@ -474,7 +475,7 @@ class _TimestampPageState extends State<TimestampPage> {
               Expanded(
                 child: ToolButton(
                   label: '时间戳→日期',
-                  icon: Icons.event_rounded,
+                  icon: Lz.calendar,
                   onPressed: _ts2date,
                 ),
               ),
@@ -482,7 +483,7 @@ class _TimestampPageState extends State<TimestampPage> {
               Expanded(
                 child: ToolButton(
                   label: '取当前时间戳',
-                  icon: Icons.access_time_rounded,
+                  icon: Lz.clock,
                   outline: true,
                   onPressed: _date2ts,
                 ),
@@ -550,7 +551,7 @@ class _CaseConvPageState extends State<CaseConvPage> {
             controller: _in,
             label: '原文',
             lines: 4,
-            icon: Icons.text_fields_rounded,
+            icon: Lz.type,
           ),
           Wrap(
             spacing: 8,
@@ -595,7 +596,7 @@ class _CaseConvPageState extends State<CaseConvPage> {
             controller: _out,
             label: '结果',
             lines: 6,
-            suffixIcon: Icons.copy_rounded,
+            suffixIcon: Lz.copy,
             onSuffixTap: () {
               Clipboard.setData(ClipboardData(text: _out.text));
               ToastUtil.success('已复制');
@@ -697,7 +698,7 @@ class _UuidPageState extends State<UuidPage> {
           const SizedBox(height: 12),
           ToolButton(
             label: '生成',
-            icon: Icons.auto_awesome_rounded,
+            icon: Lz.sparkles,
             onPressed: _gen,
           ),
           const SizedBox(height: 14),
@@ -788,7 +789,7 @@ class _ColorConvPageState extends State<ColorConvPage> {
             controller: _in,
             label: 'HEX 颜色（可不带 #）',
             hint: '例：465CFF 或 #fff',
-            icon: Icons.palette_rounded,
+            icon: Lz.palette,
             onChanged: (_) => setState(() {}),
           ),
           if (v != null) ...[
@@ -858,7 +859,7 @@ class _ColorConvPageState extends State<ColorConvPage> {
             Clipboard.setData(ClipboardData(text: v));
             ToastUtil.success('已复制');
           },
-          child: Icon(Icons.copy_rounded, size: 17, color: context.t3),
+          child: Icon(Lz.copy, size: 17, color: context.t3),
         ),
       ],
     ),
@@ -1041,7 +1042,7 @@ class _DateCalcPageState extends State<DateCalcPage> {
     },
     child: Row(
       children: [
-        Icon(Icons.calendar_month_rounded, size: 19, color: C.brand),
+        Icon(Lz.calendar, size: 19, color: C.brand),
         const SizedBox(width: 10),
         Text(label, style: Ty.small.copyWith(color: context.t3)),
         const Spacer(),
