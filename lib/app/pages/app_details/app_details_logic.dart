@@ -1056,6 +1056,7 @@ class AppDetailsLogic extends GetxController {
       final target = (lzyUrl != null && lzyUrl.isNotEmpty)
           ? lzyUrl
           : (item?.url ?? dowUrl);
+    _sharePageUrlForProxy = target; // ★ 153.1
       originUrl = target;
       if (target.isEmpty) {
         ResolveOverlay.dismiss();
@@ -1515,6 +1516,17 @@ class AppDetailsLogic extends GetxController {
   /// ★ 1105h：直连下载被源站风控拦截（下到验证页 HTML / 直接连不上）时，
   ///   静默换服务端中转地址重下一次；每轮只尝试一次，中转也失败才走弹窗。
   Future<bool> _retryWithProxy() async {
+    // ★ 153.1：本地解析成功时没有 proxyUrl（服务端才给）。
+    //   下载 0% 中断（用户 IP 被 CDN 拦）就靠这里补取一次，再走中转重下。
+    if (_proxyFallbackUrl.isEmpty && _sharePageUrlForProxy.isNotEmpty) {
+      try {
+        await SoftService.instance.resolveLzy(_sharePageUrlForProxy);
+        final p = SoftService.lastParseProxyUrl;
+        if (p.isNotEmpty) _proxyFallbackUrl = p;
+      } catch (e) {
+        logger.e('proxy fetch: $e');
+      }
+    }
     if (_proxyFallbackUrl.isEmpty || _proxyRetried) return false;
     _proxyRetried = true;
     try {
