@@ -1,3 +1,5 @@
+import '../../design/lottie_box.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' show BubbleDownload;
 import '../../design/lucide.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -50,12 +52,9 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
                     builder: (logic) {
                       final list = logic.downInfos;
                       if (list == null) {
-                        return const Center(
-                          child: SizedBox(
-                            width: 26,
-                            height: 26,
-                            child: CircularProgressIndicator(strokeWidth: 2.4),
-                          ),
+                        // ★ 1105u：加载态换成 Lottie 旋转环（跟随主题染色）
+                        return Center(
+                          child: LottieBox(size: 30, tint: C.brand),
                         );
                       }
                       if (list.isEmpty) return _empty();
@@ -397,10 +396,13 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
                 colors: [C.brand.withAlpha(40), C.cyan.withAlpha(24)],
               ),
             ),
-            child: Icon(
-              Lz.download,
-              size: 44,
-              color: C.brand.withAlpha(200),
+            // ★ 1106b：空态图标换成 Iconoir（1.5px 细线风，比 Material 更轻）
+            child: Center(
+              child: BubbleDownload(
+                width: 44,
+                height: 44,
+                color: C.brand.withAlpha(200),
+              ),
             ),
           ),
           const SizedBox(height: 18),

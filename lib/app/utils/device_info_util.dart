@@ -15,6 +15,8 @@ class DeviceInfo {
   DeviceInfo._();
 
   static String model = '';
+  /// 原始机型代号（如 V1986A），排查问题用；展示优先用 model
+  static String code = '';
   static String os = '';
   /// 应用版本号（如 3.10.28+132）。启动时由 main.dart 填，下载/崩溃上报都靠它，
   /// 否则后台只看到「应用版本 -」。
@@ -29,10 +31,12 @@ class DeviceInfo {
       final p = DeviceInfoPlugin();
       if (Platform.isAndroid) {
         final a = await p.androidInfo;
+        code = a.model;
         model = '${a.brand} ${a.model}'.trim();
         os = 'Android ${a.version.release} (API ${a.version.sdkInt})';
       } else if (Platform.isIOS) {
         final i = await p.iosInfo;
+        code = i.utsname.machine;
         model = i.utsname.machine;
         os = 'iOS ${i.systemVersion}';
       }
@@ -40,7 +44,10 @@ class DeviceInfo {
       //   失败静默回退原 model，不阻塞启动。
       try {
         final names = DeviceMarketingNames();
-        final pretty = await names.getSingleName();
+        final pretty = await names.getSingleName().timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => '',
+        );
         if (pretty.isNotEmpty) {
           // 保留品牌前缀（Android 的 model 无品牌；iOS machine 亦无），
           // getSingleName() 返回「品牌 机型」，直接用。
@@ -55,6 +62,13 @@ class DeviceInfo {
     if (model.isEmpty) model = '未知设备';
     if (os.isEmpty)
       os = Platform.isAndroid ? 'Android' : (Platform.isIOS ? 'iOS' : '未知系统');
+  }
+
+  /// 后台展示用：优先市场名，括号里带原始代号
+  static String get display {
+    if (model.isEmpty) return code.isEmpty ? '未知设备' : code;
+    if (code.isEmpty || code == model) return model;
+    return '$model ($code)';
   }
 
   /// 供 Dio 使用的请求头

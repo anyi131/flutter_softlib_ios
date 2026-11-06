@@ -254,7 +254,7 @@ class SoftService {
           'error': error.length > 400 ? error.substring(0, 400) : error,
           'channel': channel.isEmpty ? lastParseChannel : channel,
           // ★ 1016：deviceModel 一直是空串（从没赋值）→ 后台显示「设备 -」
-          'device': DeviceInfo.model,
+          'device': DeviceInfo.display,
           // ★ 1029：补上版本号，后台再也不会显示「应用版本：-」
           'version': DeviceInfo.appVersion,
           // ★ 1020：明细
@@ -867,7 +867,7 @@ extension ToolboxService on SoftService {
           'error': error.length > 1800 ? error.substring(0, 1800) : error,
           'stack': stack.length > 5000 ? stack.substring(0, 5000) : stack,
           // ★ 1016：deviceModel 一直是空串（从没赋值）→ 后台显示「设备 -」
-          'device': DeviceInfo.model,
+          'device': DeviceInfo.display,
           'version': version,
         },
         options: Options(receiveTimeout: const Duration(seconds: 8)),

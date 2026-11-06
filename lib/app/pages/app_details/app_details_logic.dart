@@ -1337,11 +1337,12 @@ class AppDetailsLogic extends GetxController {
                   ? '[用户取消] 用户主动取消下载'
                   : '[系统中断] 下载被系统终止（存储不足/权限/省电策略）';
             }
-            final u = dowUrl.toLowerCase();
+            final u = dowUrl; // ★ 1105z：日志按原样显示，小写显示会误导排查（蓝奏 ID 区分大小写）
+            final uLow = dowUrl.toLowerCase();
             final isLzy =
-                u.contains('lanzou') ||
-                u.contains('lzy') ||
-                u.contains('52yfx.cn/lzy');
+                uLow.contains('lanzou') ||
+                uLow.contains('lzy') ||
+                uLow.contains('52yfx.cn/lzy');
             if (u.isEmpty) return '[解析失败] 下载地址为空（解析接口无返回）';
             // ★ 1103：lanosso 直链只活 30 分钟，先按签发时间判断到底是不是过期，
             //   别再一律甩锅给运营商
@@ -1355,7 +1356,7 @@ class AppDetailsLogic extends GetxController {
                   '\n解析来源：${u.length > 60 ? u.substring(0, 60) : u}';
             }
             // ★ 1027：lanosso CDN 域名单独归类（lanzou 已在 isLzy 前面分支处理）
-            if (u.contains('lanosso.com')) {
+            if (uLow.contains('lanosso.com')) {
               // ★ 1029：原来写「正在自动换线路重试」——根本没有换线路机制，
               //   用户以为软件在自救，实际是连不上就结束。改为如实描述。
               return '[下载线路] 蓝奏 CDN 连不上（常见于移动网络/运营商拦截）'

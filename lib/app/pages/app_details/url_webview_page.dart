@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 
 /// 通用内置网页（url_type=webview 的软件/文章类内容）
-/// 复用 pay_web_page 的 WebViewController 方案，但不含支付轮询逻辑
+///
+/// ★ 1105x：从 webview_flutter 换成 flutter_inappwebview
+///   · 支持请求拦截（外部 scheme 交给系统浏览器）
+///   · 支持 JS 弹窗/新窗口、文件下载回调
+///   · 加载失败可重试，进度条更准
 class UrlWebviewPage extends StatefulWidget {
   const UrlWebviewPage({super.key});
 
@@ -17,10 +22,11 @@ class UrlWebviewPage extends StatefulWidget {
 
 class _UrlWebviewPageState extends State<UrlWebviewPage> {
   late String _url;
-  late final String _title;
-  late final WebViewController _controller;
+  late String _title;
+  InAppWebViewController? _web;
   bool _loading = true;
-  int _progress = 0;
+  bool _failed = false;
+  double _progress = 0;
 
   @override
   void initState() {
@@ -35,65 +41,120 @@ class _UrlWebviewPageState extends State<UrlWebviewPage> {
         ToastUtil.error('无效的网址');
       });
     }
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(C.lbg1)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          // ★ 1015：加载失败兜底（原来没有 → 失败就永久白屏）
-          onWebResourceError: (e) {
-            if (mounted && e.isForMainFrame == true) {
-              setState(() => _loading = false);
-            }
-          },
-          onPageStarted: (_) {
-            if (mounted) setState(() => _loading = true);
-          },
-          onPageFinished: (_) {
-            if (mounted) setState(() => _loading = false);
-          },
-          onProgress: (p) {
-            // ★ 1015 性能：进度的每 1% 都 setState 会引发重建风暴 → 卡顿
-            if (mounted &&
-                (p.round() % 10 == 0 || p.round() == 100) &&
-                _progress != p.round()) {
-              setState(() => _progress = p.round());
-            }
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(_url));
   }
 
-  @override
-  void dispose() {
-    // ★★★ 1015 致命修复：WebView 页面原来没有 dispose！
-    //   控制器不释放 → 每次打开泄漏一个 WebView → 多次后 Native OOM → 闪退回桌面。
-    super.dispose();
+  Future<void> _openExternal(String url) async {
+    try {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    } catch (_) {
+      ToastUtil.error('无法打开该链接');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.isDark ? C.bg0 : C.lbg0,
+      backgroundColor: context.isDark ? C.bg1 : C.lbg1,
       appBar: AppBar(
-        title: Text(_title, style: const TextStyle(fontSize: 16)),
-        centerTitle: true,
-        bottom: _progress > 0 && _loading
-            ? PreferredSize(
-                preferredSize: const Size.fromHeight(2),
-                child: LinearProgressIndicator(
-                  value: _progress / 100,
-                  minHeight: 2,
-                ),
-              )
-            : null,
+        title: Text(_title, style: const TextStyle(fontSize: 15)),
+        actions: [
+          IconButton(
+            tooltip: '刷新',
+            icon: const Icon(Icons.refresh_rounded, size: 20),
+            onPressed: () {
+              setState(() => _failed = false);
+              _web?.reload();
+            },
+          ),
+          IconButton(
+            tooltip: '浏览器打开',
+            icon: const Icon(Icons.open_in_browser_rounded, size: 20),
+            onPressed: () => _openExternal(_url),
+          ),
+        ],
       ),
-      body: Stack(
+      body: Column(
         children: [
-          WebViewWidget(controller: _controller),
-          if (_loading && _progress == 0)
-            const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          if (_loading)
+            SizedBox(
+              height: 2,
+              child: LinearProgressIndicator(
+                value: _progress <= 0 ? null : _progress / 100,
+                minHeight: 2,
+              ),
+            ),
+          Expanded(
+            child: Stack(
+              children: [
+                InAppWebView(
+                  initialUrlRequest: URLRequest(url: WebUri(_url)),
+                  initialSettings: InAppWebViewSettings(
+                    javaScriptEnabled: true,
+                    javaScriptCanOpenWindowsAutomatically: true,
+                    useShouldOverrideUrlLoading: true,
+                    mediaPlaybackRequiresUserGesture: false,
+                    supportZoom: true,
+                    allowsBackForwardNavigationGestures: true,
+                    transparentBackground: false,
+                  ),
+                  onWebViewCreated: (c) => _web = c,
+                  onLoadStart: (c, url) {
+                    if (mounted) setState(() => _loading = true);
+                  },
+                  onProgressChanged: (c, p) {
+                    if (mounted) setState(() => _progress = p.toDouble());
+                  },
+                  onLoadStop: (c, url) {
+                    if (mounted) setState(() => _loading = false);
+                  },
+                  onReceivedError: (c, req, err) {
+                    if (mounted && req.isForMainFrame == true) {
+                      setState(() {
+                        _loading = false;
+                        _failed = true;
+                      });
+                    }
+                  },
+                  shouldOverrideUrlLoading: (c, action) async {
+                    final u = action.request.url?.toString() ?? '';
+                    // 非 http(s) 的 scheme（tel:/mailto:/支付宝等）交给系统
+                    if (u.isNotEmpty &&
+                        !u.startsWith('http://') &&
+                        !u.startsWith('https://')) {
+                      await _openExternal(u);
+                      return NavigationActionPolicy.CANCEL;
+                    }
+                    return NavigationActionPolicy.ALLOW;
+                  },
+                ),
+                if (_failed)
+                  Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.wifi_off_rounded,
+                            size: 40, color: context.t3),
+                        const SizedBox(height: 12),
+                        Text('页面加载失败',
+                            style: TextStyle(fontSize: 14, color: context.t2)),
+                        const SizedBox(height: 14),
+                        PrimaryButton(
+                          label: '重试',
+                          expand: false,
+                          height: 40,
+                          onPressed: () {
+                            setState(() => _failed = false);
+                            _web?.loadUrl(
+                              urlRequest: URLRequest(url: WebUri(_url)),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );
