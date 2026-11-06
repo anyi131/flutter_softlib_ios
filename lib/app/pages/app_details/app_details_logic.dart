@@ -1056,7 +1056,7 @@ class AppDetailsLogic extends GetxController {
       final target = (lzyUrl != null && lzyUrl.isNotEmpty)
           ? lzyUrl
           : (item?.url ?? dowUrl);
-    _sharePageUrlForProxy = target; // ★ 153.1
+      _sharePageUrlForProxy = target; // ★ 153.1
       originUrl = target;
       if (target.isEmpty) {
         ResolveOverlay.dismiss();
@@ -1384,6 +1384,9 @@ class AppDetailsLogic extends GetxController {
   /// ★ 1105h：服务端给的中转兜底地址（直连被源站风控时静默换链重下）
   String _proxyFallbackUrl = '';
   bool _proxyRetried = false;
+
+  /// ★ 153.1：本次解析的分享页地址（本地解析没有 proxyUrl 时，失败后用它补取）
+  String _sharePageUrlForProxy = '';
 
   void _showDownloadFailedSheet() {
     _failCount++;
