@@ -23,6 +23,7 @@ import 'package:flutter_quill/flutter_quill.dart' show FlutterQuillLocalizations
 
 import 'app/routes/app_pages.dart';
 import 'app/design/app_theme.dart';
+import 'app/design/tokens.dart';
 import 'app/design/theme_controller.dart';
 import 'app/design/ui.dart';
 import 'app/widgets/pro_motion.dart';
@@ -236,6 +237,7 @@ Future<void> _initializeServices() async {
   await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
   // 设备信息（供后台操作日志记录型号/系统版本，需求 #10）
   await DeviceInfo.init();
+  await Tokens.load(); // ★ 1107g 主题令牌（失败用默认值）
   // ★ 1101 开源批二：系统通知栏（下载完成提醒），失败静默
   await SysNotify.init();
   // 初始化数据库

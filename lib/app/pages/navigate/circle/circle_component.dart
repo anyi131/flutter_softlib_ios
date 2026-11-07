@@ -7,6 +7,7 @@ import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
+import '../../../design/tokens.dart';
 import 'forum_gallery.dart';
 import '../../../utils/toast_util.dart';
 import 'my_forum_page.dart';
@@ -107,11 +108,11 @@ class _CircleComponentState extends State<CircleComponent> {
                     margin: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                     decoration: BoxDecoration(
                       color: context.isDark ? C.bg2 : Colors.white,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(Tokens.cardRadius),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withAlpha(context.isDark ? 45 : 9),
-                          blurRadius: 22,
+                          blurRadius: Tokens.cardShadow,
                           offset: const Offset(0, 8),
                         ),
                       ],
@@ -152,7 +153,7 @@ class _CircleComponentState extends State<CircleComponent> {
                 children: [
                   Text('圈子',
                       style: TextStyle(
-                          fontSize: 27,
+                          fontSize: Tokens.headerSize,
                           fontWeight: FontWeight.w900,
                           letterSpacing: -0.6,
                           height: 1.1,
@@ -268,7 +269,7 @@ class _CircleComponentState extends State<CircleComponent> {
   ///   ARC 数值：tile 88rpx=44pt、radius 26rpx=13pt、名称 22rpx=11pt、gap 12rpx
   Widget _boardGrid() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: EdgeInsets.symmetric(horizontal: Tokens.pagePad),
       child: Container(
         padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
         decoration: BoxDecoration(
@@ -290,8 +291,8 @@ class _CircleComponentState extends State<CircleComponent> {
                       child: Column(
                         children: [
                           Container(
-                            width: 44,
-                            height: 44,
+                            width: Tokens.boardTile,
+                            height: Tokens.boardTile,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
