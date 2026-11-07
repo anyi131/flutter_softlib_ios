@@ -38,6 +38,28 @@ class ForumService {
     return [];
   }
 
+  /// 板块详情（含是否关注）
+  Future<Map<String, dynamic>?> sectionInfo(int id) async {
+    try {
+      final r = await _dio.get('/api/softlib/forum/section_info', queryParameters: {'id': id, ..._auth});
+      if (r.data is Map && r.data['code'] == 1) {
+        return Map<String, dynamic>.from(r.data['data'] as Map);
+      }
+    } catch (e) { debugPrint('[Softlib] $e'); }
+    return null;
+  }
+
+  /// 关注 / 取关板块
+  Future<Map<String, dynamic>?> follow(int id) async {
+    try {
+      final r = await _dio.post('/api/softlib/forum/follow', data: {'id': id, ..._auth});
+      if (r.data is Map && r.data['code'] == 1) {
+        return Map<String, dynamic>.from(r.data['data'] as Map);
+      }
+    } catch (e) { debugPrint('[Softlib] $e'); }
+    return null;
+  }
+
   Future<Map<String, dynamic>> posts({
     int section = 0,
     String order = 'created',

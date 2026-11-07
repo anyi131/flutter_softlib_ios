@@ -8,7 +8,8 @@ import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
 import 'post_page.dart';
 
-/// 板块帖子列表
+/// 板块页（对照 ARC pages-sub/forum/section.vue）
+/// 头图 + 关注按钮 + 帖子流
 class SectionPage extends StatefulWidget {
   const SectionPage({super.key, required this.section});
   final Map<String, dynamic> section;
@@ -21,6 +22,7 @@ class _SectionPageState extends State<SectionPage> {
   final _svc = ForumService.instance;
   final _scroll = ScrollController();
   final List<Map<String, dynamic>> _list = [];
+  late Map<String, dynamic> _sec = Map<String, dynamic>.from(widget.section);
   bool _loading = true;
   bool _more = true;
   int _page = 1;
@@ -32,6 +34,7 @@ class _SectionPageState extends State<SectionPage> {
   void initState() {
     super.initState();
     _load(reset: true);
+    _loadSec();
     _scroll.addListener(() {
       if (_scroll.position.pixels > _scroll.position.maxScrollExtent - 300) _load();
     });
@@ -43,6 +46,20 @@ class _SectionPageState extends State<SectionPage> {
     super.dispose();
   }
 
+  Future<void> _loadSec() async {
+    final d = await _svc.sectionInfo(_sid);
+    if (d != null && mounted) setState(() => _sec = {...widget.section, ...d});
+  }
+
+  Future<void> _toggleFollow() async {
+    final r = await _svc.follow(_sid);
+    if (r == null) return;
+    setState(() {
+      _sec['is_follow'] = r['follow'];
+      _sec['followers'] = r['followers'];
+    });
+  }
+
   Future<void> _load({bool reset = false}) async {
     if (!reset && (!_more || _loading)) return;
     if (reset) {
@@ -52,7 +69,10 @@ class _SectionPageState extends State<SectionPage> {
       setState(() => _loading = true);
     }
     final d = await _svc.posts(section: _sid, order: _order, page: _page, limit: 15);
-    final list = (d['list'] as List? ?? []).whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+    final list = (d['list'] as List? ?? [])
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
     if (!mounted) return;
     setState(() {
       _list.addAll(list);
@@ -62,145 +82,238 @@ class _SectionPageState extends State<SectionPage> {
     });
   }
 
-  Widget _hero() {
-    final name = '${widget.section['name'] ?? '板块'}';
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [C.brand, Color.lerp(C.brand, Colors.black, 0.35)!],
-        ),
-        borderRadius: BorderRadius.circular(R.lg),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(38),
-              borderRadius: BorderRadius.circular(13),
-            ),
-            child: Text(name.isEmpty ? '#' : name.characters.first,
-                style: const TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name,
-                    style: const TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w900, color: Colors.white)),
-                const SizedBox(height: 4),
-                Text('${_list.length} 帖 · ${widget.section['descr'] ?? ''}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 11.5, color: Colors.white.withAlpha(200))),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.isDark ? C.bg0 : C.lbg0,
+      backgroundColor: context.isDark ? C.bg1 : C.lbg1,
       appBar: AppBar(
-        title: Text('${widget.section['name'] ?? '板块'}', style: const TextStyle(fontSize: 15)),
-        backgroundColor: context.isDark ? C.bg0 : C.lbg0,
-        surfaceTintColor: Colors.transparent,
-        actions: [
-          TextButton(
-            onPressed: () {
-              setState(() => _order = _order == 'created' ? 'hot' : 'created');
-              _load(reset: true);
-            },
-            child: Text(_order == 'created' ? '最新' : '热门',
-                style: TextStyle(fontSize: 13, color: context.t2)),
-          ),
-        ],
+        backgroundColor: context.isDark ? C.bg1 : C.lbg1,
+        elevation: 0,
+        foregroundColor: context.t1,
+        title: Text('${_sec['name'] ?? '板块'}',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: context.t1)),
       ),
       body: RefreshIndicator(
-        onRefresh: () => _load(reset: true),
-        child: ListView.separated(
+        onRefresh: () async {
+          await _loadSec();
+          await _load(reset: true);
+        },
+        child: ListView.builder(
           controller: _scroll,
-          padding: const EdgeInsets.fromLTRB(14, 8, 14, 30),
+          padding: const EdgeInsets.only(bottom: 24),
           itemCount: _list.length + 2,
-          separatorBuilder: (_, __) => const SizedBox(height: 8),
           itemBuilder: (c, i) {
             if (i == 0) return _hero();
-            if (i == _list.length + 1) {
-              return Padding(
-                padding: const EdgeInsets.all(16),
-                child: Center(
-                  child: _loading
-                      ? const SizedBox(
-                          width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                      : Text(_more ? '' : '没有更多了',
-                          style: TextStyle(fontSize: 11.5, color: context.t3)),
-                ),
-              );
+            if (i == 1) {
+              if (_list.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 90),
+                  child: Column(children: [
+                    Icon(Lz.fileText, size: 40, color: context.t3.withAlpha(120)),
+                    const SizedBox(height: 10),
+                    Text(_loading ? '加载中…' : '这个板块还没有帖子',
+                        style: TextStyle(fontSize: 13, color: context.t3)),
+                  ]),
+                );
+              }
+              return const SizedBox.shrink();
             }
-            final p = _list[i - 1];
-            final u = (p['user'] as Map?) ?? const {};
-            return GestureDetector(
-              onTap: () => Get.to(() => PostPage(postId: int.tryParse('${p['id']}') ?? 0))
-                  ?.then((_) => _load(reset: true)),
-              child: Container(
-                padding: const EdgeInsets.all(13),
-                decoration: BoxDecoration(
-                  color: context.isDark ? C.bg2 : Colors.white,
-                  borderRadius: BorderRadius.circular(R.lg),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('${p['title'] ?? ''}',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 14.5, fontWeight: FontWeight.w800, color: context.t1, height: 1.35)),
-                    const SizedBox(height: 5),
-                    Text('${p['summary'] ?? ''}',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 12, color: context.t2, height: 1.5)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(Lz.user, size: 12, color: context.t3),
-                        const SizedBox(width: 3),
-                        Text('${u['nickname'] ?? '匿名'}',
-                            style: TextStyle(fontSize: 11, color: context.t3)),
-                        const SizedBox(width: 8),
-                        Text('${p['time_text'] ?? ''}',
-                            style: TextStyle(fontSize: 10.5, color: context.t3)),
-                        const Spacer(),
-                        Icon(Lz.star, size: 12, color: context.t3),
-                        Text(' ${p['likes'] ?? 0}',
-                            style: TextStyle(fontSize: 10.5, color: context.t3)),
-                        const SizedBox(width: 8),
-                        Icon(Lz.messageCircle, size: 12, color: context.t3),
-                        Text(' ${p['comments'] ?? 0}',
-                            style: TextStyle(fontSize: 10.5, color: context.t3)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return _postTile(_list[i - 2]);
           },
         ),
       ),
     );
   }
+
+  Widget _hero() {
+    final name = '${_sec['name'] ?? '板块'}';
+    final descr = '${_sec['descr'] ?? ''}';
+    final cover = '${_sec['cover'] ?? ''}';
+    final count = _sec['post_count'] ?? 0;
+    final followers = _sec['followers'] ?? 0;
+    final followed = '${_sec['is_follow'] ?? 0}' == '1';
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Stack(
+          children: [
+            if (cover.isNotEmpty)
+              Image.network(cover,
+                  height: 116,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _coverFallback())
+            else
+              _coverFallback(),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.black.withAlpha(25), Colors.black.withAlpha(125)],
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 19,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white)),
+                        const SizedBox(height: 4),
+                        Text('$count 帖 · $followers 关注${descr.isEmpty ? '' : ' · $descr'}',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 11.5, color: Colors.white.withAlpha(220))),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    height: 30,
+                    child: TextButton(
+                      onPressed: _toggleFollow,
+                      style: TextButton.styleFrom(
+                        backgroundColor: followed ? Colors.white.withAlpha(46) : Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
+                      ),
+                      child: Text(followed ? '已关注' : '+ 关注',
+                          style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: followed ? Colors.white : C.brand)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _coverFallback() => Container(
+        height: 116,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [C.brand, Color.lerp(C.brand, Colors.black, 0.45)!],
+          ),
+        ),
+      );
+
+  Widget _postTile(Map<String, dynamic> p) {
+    final u = (p['user'] as Map?) ?? const {};
+    final imgs = (p['images'] as List?) ?? const [];
+    final cover = imgs.isNotEmpty ? '${imgs.first}' : '';
+    return AppPressable(
+      onTap: () => Get.to(() => PostPage(postId: int.tryParse('${p['id']}') ?? 0)),
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+        decoration: BoxDecoration(
+          color: context.isDark ? C.bg2 : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              CircleAvatar(
+                radius: 10,
+                backgroundColor: C.brand.withAlpha(29),
+                backgroundImage: '${u['avatar'] ?? ''}'.isNotEmpty
+                    ? NetworkImage('${u['avatar']}')
+                    : null,
+                child: '${u['avatar'] ?? ''}'.isEmpty
+                    ? Icon(Lz.user, size: 10, color: C.brand)
+                    : null,
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text('${u['nickname'] ?? '匿名'}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: context.t2)),
+              ),
+              if ('${u['title'] ?? ''}'.isNotEmpty) ...[
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: C.gold.withAlpha(30),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text('${u['title']}',
+                      style: TextStyle(fontSize: 9, color: C.gold)),
+                ),
+              ],
+              const Spacer(),
+              Text('${p['time_text'] ?? ''}',
+                  style: TextStyle(fontSize: 11, color: context.t3)),
+            ]),
+            const SizedBox(height: 8),
+            Text('${p['title'] ?? ''}',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w700,
+                    height: 1.45,
+                    color: context.t1)),
+            if ('${p['text'] ?? ''}'.isNotEmpty) ...[
+              const SizedBox(height: 5),
+              Text('${p['text']}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 13, height: 1.5, color: context.t2)),
+            ],
+            if (cover.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(cover,
+                    height: 118, width: double.infinity, fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const SizedBox()),
+              ),
+            ],
+            const SizedBox(height: 8),
+            Row(children: [
+              _meta(Lz.eye, '${p['views'] ?? 0}'),
+              const SizedBox(width: 14),
+              _meta(Lz.heart, '${p['likes'] ?? 0}'),
+              const SizedBox(width: 14),
+              _meta(Lz.messageCircle, '${p['comments'] ?? 0}'),
+            ]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _meta(IconData icon, String text) => Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(icon, size: 12, color: context.t3),
+        const SizedBox(width: 3),
+        Text(text, style: TextStyle(fontSize: 11.5, color: context.t3)),
+      ]);
 }

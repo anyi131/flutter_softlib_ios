@@ -204,74 +204,69 @@ class _CircleComponentState extends State<CircleComponent> {
         ),
       );
 
+  /// 板块入口：白卡 + 四列网格（对照 tab-forum 的 .boards/.board）
+  ///   ARC 数值：tile 88rpx=44pt、radius 26rpx=13pt、名称 22rpx=11pt、gap 12rpx
   Widget _boardGrid() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: 1.95,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(6, 14, 6, 6),
+        decoration: BoxDecoration(
+          color: context.isDark ? C.bg2 : Colors.white,
+          borderRadius: BorderRadius.circular(14),
         ),
-        itemCount: _sections.length,
-        itemBuilder: (c, i) {
-          final s = _sections[i];
-          final name = '${s['name'] ?? ''}';
-          return AppPressable(
-            onTap: () => Get.to(() => SectionPage(section: s))?.then((_) => _load()),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 11),
-              decoration: BoxDecoration(
-                color: context.isDark ? C.bg2 : Colors.white,
-                borderRadius: BorderRadius.circular(R.md),
-                border: Border.all(
-                    color: context.isDark
-                        ? Colors.white.withAlpha(16)
-                        : Colors.black.withAlpha(8)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: C.brand.withAlpha(context.isDark ? 44 : 26),
-                      borderRadius: BorderRadius.circular(11),
-                    ),
-                    child: Text(
-                      name.isEmpty ? '#' : name.characters.first,
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w900, color: C.brand),
-                    ),
-                  ),
-                  const SizedBox(width: 9),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w800,
-                                color: context.t1)),
-                        const SizedBox(height: 3),
-                        Text('${s['post_count'] ?? 0} 帖',
-                            style: TextStyle(fontSize: 10.5, color: context.t3)),
-                      ],
+        child: LayoutBuilder(builder: (c, box) {
+          final w = box.maxWidth / 4;
+          return Wrap(
+            children: [
+              for (final s in _sections)
+                SizedBox(
+                  width: w,
+                  child: AppPressable(
+                    onTap: () =>
+                        Get.to(() => SectionPage(section: s))?.then((_) => _load()),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 18),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: context.isDark ? C.bg3 : C.lbg2,
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            child: Text(
+                              '${s['name'] ?? '#'}'.isEmpty
+                                  ? '#'
+                                  : '${s['name']}'.characters.first,
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: context.t2),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 3),
+                            child: Text('${s['name'] ?? ''}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: context.t2)),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
+                ),
+            ],
           );
-        },
+        }),
       ),
     );
   }
@@ -285,7 +280,7 @@ class _CircleComponentState extends State<CircleComponent> {
       onTap: () => Get.to(() => PostPage(postId: int.tryParse('${p['id']}') ?? 0))
           ?.then((_) => _load()),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
