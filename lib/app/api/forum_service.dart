@@ -185,7 +185,7 @@ class ForumService {
 
   // ───────── 后台 ─────────
   Future<List<Map<String, dynamic>>> adminSections() async {
-    final r = await _dio.get('/api/softlib/forum/admin_sections', queryParameters: _auth);
+    final r = await _dio.post('/api/softlib/forum/admin_sections', data: {..._auth});
     final d = r.data;
     if (d is Map && d['code'] == 1 && d['data'] is List) {
       return (d['data'] as List).whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
@@ -207,8 +207,8 @@ class ForumService {
   }
 
   Future<List<Map<String, dynamic>>> adminPosts({int page = 1, String kw = ''}) async {
-    final r = await _dio.get('/api/softlib/forum/admin_posts',
-        queryParameters: {'page': page, if (kw.isNotEmpty) 'kw': kw, ..._auth});
+    final r = await _dio.post('/api/softlib/forum/admin_posts',
+        data: {'page': page, if (kw.isNotEmpty) 'kw': kw, ..._auth});
     final d = r.data;
     if (d is Map && d['code'] == 1 && d['data'] is Map) {
       final list = (d['data'] as Map)['list'];
