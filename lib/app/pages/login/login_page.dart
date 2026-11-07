@@ -311,6 +311,7 @@ class _LoginPageState extends State<LoginPage> {
         await mine.load();
       } catch (_) {}
       ToastUtil.success('登录成功');
+      if (!mounted) return; // 1107r
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;

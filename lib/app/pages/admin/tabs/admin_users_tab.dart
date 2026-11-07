@@ -463,6 +463,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
         ToastUtil.info('没有可导出的数据');
         return;
       }
+      if (!mounted) return; // 1107r
       await showGlassDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -1681,6 +1682,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     final showAddr =
         '${u['custom_ip_on'] ?? 0}' == '1' &&
         '${u['custom_addr'] ?? ''}'.isNotEmpty;
+    if (!mounted) return; // 1107r
     await showGlassDialog(
       context: context,
       builder: (ctx) => AlertDialog(

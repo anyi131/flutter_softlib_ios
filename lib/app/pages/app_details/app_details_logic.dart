@@ -1145,7 +1145,7 @@ class AppDetailsLogic extends GetxController {
         SoftService.reportParseResult(
           appId: appIdInt,
           title: (item?.title ?? '').isNotEmpty
-              ? item!.title
+              ? (item!.title ?? '')
               : (appInfo?.fileName ?? ''),
           rawUrl: originUrl,
           ok: false,

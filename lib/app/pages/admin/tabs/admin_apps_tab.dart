@@ -228,6 +228,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
   }
 
   Future<void> _confirmFillAll() async {
+ if (!mounted) return; // 1107r
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -340,6 +341,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
       ToastUtil.error(ErrText.of(e));
       return;
     }
+    if (!mounted) return; // 1107r
     await showGlassSheet(
       context: context,
       isScrollControlled: true,
@@ -984,6 +986,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
       ToastUtil.error(ErrText.of(e));
       return;
     }
+    if (!mounted) return; // 1107r
     await showGlassSheet(
       context: context,
       isScrollControlled: true,
@@ -1230,6 +1233,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
         : '${a?['url_type']}';
     final adminNote = TextEditingController(text: '${a?['admin_note'] ?? ''}');
 
+    if (!mounted) return; // 1107r
     await showGlassSheet(
       context: context,
       isScrollControlled: true,

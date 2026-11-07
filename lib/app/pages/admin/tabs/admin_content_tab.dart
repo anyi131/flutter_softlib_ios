@@ -439,6 +439,7 @@ class _AdminContentTabState extends State<AdminContentTab>
     String type = '${c?['type'] ?? 'no'}';
     bool uploading = false;
     String err = '';
+ if (!mounted) return; // 1107r
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -660,6 +661,7 @@ class _AdminContentTabState extends State<AdminContentTab>
     final imgCtrl = TextEditingController(text: '${full['image'] ?? ''}');
     bool uploading = false;
 
+    if (!mounted) return; // 1107r
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(

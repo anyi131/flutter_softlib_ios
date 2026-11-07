@@ -86,6 +86,7 @@ class _PostPageState extends State<PostPage> {
       _input.clear();
       setState(() => _replyTo = 0);
       FocusScope.of(context).unfocus();
+      if (!mounted) return; // 1107r
       await _load();
     } catch (e) {
       ToastUtil.error(ErrText.of(e));
