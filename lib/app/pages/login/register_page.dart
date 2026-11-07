@@ -273,7 +273,7 @@ class _RegisterPageState extends State<RegisterPage> {
     final avatar = _qqAvatar;
     return AuthScaffold(
       title: '创建账号',
-      subtitle: '填写邮箱即可注册，QQ 号可选（用于获取头像）',
+      subtitle: '邮箱即登录账号，填完即可注册',
       icon: Lz.userPlus,
       children: [
         AuthCard(
@@ -433,8 +433,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '目前仅支持 QQ 邮箱注册（@qq.com）\n'
-                          '其他邮箱可在后台「注册与界面风格」中开启',
+                          '邮箱即登录账号，支持 QQ 邮箱（@qq.com）',
                           style: TextStyle(
                             fontSize: 11.5,
                             height: 1.5,
@@ -462,7 +461,7 @@ class _RegisterPageState extends State<RegisterPage> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: Text(
-                  '本站无需邮箱验证码，填完直接注册',
+                  '昵称、QQ 号可留空，注册后随时补充',
                   style: Ty.tiny.copyWith(color: context.t3),
                 ),
               ),

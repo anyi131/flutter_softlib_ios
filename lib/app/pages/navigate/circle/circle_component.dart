@@ -6,6 +6,7 @@ import '../../../api/user_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
+import '../../../design/skeleton.dart';
 import '../../../design/tokens.dart';
 import 'forum_gallery.dart';
 import '../../../utils/toast_util.dart';
@@ -93,12 +94,7 @@ class _CircleComponentState extends State<CircleComponent> {
                   ),
                 ),
               if (_loading)
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(36),
-                    child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                  ),
-                )
+                const SliverToBoxAdapter(child: SkeletonPosts())
               else if (_posts.isEmpty)
                 SliverToBoxAdapter(child: _empty())
               else
