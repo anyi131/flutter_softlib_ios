@@ -444,24 +444,74 @@ class _CircleComponentState extends State<CircleComponent> {
       PostGallery(images: imgs.map((e) => '$e').where((e) => e.isNotEmpty).toList());
 
   Widget _empty() => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 44),
+        padding: const EdgeInsets.symmetric(vertical: 46),
         child: Center(
           child: Column(
             children: [
-              Icon(Lz.messageCircle, size: 42, color: context.t3),
-              const SizedBox(height: 10),
-              Text('还没有帖子，来发第一帖吧',
-                  style: TextStyle(fontSize: 13, color: context.t3)),
-              const SizedBox(height: 14),
-              FilledButton(
+              // 插图：三层同心圆 + 图标（无需图片资源）
+              SizedBox(
+                width: 132,
+                height: 132,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 132,
+                      height: 132,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: C.brand.withAlpha(context.isDark ? 22 : 12),
+                      ),
+                    ),
+                    Container(
+                      width: 92,
+                      height: 92,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: C.brand.withAlpha(context.isDark ? 38 : 20),
+                      ),
+                    ),
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [C.brand, Color.lerp(C.brand, Colors.black, 0.25)!],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: C.brand.withAlpha(70),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Lz.messageCircle, size: 26, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text('还没有人发帖',
+                  style: TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w800, color: context.t1)),
+              const SizedBox(height: 6),
+              Text('来发第一帖，让圈子热闹起来',
+                  style: TextStyle(fontSize: 12.5, color: context.t3)),
+              const SizedBox(height: 18),
+              FilledButton.icon(
                 onPressed: _openPublish,
+                icon: const Icon(Icons.edit_rounded, size: 16),
+                label: const Text('发第一帖', style: TextStyle(fontSize: 13)),
                 style: FilledButton.styleFrom(
                   backgroundColor: C.brand,
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(R.full)),
                 ),
-                child: const Text('发第一帖', style: TextStyle(fontSize: 13)),
               ),
             ],
           ),

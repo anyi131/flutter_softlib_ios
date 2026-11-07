@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// AppAnim —— 全局统一动画系统（v52 #2 动画全面重构）
@@ -178,7 +179,12 @@ class _AppPressableState extends State<AppPressable> {
       onTapDown: enabled ? (_) => setState(() => _down = true) : null,
       onTapCancel: enabled ? () => setState(() => _down = false) : null,
       onTapUp: enabled ? (_) => setState(() => _down = false) : null,
-      onTap: widget.onTap,
+      onTap: widget.onTap == null
+          ? null
+          : () {
+              HapticFeedback.lightImpact();
+              widget.onTap!();
+            },
       onLongPress: widget.onLongPress,
       child: AnimatedScale(
         scale: _down ? widget.scale : 1.0,
