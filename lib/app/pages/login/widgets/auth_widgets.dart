@@ -50,14 +50,8 @@ class AuthScaffold extends StatelessWidget {
       final tpl = ver >= 0
           ? (svc.cachedConfig?.uiConfig.authTemplate ?? 'classic')
           : 'classic';
-      return switch (tpl) {
-        'split' => _buildSplit(context),
-        'sheet' => _buildSheet(context),
-        'banner' => _buildBanner(context),
-        'minimal' => _buildMinimal(context),
-        'floating' => _buildFloating(context),
-        _ => _buildClassic(context),
-      };
+      return _buildAurora(context, tpl);
+
     });
   }
 
@@ -216,6 +210,137 @@ class AuthScaffold extends StatelessWidget {
   }
 
   /// ② split —— **左右分栏**：左 38% 渐变品牌栏（宽屏）/ 26% 窄栏（手机）+ 右侧表单
+  /// ★ 1107i 新模板 aurora：全屏渐变 + 居中浮起卡片（替代旧的六套）
+  Widget _buildAurora(BuildContext context, String tpl) {
+    final dark = context.isDark;
+    return Scaffold(
+      backgroundColor: dark ? C.bg0 : Colors.white,
+      resizeToAvoidBottomInset: true,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: Stack(
+          children: [
+            // 背景渐变
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    C.brand,
+                    Color.lerp(C.brand, Colors.black, 0.28)!,
+                    Color.lerp(C.brand, Colors.black, 0.55)!,
+                  ],
+                ),
+              ),
+            ),
+            // 装饰光圈
+            Positioned(
+              top: -70,
+              right: -50,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(20),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: -90,
+              left: -60,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+            SafeArea(
+              child: Column(
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(context.pagePadding, 6, 0, 0),
+                      child: _backBtn(context, fg: Colors.white),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(20, 10, 20, 28),
+                      children: [
+                        const SizedBox(height: 18),
+                        // 品牌标识
+                        Center(
+                          child: Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(40),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Icon(icon, size: 30, color: C.brand),
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        Text(title,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.5,
+                                height: 1.15,
+                                color: Colors.white)),
+                        const SizedBox(height: 8),
+                        Text(subtitle,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 13,
+                                height: 1.5,
+                                color: Colors.white.withAlpha(205))),
+                        const SizedBox(height: 26),
+                        // 表单卡片
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
+                          decoration: BoxDecoration(
+                            color: dark ? C.bg2 : Colors.white,
+                            borderRadius: BorderRadius.circular(26),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(dark ? 90 : 46),
+                                blurRadius: 34,
+                                offset: const Offset(0, 16),
+                              ),
+                            ],
+                          ),
+                          child: _formArea(card: false, hPad: 0),
+                        ),
+                        const SizedBox(height: 18),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSplit(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
     final leftW = w >= 600 ? w * 0.34 : w * 0.30;
