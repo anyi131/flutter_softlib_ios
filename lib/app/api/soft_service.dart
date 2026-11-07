@@ -112,7 +112,13 @@ class SoftService {
       final resp = await dio.get('/api/softlib/config/index');
       final data = resp.data;
       if (data is Map && data['code'] == 1 && data['data'] is Map) {
-        final cfg = AppConfig.fromJson(Map<String, dynamic>.from(data['data']));
+        AppConfig cfg;
+        try {
+          cfg = AppConfig.fromJson(Map<String, dynamic>.from(data['data']));
+        } catch (e) {
+          debugPrint('[Softlib] config parse: $e');
+          return _configCache;
+        }
         _configCache = cfg;
         // ★ 1028：音效开关随配置下发（后台改一次，全站生效）
         try {

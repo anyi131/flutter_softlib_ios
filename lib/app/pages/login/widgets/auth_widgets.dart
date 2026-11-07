@@ -299,10 +299,10 @@ class AuthScaffold extends StatelessWidget {
                         Text(title,
                             textAlign: TextAlign.center,
                             style: const TextStyle(
-                                fontSize: 26,
+                                fontSize: 27,
                                 fontWeight: FontWeight.w900,
-                                letterSpacing: -0.5,
-                                height: 1.15,
+                                letterSpacing: -0.8,
+                                height: 1.12,
                                 color: Colors.white)),
                         const SizedBox(height: 8),
                         Text(subtitle,
@@ -311,24 +311,46 @@ class AuthScaffold extends StatelessWidget {
                                 fontSize: 13,
                                 height: 1.5,
                                 color: Colors.white.withAlpha(205))),
-                        const SizedBox(height: 26),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: Container(
+                            width: 26,
+                            height: 3,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withAlpha(150),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
                         // 表单卡片
                         Container(
-                          padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
+                          padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
                           decoration: BoxDecoration(
                             color: dark ? C.bg2 : Colors.white,
-                            borderRadius: BorderRadius.circular(26),
+                            borderRadius: BorderRadius.circular(28),
+                            border: Border.all(
+                              color: Colors.white.withAlpha(dark ? 16 : 150),
+                              width: 1,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withAlpha(dark ? 90 : 46),
-                                blurRadius: 34,
-                                offset: const Offset(0, 16),
+                                color: Colors.black.withAlpha(dark ? 100 : 52),
+                                blurRadius: 40,
+                                spreadRadius: -4,
+                                offset: const Offset(0, 18),
                               ),
                             ],
                           ),
                           child: _formArea(card: false, hPad: 0),
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 14),
+                        Text('账号仅用于本站登录，不会对外共享',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 11.5,
+                                color: Colors.white.withAlpha(170))),
+                        const SizedBox(height: 10),
                       ],
                     ),
                   ),

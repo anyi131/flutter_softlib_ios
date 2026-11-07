@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'api_http.dart';
 import 'dart:convert';
@@ -493,11 +494,20 @@ class UserService {
       ),
     );
     if (r['code'] != 1) throw Exception(r['msg'] ?? '注册失败');
-    final data = Map<String, dynamic>.from(r['data'] ?? {});
-    await _save(
-      (data['token'] ?? '').toString(),
-      data['userinfo'] is Map ? UserInfo.fromJson(data['userinfo']) : null,
-    );
+    final raw = r['data'];
+    if (raw != null && raw is! Map) throw Exception('注册成功但返回异常，请直接登录');
+    final data = raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+    UserInfo? info;
+    try {
+      if (data['userinfo'] is Map) info = UserInfo.fromJson(data['userinfo']);
+    } catch (e) {
+      debugPrint('[Softlib] register userinfo: $e');
+    }
+    try {
+      await _save((data['token'] ?? '').toString(), info);
+    } catch (e) {
+      debugPrint('[Softlib] register save: $e');
+    }
   }
 
   /// 登录

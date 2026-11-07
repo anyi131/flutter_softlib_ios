@@ -80,6 +80,9 @@ class _RegisterPageState extends State<RegisterPage> {
   void initState() {
     super.initState();
     _loadEmailPolicy();
+    // ★ 1107j：QQ 号自动补邮箱
+    _qq.addListener(_syncEmailFromQq);
+    _email.addListener(_markEmailManual);
   }
 
   /// 读后台的邮箱域名白名单
@@ -100,11 +103,37 @@ class _RegisterPageState extends State<RegisterPage> {
     } catch (_) {}
   }
 
+  /// ★ 1107j：QQ 号填写后自动补 @qq.com；若邮箱是自动填的，QQ 改动时同步更新
+  bool _emailAutoFilled = false;
+
   String _errNick = '';
   String _errEmail = '';
   String _errCode = '';
   String _errPwd = '';
   String _errServer = '';
+
+  /// QQ 号 → 邮箱自动补 @qq.com
+  void _syncEmailFromQq() {
+    final q = _qq.text.trim();
+    final cur = _email.text.trim();
+    if (q.isEmpty) return;
+    if (!RegExp(r'^\d{5,12}$').hasMatch(q)) return;
+    if (cur.isEmpty || _emailAutoFilled) {
+      final next = '$q@qq.com';
+      if (cur != next) {
+        _emailAutoFilled = true;
+        _email.text = next;
+        _email.selection = TextSelection.fromPosition(TextPosition(offset: next.length));
+      }
+    }
+  }
+
+  /// 用户手动改邮箱 → 之后不再自动覆盖
+  void _markEmailManual() {
+    final cur = _email.text.trim();
+    final q = _qq.text.trim();
+    if (cur.isNotEmpty && cur != '$q@qq.com') _emailAutoFilled = false;
+  }
 
   @override
   void dispose() {
