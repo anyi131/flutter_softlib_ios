@@ -164,4 +164,77 @@ class ForumService {
     }
     return [];
   }
+
+  /// 我的收藏
+  Future<List<Map<String, dynamic>>> myMarks({int page = 1}) async {
+    try {
+      final r = await _dio.get('/api/softlib/forum/my_marks',
+          queryParameters: {'page': page, ..._auth});
+      final d = r.data;
+      if (d is Map && d['code'] == 1 && d['data'] is Map) {
+        final list = (d['data'] as Map)['list'];
+        if (list is List) {
+          return list.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+        }
+      }
+    } catch (e) {
+      debugPrint('[Forum] marks: $e');
+    }
+    return [];
+  }
+
+  // ───────── 后台 ─────────
+  Future<List<Map<String, dynamic>>> adminSections() async {
+    final r = await _dio.get('/api/softlib/forum/admin_sections', queryParameters: _auth);
+    final d = r.data;
+    if (d is Map && d['code'] == 1 && d['data'] is List) {
+      return (d['data'] as List).whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+    }
+    return [];
+  }
+
+  Future<void> adminSectionSave(Map<String, dynamic> data) async {
+    final r = await _dio.post('/api/softlib/forum/admin_section_save',
+        data: {...data, ..._auth});
+    final d = r.data;
+    if (!(d is Map && d['code'] == 1)) throw Exception('${(d is Map ? d['msg'] : '保存失败')}');
+  }
+
+  Future<void> adminSectionDel(int id) async {
+    final r = await _dio.post('/api/softlib/forum/admin_section_del', data: {'id': id, ..._auth});
+    final d = r.data;
+    if (!(d is Map && d['code'] == 1)) throw Exception('${(d is Map ? d['msg'] : '删除失败')}');
+  }
+
+  Future<List<Map<String, dynamic>>> adminPosts({int page = 1, String kw = ''}) async {
+    final r = await _dio.get('/api/softlib/forum/admin_posts',
+        queryParameters: {'page': page, if (kw.isNotEmpty) 'kw': kw, ..._auth});
+    final d = r.data;
+    if (d is Map && d['code'] == 1 && d['data'] is Map) {
+      final list = (d['data'] as Map)['list'];
+      if (list is List) {
+        return list.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+      }
+    }
+    return [];
+  }
+
+  Future<void> adminPostSet(int id, String field, int value) async {
+    final r = await _dio.post('/api/softlib/forum/admin_post_set',
+        data: {'id': id, 'field': field, 'value': value, ..._auth});
+    final d = r.data;
+    if (!(d is Map && d['code'] == 1)) throw Exception('${(d is Map ? d['msg'] : '操作失败')}');
+  }
+
+  Future<void> adminPostDel(int id) async {
+    final r = await _dio.post('/api/softlib/forum/admin_post_del', data: {'id': id, ..._auth});
+    final d = r.data;
+    if (!(d is Map && d['code'] == 1)) throw Exception('${(d is Map ? d['msg'] : '删除失败')}');
+  }
+
+  Future<void> adminCommentDel(int id) async {
+    final r = await _dio.post('/api/softlib/forum/admin_comment_del', data: {'id': id, ..._auth});
+    final d = r.data;
+    if (!(d is Map && d['code'] == 1)) throw Exception('${(d is Map ? d['msg'] : '删除失败')}');
+  }
 }

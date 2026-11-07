@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../api/forum_service.dart';
+import '../../../api/post_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
@@ -23,12 +27,29 @@ class _PublishPageState extends State<PublishPage> {
   final _content = TextEditingController();
   late int _section = widget.sectionId ?? (widget.sections.isNotEmpty ? int.tryParse('${widget.sections.first['id']}') ?? 0 : 0);
   bool _sending = false;
+  final List<File> _images = [];
+  bool _uploading = false;
 
   @override
   void dispose() {
     _title.dispose();
     _content.dispose();
     super.dispose();
+  }
+
+  Future<void> _pick() async {
+    if (_images.length >= 9) return ToastUtil.info('最多 9 张图');
+    try {
+      final picked = await ImagePicker().pickMultiImage(imageQuality: 82);
+      if (picked.isEmpty) return;
+      setState(() {
+        for (final x in picked.take(9 - _images.length)) {
+          _images.add(File(x.path));
+        }
+      });
+    } catch (e) {
+      ToastUtil.error('选图失败');
+    }
   }
 
   Future<void> _submit() async {
@@ -40,8 +61,19 @@ class _PublishPageState extends State<PublishPage> {
     if (_sending) return;
     setState(() => _sending = true);
     try {
+      final urls = <String>[];
+      if (_images.isNotEmpty) {
+        setState(() => _uploading = true);
+        for (final f in _images) {
+          try {
+            final u = await PostService.instance.uploadImage(f);
+            if (u.isNotEmpty) urls.add(u);
+          } catch (_) {}
+        }
+        if (mounted) setState(() => _uploading = false);
+      }
       final id = await ForumService.instance
-          .publish(title: t, section: _section, text: c);
+          .publish(title: t, section: _section, text: c, images: urls);
       if (!mounted) return;
       ToastUtil.success('发布成功');
       Get.back(result: true);
@@ -66,7 +98,7 @@ class _PublishPageState extends State<PublishPage> {
         actions: [
           TextButton(
             onPressed: _sending ? null : _submit,
-            child: Text(_sending ? '发布中…' : '发布',
+            child: Text(_sending ? (_uploading ? '上传图片…' : '发布中…') : '发布',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: C.brand)),
           ),
         ],
@@ -130,6 +162,50 @@ class _PublishPageState extends State<PublishPage> {
               ),
               counterStyle: TextStyle(fontSize: 10, color: context.t3),
             ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (int i = 0; i < _images.length; i++)
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.file(_images[i],
+                          width: 78, height: 78, fit: BoxFit.cover),
+                    ),
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: GestureDetector(
+                        onTap: () => setState(() => _images.removeAt(i)),
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(
+                              color: Colors.black54, shape: BoxShape.circle),
+                          child: const Icon(Icons.close, size: 12, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              if (_images.length < 9)
+                GestureDetector(
+                  onTap: _pick,
+                  child: Container(
+                    width: 78,
+                    height: 78,
+                    decoration: BoxDecoration(
+                      color: context.isDark ? C.bg2 : C.lbg2,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.add_photo_alternate_outlined,
+                        size: 24, color: context.t3),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           Text('发布即表示同意社区规范，违规内容会被删除。',

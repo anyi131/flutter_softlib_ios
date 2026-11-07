@@ -8,6 +8,8 @@ import 'wish_admin_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
+
+import 'admin_forum_tab.dart';
 import 'package:get/get.dart';
 
 import '../../../api/admin_service.dart';
@@ -137,6 +139,7 @@ class _AdminContentTabState extends State<AdminContentTab>
             Tab(text: '版本 ${_versions.length}'),
             Tab(text: '卡密 ${_cards.length}'),
             const Tab(text: '需求'),
+            const Tab(text: '圈子'),
             const Tab(text: '配置'),
           ],
         ),
@@ -156,6 +159,7 @@ class _AdminContentTabState extends State<AdminContentTab>
                     _cardList(),
                     // ★ 1020：需求投票（原来是塞在采集 Tab 里的，不属于采集）
                     const WishAdminView(),
+                    const AdminForumTab(),
                     _configList(),
                   ],
                 ),

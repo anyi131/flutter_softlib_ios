@@ -9,6 +9,7 @@ import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';
 import 'post_page.dart';
+import 'my_forum_page.dart';
 import 'publish_page.dart';
 import 'section_page.dart';
 
@@ -60,12 +61,6 @@ class _CircleComponentState extends State<CircleComponent> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.isDark ? C.bg0 : C.lbg0,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openPublish,
-        backgroundColor: C.brand,
-        icon: const Icon(Lz.pencil, size: 18, color: Colors.white),
-        label: const Text('发帖', style: TextStyle(color: Colors.white, fontSize: 13)),
-      ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: CustomScrollView(
@@ -79,6 +74,14 @@ class _CircleComponentState extends State<CircleComponent> {
                 IconButton(
                   icon: Icon(Lz.search, size: 20, color: context.t2),
                   onPressed: () => Get.to(() => SectionPage(section: const {'id': 0, 'name': '全部帖子'}))?.then((_) => _load()),
+                ),
+                IconButton(
+                  icon: Icon(Lz.pencil, size: 20, color: C.brand),
+                  onPressed: _openPublish,
+                ),
+                IconButton(
+                  icon: Icon(Lz.user, size: 20, color: context.t2),
+                  onPressed: () => Get.to(() => MyForumPage()),
                 ),
               ],
             ),
@@ -277,6 +280,16 @@ class _CircleComponentState extends State<CircleComponent> {
               Icon(Lz.messageCircle, size: 38, color: context.t3),
               const SizedBox(height: 10),
               Text('还没有帖子，来发第一帖吧', style: TextStyle(fontSize: 13, color: context.t3)),
+              const SizedBox(height: 14),
+              FilledButton(
+                onPressed: _openPublish,
+                style: FilledButton.styleFrom(
+                  backgroundColor: C.brand,
+                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.full)),
+                ),
+                child: const Text('发第一帖', style: TextStyle(fontSize: 13)),
+              ),
             ],
           ),
         ),

@@ -22,6 +22,8 @@ class PostPage extends StatefulWidget {
 class _PostPageState extends State<PostPage> {
   final _svc = ForumService.instance;
   final _input = TextEditingController();
+  int _replyTo = 0;
+  String _replyName = '';
   Map<String, dynamic>? _post;
   List<Map<String, dynamic>> _comments = [];
   bool _loading = true;
@@ -82,8 +84,9 @@ class _PostPageState extends State<PostPage> {
     if (!UserService.instance.isLoggedIn) return ToastUtil.info('请先登录');
     setState(() => _sending = true);
     try {
-      await _svc.addComment(widget.postId, t);
+      await _svc.addComment(widget.postId, t, parent: _replyTo);
       _input.clear();
+      setState(() => _replyTo = 0);
       FocusScope.of(context).unfocus();
       await _load();
     } catch (e) {
@@ -208,7 +211,7 @@ class _PostPageState extends State<PostPage> {
                                 maxLines: 3,
                                 style: TextStyle(fontSize: 13, color: context.t1),
                                 decoration: InputDecoration(
-                                  hintText: '写评论…',
+                                  hintText: _replyTo > 0 ? '回复 @$_replyName' : '写评论…',
                                   hintStyle: TextStyle(fontSize: 13, color: context.t3),
                                   isDense: true,
                                   filled: true,
@@ -263,8 +266,9 @@ class _PostPageState extends State<PostPage> {
 
   Widget _commentTile(Map<String, dynamic> c) {
     final u = (c['user'] as Map?) ?? const {};
+    final isReply = (int.tryParse('${c['parent_id'] ?? 0}') ?? 0) > 0;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
+      padding: EdgeInsets.only(left: isReply ? 26 : 0, top: 7, bottom: 7),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -292,6 +296,20 @@ class _PostPageState extends State<PostPage> {
                 const SizedBox(height: 2),
                 Text('${c['content'] ?? ''}',
                     style: TextStyle(fontSize: 13, height: 1.5, color: context.t1)),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _replyTo = int.tryParse('${c['id']}') ?? 0;
+                      _replyName = '${u['nickname'] ?? ''}';
+                    });
+                    FocusScope.of(context).requestFocus(FocusNode());
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Text('回复',
+                        style: TextStyle(fontSize: 11, color: C.brand)),
+                  ),
+                ),
               ],
             ),
           ),
