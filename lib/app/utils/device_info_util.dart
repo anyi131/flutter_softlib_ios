@@ -32,7 +32,9 @@ class DeviceInfo {
       if (Platform.isAndroid) {
         final a = await p.androidInfo;
         code = a.model;
-        model = '${a.brand} ${a.model}'.trim();
+        // ★ 1106h：部分机型（如 vivo V1986A）Build.BRAND 为空 → 用 manufacturer 兜底
+        final brand = (a.brand.trim().isEmpty ? a.manufacturer : a.brand).trim();
+        model = '$brand ${a.model}'.trim();
         os = 'Android ${a.version.release} (API ${a.version.sdkInt})';
       } else if (Platform.isIOS) {
         final i = await p.iosInfo;

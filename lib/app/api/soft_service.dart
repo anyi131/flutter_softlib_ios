@@ -258,7 +258,7 @@ class SoftService {
           // ★ 1029：补上版本号，后台再也不会显示「应用版本：-」
           'version': DeviceInfo.appVersion,
           // ★ 1020：明细
-          'os': Platform.operatingSystemVersion,
+          'os': DeviceInfo.os.isNotEmpty ? DeviceInfo.os : Platform.operatingSystemVersion,
           'err_code': errCode,
           'free_mb': freeMb,
           'file_mb': fileMb,
