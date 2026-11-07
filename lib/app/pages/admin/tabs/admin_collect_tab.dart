@@ -8,7 +8,6 @@ import '../admin_ui_kit.dart';
 
 import 'collect_ex_views.dart';
 import 'collect_ex_views2.dart';
-import 'collect_diag_views.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -1702,7 +1701,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     );
     if (go != true) return null;
     return {
-      if (catId != null) 'cat_id': catId,
+      'cat_id': ?catId,
       'is_vip': isVip ? 1 : 0,
       if (isVip) 'vip_price': price.text.trim(),
     };

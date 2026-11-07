@@ -7,7 +7,6 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../../design/app_anim.dart';
 import '../../api/pay_service.dart';
 import '../../api/user_service.dart';
-import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import '../../design/lucide.dart';

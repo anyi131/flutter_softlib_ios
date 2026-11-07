@@ -7,7 +7,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../../api/forum_service.dart';
 import '../../../api/post_service.dart';
 import '../../../design/app_anim.dart';
-import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';

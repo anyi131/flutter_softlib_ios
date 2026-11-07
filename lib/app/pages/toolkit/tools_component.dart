@@ -14,7 +14,6 @@ import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../api/user_service.dart';
 import '../../utils/err_text.dart';
-import '../../utils/jump_util.dart';
 import '../../utils/tool_ctx.dart';
 import '../../utils/toast_util.dart';
 import '../../widgets/tab_bottom_pad.dart';

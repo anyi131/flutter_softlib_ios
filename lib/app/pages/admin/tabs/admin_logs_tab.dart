@@ -12,7 +12,6 @@ import 'score_rank_view.dart';
 import 'package:get/get.dart';
 
 import '../../../api/admin_service.dart';
-import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';

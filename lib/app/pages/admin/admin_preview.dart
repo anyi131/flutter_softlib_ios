@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../design/app_anim.dart';
-import '../../design/adaptive.dart';
 import '../../design/ui.dart';
 import '../../design/kit.dart';
 import 'admin_ui_kit.dart';

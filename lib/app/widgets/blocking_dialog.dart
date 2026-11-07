@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../design/kit.dart';
 import '../design/ui.dart';
 
 /// 全屏阻塞等待框

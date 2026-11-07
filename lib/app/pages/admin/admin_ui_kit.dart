@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../../design/adaptive.dart';
 import '../../design/ui.dart';
 
 /// ═══════════════════════════════════════════════════════════════
@@ -203,8 +202,8 @@ class AdSection extends StatelessWidget {
               ],
             ),
           ),
-          if (trailing != null) trailing!,
-          if (action != null) action!,
+          ?trailing,
+          ?action,
         ],
       ),
     );
@@ -695,7 +694,7 @@ class AdResultBar extends StatelessWidget {
               style: Ty.tiny.copyWith(fontSize: 11, color: context.t3),
             ),
           ),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );

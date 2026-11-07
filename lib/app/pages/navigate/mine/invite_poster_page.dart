@@ -6,7 +6,6 @@ import 'package:flutter/rendering.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../design/adaptive.dart';
 import '../../../design/ui.dart';
 import '../../../utils/img_saver.dart';
 import '../../../utils/toast_util.dart';

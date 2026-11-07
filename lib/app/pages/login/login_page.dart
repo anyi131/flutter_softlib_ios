@@ -7,8 +7,6 @@ import 'package:get/get.dart';
 import '../../api/qq_login.dart';
 import '../../api/soft_service.dart';
 
-import '../../design/adaptive.dart';
-import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../routes/app_pages.dart';
 import '../../utils/toast_util.dart';

@@ -6,9 +6,6 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../design/app_anim.dart';
-import '../../design/adaptive.dart';
-import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../api/soft_service.dart';
 import '../../utils/img_saver.dart';

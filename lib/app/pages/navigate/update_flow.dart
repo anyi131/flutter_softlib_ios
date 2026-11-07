@@ -280,8 +280,8 @@ class _UpdateCardState extends State<_UpdateCard> {
         ),
       );
       final len =
-          int.tryParse('${r.headers.value('content-length') ?? ''}') ?? 0;
-      final ct = '${r.headers.value('content-type') ?? ''}'.toLowerCase();
+          int.tryParse(r.headers.value('content-length') ?? '') ?? 0;
+      final ct = (r.headers.value('content-type') ?? '').toLowerCase();
       final lower = url.toLowerCase();
       final isFile =
           ct.contains('android') ||

@@ -6,8 +6,6 @@ import '../../../utils/err_text.dart';
 import '../admin_ui_kit.dart';
 
 import '../../../api/admin_service.dart';
-import '../../../design/adaptive.dart';
-import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../design/lucide.dart';
 

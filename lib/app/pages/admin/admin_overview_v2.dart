@@ -261,7 +261,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
                 ),
               ),
               const Spacer(),
-              if (trailing != null) trailing,
+              ?trailing,
             ],
           ),
           const SizedBox(height: 12),
@@ -312,7 +312,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
                 style: TextStyle(fontSize: 10.5, color: context.t3),
               ),
               Text(
-                '${_num(n)}',
+                _num(n),
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w900,
@@ -378,7 +378,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
               ),
               _smallStat(
                 '人均下载',
-                '${_f('per_user_down').toStringAsFixed(2)}',
+                _f('per_user_down').toStringAsFixed(2),
                 C.amber,
               ),
             ],
@@ -868,7 +868,7 @@ class _AdminOverviewV2State extends State<AdminOverviewV2> {
     final list = <MapEntry<String, double>>[];
     raw.forEach((k, v) {
       final n = (v as num?)?.toDouble() ?? 0;
-      if (n > 0) list.add(MapEntry('$k', n));
+      if (n > 0) list.add(MapEntry(k, n));
     });
     list.sort((a, b) => b.value.compareTo(a.value));
     return list;

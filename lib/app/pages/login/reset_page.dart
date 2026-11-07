@@ -4,11 +4,8 @@ import '../../utils/err_text.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 
 import '../../api/user_service.dart';
-import '../../design/adaptive.dart';
-import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'widgets/auth_widgets.dart';

@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 
 import '../../../api/forum_service.dart';
 import '../../../design/app_anim.dart';
-import '../../../design/kit.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
 import 'forum_gallery.dart';

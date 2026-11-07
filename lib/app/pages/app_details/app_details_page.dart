@@ -15,7 +15,6 @@ import 'package:flutter/material.dart';
 import 'resolve_overlay.dart';
 
 import 'package:get/get.dart';
-import 'package:photo_view/photo_view.dart';
 
 import '../../api/api_host.dart';
 import '../../api/soft_service.dart';
@@ -31,7 +30,6 @@ import '../../design/app_style.dart';
 import '../../design/app_style_controller.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
-import '../../design/glass.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
 import '../../models/app_item.dart';

@@ -12,7 +12,6 @@ import '../../../models/ui_config.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
-import '../../../models/http/results/carousel_model.dart';
 import '../../../models/http/results/referral_model.dart';
 import '../../../routes/app_pages.dart';
 import '../navigate_logic.dart';

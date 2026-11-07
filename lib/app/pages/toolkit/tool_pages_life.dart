@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../design/app_anim.dart';
-import '../../design/adaptive.dart';
-import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
@@ -267,7 +265,7 @@ class _WaterPageState extends State<WaterPage> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '${(total / 1000).toStringAsFixed(2)}',
+                  (total / 1000).toStringAsFixed(2),
                   style: const TextStyle(
                     fontSize: 42,
                     fontWeight: FontWeight.w900,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../api/soft_service.dart';
-import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../models/ui_config.dart';
 import '../../design/lucide.dart';

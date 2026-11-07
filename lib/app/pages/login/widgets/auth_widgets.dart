@@ -4,9 +4,7 @@ import 'package:get/get.dart';
 
 import '../../../design/app_anim.dart';
 import '../../../api/soft_service.dart';
-import '../../../models/ui_config.dart';
 import '../../../design/adaptive.dart';
-import '../../../design/kit.dart';
 import '../../../design/ui.dart';
 import '../../../design/lucide.dart';
 
@@ -50,7 +48,17 @@ class AuthScaffold extends StatelessWidget {
       final tpl = ver >= 0
           ? (svc.cachedConfig?.uiConfig.authTemplate ?? 'classic')
           : 'classic';
-      return _buildAurora(context, tpl);
+      return switch (tpl) {
+        'split' => _buildSplit(context),
+        'sheet' => _buildSheet(context),
+        'banner' => _buildBanner(context),
+        'minimal' => _buildMinimal(context),
+        'floating' => _buildFloating(context),
+        'aurora' => _buildAurora(context, tpl),
+        // ★ 1107p：后台选 classic 时用经典，其余未知值走 aurora（新版更好看）
+        'classic' => _buildClassic(context),
+        _ => _buildAurora(context, tpl),
+      };
 
     });
   }
@@ -797,7 +805,7 @@ class AuthField extends StatelessWidget {
                     color: context.t3,
                   ),
                 ),
-              if (suffix != null) suffix!,
+              ?suffix,
             ],
           ),
         ),

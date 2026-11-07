@@ -7,7 +7,6 @@ import 'package:flutter_softlib/app/database/database.dart' as db;
 import 'package:flutter_softlib/app/database/tables/download_task_table.dart';
 import 'package:get/get.dart';
 import 'package:open_filex/open_filex.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../api/unlock_service.dart';

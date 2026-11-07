@@ -37,7 +37,7 @@ class StarRating extends StatelessWidget {
         if (showScore) ...[
           const SizedBox(width: 5),
           Text(
-            '${score.toStringAsFixed(1)}',
+            score.toStringAsFixed(1),
             style: TextStyle(
               fontSize: size - 1,
               fontWeight: FontWeight.w800,

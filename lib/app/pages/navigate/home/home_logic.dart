@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../../../design/glass.dart';
 import 'package:flutter_softlib/app/http/http_api.dart';
 import 'package:flutter_softlib/app/utils/jump_util.dart';
 import 'package:flutter_softlib/app/utils/toast_util.dart';

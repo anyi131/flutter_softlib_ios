@@ -257,7 +257,7 @@ class AdminService {
           'size': size,
           if (status.isNotEmpty) 'status': status,
           if (keyword.isNotEmpty) 'keyword': keyword,
-          if (vip != null) 'vip': vip,
+          'vip': ?vip,
         }))['data'] ??
         {},
   );
@@ -304,11 +304,11 @@ class AdminService {
   }) async {
     final d = (await _post('app_batch', {
       'ids': ids.join(','),
-      if (catId != null) 'cat_id': catId,
-      if (isVip != null) 'is_vip': isVip,
-      if (vipPrice != null) 'vip_price': vipPrice,
-      if (urlType != null) 'url_type': urlType,
-      if (isTop != null) 'is_top': isTop,
+      'cat_id': ?catId,
+      'is_vip': ?isVip,
+      'vip_price': ?vipPrice,
+      'url_type': ?urlType,
+      'is_top': ?isTop,
     }))['data'];
     return d is Map ? Map<String, dynamic>.from(d) : {};
   }
@@ -351,8 +351,8 @@ class AdminService {
     bool? on,
   }) async => _post('user_custom_ip', {
     'id': id,
-    if (customIp != null) 'custom_ip': customIp,
-    if (customAddr != null) 'custom_addr': customAddr,
+    'custom_ip': ?customIp,
+    'custom_addr': ?customAddr,
     if (on != null) 'custom_ip_on': on ? 1 : 0,
   });
 
@@ -694,7 +694,7 @@ class AdminService {
     int page = 1,
   }) async {
     final d = (await _post('orders', {
-      if (status != null) 'status': status,
+      'status': ?status,
       if (keyword.isNotEmpty) 'keyword': keyword,
       'page': page,
     }))['data'];
@@ -845,9 +845,9 @@ class AdminService {
   }) async {
     final d = (await _post('collect_import', {
       'items': jsonEncode(items),
-      if (catId != null) 'cat_id': catId,
-      if (isVip != null) 'is_vip': isVip,
-      if (vipPrice != null) 'vip_price': vipPrice,
+      'cat_id': ?catId,
+      'is_vip': ?isVip,
+      'vip_price': ?vipPrice,
       'skip_existing': skipExisting ? 1 : 0,
       'update_existing': updateExisting ? 1 : 0,
     }))['data'];

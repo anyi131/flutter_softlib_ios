@@ -2,8 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../design/app_anim.dart';
-import '../../design/adaptive.dart';
-import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../models/app_item.dart';
 import '../../design/lucide.dart';
@@ -373,7 +371,7 @@ class DetailNeon {
             ),
           ),
           const Spacer(),
-          if (trailing != null) trailing,
+          ?trailing,
         ],
       ),
     );

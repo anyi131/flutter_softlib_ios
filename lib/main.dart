@@ -22,7 +22,6 @@ import 'package:get/get.dart';
 import 'package:flutter_quill/flutter_quill.dart' show FlutterQuillLocalizations;
 
 import 'app/routes/app_pages.dart';
-import 'app/design/app_theme.dart';
 import 'app/design/tokens.dart';
 import 'app/design/theme_controller.dart';
 import 'app/design/ui.dart';

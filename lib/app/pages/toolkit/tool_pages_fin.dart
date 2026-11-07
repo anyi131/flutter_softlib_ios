@@ -3,11 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../design/app_anim.dart';
-import '../../design/adaptive.dart';
-import '../../design/kit.dart';
 import '../../design/ui.dart';
-import '../../utils/toast_util.dart';
 import 'tool_kit.dart';
 import '../../design/lucide.dart';
 
@@ -911,13 +907,13 @@ class _TipPageState extends State<TipPage> {
           ToolCard(
             child: Column(
               children: [
-                _r('小费（$_pct%）', '${tip.toStringAsFixed(2)}'),
-                _r('总计', '${total.toStringAsFixed(2)}', big: true),
+                _r('小费（$_pct%）', tip.toStringAsFixed(2)),
+                _r('总计', total.toStringAsFixed(2), big: true),
                 if (n > 1) ...[
                   const Divider(height: 20),
                   _r(
                     '每人付',
-                    '${(total / n).toStringAsFixed(2)}',
+                    (total / n).toStringAsFixed(2),
                     color: C.brand,
                   ),
                 ],

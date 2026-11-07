@@ -7,7 +7,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../generated/assets.dart';
 import '../../../api/soft_service.dart';
 import '../../../models/ui_config.dart';
 import '../../../api/user_service.dart';

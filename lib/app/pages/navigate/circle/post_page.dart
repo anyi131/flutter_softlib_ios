@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import '../../../api/forum_service.dart';
 import '../../../api/user_service.dart';
-import '../../../design/app_anim.dart';
-import '../../../design/kit.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
 import 'forum_gallery.dart';
@@ -73,7 +70,7 @@ class _PostPageState extends State<PostPage> {
       final r = await _svc.toggleMark(widget.postId);
       if (!mounted || _post == null) return;
       setState(() => _post!['marked'] = r['marked']);
-      ToastUtil.success('${r['marked'] == 1 ? '已收藏' : '已取消收藏'}');
+      ToastUtil.success(r['marked'] == 1 ? '已收藏' : '已取消收藏');
     } catch (e) {
       ToastUtil.error(ErrText.of(e));
     }

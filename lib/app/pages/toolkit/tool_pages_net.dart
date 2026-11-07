@@ -19,7 +19,6 @@ import '../../design/adaptive.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
-import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
 import '../../utils/img_saver.dart';
 import '../../widgets/media_preview.dart';

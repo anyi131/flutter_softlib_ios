@@ -13,7 +13,6 @@ import '../../../utils/err_text.dart';
 import '../admin_ui_kit.dart';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import '../../../api/admin_service.dart';
 import '../../../design/kit.dart';

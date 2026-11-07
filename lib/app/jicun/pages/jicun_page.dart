@@ -167,7 +167,7 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
                   : null);
       });
     } on ParseException catch (e) {
-      ToastUtil.error('${e.message}');
+      ToastUtil.error(e.message);
     } catch (e) {
       // v331w：显示真实原因（超时/断网/接口异常各不同），不再笼统
       final m = ErrText.of(e);

@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../utils/safe_ctx.dart';
 
-import '../../utils/apk_installer.dart';
 
-import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 
 import 'dart:async';
 
@@ -16,12 +13,8 @@ import 'package:flutter_softlib/app/pages/navigate/tips/tips_component.dart';
 import 'package:flutter_softlib/app/pages/navigate/circle/circle_component.dart';
 import 'package:flutter_softlib/app/pages/toolkit/tools_component.dart';
 import 'package:flutter_softlib/app/pages/navigate/mine/mine_component.dart';
-import 'package:flutter_softlib/app/utils/jump_util.dart';
 import 'package:flutter_softlib/app/jicun/pages/jicun_page.dart';
-import 'package:flutter_softlib/app/utils/toast_util.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../design/theme_controller.dart';
 import 'update_flow.dart';

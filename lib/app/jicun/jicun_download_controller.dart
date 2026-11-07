@@ -6,9 +6,7 @@
 // 版权与许可遵循上游 MIT License,见仓库 LICENSE。
 ////////////////////////////////////////////////////////////////////////////////
 import 'dart:async';
-import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 import 'jicun_config.dart';

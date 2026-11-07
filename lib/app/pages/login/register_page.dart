@@ -10,8 +10,6 @@ import 'package:get/get.dart';
 import '../../api/qq_login.dart';
 import '../../api/soft_service.dart';
 import '../../api/user_service.dart';
-import '../../design/adaptive.dart';
-import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../utils/toast_util.dart';
 import '../navigate/mine/mine_logic.dart';
@@ -62,10 +60,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
   /// 常用邮箱后缀（默认只给 QQ；后台开启「其他邮箱」后才给更多）
   List<String> get _emailSuffixes {
+    // ★ 1107p：后台关闭「其他邮箱」时，只允许 @qq.com（优先于白名单列表）
+    if (!_allowNonQq) return const ['@qq.com'];
     if (_allowDomains.isNotEmpty) {
       return _allowDomains.map((d) => '@$d').toList();
     }
-    if (!_allowNonQq) return const ['@qq.com'];
     return const [
       '@qq.com',
       '@163.com',

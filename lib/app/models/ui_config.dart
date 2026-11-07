@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 /// 会员促销横幅（后台 ui_config.promo）
 ///

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import '../../design/app_anim.dart';
 import '../../api/soft_service.dart';
 import '../../design/adaptive.dart';
-import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../design/lucide.dart';
 

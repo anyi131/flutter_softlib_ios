@@ -1,21 +1,9 @@
 import 'dart:async';
 
-import '../../widgets/mpv_core.dart';
 
-import 'dart:ui';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/services.dart';
 
-import '../../design/ad.dart';
-import '../../design/adaptive.dart';
-import '../../design/app_anim.dart';
-import '../../design/kit.dart';
-import '../../design/ui.dart';
-import '../../utils/toast_util.dart';
 
 /// 工具箱 · 通用播放器（1015 新增）
 ///

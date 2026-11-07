@@ -675,7 +675,7 @@ class SectionHeader extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          if (action != null) action!,
+          ?action,
         ],
       ),
     );

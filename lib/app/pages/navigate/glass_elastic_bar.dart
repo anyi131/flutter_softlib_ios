@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../design/kit.dart';
 import '../../design/ui.dart';
 import '../../design/glass_theme.dart';
 import '../../design/app_anim.dart';

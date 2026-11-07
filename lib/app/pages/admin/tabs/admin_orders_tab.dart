@@ -548,7 +548,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
       ),
       (
         '会员天数',
-        '${int.tryParse('${o['days'] ?? 0}') == 0 ? '—（充值单）' : '${o['days']} 天'}',
+        (int.tryParse('${o['days'] ?? 0}') == 0 ? '—（充值单）' : '${o['days']} 天'),
       ),
       ('购买者', _buyerName(o)),
       ('买家邮箱', (o['email'] ?? '').toString().isEmpty ? '—' : '${o['email']}'),

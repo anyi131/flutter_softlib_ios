@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import '../../../api/admin_service.dart';
 import '../../../api/soft_service.dart';
 import '../../../design/app_anim.dart';
-import '../../../design/app_style.dart';
 import '../../../design/app_style_controller.dart';
 import '../../../design/theme_controller.dart';
 import '../../../design/theme_palette.dart';

@@ -670,7 +670,7 @@ class _CollectConfigViewState extends State<CollectConfigView> {
             )
           else
             Text(
-              '${_values[name] ?? ''}',
+              _values[name] ?? '',
               style: Ty.tiny.copyWith(color: context.t3),
             ),
         ],

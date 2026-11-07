@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../design/kit.dart';
-import '../../design/adaptive.dart';
 import '../../routes/app_pages.dart';
 import '../../design/ui.dart';
 

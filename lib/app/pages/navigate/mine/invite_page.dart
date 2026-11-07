@@ -13,7 +13,6 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:get/get.dart';
 
-import '../../../routes/app_pages.dart';
 import '../../../design/lucide.dart';
 
 /// ═══════════════════════════════════════════════════════════════

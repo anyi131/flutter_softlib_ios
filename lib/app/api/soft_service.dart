@@ -182,8 +182,8 @@ class SoftService {
         if (knownDv.isNotEmpty) 'dv': knownDv,
       },
     );
-    final respDv = '${resp.headers.value('x-data-version') ?? ''}';
-    final cachedFlag = '${resp.headers.value('x-data-cached') ?? ''}' == '1';
+    final respDv = resp.headers.value('x-data-version') ?? '';
+    final cachedFlag = (resp.headers.value('x-data-cached') ?? '') == '1';
     if (respDv.isNotEmpty) _dataVersion = respDv;
 
     // ★★ 1020 修复（首页空白事故）：
@@ -407,7 +407,7 @@ class SoftService {
         data: {
           'token': token,
           'url': lzyUrl,
-          if (ticket != null) 'ticket': ticket,
+          'ticket': ?ticket,
         },
         options: Options(receiveTimeout: const Duration(seconds: 40)),
       );
@@ -442,7 +442,7 @@ class SoftService {
           'token': token,
           'url': lzyUrl,
           'pwd': 'password',
-          if (ticket != null) 'ticket': ticket,
+          'ticket': ?ticket,
         },
         options: Options(receiveTimeout: const Duration(seconds: 50)),
       );
@@ -561,7 +561,7 @@ class SoftService {
       //   鉴权已由主站 /lzy/auth 完成，票据一次性有效。
       final resp = await dio.post(
         kLzyProxy,
-        data: {'url': lzyUrl, if (ticket != null) 'ticket': ticket},
+        data: {'url': lzyUrl, 'ticket': ?ticket},
         options: Options(
           receiveTimeout: const Duration(seconds: 30),
           // 兼容只读 $_POST/$_REQUEST 的简单脚本

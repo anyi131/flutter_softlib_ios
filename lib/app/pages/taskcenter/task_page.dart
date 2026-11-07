@@ -11,7 +11,6 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../api/task_service.dart';
-import '../../design/adaptive.dart';
 import '../../design/ui.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
@@ -253,7 +252,7 @@ class _TaskPageState extends State<TaskPage> {
           ),
           Expanded(
             child: Text(
-              '${_s('platform').isEmpty ? '获取任务密码' : '${_s('platform')}新手任务'}',
+              _s('platform').isEmpty ? '获取任务密码' : '${_s('platform')}新手任务',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 17,
