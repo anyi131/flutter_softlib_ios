@@ -6,6 +6,7 @@ import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
+import 'forum_gallery.dart';
 import 'post_page.dart';
 
 /// 板块页（对照 ARC pages-sub/forum/section.vue）
@@ -225,7 +226,7 @@ class _SectionPageState extends State<SectionPage> {
   Widget _postTile(Map<String, dynamic> p) {
     final u = (p['user'] as Map?) ?? const {};
     final imgs = (p['images'] as List?) ?? const [];
-    final cover = imgs.isNotEmpty ? '${imgs.first}' : '';
+    final imgsStr = imgs.map((e) => '$e').toList();
     return AppPressable(
       onTap: () => Get.to(() => PostPage(postId: int.tryParse('${p['id']}') ?? 0)),
       child: Container(
@@ -288,14 +289,9 @@ class _SectionPageState extends State<SectionPage> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 13, height: 1.5, color: context.t2)),
             ],
-            if (cover.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(cover,
-                    height: 118, width: double.infinity, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox()),
-              ),
+            if (imgsStr.isNotEmpty) ...[
+              const SizedBox(height: 9),
+              PostGallery(images: imgsStr, maxVisible: 9),
             ],
             const SizedBox(height: 8),
             Row(children: [

@@ -7,6 +7,7 @@ import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
+import 'forum_gallery.dart';
 import '../../../utils/toast_util.dart';
 import 'my_forum_page.dart';
 import 'post_page.dart';
@@ -395,38 +396,9 @@ class _CircleComponentState extends State<CircleComponent> {
     );
   }
 
-  /// 1 张宽图 / 2~3 张方图（与 ARC 一致）
-  Widget _images(List<String> imgs) {
-    final n = imgs.length;
-    if (n == 1) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: AspectRatio(
-          aspectRatio: 2.1,
-          child: Image.network(imgs[0], fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(color: C.bg2)),
-        ),
-      );
-    }
-    return Row(
-      children: [
-        for (int i = 0; i < (n > 3 ? 3 : n); i++)
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(right: i == (n > 3 ? 3 : n) - 1 ? 0 : 6),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Image.network(imgs[i], fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(color: C.bg2)),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
+  /// 图片区：交给 PostGallery（1 张大图 / 2-3 张方图 / 4+ 九宫格 + 点击全屏）
+  Widget _images(List imgs) =>
+      PostGallery(images: imgs.map((e) => '$e').where((e) => e.isNotEmpty).toList());
 
   Widget _empty() => Padding(
         padding: const EdgeInsets.symmetric(vertical: 44),

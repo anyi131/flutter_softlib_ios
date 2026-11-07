@@ -7,6 +7,7 @@ import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
+import 'forum_gallery.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';
 
@@ -137,24 +138,11 @@ class _PostPageState extends State<PostPage> {
                               style: TextStyle(fontSize: 14, height: 1.75, color: context.t1)),
                           if ((p['images'] as List?)?.isNotEmpty == true) ...[
                             const SizedBox(height: 10),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                for (final img in (p['images'] as List))
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.network('$img',
-                                        width: 100,
-                                        height: 100,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => Container(
-                                              width: 100,
-                                              height: 100,
-                                              color: context.isDark ? C.bg3 : C.lbg2,
-                                            )),
-                                  ),
-                              ],
+                            PostGallery(
+                              images: (p['images'] as List)
+                                  .map((e) => '$e')
+                                  .where((e) => e.isNotEmpty)
+                                  .toList(),
                             ),
                           ],
                           const SizedBox(height: 16),
