@@ -6,6 +6,7 @@ import '../../design/app_anim.dart';
 import '../../utils/err_text.dart';
 
 import 'package:get/get.dart';
+import '../navigate/circle/post_page.dart';
 
 import '../../design/adaptive.dart';
 import '../../design/kit.dart';
@@ -114,7 +115,7 @@ class _MessagePageState extends State<MessagePage> {
     final lt = (m['link_type'] ?? '').toString();
     final lid = (m['link_id'] as num?)?.toInt() ?? 0;
     if (lt == 'post' && lid > 0) {
-      await Get.toNamed(Routes.postDetail, arguments: {'id': lid});
+      await Get.to(() => PostPage(postId: lid));
       _load(reset: true);
     } else if (lt.isEmpty) {
       // ★ 1031q：system/无链接消息点开 = 底部弹层看全文

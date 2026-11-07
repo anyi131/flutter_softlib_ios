@@ -74,6 +74,9 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
     'config': '配置修改',
     'pay_buyer': '下单',
     'pay_notify': '支付回调',
+    // ★ 1105w：会员变更（uid + 前后到期日），之前直接显示英文 user_vip
+    'user_vip': '会员变更',
+    'user_save': '编辑用户',
   };
 
   static const _actionIcons = <String, IconData>{
@@ -94,6 +97,8 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
     'unbind_qq': Lz.unlink,
     'profile': Lz.badge,
     'review': Lz.star,
+    'user_vip': Lz.crown,
+    'user_save': Lz.user,
   };
 
   /// ★ 1102i：日志详情美化。
@@ -1083,7 +1088,9 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
     final action = '${r['action'] ?? ''}';
     final label = _actions[action] ?? action;
     final icon = _actionIcons[action] ?? Lz.circle;
-    final color = action == 'login'
+    final color = action == 'user_vip'
+        ? C.gold
+        : action == 'login'
         ? C.brand
         : action == 'register'
         ? C.mint

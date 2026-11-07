@@ -8,7 +8,6 @@ import 'package:flutter_softlib/app/pages/article_reading/article_reading_bindin
 import 'package:flutter_softlib/app/pages/article_reading/article_reading_page.dart';
 import 'package:flutter_softlib/app/pages/login/login_page.dart';
 import 'package:flutter_softlib/app/pages/admin/admin_page.dart';
-import 'package:flutter_softlib/app/pages/post_detail/post_detail_page.dart';
 import 'package:flutter_softlib/app/pages/splash/splash_page.dart';
 import 'package:flutter_softlib/app/pages/login/register_page.dart';
 import 'package:flutter_softlib/app/pages/login/reset_page.dart';
@@ -95,7 +94,6 @@ class AppPages {
     GetPage(name: _Paths.payWeb, page: () => const PayWebPage()),
     GetPage(name: Routes.urlWebview, page: () => const UrlWebviewPage()),
     GetPage(name: Routes.cardShop, page: () => const CardShopPage()),
-    GetPage(name: _Paths.postDetail, page: () => const PostDetailPage()),
     GetPage(name: _Paths.admin, page: () => const AdminPage()),
     GetPage(name: _Paths.login, page: () => const LoginPage()),
     GetPage(name: _Paths.register, page: () => const RegisterPage()),

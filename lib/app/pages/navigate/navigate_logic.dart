@@ -13,7 +13,7 @@ import 'package:flutter_softlib/app/http/http_api.dart';
 import 'package:flutter_softlib/app/pages/navigate/app/app_component.dart';
 import 'package:flutter_softlib/app/pages/navigate/home/home_component.dart';
 import 'package:flutter_softlib/app/pages/navigate/tips/tips_component.dart';
-import 'package:flutter_softlib/app/pages/navigate/square/square_component.dart';
+import 'package:flutter_softlib/app/pages/navigate/circle/circle_component.dart';
 import 'package:flutter_softlib/app/pages/toolkit/tools_component.dart';
 import 'package:flutter_softlib/app/pages/navigate/mine/mine_component.dart';
 import 'package:flutter_softlib/app/utils/jump_util.dart';
@@ -56,7 +56,7 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
     ),
     NavigationDestination(
       icon: Icon(Lz.compass),
-      label: '广场',
+      label: '圈子',
       selectedIcon: Icon(Lz.compass),
     ),
     NavigationDestination(
@@ -79,7 +79,7 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
     HomeComponent(),
     AppComponent(),
     const ToolsComponent(),
-    SquareComponent(),
+    CircleComponent(),
     TipsComponent(),
     JicunPage(),
     MineComponent(),

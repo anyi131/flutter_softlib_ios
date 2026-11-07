@@ -1,3 +1,4 @@
+import '../pages/navigate/circle/post_page.dart';
 // 1031r：app_links 接入——Deep Link 分享直达
 //
 // 链接格式（分享文案里的 shareUrl 可逐步换成这些）：
@@ -67,7 +68,7 @@ class DeepLinks {
           break;
         case 'post':
           if (id.isNotEmpty) {
-            Get.toNamed(Routes.postDetail, arguments: {'id': id});
+            Get.to(() => PostPage(postId: int.tryParse(id) ?? 0));
           }
           break;
         case 'message':
