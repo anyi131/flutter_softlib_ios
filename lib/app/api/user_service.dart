@@ -434,6 +434,15 @@ class UserService {
   /// 统一解析后端 {code,msg,data}（★ 失效检测内建在这里）
   Map<String, dynamic> _unwrap(Response resp) {
     final d = resp.data;
+    // ★ 1107f：502/HTML/空响应时别让上层抛 FormatException（会显示「数据格式异常」）
+    if (d is String) {
+      final t = d.trimLeft();
+      if (t.isEmpty) throw Exception('服务器无响应，请稍后重试');
+      if (t.startsWith('<')) {
+        throw Exception('服务器暂时不可用（${resp.statusCode}），请稍后重试');
+      }
+      throw Exception('服务器返回异常，请稍后重试');
+    }
     if (d is Map) {
       final m = Map<String, dynamic>.from(d);
       if (m['code'] == 0 && _isAuthMsg(m['msg']?.toString())) {
@@ -500,7 +509,11 @@ class UserService {
       ),
     );
     if (r['code'] != 1) throw Exception(r['msg'] ?? '登录失败');
-    final data = Map<String, dynamic>.from(r['data'] ?? {});
+    final raw = r['data'];
+    if (raw != null && raw is! Map) throw Exception('登录失败，请稍后重试');
+    final data = raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+    final tok = (data['token'] ?? '').toString();
+    if (tok.isEmpty) throw Exception('登录失败：未获取到登录凭证，请稍后重试');
     await _save(
       (data['token'] ?? '').toString(),
       data['userinfo'] is Map ? UserInfo.fromJson(data['userinfo']) : null,
