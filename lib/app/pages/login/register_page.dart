@@ -114,16 +114,18 @@ class _RegisterPageState extends State<RegisterPage> {
   /// QQ 号 → 邮箱自动补 @qq.com
   void _syncEmailFromQq() {
     final q = _qq.text.trim();
-    final cur = _email.text.trim();
-    if (q.isEmpty) return;
     if (!RegExp(r'^\d{5,12}$').hasMatch(q)) return;
-    if (cur.isEmpty || _emailAutoFilled) {
-      final next = '$q@qq.com';
-      if (cur != next) {
-        _emailAutoFilled = true;
-        _email.text = next;
-        _email.selection = TextSelection.fromPosition(TextPosition(offset: next.length));
-      }
+    final cur = _email.text.trim();
+    final next = '$q@qq.com';
+    if (cur == next) return;
+    // ★ 1107q：只有「空 / 只有 @ / 没有 @ / 之前自动填过」才自动改，
+    //   避免出现 @qq.com@qq.com 这种重复拼接
+    final emptyish = cur.isEmpty || cur == '@' || !cur.contains('@');
+    if (emptyish || _emailAutoFilled) {
+      _emailAutoFilled = true;
+      _email.text = next;
+      _email.selection =
+          TextSelection.fromPosition(TextPosition(offset: next.length));
     }
   }
 

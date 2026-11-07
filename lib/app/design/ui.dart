@@ -5,6 +5,8 @@ import 'theme_controller.dart';
 
 import 'package:flutter/material.dart';
 
+import 'tokens.dart';
+
 /// ═══════════════════════════════════════════════════════════════
 ///  全新设计语言 v2 —— 「沉浸式玻璃拟态」
 ///
@@ -516,7 +518,7 @@ ThemeData buildNewTheme({required bool dark}) {
         foregroundColor: Colors.white,
         textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(R.full),
+          borderRadius: BorderRadius.circular(Tokens.radiusLg),
         ),
       ),
     ),
@@ -525,11 +527,11 @@ ThemeData buildNewTheme({required bool dark}) {
       fillColor: dark ? Colors.white.withAlpha(10) : Colors.white,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(R.md),
+        borderRadius: BorderRadius.circular(Tokens.radiusMd),
         borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(R.md),
+        borderRadius: BorderRadius.circular(Tokens.radiusMd),
         borderSide: BorderSide(
           color: dark ? Colors.white.withAlpha(18) : Colors.black.withAlpha(8),
         ),
