@@ -8,13 +8,19 @@ import '../../../design/kit.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
 import '../../../utils/toast_util.dart';
-import 'post_page.dart';
 import 'my_forum_page.dart';
+import 'post_page.dart';
 import 'publish_page.dart';
 import 'section_page.dart';
 
-/// ★ 1107a 圈子首页（替代旧「广场」）
-///   顶部：板块入口；下方：热门/最新帖子流
+/// ★ 1107c 圈子首页 —— 按 ARC（规则之树）圈子 Tab 一比一复刻
+///
+/// 结构（自上下）：
+///   头部：圈子 + 搜索 / 发帖
+///   下划线 Tab：最新 / 热门
+///   「逛板块」标题行：全部 N 个 →
+///   板块卡（横向 2 列，方形图标 + 名称 + 帖子数）
+///   帖子流（card 变体：头像/昵称/时间·板块/标题/摘要/图片 1/3 张/计数）
 class CircleComponent extends StatefulWidget {
   const CircleComponent({super.key});
 
@@ -42,7 +48,10 @@ class _CircleComponentState extends State<CircleComponent> {
     if (!mounted) return;
     setState(() {
       _sections = secs;
-      _posts = (p['list'] as List? ?? []).whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+      _posts = (p['list'] as List? ?? [])
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
       _loading = false;
     });
   }
@@ -61,95 +70,143 @@ class _CircleComponentState extends State<CircleComponent> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.isDark ? C.bg0 : C.lbg0,
-      body: RefreshIndicator(
-        onRefresh: _load,
-        child: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              pinned: true,
-              backgroundColor: context.isDark ? C.bg0 : C.lbg0,
-              surfaceTintColor: Colors.transparent,
-              title: Text('圈子', style: Ty.h3.copyWith(color: context.t1)),
-              actions: [
-                IconButton(
-                  icon: Icon(Lz.search, size: 20, color: context.t2),
-                  onPressed: () => Get.to(() => SectionPage(section: const {'id': 0, 'name': '全部帖子'}))?.then((_) => _load()),
-                ),
-                IconButton(
-                  icon: Icon(Lz.pencil, size: 20, color: C.brand),
-                  onPressed: _openPublish,
-                ),
-                IconButton(
-                  icon: Icon(Lz.user, size: 20, color: context.t2),
-                  onPressed: () => Get.to(() => MyForumPage()),
-                ),
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          onRefresh: _load,
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: _header()),
+              SliverToBoxAdapter(child: _tabs()),
+              if (_sections.isNotEmpty) ...[
+                SliverToBoxAdapter(child: _sectionTitle()),
+                SliverToBoxAdapter(child: _boardGrid()),
               ],
+              if (_posts.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+                    child: Text('最新帖子',
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w800, color: context.t2)),
+                  ),
+                ),
+              if (_loading)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(36),
+                    child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  ),
+                )
+              else if (_posts.isEmpty)
+                SliverToBoxAdapter(child: _empty())
+              else
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (c, i) => _postCard(_posts[i]),
+                    childCount: _posts.length,
+                  ),
+                ),
+              const SliverToBoxAdapter(child: SizedBox(height: 30)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _header() => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 6, 8, 0),
+        child: Row(
+          children: [
+            Text('圈子', style: Ty.h2.copyWith(color: context.t1, fontSize: 24)),
+            const Spacer(),
+            IconButton(
+              icon: Icon(Lz.search, size: 21, color: context.t1),
+              onPressed: () => Get.to(
+                () => SectionPage(section: const {'id': 0, 'name': '全部帖子'}),
+              )?.then((_) => _load()),
             ),
-            SliverToBoxAdapter(child: _sectionGrid()),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 14, 14, 6),
-                child: Row(
-                  children: [
-                    Text('帖子', style: Ty.h3.copyWith(color: context.t1, fontSize: 16)),
-                    const Spacer(),
-                    _orderChip('最新', 'created'),
-                    const SizedBox(width: 8),
-                    _orderChip('热门', 'hot'),
-                  ],
-                ),
-              ),
+            IconButton(
+              icon: Icon(Lz.pencil, size: 21, color: context.t1),
+              onPressed: _openPublish,
             ),
-            if (_loading)
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.all(40),
-                  child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                ),
-              )
-            else if (_posts.isEmpty)
-              SliverToBoxAdapter(child: _empty())
-            else
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (c, i) => _postTile(_posts[i]),
-                  childCount: _posts.length,
-                ),
-              ),
-            const SliverToBoxAdapter(child: SizedBox(height: 90)),
+            IconButton(
+              icon: Icon(Lz.user, size: 21, color: context.t1),
+              onPressed: () => Get.to(() => MyForumPage()),
+            ),
           ],
         ),
-      ),
-    );
-  }
+      );
 
-  Widget _orderChip(String label, String value) {
-    final sel = _order == value;
-    return AppPressable(
-      onTap: () {
-        if (sel) return;
-        setState(() => _order = value);
-        _load();
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: sel ? C.brand : (context.isDark ? C.bg3 : C.lbg2),
-          borderRadius: BorderRadius.circular(R.full),
+  /// 下划线 Tab（与 ARC 的 arc-tabs 一致：选中实线下划线 + 加粗）
+  Widget _tabs() {
+    Widget item(String label, String value) {
+      final sel = _order == value;
+      return GestureDetector(
+        onTap: () {
+          if (sel) return;
+          setState(() => _order = value);
+          _load();
+        },
+        child: Padding(
+          padding: const EdgeInsets.only(right: 22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(label,
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: sel ? FontWeight.w900 : FontWeight.w500,
+                      color: sel ? context.t1 : context.t3)),
+              const SizedBox(height: 5),
+              Container(
+                height: 3,
+                width: 18,
+                decoration: BoxDecoration(
+                  color: sel ? C.brand : Colors.transparent,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ],
+          ),
         ),
-        child: Text(label,
-            style: TextStyle(
-                fontSize: 12,
-                fontWeight: sel ? FontWeight.w800 : FontWeight.w500,
-                color: sel ? Colors.white : context.t2)),
-      ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 2),
+      child: Row(children: [item('最新', 'created'), item('热门', 'hot')]),
     );
   }
 
-  Widget _sectionGrid() {
-    if (_sections.isEmpty) return const SizedBox.shrink();
+  Widget _sectionTitle() => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        child: Row(
+          children: [
+            Text('逛板块',
+                style: TextStyle(
+                    fontSize: 15, fontWeight: FontWeight.w900, color: context.t1)),
+            const Spacer(),
+            GestureDetector(
+              onTap: () => Get.to(
+                () => SectionPage(section: const {'id': 0, 'name': '全部帖子'}),
+              ),
+              child: Row(
+                children: [
+                  Text('全部 ${_sections.length} 个',
+                      style: TextStyle(fontSize: 11.5, color: context.t3)),
+                  Icon(Lz.chevronRight, size: 11, color: context.t3),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _boardGrid() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 6, 14, 2),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -157,34 +214,59 @@ class _CircleComponentState extends State<CircleComponent> {
           crossAxisCount: 2,
           mainAxisSpacing: 10,
           crossAxisSpacing: 10,
-          childAspectRatio: 2.6,
+          childAspectRatio: 1.95,
         ),
         itemCount: _sections.length,
         itemBuilder: (c, i) {
           final s = _sections[i];
+          final name = '${s['name'] ?? ''}';
           return AppPressable(
             onTap: () => Get.to(() => SectionPage(section: s))?.then((_) => _load()),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 11),
               decoration: BoxDecoration(
                 color: context.isDark ? C.bg2 : Colors.white,
                 borderRadius: BorderRadius.circular(R.md),
                 border: Border.all(
-                    color: context.isDark ? Colors.white.withAlpha(16) : Colors.black.withAlpha(8)),
+                    color: context.isDark
+                        ? Colors.white.withAlpha(16)
+                        : Colors.black.withAlpha(8)),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text('${s['name'] ?? ''}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: context.t1)),
-                  const SizedBox(height: 3),
-                  Text('${s['post_count'] ?? 0} 帖 · ${s['descr'] ?? ''}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 11, color: context.t3)),
+                  Container(
+                    width: 38,
+                    height: 38,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: C.brand.withAlpha(context.isDark ? 44 : 26),
+                      borderRadius: BorderRadius.circular(11),
+                    ),
+                    child: Text(
+                      name.isEmpty ? '#' : name.characters.first,
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w900, color: C.brand),
+                    ),
+                  ),
+                  const SizedBox(width: 9),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w800,
+                                color: context.t1)),
+                        const SizedBox(height: 3),
+                        Text('${s['post_count'] ?? 0} 帖',
+                            style: TextStyle(fontSize: 10.5, color: context.t3)),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -194,99 +276,161 @@ class _CircleComponentState extends State<CircleComponent> {
     );
   }
 
-  Widget _postTile(Map<String, dynamic> p) {
-    final user = (p['user'] as Map?) ?? const {};
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
-      child: GestureDetector(
-        onTap: () => Get.to(() => PostPage(postId: int.tryParse('${p['id']}') ?? 0)),
-        child: Container(
-          padding: const EdgeInsets.all(13),
-          decoration: BoxDecoration(
-            color: context.isDark ? C.bg2 : Colors.white,
-            borderRadius: BorderRadius.circular(R.lg),
+  /// 帖子卡（对齐 ARC 的 arc-post-row card 变体）
+  Widget _postCard(Map<String, dynamic> p) {
+    final u = (p['user'] as Map?) ?? const {};
+    final imgs = (p['images'] as List?)?.whereType<String>().toList() ?? const <String>[];
+    final avatar = '${u['avatar'] ?? ''}';
+    return GestureDetector(
+      onTap: () => Get.to(() => PostPage(postId: int.tryParse('${p['id']}') ?? 0))
+          ?.then((_) => _load()),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+                color: context.isDark ? Colors.white10 : Colors.black.withAlpha(8)),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 11,
-                    backgroundColor: C.brand.withAlpha(30),
-                    backgroundImage: '${user['avatar'] ?? ''}'.isNotEmpty
-                        ? NetworkImage('${user['avatar']}')
-                        : null,
-                    child: '${user['avatar'] ?? ''}'.isEmpty
-                        ? Icon(Lz.user, size: 12, color: C.brand)
-                        : null,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 13,
+                  backgroundColor: C.brand.withAlpha(30),
+                  backgroundImage: avatar.isNotEmpty ? NetworkImage(avatar) : null,
+                  child: avatar.isEmpty ? Icon(Lz.user, size: 13, color: C.brand) : null,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text('${u['nickname'] ?? '匿名'}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: context.t2)),
+                      ),
+                      if ('${p['section_name'] ?? ''}'.isNotEmpty) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: C.brand.withAlpha(22),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text('${p['section_name']}',
+                              style: TextStyle(fontSize: 9.5, color: C.brand)),
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text('${user['nickname'] ?? '匿名'}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 11.5, color: context.t2)),
-                  ),
-                  const SizedBox(width: 6),
-                  Text('· ${p['time_text'] ?? ''}',
-                      style: TextStyle(fontSize: 10.5, color: context.t3)),
-                  const Spacer(),
-                  if ('${p['section_name'] ?? ''}'.isNotEmpty)
-                    Text('${p['section_name']}',
-                        style: TextStyle(fontSize: 10.5, color: C.brand.withAlpha(200))),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text('${p['title'] ?? ''}',
+                ),
+                Text('${p['time_text'] ?? ''}',
+                    style: TextStyle(fontSize: 10.5, color: context.t3)),
+              ],
+            ),
+            const SizedBox(height: 9),
+            Text('${p['title'] ?? ''}',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: context.t1,
+                    height: 1.35)),
+            if ('${p['summary'] ?? ''}'.isNotEmpty) ...[
+              const SizedBox(height: 5),
+              Text('${p['summary']}',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: context.t1, height: 1.35)),
-              const SizedBox(height: 4),
-              Text('${p['summary'] ?? ''}',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 12, color: context.t2, height: 1.5)),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  _stat(Lz.eye, '${p['views'] ?? 0}'),
-                  const SizedBox(width: 14),
-                  _stat(Lz.star, '${p['likes'] ?? 0}'),
-                  const SizedBox(width: 14),
-                  _stat(Lz.messageCircle, '${p['comments'] ?? 0}'),
-                ],
-              ),
+                  style: TextStyle(fontSize: 12.5, color: context.t2, height: 1.55)),
             ],
-          ),
+            if (imgs.isNotEmpty) ...[
+              const SizedBox(height: 9),
+              _images(imgs),
+            ],
+            const SizedBox(height: 9),
+            Row(
+              children: [
+                Icon(Lz.eye, size: 13, color: context.t3),
+                const SizedBox(width: 3),
+                Text('${p['views'] ?? 0}',
+                    style: TextStyle(fontSize: 11, color: context.t3)),
+                const SizedBox(width: 14),
+                Icon(Lz.star, size: 13, color: context.t3),
+                const SizedBox(width: 3),
+                Text('${p['likes'] ?? 0}',
+                    style: TextStyle(fontSize: 11, color: context.t3)),
+                const SizedBox(width: 14),
+                Icon(Lz.messageCircle, size: 13, color: context.t3),
+                const SizedBox(width: 3),
+                Text('${p['comments'] ?? 0}',
+                    style: TextStyle(fontSize: 11, color: context.t3)),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _stat(IconData icon, String text) => Row(
-        children: [
-          Icon(icon, size: 13, color: context.t3),
-          const SizedBox(width: 3),
-          Text(text, style: TextStyle(fontSize: 11, color: context.t3)),
-        ],
+  /// 1 张宽图 / 2~3 张方图（与 ARC 一致）
+  Widget _images(List<String> imgs) {
+    final n = imgs.length;
+    if (n == 1) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: AspectRatio(
+          aspectRatio: 2.1,
+          child: Image.network(imgs[0], fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(color: C.bg2)),
+        ),
       );
+    }
+    return Row(
+      children: [
+        for (int i = 0; i < (n > 3 ? 3 : n); i++)
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: i == (n > 3 ? 3 : n) - 1 ? 0 : 6),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: Image.network(imgs[i], fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(color: C.bg2)),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 
   Widget _empty() => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 48),
+        padding: const EdgeInsets.symmetric(vertical: 44),
         child: Center(
           child: Column(
             children: [
-              Icon(Lz.messageCircle, size: 38, color: context.t3),
+              Icon(Lz.messageCircle, size: 42, color: context.t3),
               const SizedBox(height: 10),
-              Text('还没有帖子，来发第一帖吧', style: TextStyle(fontSize: 13, color: context.t3)),
+              Text('还没有帖子，来发第一帖吧',
+                  style: TextStyle(fontSize: 13, color: context.t3)),
               const SizedBox(height: 14),
               FilledButton(
                 onPressed: _openPublish,
                 style: FilledButton.styleFrom(
                   backgroundColor: C.brand,
                   padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.full)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(R.full)),
                 ),
                 child: const Text('发第一帖', style: TextStyle(fontSize: 13)),
               ),

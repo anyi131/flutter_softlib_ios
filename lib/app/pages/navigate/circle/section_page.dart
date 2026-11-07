@@ -62,6 +62,54 @@ class _SectionPageState extends State<SectionPage> {
     });
   }
 
+  Widget _hero() {
+    final name = '${widget.section['name'] ?? '板块'}';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [C.brand, Color.lerp(C.brand, Colors.black, 0.35)!],
+        ),
+        borderRadius: BorderRadius.circular(R.lg),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(38),
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: Text(name.isEmpty ? '#' : name.characters.first,
+                style: const TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name,
+                    style: const TextStyle(
+                        fontSize: 17, fontWeight: FontWeight.w900, color: Colors.white)),
+                const SizedBox(height: 4),
+                Text('${_list.length} 帖 · ${widget.section['descr'] ?? ''}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11.5, color: Colors.white.withAlpha(200))),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,10 +134,11 @@ class _SectionPageState extends State<SectionPage> {
         child: ListView.separated(
           controller: _scroll,
           padding: const EdgeInsets.fromLTRB(14, 8, 14, 30),
-          itemCount: _list.length + 1,
+          itemCount: _list.length + 2,
           separatorBuilder: (_, __) => const SizedBox(height: 8),
           itemBuilder: (c, i) {
-            if (i == _list.length) {
+            if (i == 0) return _hero();
+            if (i == _list.length + 1) {
               return Padding(
                 padding: const EdgeInsets.all(16),
                 child: Center(
@@ -101,7 +150,7 @@ class _SectionPageState extends State<SectionPage> {
                 ),
               );
             }
-            final p = _list[i];
+            final p = _list[i - 1];
             final u = (p['user'] as Map?) ?? const {};
             return GestureDetector(
               onTap: () => Get.to(() => PostPage(postId: int.tryParse('${p['id']}') ?? 0))
