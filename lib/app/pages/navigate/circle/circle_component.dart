@@ -107,7 +107,14 @@ class _CircleComponentState extends State<CircleComponent> {
                     margin: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                     decoration: BoxDecoration(
                       color: context.isDark ? C.bg2 : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(context.isDark ? 45 : 9),
+                          blurRadius: 22,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
@@ -136,28 +143,61 @@ class _CircleComponentState extends State<CircleComponent> {
   }
 
   Widget _header() => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 6, 8, 0),
+        padding: const EdgeInsets.fromLTRB(16, 8, 12, 2),
         child: Row(
           children: [
-            Text('圈子', style: Ty.h2.copyWith(color: context.t1, fontSize: 24)),
-            const Spacer(),
-            IconButton(
-              icon: Icon(Lz.search, size: 21, color: context.t1),
-              onPressed: () => Get.to(
-                () => SectionPage(section: const {'id': 0, 'name': '全部帖子'}),
-              )?.then((_) => _load()),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('圈子',
+                      style: TextStyle(
+                          fontSize: 27,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.6,
+                          height: 1.1,
+                          color: context.t1)),
+                  const SizedBox(height: 3),
+                  Text('和同好聊聊软件，分享好用的工具',
+                      style: TextStyle(fontSize: 12, color: context.t3)),
+                ],
+              ),
             ),
-            IconButton(
-              icon: Icon(Lz.pencil, size: 21, color: context.t1),
-              onPressed: _openPublish,
-            ),
-            IconButton(
-              icon: Icon(Lz.user, size: 21, color: context.t1),
-              onPressed: () => Get.to(() => MyForumPage()),
-            ),
+            _roundBtn(Lz.search, () => Get.to(
+                  () => SectionPage(section: const {'id': 0, 'name': '全部帖子'}),
+                )?.then((_) => _load())),
+            const SizedBox(width: 8),
+            _roundBtn(Lz.pencil, _openPublish, primary: true),
+            const SizedBox(width: 8),
+            _roundBtn(Lz.user, () => Get.to(() => MyForumPage())),
           ],
         ),
       );
+
+  Widget _roundBtn(IconData icon, VoidCallback onTap, {bool primary = false}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 38,
+        height: 38,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: primary ? C.brand : (context.isDark ? C.bg2 : Colors.white),
+          boxShadow: primary
+              ? [
+                  BoxShadow(
+                      color: C.brand.withAlpha(70),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4)),
+                ]
+              : null,
+        ),
+        child: Icon(icon,
+            size: 19, color: primary ? Colors.white : context.t2),
+      ),
+    );
+  }
 
   /// 下划线 Tab（与 ARC 的 arc-tabs 一致：选中实线下划线 + 加粗）
   Widget _tabs() {
@@ -254,8 +294,15 @@ class _CircleComponentState extends State<CircleComponent> {
                             height: 44,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: context.isDark ? C.bg3 : C.lbg2,
-                              borderRadius: BorderRadius.circular(13),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  C.brand.withAlpha(context.isDark ? 60 : 26),
+                                  C.brand.withAlpha(context.isDark ? 22 : 8),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: Text(
                               '${s['name'] ?? '#'}'.isEmpty
