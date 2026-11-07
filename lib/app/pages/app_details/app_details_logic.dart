@@ -1187,6 +1187,20 @@ class AppDetailsLogic extends GetxController {
     // ★ 1105h：记下本次解析附带的中转兜底地址（直连被风控时静默换链）
     _proxyFallbackUrl = SoftService.lastParseProxyUrl;
     _proxyRetried = false;
+    // ★ 1106g：本地解析成功时没有 proxyUrl（只有服务端会给）。
+    //   这里在**下载前**就补取一次，避免等到失败时再请求（那时票据/网络都可能出问题）。
+    if (_proxyFallbackUrl.isEmpty && _sharePageUrlForProxy.isNotEmpty) {
+      try {
+        await SoftService.instance
+            .resolveLzy(_sharePageUrlForProxy)
+            .timeout(const Duration(seconds: 6), onTimeout: () => null);
+        _proxyFallbackUrl = SoftService.lastParseProxyUrl;
+      } catch (_) {}
+      SoftService.reportLogStatic(
+        tag: 'proxy',
+        error: '[proxy] 预取 proxyUrl=${_proxyFallbackUrl.isEmpty ? "EMPTY" : "OK"}',
+      ).catchError((_) {});
+    }
 
     // ★ 需求1：标记「刚点过下载」，3 秒内 UI 保持进度条初始态不闪回按钮
     _lastDownloadTap = DateTime.now();
@@ -1530,7 +1544,13 @@ class AppDetailsLogic extends GetxController {
         logger.e('proxy fetch: $e');
       }
     }
-    if (_proxyFallbackUrl.isEmpty || _proxyRetried) return false;
+    if (_proxyFallbackUrl.isEmpty || _proxyRetried) {
+      SoftService.reportLogStatic(
+        tag: 'proxy',
+        error: '[proxy] skip empty=${_proxyFallbackUrl.isEmpty} retried=$_proxyRetried',
+      ).catchError((_) {});
+      return false;
+    }
     _proxyRetried = true;
     try {
       final old = downloadTask;
@@ -1575,8 +1595,16 @@ class AppDetailsLogic extends GetxController {
       update(['download']);
       await getTaskInfo();
       _startProgressPolling();
+      SoftService.reportLogStatic(
+        tag: 'proxy',
+        error: '[proxy] 已切换中转重下',
+      ).catchError((_) {});
       return true;
     } catch (e) {
+      SoftService.reportLogStatic(
+        tag: 'proxy',
+        error: '[proxy] 中转重下失败 $e',
+      ).catchError((_) {});
       logger.e('proxy retry: $e');
       return false;
     }
