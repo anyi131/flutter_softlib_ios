@@ -133,7 +133,7 @@ class _SectionPageState extends State<SectionPage> {
     final followers = _sec['followers'] ?? 0;
     final followed = '${_sec['is_follow'] ?? 0}' == '1';
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
         child: Stack(
@@ -158,7 +158,7 @@ class _SectionPageState extends State<SectionPage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+              padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -229,8 +229,8 @@ class _SectionPageState extends State<SectionPage> {
     return AppPressable(
       onTap: () => Get.to(() => PostPage(postId: int.tryParse('${p['id']}') ?? 0)),
       child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+        padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
         decoration: BoxDecoration(
           color: context.isDark ? C.bg2 : Colors.white,
           borderRadius: BorderRadius.circular(12),

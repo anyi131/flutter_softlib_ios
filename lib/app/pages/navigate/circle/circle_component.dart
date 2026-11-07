@@ -85,7 +85,7 @@ class _CircleComponentState extends State<CircleComponent> {
               if (_posts.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+                    padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
                     child: Text('最新帖子',
                         style: TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w800, color: context.t2)),
@@ -101,10 +101,29 @@ class _CircleComponentState extends State<CircleComponent> {
               else if (_posts.isEmpty)
                 SliverToBoxAdapter(child: _empty())
               else
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (c, i) => _postCard(_posts[i]),
-                    childCount: _posts.length,
+                SliverToBoxAdapter(
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                    decoration: BoxDecoration(
+                      color: context.isDark ? C.bg2 : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                        for (int i = 0; i < _posts.length; i++) ...[
+                          if (i > 0)
+                            Divider(
+                              height: 0.6,
+                              thickness: 0.6,
+                              indent: 12,
+                              endIndent: 12,
+                              color: context.isDark ? C.bg3 : C.lbg2,
+                            ),
+                          _postCard(_posts[i]),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
               const SliverToBoxAdapter(child: SizedBox(height: 30)),
@@ -208,9 +227,9 @@ class _CircleComponentState extends State<CircleComponent> {
   ///   ARC 数值：tile 88rpx=44pt、radius 26rpx=13pt、名称 22rpx=11pt、gap 12rpx
   Widget _boardGrid() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(6, 14, 6, 6),
+        padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
         decoration: BoxDecoration(
           color: context.isDark ? C.bg2 : Colors.white,
           borderRadius: BorderRadius.circular(14),
