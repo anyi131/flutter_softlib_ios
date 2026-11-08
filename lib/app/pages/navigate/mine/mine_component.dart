@@ -1329,6 +1329,13 @@ class MineComponent extends StatelessWidget {
         C.accentOrange,
         () => Get.toNamed(Routes.task),
       ),
+      // ★ 1108z W1：任务与成就（统一事件引擎）
+      _S(
+        '任务与成就',
+        Lz.trophy,
+        C.gold,
+        () => Get.toNamed(Routes.goal),
+      ),
       if (_uiCfg.featureInvite)
         _S(
           '邀请好友',
