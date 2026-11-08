@@ -130,6 +130,9 @@ class _PostPageState extends State<PostPage> {
                               const SizedBox(width: 8),
                               Text('${p['views'] ?? 0} 阅读',
                                   style: TextStyle(fontSize: 11, color: context.t3)),
+                              const SizedBox(width: 8),
+                              Text('评论 ${_comments.length}',
+                                  style: TextStyle(fontSize: 11, color: context.t3)),
                             ],
                           ),
                           const SizedBox(height: 14),
@@ -169,10 +172,49 @@ class _PostPageState extends State<PostPage> {
                           const SizedBox(height: 6),
                           if (_comments.isEmpty)
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 22),
-                              child: Center(
-                                  child: Text('还没有评论，说说你的看法',
-                                      style: TextStyle(fontSize: 12, color: context.t3))),
+                              padding: const EdgeInsets.symmetric(vertical: 30),
+                              child: Column(
+                                children: [
+                                  Icon(Lz.messageCircle,
+                                      size: 40,
+                                      color: context.isDark ? C.bg3 : C.lbg2),
+                                  const SizedBox(height: 10),
+                                  Text('还没有评论',
+                                      style: TextStyle(
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: context.t2)),
+                                  const SizedBox(height: 4),
+                                  Text('说说你的看法，抢个沙发',
+                                      style: TextStyle(
+                                          fontSize: 11.5, color: context.t3)),
+                                  const SizedBox(height: 14),
+                                  GestureDetector(
+                                    onTap: () {
+                                      _replyTo = 0;
+                                      _replyName = '';
+                                      FocusScope.of(context)
+                                          .requestFocus(FocusNode());
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 18, vertical: 7),
+                                      decoration: BoxDecoration(
+                                        color: C.brand.withAlpha(24),
+                                        borderRadius:
+                                            BorderRadius.circular(99),
+                                        border: Border.all(
+                                            color: C.brand.withAlpha(90)),
+                                      ),
+                                      child: Text('写评论',
+                                          style: TextStyle(
+                                              fontSize: 12.5,
+                                              color: C.brand,
+                                              fontWeight: FontWeight.w700)),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             )
                           else
                             for (final c in _comments) _commentTile(c),
@@ -259,9 +301,9 @@ class _PostPageState extends State<PostPage> {
       margin: const EdgeInsets.only(left: 5),
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
       decoration: BoxDecoration(
-        color: C.gold.withAlpha(26),
+        color: C.gold.withAlpha(40),
         borderRadius: BorderRadius.circular(5),
-        border: Border.all(color: C.gold.withAlpha(120), width: 0.7),
+        border: Border.all(color: C.gold.withAlpha(170), width: 0.8),
       ),
       child: Text(t,
           style: const TextStyle(
