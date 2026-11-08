@@ -32,8 +32,8 @@ class StarRating extends StatelessWidget {
               child: Icon(
                 // 实心星：整星 / 半星（用半透明遮罩模拟）/ 空心淡星
                 i <= score
-                    ? Lz.starFill
-                    : (i - 0.5 <= score ? Lz.starFill : Lz.starFill),
+                    ? Lz.star
+                    : (i - 0.5 <= score ? Lz.star : Lz.star),
                 size: size,
                 color: i <= score
                     ? Colors.white
@@ -88,7 +88,7 @@ class StarInput extends StatelessWidget {
                   colors: [C.amber, Color(0xFFFFC53D)],
                 ).createShader(b),
                 child: Icon(
-                  Lz.starFill,
+                  Lz.star,
                   size: size,
                   color: i <= value
                       ? Colors.white
