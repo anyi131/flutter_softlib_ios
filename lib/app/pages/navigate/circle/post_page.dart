@@ -123,6 +123,7 @@ class _PostPageState extends State<PostPage> {
                             children: [
                               Text('${(p['user'] as Map?)?['nickname'] ?? '匿名'}',
                                   style: TextStyle(fontSize: 12, color: context.t2)),
+                              _titleBadge('${(p['user'] as Map?)?['title'] ?? ''}'),
                               const SizedBox(width: 8),
                               Text('${p['time_text'] ?? ''}',
                                   style: TextStyle(fontSize: 11, color: context.t3)),
@@ -250,6 +251,24 @@ class _PostPageState extends State<PostPage> {
     );
   }
 
+  /// 1108z：称号徽章（title 非空才渲染；金底小圆角）
+  Widget _titleBadge(String title) {
+    final t = title.trim();
+    if (t.isEmpty) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.only(left: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: C.gold.withAlpha(26),
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(color: C.gold.withAlpha(120), width: 0.7),
+      ),
+      child: Text(t,
+          style: const TextStyle(
+              fontSize: 9.5, color: C.gold, fontWeight: FontWeight.w700)),
+    );
+  }
+
   Widget _commentTile(Map<String, dynamic> c) {
     final u = (c['user'] as Map?) ?? const {};
     final isReply = (int.tryParse('${c['parent_id'] ?? 0}') ?? 0) > 0;
@@ -274,6 +293,7 @@ class _PostPageState extends State<PostPage> {
                     Text('${u['nickname'] ?? '匿名'}',
                         style: TextStyle(
                             fontSize: 11.5, fontWeight: FontWeight.w700, color: context.t2)),
+                    _titleBadge('${u['title'] ?? ''}'),
                     const SizedBox(width: 6),
                     Text('${c['time_text'] ?? ''}',
                         style: TextStyle(fontSize: 10, color: context.t3)),
