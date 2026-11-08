@@ -373,6 +373,7 @@ class _CircleComponentState extends State<CircleComponent> {
                                 fontWeight: FontWeight.w700,
                                 color: context.t2)),
                       ),
+                      _titleBadge('${u['title'] ?? ''}'),
                       if ('${p['section_name'] ?? ''}'.isNotEmpty) ...[
                         const SizedBox(width: 6),
                         Container(
@@ -439,6 +440,24 @@ class _CircleComponentState extends State<CircleComponent> {
   }
 
   /// 图片区：交给 PostGallery（1 张大图 / 2-3 张方图 / 4+ 九宫格 + 点击全屏）
+  /// 1108z：称号徽章（title 非空才渲染）
+  Widget _titleBadge(String title) {
+    final t = title.trim();
+    if (t.isEmpty) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.only(left: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: C.gold.withAlpha(40),
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(color: C.gold.withAlpha(170), width: 0.8),
+      ),
+      child: Text(t,
+          style: const TextStyle(
+              fontSize: 9.5, color: C.gold, fontWeight: FontWeight.w700)),
+    );
+  }
+
   Widget _images(List imgs) =>
       PostGallery(images: imgs.map((e) => '$e').where((e) => e.isNotEmpty).toList());
 
