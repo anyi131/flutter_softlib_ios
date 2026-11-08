@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../api/forum_service.dart';
 import '../../../api/user_service.dart';
@@ -121,9 +122,33 @@ class _PostPageState extends State<PostPage> {
                           const SizedBox(height: 8),
                           Row(
                             children: [
+                              CircleAvatar(
+                                radius: 16,
+                                backgroundColor: C.brand.withAlpha(30),
+                                backgroundImage:
+                                    '${((p['user'] as Map?)?['avatar'] ?? '')}'.isNotEmpty
+                                        ? NetworkImage('${(p['user'] as Map?)?['avatar']}')
+                                        : null,
+                                child: '${((p['user'] as Map?)?['avatar'] ?? '')}'.isEmpty
+                                    ? Icon(Lz.user, size: 16, color: C.brand)
+                                    : null,
+                              ),
+                              const SizedBox(width: 8),
                               Text('${(p['user'] as Map?)?['nickname'] ?? '匿名'}',
-                                  style: TextStyle(fontSize: 12, color: context.t2)),
+                                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: context.t2)),
+                              Container(
+                                margin: const EdgeInsets.only(left: 5),
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: C.brand.withAlpha(30),
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: Text('作者',
+                                    style: TextStyle(
+                                        fontSize: 9.5, color: C.brand, fontWeight: FontWeight.w700)),
+                              ),
                               _titleBadge('${(p['user'] as Map?)?['title'] ?? ''}'),
+                              if ('${((p['user'] as Map?)?['is_admin'] ?? 0)}' == '1') _adminBadge() else if ('${((p['user'] as Map?)?['is_vip'] ?? 0)}' == '1') _vipBadge(),
                               const SizedBox(width: 8),
                               Text('${p['time_text'] ?? ''}',
                                   style: TextStyle(fontSize: 11, color: context.t3)),
@@ -293,6 +318,41 @@ class _PostPageState extends State<PostPage> {
     );
   }
 
+  /// 1108z10：VIP 会员标识
+  Widget _vipBadge() {
+    return Container(
+      margin: const EdgeInsets.only(left: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: C.gold.withAlpha(40),
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(color: C.gold.withAlpha(170), width: 0.8),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(Lz.crown, size: 9, color: C.gold),
+        const SizedBox(width: 2),
+        const Text('VIP',
+            style: TextStyle(
+                fontSize: 9.5, color: C.gold, fontWeight: FontWeight.w800)),
+      ]),
+    );
+  }
+
+  /// 1108z10：管理员标识
+  Widget _adminBadge() {
+    return Container(
+      margin: const EdgeInsets.only(left: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: C.brand.withAlpha(30),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Text('管理',
+          style: TextStyle(
+              fontSize: 9.5, color: C.brand, fontWeight: FontWeight.w700)),
+    );
+  }
+
   /// 1108z：称号徽章（title 非空才渲染；金底小圆角）
   Widget _titleBadge(String title) {
     final t = title.trim();
@@ -314,16 +374,20 @@ class _PostPageState extends State<PostPage> {
   Widget _commentTile(Map<String, dynamic> c) {
     final u = (c['user'] as Map?) ?? const {};
     final isReply = (int.tryParse('${c['parent_id'] ?? 0}') ?? 0) > 0;
-    return Padding(
+    final canDel = UserService.instance.user?.id == int.tryParse('${c['user_id'] ?? 0}') ||
+        UserService.instance.user?.isAdmin == true;
+    return GestureDetector(
+      onLongPress: canDel ? () => _confirmDelComment(int.tryParse('${c['id']}') ?? 0) : null,
+      child: Padding(
       padding: EdgeInsets.only(left: isReply ? 26 : 0, top: 7, bottom: 7),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            radius: 12,
+            radius: 15,
             backgroundColor: C.brand.withAlpha(30),
             backgroundImage: '${u['avatar'] ?? ''}'.isNotEmpty ? NetworkImage('${u['avatar']}') : null,
-            child: '${u['avatar'] ?? ''}'.isEmpty ? Icon(Lz.user, size: 12, color: C.brand) : null,
+            child: '${u['avatar'] ?? ''}'.isEmpty ? Icon(Lz.user, size: 15, color: C.brand) : null,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -336,6 +400,7 @@ class _PostPageState extends State<PostPage> {
                         style: TextStyle(
                             fontSize: 11.5, fontWeight: FontWeight.w700, color: context.t2)),
                     _titleBadge('${u['title'] ?? ''}'),
+                    if ('${u['is_admin'] ?? 0}' == '1') _adminBadge() else if ('${u['is_vip'] ?? 0}' == '1') _vipBadge(),
                     const SizedBox(width: 6),
                     Text('${c['time_text'] ?? ''}',
                         style: TextStyle(fontSize: 10, color: context.t3)),
@@ -363,6 +428,34 @@ class _PostPageState extends State<PostPage> {
           ),
         ],
       ),
+    ),
     );
+  }
+
+  /// 长按删除自己的评论（管理员可删任意）
+  Future<void> _confirmDelComment(int id) async {
+    final okdel = await Get.dialog<bool>(AlertDialog(
+      backgroundColor: context.isDark ? C.bg2 : Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text('删除评论', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+      content: const Text('删除后无法恢复，确定删除这条评论吗？', style: TextStyle(fontSize: 13.5)),
+      actions: [
+        TextButton(onPressed: () => Get.back(result: false), child: const Text('取消')),
+        TextButton(
+          onPressed: () => Get.back(result: true),
+          child: const Text('删除', style: TextStyle(color: C.danger, fontWeight: FontWeight.w700)),
+        ),
+      ],
+    ));
+    if (okdel != true) return;
+    try {
+      await _svc.commentDel(id);
+      if (!mounted) return;
+      ToastUtil.success('已删除');
+      _load();
+    } catch (e) {
+      if (!mounted) return;
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
   }
 }
