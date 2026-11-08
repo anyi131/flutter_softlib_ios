@@ -374,6 +374,7 @@ class _CircleComponentState extends State<CircleComponent> {
                                 color: context.t2)),
                       ),
                       _titleBadge('${u['title'] ?? ''}'),
+                      if ('${u['is_admin'] ?? 0}' == '1') _adminBadge() else if ('${u['is_vip'] ?? 0}' == '1') _vipBadge(),
                       if ('${p['section_name'] ?? ''}'.isNotEmpty) ...[
                         const SizedBox(width: 6),
                         Container(
@@ -440,6 +441,41 @@ class _CircleComponentState extends State<CircleComponent> {
   }
 
   /// 图片区：交给 PostGallery（1 张大图 / 2-3 张方图 / 4+ 九宫格 + 点击全屏）
+  /// 1108z10：VIP 会员标识（金色小冠）
+  Widget _vipBadge() {
+    return Container(
+      margin: const EdgeInsets.only(left: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: C.gold.withAlpha(40),
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(color: C.gold.withAlpha(170), width: 0.8),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(Lz.crown, size: 9, color: C.gold),
+        const SizedBox(width: 2),
+        const Text('VIP',
+            style: TextStyle(
+                fontSize: 9.5, color: C.gold, fontWeight: FontWeight.w800)),
+      ]),
+    );
+  }
+
+  /// 1108z10：管理员标识（蓝底）
+  Widget _adminBadge() {
+    return Container(
+      margin: const EdgeInsets.only(left: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: C.brand.withAlpha(30),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Text('管理',
+          style: TextStyle(
+              fontSize: 9.5, color: C.brand, fontWeight: FontWeight.w700)),
+    );
+  }
+
   /// 1108z：称号徽章（title 非空才渲染）
   Widget _titleBadge(String title) {
     final t = title.trim();
