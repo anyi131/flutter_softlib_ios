@@ -184,6 +184,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
+            SliverToBoxAdapter(child: _entryCards()),
             SliverToBoxAdapter(child: _quickGrid()),
             SliverToBoxAdapter(child: _banner()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
@@ -200,6 +201,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _magazineHero()),
             SliverToBoxAdapter(child: _search()),
+            SliverToBoxAdapter(child: _entryCards()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             if (uiCfg.featureReferral) _magazineTitle(),
             if (uiCfg.featureReferral) _magazineList(),
@@ -214,6 +216,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
+            SliverToBoxAdapter(child: _entryCards()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             SliverToBoxAdapter(child: _gridWallTabs()),
             if (uiCfg.featureReferral) _gridWall(),
@@ -240,6 +243,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
+            SliverToBoxAdapter(child: _entryCards()),
             SliverToBoxAdapter(child: _drawerGroups()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             if (uiCfg.featureReferral) _referralTitle(),
@@ -256,6 +260,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
+            SliverToBoxAdapter(child: _entryCards()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             if (uiCfg.featureReferral)
               SliverToBoxAdapter(child: _referralTimeline()),
@@ -301,6 +306,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
+            SliverToBoxAdapter(child: _entryCards()),
             SliverToBoxAdapter(child: _quickGrid()),
             SliverToBoxAdapter(child: _banner()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
@@ -1655,6 +1661,67 @@ class _HomeComponentState extends State<HomeComponent> {
   }
 
   // ───────── ② 搜索 ─────────
+  /// 1108z14：FastApp 风格三张入口卡（签到 / 任务成就 / 发帖求助）
+  Widget _entryCards() {
+    final items = [
+      ('每日签到', '签到领积分', Lz.calendar, C.success, () => Get.toNamed(Routes.goal)),
+      ('任务与成就', '领奖励拿称号', Lz.trophy, C.gold, () => Get.toNamed(Routes.goal)),
+      ('软件求助', '装不上?来问', Lz.messageCircle, C.brand, () => Get.toNamed(Routes.task)),
+    ];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+      child: Row(
+        children: [
+          for (final it in items) ...[
+            Expanded(
+              child: GestureDetector(
+                onTap: it.$5,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: context.isDark ? C.bg2 : Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: context.isDark ? C.bg3 : C.lbg2),
+                  ),
+                  child: Row(children: [
+                    Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                          color: it.$4.withAlpha(26),
+                          borderRadius: BorderRadius.circular(10)),
+                      child: Icon(it.$3, size: 17, color: it.$4),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(it.$1,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: context.t1)),
+                            Text(it.$2,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 9.5, color: context.t3)),
+                          ]),
+                    ),
+                  ]),
+                ),
+              ),
+            ),
+            if (it != items.last) const SizedBox(width: 8),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _search() {
     return Padding(
       padding: EdgeInsets.fromLTRB(
