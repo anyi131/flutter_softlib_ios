@@ -46,6 +46,7 @@ class MineLogic extends GetxController {
   final UserService _userService = UserService.instance;
 
   String nickname = '';
+  String userTitle = ''; // 1108z 成就称号
   String uid = '';
   int points = 0;
   String money = '0.00';
@@ -85,6 +86,7 @@ class MineLogic extends GetxController {
     // v52f #6：监听全局登录失效信号，立即刷新本页（回到未登录 UI）
     ever(_userService.expiredTick, (_) {
       nickname = '';
+      userTitle = '';
       avatarUrl = '';
       vipExpire = '';
       isVipMember = false;
@@ -257,6 +259,7 @@ class MineLogic extends GetxController {
       final u = (info ?? _userService.user) as dynamic;
       if (u != null) {
         nickname = u.nickname;
+        userTitle = u.title;
         uid = u.account.isEmpty ? u.id.toString() : u.account;
         points = u.score;
         money = u.money;
