@@ -314,6 +314,13 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return; // 1107r
       Navigator.of(context).pop(true);
     } catch (e) {
+      // ★ 1108：原始错误上报后台（ErrText 只给人看，真实堆栈给排障）
+      try {
+        SoftService.reportLogStatic(
+          tag: 'login',
+          error: '[login-fail] ${e.toString()}',
+        ).catchError((_) {});
+      } catch (_) {}
       if (!mounted) return;
       setState(() => _errServer = ErrText.of(e));
     } finally {
