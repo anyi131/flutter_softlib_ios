@@ -38,6 +38,7 @@ class HomeComponent extends StatefulWidget {
 }
 
 class _HomeComponentState extends State<HomeComponent> {
+  List<dynamic> _latestApps = [];
   List<Map<String, dynamic>> _featList = [];
   final HomeLogic logic = Get.find<HomeLogic>();
   int _carouselIdx = 0;
@@ -269,9 +270,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
-            SliverToBoxAdapter(child: _entryCards()),
-            SliverToBoxAdapter(child: _featureRow()),
-            SliverToBoxAdapter(child: _quickGrid()),
+                                    SliverToBoxAdapter(child: _quickGrid()),
             SliverToBoxAdapter(child: _banner()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             if (uiCfg.featureReferral) _referralTitle(),
@@ -287,9 +286,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _magazineHero()),
             SliverToBoxAdapter(child: _search()),
-            SliverToBoxAdapter(child: _entryCards()),
-            SliverToBoxAdapter(child: _featureRow()),
-            if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
+                                    if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             if (uiCfg.featureReferral) _magazineTitle(),
             if (uiCfg.featureReferral) _magazineList(),
             tail,
@@ -303,9 +300,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
-            SliverToBoxAdapter(child: _entryCards()),
-            SliverToBoxAdapter(child: _featureRow()),
-            if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
+                                    if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             SliverToBoxAdapter(child: _gridWallTabs()),
             if (uiCfg.featureReferral) _gridWall(),
             tail,
@@ -331,9 +326,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
-            SliverToBoxAdapter(child: _entryCards()),
-            SliverToBoxAdapter(child: _featureRow()),
-            SliverToBoxAdapter(child: _drawerGroups()),
+                                    SliverToBoxAdapter(child: _drawerGroups()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             if (uiCfg.featureReferral) _referralTitle(),
             if (uiCfg.featureReferral) _referralGrid(),
@@ -349,9 +342,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
-            SliverToBoxAdapter(child: _entryCards()),
-            SliverToBoxAdapter(child: _featureRow()),
-            if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
+                                    if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             if (uiCfg.featureReferral)
               SliverToBoxAdapter(child: _referralTimeline()),
             tail,
@@ -374,11 +365,15 @@ class _HomeComponentState extends State<HomeComponent> {
       // ── ⑧ 便利店：横向分类条 + 双列商品卡 ──
       case 'store':
       case 'cards':
+        _ensureLatest();
         return CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(child: _storeTopBar()),
+            SliverToBoxAdapter(child: _search()),
             SliverToBoxAdapter(child: _storeCats()),
+            SliverToBoxAdapter(child: _storeLatest()),
+            SliverToBoxAdapter(child: _storeEditor()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             if (uiCfg.featureReferral) _storeGrid(),
             tail,
@@ -396,9 +391,7 @@ class _HomeComponentState extends State<HomeComponent> {
           slivers: [
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
-            SliverToBoxAdapter(child: _entryCards()),
-            SliverToBoxAdapter(child: _featureRow()),
-            SliverToBoxAdapter(child: _quickGrid()),
+                                    SliverToBoxAdapter(child: _quickGrid()),
             SliverToBoxAdapter(child: _banner()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             if (uiCfg.featureReferral) _referralTitle(),
@@ -1752,6 +1745,132 @@ class _HomeComponentState extends State<HomeComponent> {
   }
 
   // ───────── ② 搜索 ─────────
+
+  /// 1108z18：新上架横滑数据
+  Future<void> _ensureLatest() async {
+    if (_latestApps.isNotEmpty) return;
+    try {
+      final list = await SoftService.instance.fetchApps(force: true);
+      if (!mounted) return;
+      setState(() => _latestApps = list.take(8).toList());
+    } catch (_) {}
+  }
+
+  /// 1108z18：新上架横滑 UI
+  Widget _storeLatest() {
+    if (_latestApps.isEmpty) return const SizedBox.shrink();
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        child: Row(children: [
+          Container(width: 3, height: 15, decoration: BoxDecoration(color: C.brand, borderRadius: BorderRadius.circular(2))),
+          const SizedBox(width: 7),
+          Text('新上架', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.t1)),
+          const Spacer(),
+          Text('按上架时间', style: TextStyle(fontSize: 11, color: context.t3)),
+        ]),
+      ),
+      SizedBox(
+        height: 118,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          itemCount: _latestApps.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          itemBuilder: (context, i) {
+            final a = _latestApps[i];
+            final icon = '${a.icon ?? ''}';
+            return GestureDetector(
+              onTap: () => Get.toNamed(Routes.appDetails, arguments: a.id),
+              child: Container(
+                width: 96,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: context.isDark ? C.bg2 : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: context.isDark ? C.bg3 : C.lbg2),
+                ),
+                child: Column(children: [
+                  Stack(children: [
+                    Container(
+                      width: 46, height: 46,
+                      decoration: BoxDecoration(color: C.brand.withAlpha(20), borderRadius: BorderRadius.circular(12)),
+                      child: icon.isNotEmpty
+                          ? ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(icon, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(Lz.package, size: 20, color: C.brand)))
+                          : Icon(Lz.package, size: 20, color: C.brand),
+                    ),
+                    if (i < 2)
+                      Positioned(left: 0, top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(color: C.danger, borderRadius: BorderRadius.circular(5)),
+                          child: const Text('新', style: TextStyle(fontSize: 8, color: Colors.white, fontWeight: FontWeight.w800)),
+                        ),
+                      ),
+                  ]),
+                  const SizedBox(height: 5),
+                  Text('${a.title ?? ''}', maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: context.t1)),
+                  Text('${a.versionName ?? ''}', maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 9, color: context.t3)),
+                ]),
+              ),
+            );
+          },
+        ),
+      ),
+    ]);
+  }
+
+  /// 1108z18：编辑推荐大卡
+  Widget _storeEditor() {
+    if (_latestApps.isEmpty) return const SizedBox.shrink();
+    final a = _latestApps.reduce((x, y) => ((x.views ?? 0) as int) >= ((y.views ?? 0) as int) ? x : y);
+    final icon = '${a.icon ?? ''}';
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [C.brand.withAlpha(24), C.gold.withAlpha(16)]),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: C.brand.withAlpha(50)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(Lz.sparkles, size: 14, color: C.gold),
+          const SizedBox(width: 6),
+          Text('编辑推荐', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: context.t1)),
+        ]),
+        const SizedBox(height: 10),
+        Row(children: [
+          Container(
+            width: 54, height: 54,
+            decoration: BoxDecoration(color: C.brand.withAlpha(20), borderRadius: BorderRadius.circular(13)),
+            child: icon.isNotEmpty
+                ? ClipRRect(borderRadius: BorderRadius.circular(13), child: Image.network(icon, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(Lz.package, size: 22, color: C.brand)))
+                : Icon(Lz.package, size: 22, color: C.brand),
+          ),
+          const SizedBox(width: 10),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('${a.title ?? ''}', maxLines: 1, overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: context.t1)),
+            const SizedBox(height: 2),
+            Text('精选好软件，值得试试', maxLines: 1, overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 11.5, color: context.t2)),
+          ])),
+          GestureDetector(
+            onTap: () => Get.toNamed(Routes.appDetails, arguments: a.id),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(color: C.brand, borderRadius: BorderRadius.circular(99)),
+              child: Text('下载', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w700)),
+            ),
+          ),
+        ]),
+      ]),
+    );
+  }
+
   /// 1108z14：FastApp 风格三张入口卡（签到 / 任务成就 / 发帖求助）
   Widget _entryCards() {
     final items = [
