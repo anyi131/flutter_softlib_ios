@@ -21,6 +21,7 @@ import 'package:flutter_softlib/app/pages/appinfo/agreement_page.dart';
 import 'package:flutter_softlib/app/pages/navigate/mine/invite_page.dart';
 import 'package:flutter_softlib/app/pages/message/message_page.dart';
 import 'package:flutter_softlib/app/pages/taskcenter/task_page.dart';
+import 'package:flutter_softlib/app/pages/taskcenter/goal_center_page.dart';
 import 'package:flutter_softlib/app/pages/wishlist/wish_page.dart';
 import 'package:flutter_softlib/app/pages/guide/onboard_page.dart';
 import 'package:flutter_softlib/app/pages/myfav/favorites_page.dart';
@@ -44,6 +45,7 @@ class AppPages {
     GetPage(name: _Paths.agreement, page: () => const AgreementPage()),
     GetPage(name: _Paths.recharge, page: () => const RechargePage()),
     GetPage(name: _Paths.task, page: () => const TaskPage()),
+    GetPage(name: _Paths.goal, page: () => const GoalCenterPage()),
     // ★ 1020：统一收藏夹（软件 + 工具）
     GetPage(name: _Paths.favorites, page: () => const FavoritesPage()),
     // ★ 1020：使用历史（可删除 / 批量清理）
