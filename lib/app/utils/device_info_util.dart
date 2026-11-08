@@ -74,8 +74,19 @@ class DeviceInfo {
   }
 
   /// 供 Dio 使用的请求头
+  /// ★ 1108 根因修复：HTTP 头只允许 ASCII（RFC 7230）。
+  ///   机型含中文（如「Reno3 5G 中国版」）时 dart:io 直接抛
+  ///   Invalid HTTP header field value → 该设备所有带此头的请求全部失败。
+  ///   处理：非 ASCII 做百分号编码；原始值仍留在 DeviceInfo.model 供 UI/日志。
+  static String _asciiSafe(String v) {
+    if (v.isEmpty) return v;
+    final ok = v.codeUnits.every((c) => c >= 33 && c <= 126);
+    if (ok) return v;
+    return Uri.encodeComponent(v);
+  }
+
   static Map<String, String> get headers => {
-    if (model.isNotEmpty) 'X-Device-Model': model,
-    if (os.isNotEmpty) 'X-Os-Version': os,
+    if (model.isNotEmpty) 'X-Device-Model': _asciiSafe(model),
+    if (os.isNotEmpty) 'X-Os-Version': _asciiSafe(os),
   };
 }
