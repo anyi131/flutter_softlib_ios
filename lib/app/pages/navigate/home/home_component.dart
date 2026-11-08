@@ -2,6 +2,9 @@ import '../../../design/lucide.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import '../../../api/api_host.dart';
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:marquee/marquee.dart';
 
@@ -35,6 +38,7 @@ class HomeComponent extends StatefulWidget {
 }
 
 class _HomeComponentState extends State<HomeComponent> {
+  List<Map<String, dynamic>> _featList = [];
   final HomeLogic logic = Get.find<HomeLogic>();
   int _carouselIdx = 0;
 
@@ -145,7 +149,88 @@ class _HomeComponentState extends State<HomeComponent> {
     );
   }
 
+  /// 1108z14：推荐功能横滑（后台 feature_list 可配）
+  Future<void> _ensureFeat() async {
+    if (_featList.isNotEmpty) return;
+    try {
+      final r = await Dio(BaseOptions(
+              baseUrl: ApiHost.base,
+              connectTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 15)))
+          .post('/api/softlib/config/index');
+      final d = r.data;
+      if (d is Map && d['data'] is Map) {
+        final raw = '${d['data']['feature_list'] ?? ''}';
+        if (raw.isNotEmpty) {
+          final list = (jsonDecode(raw) as List)
+              .whereType<Map>()
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+          if (mounted) setState(() => _featList = list);
+        }
+      }
+    } catch (_) {}
+  }
+
+  Widget _featureRow() {
+    if (_featList.isEmpty) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 10, 0, 4),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: Row(children: [
+            Container(width: 3, height: 14, decoration: BoxDecoration(color: C.gold, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(width: 7),
+            Text('推荐功能', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.t1)),
+            const Spacer(),
+            Text('右滑查看', style: TextStyle(fontSize: 10.5, color: context.t3)),
+          ]),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 76,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: _featList.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (context, i) {
+              final it = _featList[i];
+              final name = '${it['name'] ?? ''}';
+              final color = Color(int.parse('${it['color'] ?? '#C9A227'}'.replaceFirst('#', '0xFF')));
+              return GestureDetector(
+                onTap: () {
+                  final t = '${it['target'] ?? ''}';
+                  if (t.startsWith('/')) Get.toNamed(t);
+                },
+                child: SizedBox(
+                  width: 68,
+                  child: Column(children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: color.withAlpha(26),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: color.withAlpha(60)),
+                      ),
+                      child: Icon(Lz.calendar, size: 22, color: color),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 10.5, color: context.t2)),
+                  ]),
+                ),
+              );
+            },
+          ),
+        ),
+      ]),
+    );
+  }
+
   Widget _homeBodyInner(int _) {
+    _ensureFeat();
     final uiCfg =
         SoftService.instance.cachedConfig?.uiConfig ?? const UiConfig();
     final tpl = uiCfg.homeTemplate;
@@ -185,6 +270,7 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
             SliverToBoxAdapter(child: _entryCards()),
+            SliverToBoxAdapter(child: _featureRow()),
             SliverToBoxAdapter(child: _quickGrid()),
             SliverToBoxAdapter(child: _banner()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
@@ -202,6 +288,7 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _magazineHero()),
             SliverToBoxAdapter(child: _search()),
             SliverToBoxAdapter(child: _entryCards()),
+            SliverToBoxAdapter(child: _featureRow()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             if (uiCfg.featureReferral) _magazineTitle(),
             if (uiCfg.featureReferral) _magazineList(),
@@ -217,6 +304,7 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
             SliverToBoxAdapter(child: _entryCards()),
+            SliverToBoxAdapter(child: _featureRow()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             SliverToBoxAdapter(child: _gridWallTabs()),
             if (uiCfg.featureReferral) _gridWall(),
@@ -244,6 +332,7 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
             SliverToBoxAdapter(child: _entryCards()),
+            SliverToBoxAdapter(child: _featureRow()),
             SliverToBoxAdapter(child: _drawerGroups()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             if (uiCfg.featureReferral) _referralTitle(),
@@ -261,6 +350,7 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
             SliverToBoxAdapter(child: _entryCards()),
+            SliverToBoxAdapter(child: _featureRow()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
             if (uiCfg.featureReferral)
               SliverToBoxAdapter(child: _referralTimeline()),
@@ -307,6 +397,7 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _header()),
             SliverToBoxAdapter(child: _search()),
             SliverToBoxAdapter(child: _entryCards()),
+            SliverToBoxAdapter(child: _featureRow()),
             SliverToBoxAdapter(child: _quickGrid()),
             SliverToBoxAdapter(child: _banner()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
