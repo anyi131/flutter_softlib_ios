@@ -13,6 +13,7 @@ import '../../../utils/toast_util.dart';
 import 'my_forum_page.dart';
 import 'circle_search_page.dart';
 import 'post_page.dart';
+import 'section_page.dart';
 import 'publish_page.dart';
 import 'section_page.dart';
 
@@ -32,6 +33,8 @@ class CircleComponent extends StatefulWidget {
 }
 
 class _CircleComponentState extends State<CircleComponent> {
+  List<Map<String, dynamic>> _secList = [];
+  bool _secCollapsed = false;
   final _svc = ForumService.instance;
   List<Map<String, dynamic>> _sections = [];
   List<Map<String, dynamic>> _posts = [];
@@ -45,6 +48,7 @@ class _CircleComponentState extends State<CircleComponent> {
   }
 
   Future<void> _load() async {
+    _ensureSections();
     setState(() => _loading = true);
     final secs = await _svc.sections();
     final p = await _svc.posts(order: _order, limit: 20);
@@ -116,6 +120,7 @@ class _CircleComponentState extends State<CircleComponent> {
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
+                        _secGrid(),
                         for (int i = 0; i < _posts.length; i++) ...[
                           if (i > 0)
                             Divider(
@@ -441,6 +446,82 @@ class _CircleComponentState extends State<CircleComponent> {
   }
 
   /// 图片区：交给 PostGallery（1 张大图 / 2-3 张方图 / 4+ 九宫格 + 点击全屏）
+  /// 1108z14：板块数据
+  Future<void> _ensureSections() async {
+    if (_secList.isNotEmpty) return;
+    try {
+      final list = await ForumService.instance.sections();
+      if (!mounted) return;
+      setState(() => _secList = list);
+    } catch (_) {}
+  }
+
+  /// 1108z14：板块宫格（3列圆角图标卡）
+  Widget _secGrid() {
+    if (_secList.isEmpty) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: context.isDark ? C.bg2 : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.isDark ? C.bg3 : C.lbg2),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Container(width: 3, height: 14, decoration: BoxDecoration(color: C.brand, borderRadius: BorderRadius.circular(2))),
+          const SizedBox(width: 7),
+          Text('板块', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.t1)),
+          const Spacer(),
+          GestureDetector(
+            onTap: () => setState(() => _secCollapsed = !_secCollapsed),
+            child: Row(children: [
+              Text(_secCollapsed ? '展开' : '收起', style: TextStyle(fontSize: 11.5, color: context.t3)),
+              Icon(_secCollapsed ? Lz.chevronDown : Lz.chevronUp, size: 13, color: context.t3),
+            ]),
+          ),
+        ]),
+        const SizedBox(height: 10),
+        if (!_secCollapsed)
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3, mainAxisSpacing: 10, crossAxisSpacing: 10,
+                childAspectRatio: 0.98),
+            itemCount: _secList.length,
+            itemBuilder: (context, i) {
+              final s = _secList[i];
+              final name = '${s['name'] ?? ''}';
+              return GestureDetector(
+                onTap: () => Get.to(() => SectionPage(section: s))?.then((_) => _load()),
+                child: Column(children: [
+                  Container(
+                    width: double.infinity,
+                    height: 62,
+                    decoration: BoxDecoration(
+                      color: C.brand.withAlpha(14),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: C.brand.withAlpha(36)),
+                    ),
+                    child: Center(
+                      child: Text(name.isNotEmpty ? name.substring(0, 1) : '版',
+                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: C.brand)),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 11.5, color: context.t2)),
+                  Text('${s['post_count'] ?? 0} 帖', style: TextStyle(fontSize: 10, color: context.t3)),
+                ]),
+              );
+            },
+          ),
+      ]),
+    );
+  }
+
   /// 1108z10：VIP 会员标识（金色小冠）
   Widget _vipBadge() {
     return Container(
