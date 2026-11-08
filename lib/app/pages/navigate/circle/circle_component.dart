@@ -33,6 +33,7 @@ class CircleComponent extends StatefulWidget {
 }
 
 class _CircleComponentState extends State<CircleComponent> {
+  List<Map<String, dynamic>> _rankList = [];
   List<Map<String, dynamic>> _secList = [];
   bool _secCollapsed = false;
   final _svc = ForumService.instance;
@@ -121,6 +122,7 @@ class _CircleComponentState extends State<CircleComponent> {
                     child: Column(
                       children: [
                         _secGrid(),
+  _userRank(),
                         for (int i = 0; i < _posts.length; i++) ...[
                           if (i > 0)
                             Divider(
@@ -448,11 +450,15 @@ class _CircleComponentState extends State<CircleComponent> {
   /// 图片区：交给 PostGallery（1 张大图 / 2-3 张方图 / 4+ 九宫格 + 点击全屏）
   /// 1108z14：板块数据
   Future<void> _ensureSections() async {
-    if (_secList.isNotEmpty) return;
+    if (_secList.isNotEmpty && _rankList.isNotEmpty) return;
     try {
-      final list = await ForumService.instance.sections();
+      final list = _secList.isEmpty ? await ForumService.instance.sections() : _secList;
+      final rank = _rankList.isEmpty ? await ForumService.instance.userRank() : _rankList;
       if (!mounted) return;
-      setState(() => _secList = list);
+      setState(() {
+        _secList = list;
+        _rankList = rank;
+      });
     } catch (_) {}
   }
 
@@ -518,6 +524,77 @@ class _CircleComponentState extends State<CircleComponent> {
               );
             },
           ),
+      ]),
+    );
+  }
+
+  /// 1108z16：用户榜横滑（活跃用户 top8）
+  Widget _userRank() {
+    if (_rankList.isEmpty) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 6, 0, 4),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: Row(children: [
+            Container(width: 3, height: 14, decoration: BoxDecoration(color: C.gold, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(width: 7),
+            Text('用户榜', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.t1)),
+            const Spacer(),
+            Text('积分排行', style: TextStyle(fontSize: 10.5, color: context.t3)),
+          ]),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 86,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: _rankList.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 14),
+            itemBuilder: (context, i) {
+              final u = _rankList[i];
+              final av = '${u['avatar'] ?? ''}';
+              return SizedBox(
+                width: 56,
+                child: Column(children: [
+                  Stack(children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: C.brand.withAlpha(30),
+                      backgroundImage: av.isNotEmpty ? NetworkImage(av) : null,
+                      child: av.isEmpty ? Icon(Lz.user, size: 20, color: C.brand) : null,
+                    ),
+                    if (i < 3)
+                      Positioned(
+                        right: -2, top: -2,
+                        child: Container(
+                          width: 16, height: 16,
+                          decoration: BoxDecoration(
+                              color: [C.gold, Colors.grey, Colors.brown][i],
+                              borderRadius: BorderRadius.circular(99),
+                              border: Border.all(color: Colors.white, width: 1.5)),
+                          child: Center(
+                              child: Text('${i + 1}',
+                                  style: const TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white))),
+                        ),
+                      ),
+                  ]),
+                  const SizedBox(height: 5),
+                  Text('${u['nickname'] ?? ''}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 10.5, color: context.t2)),
+                  Text('${u['score'] ?? 0} 分',
+                      style: TextStyle(fontSize: 9.5, color: C.gold)),
+                ]),
+              );
+            },
+          ),
+        ),
       ]),
     );
   }
