@@ -14,6 +14,7 @@ abstract class Routes {
   static const recharge = _Paths.recharge;
   static const message = _Paths.message;
   static const task = _Paths.task;
+  static const goal = _Paths.goal;
   static const wish = _Paths.wish;
   static const favorites = _Paths.favorites;
   static const history = _Paths.history;
@@ -44,6 +45,7 @@ abstract class _Paths {
   static const recharge = '/recharge';
   static const message = '/message';
   static const task = '/task';
+  static const goal = '/goal';
   static const wish = '/wish';
   static const favorites = '/favorites';
   static const history = '/history';
