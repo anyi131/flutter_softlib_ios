@@ -72,6 +72,7 @@ class Lz {
   static const IconData lightbulb = LucideIcons.lightbulb;
   static const IconData tag = LucideIcons.tag;
   static const IconData star = LucideIcons.star;
+  static const IconData starFill = LucideIcons.starFill ?? LucideIcons.star;
   static const IconData smile = LucideIcons.smile;
 
   // 账户 / 资产

@@ -11,6 +11,7 @@ import '../../../design/tokens.dart';
 import 'forum_gallery.dart';
 import '../../../utils/toast_util.dart';
 import 'my_forum_page.dart';
+import 'circle_search_page.dart';
 import 'post_page.dart';
 import 'publish_page.dart';
 import 'section_page.dart';
@@ -159,9 +160,7 @@ class _CircleComponentState extends State<CircleComponent> {
                 ],
               ),
             ),
-            _roundBtn(Lz.search, () => Get.to(
-                  () => SectionPage(section: const {'id': 0, 'name': '全部帖子'}),
-                )?.then((_) => _load())),
+            _roundBtn(Lz.search, () => Get.to(() => const CircleSearchPage())),
             const SizedBox(width: 8),
             _roundBtn(Lz.pencil, _openPublish, primary: true),
             const SizedBox(width: 8),

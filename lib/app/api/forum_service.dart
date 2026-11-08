@@ -259,4 +259,17 @@ class ForumService {
     final d = r.data;
     if (!(d is Map && d['code'] == 1)) throw Exception('${(d is Map ? d['msg'] : '删除失败')}');
   }
+  /// ★ 1107t 圈子搜索（服务端 post_list 支持 kw）
+  Future<List<Map<String, dynamic>>> searchPosts(String kw) async {
+    final resp = await _dio.post(
+      '/api/softlib/forum/post_list',
+      data: {'kw': kw, 'page': 1, 'size': 30},
+    );
+    final d = resp.data;
+    final m = d is Map ? d : <String, dynamic>{};
+    if ((m['code'] ?? 0) != 1) throw Exception(m['msg'] ?? '搜索失败');
+    final dd = m['data'];
+    final list = (dd is Map ? dd['list'] : dd) as List? ?? [];
+    return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+  }
 }

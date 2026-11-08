@@ -1444,7 +1444,7 @@ class MineComponent extends StatelessWidget {
         }),
       // ★ 1014 需求3：分享本软件（分享文案后台可配）
       if (_uiCfg.featureShareApp)
-        _S('分享软件', Lz.share, C.brandBright, () => logic.shareApp()),
+        _S('分享本体', Lz.share, C.brandBright, () => logic.shareApp()),
       if (_uiCfg.featureExchange)
         _S(
           '积分兑换',
