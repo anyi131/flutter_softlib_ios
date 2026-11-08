@@ -68,6 +68,10 @@ class _GoalCenterPageState extends State<GoalCenterPage>
       final msg = await _svc.claim(g.id);
       if (!mounted) return;
       ToastUtil.success(msg);
+      // 称号类奖励：刷新用户信息让「我的」页徽章立即生效
+      if (g.rewardType == 'title') {
+        try { await UserService.instance.refreshProfile(); } catch (_) {}
+      }
       await _load();
     } catch (e) {
       if (!mounted) return;
