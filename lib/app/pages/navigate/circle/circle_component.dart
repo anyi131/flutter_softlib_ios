@@ -529,6 +529,139 @@ class _CircleComponentState extends State<CircleComponent> {
     );
   }
 
+  /// 1109：点用户榜 → 用户卡片 + TA 的帖子
+  void _showUser(Map<String, dynamic> u) {
+    final uid = int.tryParse('${u['id']}') ?? 0;
+    if (uid <= 0) return;
+    final ctx0 = Get.context!;
+    final dark = ctx0.isDark;
+    Get.bottomSheet(
+      Container(
+        height: MediaQuery.of(ctx0).size.height * 0.72,
+        decoration: BoxDecoration(
+          color: dark ? C.bg2 : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            width: 38,
+            height: 4,
+            decoration: BoxDecoration(
+                color: ctx0.t3.withAlpha(60),
+                borderRadius: BorderRadius.circular(99)),
+          ),
+          // 用户卡片
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
+            child: Row(children: [
+              CircleAvatar(
+                radius: 26,
+                backgroundColor: C.brand.withAlpha(30),
+                backgroundImage: '${u['avatar'] ?? ''}'.isNotEmpty
+                    ? NetworkImage('${u['avatar']}') : null,
+                child: '${u['avatar'] ?? ''}'.isEmpty
+                    ? Icon(Lz.user, size: 22, color: C.brand) : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(children: [
+                      Flexible(
+                        child: Text('${u['nickname'] ?? '匿名'}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: ctx0.t1)),
+                      ),
+                      TitleBadge('${u['title'] ?? ''}',
+                          isVip: '${u['is_vip'] ?? 0}' == '1',
+                          isAdmin: '${u['is_admin'] ?? 0}' == '1'),
+                    ]),
+                    const SizedBox(height: 5),
+                    Row(children: [
+                      Icon(Lz.trophy, size: 12, color: C.gold),
+                      const SizedBox(width: 3),
+                      Text('${u['score'] ?? 0} 积分',
+                          style: TextStyle(fontSize: 11.5, color: C.gold)),
+                      const SizedBox(width: 10),
+                      Text('TA 的帖子',
+                          style: TextStyle(fontSize: 11.5, color: ctx0.t3)),
+                    ]),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(Lz.x, size: 20, color: ctx0.t3),
+                onPressed: () => Get.back(),
+              ),
+            ]),
+          ),
+          Divider(height: 1, color: ctx0.t3.withAlpha(24)),
+          // 帖子列表
+          Expanded(
+            child: FutureBuilder<Map<String, dynamic>>(
+              future: ForumService.instance.posts(userId: uid, limit: 20),
+              builder: (_, snap) {
+                if (snap.connectionState != ConnectionState.done) {
+                  return const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2));
+                }
+                final list = ((snap.data?['list'] as List?) ?? [])
+                    .whereType<Map>()
+                    .map((e) => Map<String, dynamic>.from(e))
+                    .toList();
+                if (list.isEmpty) {
+                  return Center(
+                    child: Text('TA 还没有发过帖子',
+                        style: TextStyle(fontSize: 12.5, color: ctx0.t3)),
+                  );
+                }
+                return ListView.separated(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  itemCount: list.length,
+                  separatorBuilder: (_, __) => Divider(
+                      height: 1, color: ctx0.t3.withAlpha(18)),
+                  itemBuilder: (_, i) {
+                    final p = list[i];
+                    return ListTile(
+                      dense: true,
+                      title: Text('${p['title'] ?? ''}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: ctx0.t1)),
+                      subtitle: Text(
+                        '${p['section_name'] ?? ''} · ${p['time_text'] ?? ''} · '
+                        '${p['views'] ?? 0} 阅读 · ${p['comments'] ?? 0} 评论',
+                        style: TextStyle(fontSize: 10.5, color: ctx0.t3),
+                      ),
+                      trailing: Icon(Lz.chevronRight,
+                          size: 15, color: ctx0.t3.withAlpha(120)),
+                      onTap: () {
+                        Get.back();
+                        Get.to(() =>
+                            PostPage(postId: int.tryParse('${p['id']}') ?? 0));
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          SafeArea(top: false, child: const SizedBox(height: 6)),
+        ]),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
   /// 1108z16：用户榜横滑（活跃用户 top8）
   Widget _userRank() {
     if (_rankList.isEmpty) return const SizedBox.shrink();
@@ -557,7 +690,10 @@ class _CircleComponentState extends State<CircleComponent> {
             itemBuilder: (context, i) {
               final u = _rankList[i];
               final av = '${u['avatar'] ?? ''}';
-              return SizedBox(
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _showUser(u),
+                child: SizedBox(
                 width: 56,
                 child: Column(children: [
                   Stack(children: [
@@ -607,6 +743,7 @@ class _CircleComponentState extends State<CircleComponent> {
                   Text('${u['score'] ?? 0} 分',
                       style: TextStyle(fontSize: 9.5, color: C.gold)),
                 ]),
+                ),
               );
             },
           ),
