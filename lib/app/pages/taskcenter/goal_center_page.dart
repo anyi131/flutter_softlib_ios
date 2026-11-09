@@ -327,12 +327,15 @@ class _GoalCenterPageState extends State<GoalCenterPage>
         _ => C.warning,
       };
 
-  String _rewardText(GoalItem g) => switch (g.rewardType) {
+  String _rewardText(GoalItem g) {
+    if (g.titleMasked) return '神秘奖励';
+    return switch (g.rewardType) {
         'title' => '专属称号',
         'money' => '¥${g.rewardValue}',
-        'vip_days' => 'VIP ${g.rewardValue} 天',
-        _ => '+${g.rewardValue} 积分',
-      };
+      'vip_days' => 'VIP ${g.rewardValue} 天',
+      _ => '+${g.rewardValue} 积分',
+    };
+  }
 
   Widget _goalCard(GoalItem g) {
     final claimed = g.done;
@@ -375,7 +378,8 @@ class _GoalCenterPageState extends State<GoalCenterPage>
                     children: [
                       Row(children: [
                         Flexible(
-                          child: Text(g.title,
+                          child: Text(
+                              g.titleMasked ? '神秘成就' : g.title,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -389,7 +393,10 @@ class _GoalCenterPageState extends State<GoalCenterPage>
                         ],
                       ]),
                       const SizedBox(height: 3),
-                      Text(g.desc,
+                      Text(
+                          g.titleMasked
+                              ? '达成目标后揭晓内容与奖励'
+                              : g.desc,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(fontSize: 11.5, color: context.t3, height: 1.4)),
