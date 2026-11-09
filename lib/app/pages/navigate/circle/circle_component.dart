@@ -12,6 +12,7 @@ import '../../../design/user_medals.dart';
 import '../../../design/skeleton.dart';
 import '../../../design/tokens.dart';
 import 'forum_gallery.dart';
+import 'user_space_page.dart';
 import '../../../utils/toast_util.dart';
 import 'my_forum_page.dart';
 import 'circle_search_page.dart';
@@ -606,6 +607,13 @@ class _CircleComponentState extends State<CircleComponent> {
                     ]),
                   ],
                 ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Get.back();
+                  Get.to(() => UserSpacePage(user: Map<String, dynamic>.from(u)));
+                },
+                child: const Text('主页', style: TextStyle(fontSize: 12.5)),
               ),
               IconButton(
                 icon: Icon(Lz.x, size: 20, color: ctx0.t3),
