@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../design/app_anim.dart';
+import '../../../design/title_badge.dart';
 import '../../../utils/safe_ctx.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
@@ -10,12 +11,14 @@ import 'package:get/get.dart';
 import '../../../api/soft_service.dart';
 import '../../../models/ui_config.dart';
 import '../../../api/user_service.dart';
+import '../../../api/goal_service.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/glass.dart';
 import '../../../design/theme_controller.dart';
 import '../../../design/kit.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
+import '../../../utils/toast_util.dart';
 import '../../../routes/app_pages.dart';
 import '../../navigate/navigate_logic.dart';
 import 'mine_logic.dart';
@@ -1330,23 +1333,165 @@ class MineComponent extends StatelessWidget {
     );
   }
 
-  /// 1108z：称号徽章（金底，userTitle 空则不渲染）
-  Widget _userTitleBadge(String title) {
-    final t = title.trim();
-    if (t.isEmpty) return const SizedBox.shrink();
-    return Container(
-      margin: const EdgeInsets.only(left: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: C.gold.withAlpha(28),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: C.gold.withAlpha(130), width: 0.8),
+  /// 1109：勋章墙（成就 → 勋章；未获得显示灰色）
+  Future<void> _showMedals() async {
+    List<GoalItem> list = [];
+    try {
+      list = await GoalService.instance.list();
+    } catch (_) {}
+    final achs = list.where((g) => g.kind == 1).toList();
+    final earned = achs.where((g) => g.claimed == 1).length;
+    final ctx0 = Get.context!;
+    Get.bottomSheet(
+      Container(
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx0).size.height * 0.75),
+        decoration: BoxDecoration(
+          color: ctx0.isDark ? C.bg2 : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            width: 38,
+            height: 4,
+            decoration: BoxDecoration(
+                color: ctx0.t3.withAlpha(60),
+                borderRadius: BorderRadius.circular(99)),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 10),
+            child: Row(children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                      colors: [Color(0xFFFFD86F), Color(0xFFFF8A3D)]),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.military_tech_rounded,
+                    size: 18, color: Colors.white),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('我的勋章',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: ctx0.t1)),
+                    Text('已点亮 $earned / ${achs.length}',
+                        style: TextStyle(fontSize: 11, color: ctx0.t3)),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(Lz.x, size: 20, color: ctx0.t3),
+                onPressed: () => Get.back(),
+              ),
+            ]),
+          ),
+          Divider(height: 1, color: ctx0.t3.withAlpha(20)),
+          Flexible(
+            child: achs.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.all(36),
+                    child: Text('还没有成就勋章，去「任务与成就」看看',
+                        style: TextStyle(fontSize: 12.5, color: ctx0.t3)),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 10,
+                            childAspectRatio: 0.78),
+                    itemCount: achs.length,
+                    itemBuilder: (_, i) {
+                      final g = achs[i];
+                      final got = g.claimed == 1;
+                      return MedalBadge(
+                        name: g.titleMasked && !got ? '神秘成就' : g.title,
+                        icon: _medalIcon(g),
+                        earned: got,
+                        size: 54,
+                        rarity: g.titleMasked
+                            ? TitleRarity.legend
+                            : (got ? TitleRarity.epic : TitleRarity.common),
+                      );
+                    },
+                  ),
+          ),
+        ]),
       ),
-      child: Text(t,
-          style: const TextStyle(
-              fontSize: 10, color: C.gold, fontWeight: FontWeight.w700)),
+      isScrollControlled: true,
     );
   }
+
+  IconData _medalIcon(GoalItem g) {
+    final t = '${g.title}${g.category}';
+    if (t.contains('下载')) return Lz.download;
+    if (t.contains('购买') || t.contains('消费')) return Lz.wallet;
+    if (t.contains('签到') || t.contains('登录')) return Lz.calendar;
+    if (t.contains('邀请')) return Lz.users;
+    if (t.contains('评论') || t.contains('发帖')) return Lz.messageCircle;
+    if (t.contains('狂') || t.contains('神')) return Lz.flame;
+    return Lz.trophy;
+  }
+
+  /// 1108z9：自定义称号弹窗（入口已移除；称号改由后台管理员配置。保留备用）
+  // ignore: unused_element
+  Future<void> _editTitleDialog(BuildContext ctx) async {
+    final logic = Get.find<MineLogic>();
+    final ctrl = TextEditingController(text: logic.userTitle);
+    final dark = Theme.of(ctx).brightness == Brightness.dark;
+    final okdel = await Get.dialog<bool>(AlertDialog(
+      backgroundColor: dark ? C.bg2 : Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text('自定义称号', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('展示在昵称旁，最多 12 字，留空清除',
+              style: TextStyle(fontSize: 12.5)),
+          const SizedBox(height: 12),
+          TextField(
+            controller: ctrl,
+            maxLength: 12,
+            decoration: InputDecoration(
+              hintText: '如：软件达人',
+              counterText: '',
+              isDense: true,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => Get.back(result: false), child: const Text('取消')),
+        TextButton(
+          onPressed: () => Get.back(result: true),
+          child: const Text('保存', style: TextStyle(fontWeight: FontWeight.w700)),
+        ),
+      ],
+    ));
+    if (okdel != true) return;
+    try {
+      await UserService.instance.setTitle(ctrl.text.trim());
+      await logic.refreshUserTitle(ctrl.text.trim());
+      ToastUtil.success(ctrl.text.trim().isEmpty ? '称号已清除' : '称号已更新');
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  /// 1109：称号徽章（我的页大号）
+  Widget _userTitleBadge(String title) =>
+      TitleBadge(title, isVip: Get.find<MineLogic>().isVip, scale: 1.15);
 
   /// v54：服务条目统一抽取（宫格 / 分组列表 / 扁平列表共用）
   List<_S> _serviceItems(MineLogic logic) {
@@ -1365,6 +1510,14 @@ class MineComponent extends StatelessWidget {
         C.gold,
         () => Get.toNamed(Routes.goal),
       ),
+      // ★ 1109：我的勋章（成就可视化）
+      _S(
+        '我的勋章',
+        Icons.military_tech_rounded,
+        C.violet,
+        () => _showMedals(),
+      ),
+
       if (_uiCfg.featureInvite)
         _S(
           '邀请好友',
