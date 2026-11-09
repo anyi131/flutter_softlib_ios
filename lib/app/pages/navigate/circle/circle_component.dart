@@ -592,10 +592,16 @@ class _CircleComponentState extends State<CircleComponent> {
                   if ('${u['title'] ?? ''}'.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
-                      child: TitleBadge('${u['title']}',
-                          isVip: '${u['is_vip'] ?? 0}' == '1',
-                          isAdmin: '${u['is_admin'] ?? 0}' == '1',
-                          scale: 0.72),
+                      child: SizedBox(
+                        width: 56,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: TitleBadge('${u['title']}',
+                              isVip: '${u['is_vip'] ?? 0}' == '1',
+                              isAdmin: '${u['is_admin'] ?? 0}' == '1',
+                              scale: 0.72),
+                        ),
+                      ),
                     ),
                   Text('${u['score'] ?? 0} 分',
                       style: TextStyle(fontSize: 9.5, color: C.gold)),
