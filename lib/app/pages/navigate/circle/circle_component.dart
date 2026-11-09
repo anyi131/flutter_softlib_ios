@@ -6,6 +6,7 @@ import '../../../api/user_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
+import '../../../design/title_badge.dart';
 import '../../../design/skeleton.dart';
 import '../../../design/tokens.dart';
 import 'forum_gallery.dart';
@@ -588,6 +589,14 @@ class _CircleComponentState extends State<CircleComponent> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 10.5, color: context.t2)),
+                  if ('${u['title'] ?? ''}'.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: TitleBadge('${u['title']}',
+                          isVip: '${u['is_vip'] ?? 0}' == '1',
+                          isAdmin: '${u['is_admin'] ?? 0}' == '1',
+                          scale: 0.72),
+                    ),
                   Text('${u['score'] ?? 0} 分',
                       style: TextStyle(fontSize: 9.5, color: C.gold)),
                 ]),
@@ -634,23 +643,8 @@ class _CircleComponentState extends State<CircleComponent> {
     );
   }
 
-  /// 1108z：称号徽章（title 非空才渲染）
-  Widget _titleBadge(String title) {
-    final t = title.trim();
-    if (t.isEmpty) return const SizedBox.shrink();
-    return Container(
-      margin: const EdgeInsets.only(left: 5),
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-      decoration: BoxDecoration(
-        color: C.gold.withAlpha(40),
-        borderRadius: BorderRadius.circular(5),
-        border: Border.all(color: C.gold.withAlpha(170), width: 0.8),
-      ),
-      child: Text(t,
-          style: const TextStyle(
-              fontSize: 9.5, color: C.gold, fontWeight: FontWeight.w700)),
-    );
-  }
+  /// 1109：称号徽章（统一炫酷样式）
+  Widget _titleBadge(String title) => TitleBadge(title, scale: 0.9);
 
   Widget _images(List imgs) =>
       PostGallery(images: imgs.map((e) => '$e').where((e) => e.isNotEmpty).toList());
