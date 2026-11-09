@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import '../../design/app_anim.dart';
 import '../../utils/safe_ctx.dart';
+import '../../utils/device_info_util.dart';
 import '../../utils/toast_util.dart';
 
 import 'dart:io';
@@ -37,7 +38,8 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> {
+class _SplashPageState extends State<SplashPage>
+    with TickerProviderStateMixin {
   AppConfig? _config;
   int _left = 2;
   Timer? _timer;
@@ -68,6 +70,26 @@ class _SplashPageState extends State<SplashPage> {
   ///   优先于本地开屏图；为空则回退本地图 → 再回退默认品牌页
   String _netSplash = '';
 
+  // 「暗夜品牌」开屏动画控制器
+  late final AnimationController _intro =
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))
+        ..forward();
+  late final AnimationController _breathe =
+      AnimationController(vsync: this, duration: const Duration(seconds: 4))
+        ..repeat(reverse: true);
+  late final AnimationController _wave =
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 2400))
+        ..repeat();
+  late final AnimationController _spinA =
+      AnimationController(vsync: this, duration: const Duration(seconds: 9))
+        ..repeat();
+  late final AnimationController _spinB =
+      AnimationController(vsync: this, duration: const Duration(seconds: 14))
+        ..repeat(reverse: true);
+  late final AnimationController _shimmer =
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 3400))
+        ..repeat();
+
   @override
   void initState() {
     super.initState();
@@ -77,6 +99,12 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _intro.dispose();
+    _breathe.dispose();
+    _wave.dispose();
+    _spinA.dispose();
+    _spinB.dispose();
+    _shimmer.dispose();
     super.dispose();
   }
 
@@ -388,6 +416,11 @@ class _SplashPageState extends State<SplashPage> {
         'fullscreen';
     final title = cfg?.splashTitle ?? '';
     final desc = cfg?.splashDesc ?? '';
+
+    // ★ 1109：暗夜品牌开屏（参考「TYMV」那种：纯黑底 + 居中 Logo 光晕 + 名字 + slogan + 版本）
+    if (tpl == 'hero_dark') {
+      return _heroSplash(cfg, title, desc);
+    }
 
     // ★★ 1020 开屏重构：配置了网络图时，按模板给 3 种不同版式。
     //   原来 7 个模板里有的根本没有图片槽位，这里统一收敛成 3 套可用样式：
@@ -2124,6 +2157,466 @@ class _SplashPageState extends State<SplashPage> {
       );
     }
     return _defaultSplash();
+  }
+
+  /// 1109：品牌开屏「暗夜品牌」——深/浅两套，跟随后台 ui_config.theme.mode
+  ///   · 背景：三段渐变 + 上下双光晕 + 暗角
+  ///   · 图标：玻璃托 + 呼吸浮动 + 双环反向旋转 + 入场光波
+  ///   · 标题：渐变扫光（ShaderMask 位移）
+  ///   · 右上角：倒计时跳过（圆环随时间递减）
+  ///   · 底部：版本胶囊 + 品牌水印 + 进度线
+  Widget _heroSplash(AppConfig? cfg, String title, String desc) {
+    final t = title.trim().isEmpty ? '安逸软件汇' : title.trim();
+    final d = desc.trim();
+    final ver = DeviceInfo.appVersion;
+    final total = (cfg?.splashSeconds ?? 3).clamp(1, 10);
+    final left = _left.clamp(0, total);
+    final dark = _splashIsDark();
+
+    // 深色 / 浅色配色
+    final bg = dark
+        ? const [Color(0xFF0D1119), Color(0xFF070A10), Color(0xFF000000)]
+        : const [Color(0xFFFFFFFF), Color(0xFFF7F9FD), Color(0xFFECF1F9)];
+    final fg = dark ? Colors.white : const Color(0xFF0F172A);
+    final sub = dark
+        ? Colors.white.withAlpha(128)
+        : const Color(0xFF0F172A).withAlpha(122);
+    final faint = dark
+        ? Colors.white.withAlpha(96)
+        : const Color(0xFF0F172A).withAlpha(96);
+    final tileBg = dark
+        ? [Colors.white.withAlpha(38), Colors.white.withAlpha(14)]
+        : [Colors.white, const Color(0xFFF3F6FC)];
+    final tileBorder = dark
+        ? Colors.white.withAlpha(44)
+        : const Color(0xFF0F172A).withAlpha(16);
+    final ringA = dark ? const Color(0xFF7FA8FF) : const Color(0xFF2E6BFF);
+    final haloA = C.brand.withAlpha(dark ? 56 : 40);
+    final haloB = C.violet.withAlpha(dark ? 46 : 30);
+
+    return FadeTransition(
+      opacity: CurvedAnimation(
+        parent: _intro,
+        curve: const Interval(0, 0.55, curve: Curves.easeOut),
+      ),
+      child: Stack(
+      children: [
+        // ── 背景渐变 ──
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: const [0, 0.44, 1],
+                colors: bg,
+              ),
+            ),
+          ),
+        ),
+        // ── 上光晕 ──
+        Positioned(
+          top: -140,
+          left: -60,
+          right: -60,
+          height: 460,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                colors: [haloA, haloA.withAlpha(0)],
+                radius: 0.72,
+              ),
+            ),
+          ),
+        ),
+        // ── 下光晕 ──
+        Positioned(
+          bottom: -60,
+          left: -80,
+          right: -80,
+          height: 340,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                colors: [haloB, haloB.withAlpha(0)],
+                radius: 0.7,
+              ),
+            ),
+          ),
+        ),
+        // ── 暗角 ──
+        Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  radius: 0.95,
+                  colors: [
+                    Colors.transparent,
+                    (dark ? Colors.black : const Color(0xFF0F172A))
+                        .withAlpha(dark ? 140 : 16),
+                  ],
+                  stops: const [0.55, 1],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // ── 主体 ──
+        Positioned.fill(
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                const SizedBox(height: 44),
+                const Spacer(flex: 3),
+                _heroLogo(dark: dark, tileBg: tileBg, tileBorder: tileBorder,
+                    ringA: ringA, haloA: haloA),
+                const SizedBox(height: 36),
+                _heroTitle(t, dark: dark),
+                const SizedBox(height: 17),
+                Container(
+                  width: 36,
+                  height: 1.5,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(99),
+                    gradient: LinearGradient(colors: [
+                      fg.withAlpha(0),
+                      fg.withAlpha(dark ? 76 : 42),
+                      fg.withAlpha(0),
+                    ]),
+                  ),
+                ),
+                if (d.isNotEmpty) ...[
+                  const SizedBox(height: 17),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 42),
+                    child: Text(
+                      d,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: sub,
+                        fontSize: 12.5,
+                        height: 1.7,
+                        letterSpacing: 2.4,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+                const Spacer(flex: 4),
+              ],
+            ),
+          ),
+        ),
+
+        // ── 右上角倒计时跳过 ──
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 8,
+          right: 14,
+          child: _heroSkip(total: total, left: left, dark: dark, ringA: ringA),
+        ),
+
+        // ── 底部：版本 + 水印 ──
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 46),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: faint.withAlpha(dark ? 16 : 12),
+                      borderRadius: BorderRadius.circular(99),
+                      border: Border.all(color: faint.withAlpha(28), width: 1),
+                    ),
+                    child: Text(
+                      ver.isEmpty ? '版本' : '版本 $ver',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        letterSpacing: 1.4,
+                        color: faint,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'ANYI STUDIO',
+                    style: TextStyle(
+                      fontSize: 8.5,
+                      letterSpacing: 5,
+                      fontWeight: FontWeight.w600,
+                      color: fg.withAlpha(38),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // ── 底部进度线（随倒计时推进）──
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: SizedBox(
+            height: 2,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: ColoredBox(color: fg.withAlpha(dark ? 14 : 10)),
+                ),
+                FractionallySizedBox(
+                  widthFactor: total == 0 ? 0 : (total - left) / total,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF3B7BFF), Color(0xFF6C4DFF), Color(0xFFA855F7)],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF6C4DFF).withAlpha(150),
+                          blurRadius: 12,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      ),
+    );
+  }
+
+  /// 深/浅判定：**优先跟随后台配置** ui_config.theme.mode
+  ///   dark → 深色；light → 浅色；system/空 → 跟随系统
+  bool _splashIsDark() {
+    String mode = '';
+    try {
+      mode = SoftService.instance.cachedConfig?.uiConfig.themeMode ?? '';
+    } catch (_) {}
+    switch (mode) {
+      case 'dark':
+        return true;
+      case 'light':
+        return false;
+      default:
+        return MediaQuery.maybeOf(context)?.platformBrightness == Brightness.dark ||
+            Theme.of(context).brightness == Brightness.dark;
+    }
+  }
+
+  /// Logo：玻璃托 + 呼吸 + 双环 + 入场光波
+  Widget _heroLogo({
+    required bool dark,
+    required List<Color> tileBg,
+    required Color tileBorder,
+    required Color ringA,
+    required Color haloA,
+  }) {
+    final breathe = Curves.easeInOut.transform(
+      (1 - (2 * (_breathe.value - 0.5)).abs()).clamp(0.0, 1.0),
+    );
+    return SizedBox(
+      width: 180,
+      height: 180,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // 入场光波（两圈依次扩散）
+          for (final delay in [0.0, 0.45])
+            AnimatedBuilder(
+              animation: _wave,
+              builder: (_, __) {
+                final p = ((_wave.value - delay) % 1.0).clamp(0.0, 1.0);
+                if (p <= 0.001) return const SizedBox.shrink();
+                final scale = 0.9 + p * 1.15;
+                final op = (1 - p) * 0.85;
+                return Opacity(
+                  opacity: op,
+                  child: Transform.scale(
+                    scale: scale,
+                    child: Container(
+                      width: 130,
+                      height: 130,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: ringA.withAlpha(dark ? 150 : 120),
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          // 双环反向旋转
+          RotationTransition(
+            turns: _spinA,
+            child: Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border(
+                  top: BorderSide(color: ringA.withAlpha(dark ? 140 : 100), width: 1),
+                  right: BorderSide(color: ringA.withAlpha(30), width: 1),
+                  bottom: BorderSide(color: Colors.transparent, width: 1),
+                  left: BorderSide(color: Colors.transparent, width: 1),
+                ),
+              ),
+            ),
+          ),
+          RotationTransition(
+            turns: _spinB,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border(
+                  bottom: BorderSide(
+                      color: C.violet.withAlpha(dark ? 105 : 80), width: 1),
+                  left: BorderSide(color: C.violet.withAlpha(26), width: 1),
+                  top: BorderSide(color: Colors.transparent, width: 1),
+                  right: BorderSide(color: Colors.transparent, width: 1),
+                ),
+              ),
+            ),
+          ),
+          // 玻璃托 + 图标
+          Transform.translate(
+            offset: Offset(0, -4 * breathe),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(34),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: tileBg,
+                ),
+                border: Border.all(color: tileBorder, width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6C4DFF).withAlpha(dark ? 108 : 62),
+                    blurRadius: 54,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(23),
+                child: Image.asset(
+                  Assets.imagesApp,
+                  width: 84,
+                  height: 84,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 标题：渐变扫光（ShaderMask 位移，必定可见）
+  Widget _heroTitle(String text, {required bool dark}) {
+    final base = dark ? const Color(0xFFB9C8FF) : const Color(0xFF334155);
+    final hot = dark ? Colors.white : const Color(0xFF2E6BFF);
+    return AnimatedBuilder(
+      animation: _shimmer,
+      builder: (_, __) {
+        final x = -1.2 + _shimmer.value * 2.4; // -1.2 → 1.2
+        return ShaderMask(
+          blendMode: BlendMode.srcIn,
+          shaderCallback: (rect) => LinearGradient(
+            begin: Alignment(x - 0.35, 0),
+            end: Alignment(x + 0.35, 0),
+            colors: [base, hot, hot, base],
+            stops: const [0, 0.42, 0.58, 1],
+          ).createShader(rect),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 29,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 6,
+              height: 1.2,
+              color: base,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// 右上角倒计时跳过
+  Widget _heroSkip({
+    required int total,
+    required int left,
+    required bool dark,
+    required Color ringA,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        _timer?.cancel();
+        _enter();
+      },
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: dark ? Colors.white.withAlpha(18) : const Color(0xFF0F172A).withAlpha(12),
+          border: Border.all(
+            color: dark ? Colors.white.withAlpha(30) : const Color(0xFF0F172A).withAlpha(20),
+            width: 1,
+          ),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              width: 34,
+              height: 34,
+              child: CircularProgressIndicator(
+                value: total == 0 ? 0 : left / total,
+                strokeWidth: 1.6,
+                backgroundColor: Colors.transparent,
+                valueColor: AlwaysStoppedAnimation<Color>(ringA),
+              ),
+            ),
+            Text(
+              '$left',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: dark ? Colors.white : const Color(0xFF0F172A),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _defaultSplash() {
