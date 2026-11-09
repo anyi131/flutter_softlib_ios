@@ -7,6 +7,7 @@ import '../../../design/app_anim.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
 import '../../../design/title_badge.dart';
+import '../../../design/user_medals.dart';
 import '../../../design/skeleton.dart';
 import '../../../design/tokens.dart';
 import 'forum_gallery.dart';
@@ -100,6 +101,8 @@ class _CircleComponentState extends State<CircleComponent> {
                             fontSize: 13, fontWeight: FontWeight.w800, color: context.t2)),
                   ),
                 ),
+              // 1109：底部留白（玻璃底栏悬浮，列表末尾要能滚出来）
+              const SliverToBoxAdapter(child: SizedBox(height: 110)),
               if (_loading)
                 const SliverToBoxAdapter(child: SkeletonPosts())
               else if (_posts.isEmpty)
@@ -122,8 +125,9 @@ class _CircleComponentState extends State<CircleComponent> {
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
-                        _secGrid(),
-  _userRank(),
+                        // ★ 1109：这里原来又渲染了一遍板块网格（_secGrid），
+                        //   和上方「逛板块」重复 → 屏幕里板块出现两次。已移除。
+                        _userRank(),
                         for (int i = 0; i < _posts.length; i++) ...[
                           if (i > 0)
                             Divider(
@@ -382,7 +386,14 @@ class _CircleComponentState extends State<CircleComponent> {
                                 color: context.t2)),
                       ),
                       _titleBadge('${u['title'] ?? ''}'),
-                      if ('${u['is_admin'] ?? 0}' == '1') _adminBadge() else if ('${u['is_vip'] ?? 0}' == '1') _vipBadge(),
+                      InlineMedals(
+                        medals: ((u['medals'] as List?) ?? const [])
+                            .map((e) => '$e')
+                            .toList(),
+                        isVip: '${u['is_vip'] ?? 0}' == '1',
+                        size: 13,
+                      ),
+                      if ('${u['is_admin'] ?? 0}' == '1') _adminBadge(),
                       if ('${p['section_name'] ?? ''}'.isNotEmpty) ...[
                         const SizedBox(width: 6),
                         Container(
