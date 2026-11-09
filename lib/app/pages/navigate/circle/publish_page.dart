@@ -87,6 +87,47 @@ class _PublishPageState extends State<PublishPage> {
   }
 
   @override
+  /// 1109：Markdown 工具栏（插入语法，发帖不用背语法）
+  void _insertMd(String text) {
+    final sel = _content.selection;
+    final start = sel.start >= 0 ? sel.start : _content.text.length;
+    final end = sel.end >= 0 ? sel.end : _content.text.length;
+    final t = _content.text.replaceRange(start, end, text);
+    _content.value = TextEditingValue(
+      text: t,
+      selection: TextSelection.collapsed(offset: start + text.length),
+    );
+  }
+
+  Widget _mdBar() {
+    Widget b(String label, String insert) => GestureDetector(
+          onTap: () => _insertMd(insert),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: C.brand.withAlpha(18),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: C.brand.withAlpha(50)),
+            ),
+            child: Text(label,
+                style: TextStyle(fontSize: 12, color: C.brand, fontWeight: FontWeight.w600)),
+          ),
+        );
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(children: [
+        b('粗体', '**粗体**'),
+        b('标题', '\n## 小标题\n'),
+        b('列表', '\n- 条目\n'),
+        b('引用', '\n> 引用内容\n'),
+        b('分割线', '\n---\n'),
+        b('表格', '\n| 列1 | 列2 |\n|---|---|\n| a | b |\n'),
+      ]),
+    );
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.isDark ? C.bg0 : C.lbg0,
@@ -144,6 +185,7 @@ class _PublishPageState extends State<PublishPage> {
             ],
           ),
           const SizedBox(height: 12),
+          _mdBar(),
           TextField(
             controller: _content,
             minLines: 10,
