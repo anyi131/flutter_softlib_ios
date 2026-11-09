@@ -1611,7 +1611,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     } catch (_) {}
     int? catId; // null = 不设置（走服务端默认）
     bool isVip = false;
-    bool autoCat = false; // 1109：按名称自动分类
+    bool autoCat = true; // 1109：默认自动识别分类（无需手动选择）
     final price = TextEditingController();
     final go = await Get.dialog<bool>(
       Dialog(
@@ -1627,7 +1627,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
               ),
               const SizedBox(height: 4),
               Text(
-                '为本次导入的软件统一设置分类与下载权限',
+                '系统会按名称自动识别分类；含「正能量」→ 学习资料 · 会员 ¥2',
                 style: Ty.tiny.copyWith(color: ctx.t3),
               ),
               const SizedBox(height: 12),
@@ -1647,7 +1647,11 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                       children: [
                         const Text('按名称自动分类',
                             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                        Text('含「正能量」→ 学习资料 · 会员 ¥2',
+                        Text(
+                            autoCat
+                                ? '已自动识别：正能量→学习资料·会员¥2，影视→影视音乐，游戏→小说漫画游戏'
+                                : '已关闭，将使用下方手动设置',
+                            maxLines: 2,
                             style: Ty.tiny.copyWith(color: ctx.t3)),
                       ],
                     ),
@@ -1659,6 +1663,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                   ),
                 ]),
               ),
+              if (!autoCat) ...[
               const SizedBox(height: 10),
               DropdownButtonFormField<int>(
                 initialValue: catId,
@@ -1679,6 +1684,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                 ],
                 onChanged: (v) => setD(() => catId = v),
               ),
+              ],
               const SizedBox(height: 10),
               Row(
                 children: [
