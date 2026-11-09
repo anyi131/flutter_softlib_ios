@@ -1445,7 +1445,9 @@ class MineComponent extends StatelessWidget {
   /// 1108z9：自定义称号弹窗（入口已移除；称号改由后台管理员配置。保留备用）
   // ignore: unused_element
   Future<void> _editTitleDialog(BuildContext ctx) async {
-    final logic = Get.find<MineLogic>();
+    final logic = Get.isRegistered<MineLogic>(tag: 'mine')
+        ? Get.find<MineLogic>(tag: 'mine')
+        : Get.find<MineLogic>();
     final ctrl = TextEditingController(text: logic.userTitle);
     final dark = Theme.of(ctx).brightness == Brightness.dark;
     final okdel = await Get.dialog<bool>(AlertDialog(
@@ -1490,8 +1492,18 @@ class MineComponent extends StatelessWidget {
   }
 
   /// 1109：称号徽章（我的页大号）
-  Widget _userTitleBadge(String title) =>
-      TitleBadge(title, isVip: Get.find<MineLogic>().isVip, scale: 1.15);
+  /// ★ 修复崩溃：MineLogic 是用 tag:'mine' 注册的（navigate_binding），
+  ///   这里必须带 tag 查找，且找不到时不能抛异常（否则整个「我的」页白屏）。
+  Widget _userTitleBadge(String title) {
+    bool vip = false;
+    try {
+      final l = Get.isRegistered<MineLogic>(tag: 'mine')
+          ? Get.find<MineLogic>(tag: 'mine')
+          : (Get.isRegistered<MineLogic>() ? Get.find<MineLogic>() : null);
+      vip = l?.isVip ?? false;
+    } catch (_) {}
+    return TitleBadge(title, isVip: vip, scale: 1.15);
+  }
 
   /// v54：服务条目统一抽取（宫格 / 分组列表 / 扁平列表共用）
   List<_S> _serviceItems(MineLogic logic) {
