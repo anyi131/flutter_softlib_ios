@@ -52,8 +52,11 @@ class PostContent extends StatelessWidget {
                 .map((c) => _strip(c.group(1) ?? '').trim())
                 .toList();
         if (cells.isEmpty) continue;
-        rows.add('| ${cells.join(' | ')} |');
-        if (i == 0) rows.add('|${List.filled(cells.length, '---').join('|')}|');
+        rows.add('| ' + cells.join(' | ') + ' |');
+        if (i == 0) {
+          final sep = List.filled(cells.length, '---').join('|');
+          rows.add('|' + sep + '|');
+        }
       }
       tables.add(rows.join('\n'));
       return '\n\n@@T${tables.length - 1}@@\n\n';
