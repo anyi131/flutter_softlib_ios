@@ -890,19 +890,18 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                     ),
                                   ),
                                   const SizedBox(height: 3),
-                                  Row(
+                                  const SizedBox(height: 4),
+                                  // 1109：标签用 Wrap 自动换行，避免挤压遮挡
+                                  Wrap(
+                                    spacing: 5,
+                                    runSpacing: 4,
+                                    crossAxisAlignment: WrapCrossAlignment.center,
                                     children: [
-                                      if ('${a['is_top'] ?? 0}' == '1') ...[
+                                      if ('${a['is_top'] ?? 0}' == '1')
                                         Pill('置顶', color: C.gold, small: true),
-                                        const SizedBox(width: 6),
-                                      ],
-                                      // ★ 1109 需求1：显示所属分类
-                                      if ('${a['cat_title'] ?? ''}'.isNotEmpty) ...[
+                                      if ('${a['cat_title'] ?? ''}'.isNotEmpty)
                                         Pill('${a['cat_title']}', color: C.violet, small: true),
-                                        const SizedBox(width: 6),
-                                      ],
-                                      // ★ 1109：会员专享 + 价格标识
-                                      if ('${a['is_vip'] ?? 0}' == '1') ...[
+                                      if ('${a['is_vip'] ?? 0}' == '1')
                                         Pill(
                                           '${a['vip_price'] ?? ''}'.isEmpty
                                               ? '会员'
@@ -910,16 +909,12 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                           color: C.rose,
                                           small: true,
                                         ),
-                                        const SizedBox(width: 6),
-                                      ],
                                       Pill(
                                         isLocal ? '服务器' : '蓝奏云',
                                         color: isLocal ? C.cyan : C.gold,
                                         small: true,
                                       ),
-                                      if ('${a['url_type'] ?? 'apk'}' !=
-                                          'apk') ...[
-                                        const SizedBox(width: 6),
+                                      if ('${a['url_type'] ?? 'apk'}' != 'apk')
                                         Pill(
                                           '${a['url_type']}' == 'browser'
                                               ? '跳浏览器'
@@ -927,25 +922,27 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                           color: C.cyan,
                                           small: true,
                                         ),
-                                      ],
-                                      const SizedBox(width: 6),
-                                      Flexible(
-                                        child: Text(
-                                          '${a['size_str'] ?? ''} ${a['version_name'] ?? ''}',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: Ty.tiny.copyWith(
-                                            color: context.t3,
-                                          ),
-                                        ),
-                                      ),
                                     ],
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    [
+                                      '${a['size_str'] ?? ''}',
+                                      '${a['version_name'] ?? ''}',
+                                      '${a['down_count'] ?? 0} 次下载',
+                                    ].where((e) => e.trim().isNotEmpty && e != '0 次下载').join(' · '),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Ty.tiny.copyWith(color: context.t3),
                                   ),
                                 ],
                               ),
                             ),
                             if (!_selMode) ...[
                               IconButton(
+                                visualDensity: VisualDensity.compact,
+                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                padding: EdgeInsets.zero,
                                 tooltip: '快速设置分类/会员',
                                 icon: const Icon(
                                   Lz.slidersHorizontal,
