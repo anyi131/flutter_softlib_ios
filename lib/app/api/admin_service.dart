@@ -835,6 +835,25 @@ class AdminService {
       _post('collect_lzycookie_clear');
 
   /// 把采集结果导入软件库
+  // ══════════ 1109：任务与成就管理 ══════════
+  Future<List<Map<String, dynamic>>> goals() async {
+    final d = (await _post('goals', {}))['data'];
+    return (d as List?)?.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList() ?? [];
+  }
+
+  Future<int> goalSave(Map<String, dynamic> data) async {
+    final d = (await _post('goal_save', data))['data'];
+    return d is Map ? (int.tryParse('${d['id']}') ?? 0) : 0;
+  }
+
+  Future<void> goalDel(int id) async {
+    await _post('goal_del', {'id': id});
+  }
+
+  Future<void> goalToggle(int id, bool on) async {
+    await _post('goal_toggle', {'id': id, 'enable_switch': on ? 1 : 0});
+  }
+
   Future<Map<String, dynamic>> collectImport(
     List<Map<String, dynamic>> items, {
     int? catId,
@@ -842,6 +861,8 @@ class AdminService {
     String? vipPrice,
     bool skipExisting = true,
     bool updateExisting = false,
+    bool autoCat = false,
+    String? autoRules,
   }) async {
     final d = (await _post('collect_import', {
       'items': jsonEncode(items),
@@ -850,6 +871,8 @@ class AdminService {
       'vip_price': ?vipPrice,
       'skip_existing': skipExisting ? 1 : 0,
       'update_existing': updateExisting ? 1 : 0,
+      if (autoCat) 'auto_cat': 1,
+      if (autoRules != null && autoRules.isNotEmpty) 'auto_rules': autoRules,
     }))['data'];
     return d is Map ? Map<String, dynamic>.from(d) : {};
   }
