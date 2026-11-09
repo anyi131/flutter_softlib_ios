@@ -403,8 +403,14 @@ class _GoalCenterPageState extends State<GoalCenterPage>
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                // 右侧：奖励 / 按钮 / 已领取
+                const SizedBox(width: 6),
+                // 右侧：奖励 / 按钮 / 已领取（限制最大宽度，避免长文案挤压标题）
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 96),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
                 if (claimed)
                   Row(children: [
                     Icon(Lz.checkCircle, size: 15, color: C.mint),
@@ -459,11 +465,18 @@ class _GoalCenterPageState extends State<GoalCenterPage>
                           size: 11,
                           color: rc),
                       const SizedBox(width: 3),
-                      Text(_rewardText(g),
-                          style: TextStyle(
-                              fontSize: 10.5, fontWeight: FontWeight.w700, color: rc)),
+                      Flexible(
+                        child: Text(_rewardText(g),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 10.5, fontWeight: FontWeight.w700, color: rc)),
+                      ),
                     ]),
                   ),
+                    ],
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 11),
