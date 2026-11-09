@@ -662,6 +662,19 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
   }
 
   @override
+  /// 1109：紧凑图标按钮（36px，不挤占文字区）
+  Widget _miniIcon(IconData icon, Color color, VoidCallback tap,
+      {String? tip}) {
+    return IconButton(
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+      padding: EdgeInsets.zero,
+      tooltip: tip,
+      icon: Icon(icon, size: 19, color: color),
+      onPressed: tap,
+    );
+  }
+
   Widget build(BuildContext context) {
     return Column(
       children: [
@@ -909,11 +922,6 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                           color: C.rose,
                                           small: true,
                                         ),
-                                      Pill(
-                                        isLocal ? '服务器' : '蓝奏云',
-                                        color: isLocal ? C.cyan : C.gold,
-                                        small: true,
-                                      ),
                                       if ('${a['url_type'] ?? 'apk'}' != 'apk')
                                         Pill(
                                           '${a['url_type']}' == 'browser'
@@ -927,6 +935,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                   const SizedBox(height: 3),
                                   Text(
                                     [
+                                      isLocal ? '服务器' : '蓝奏云',
                                       '${a['size_str'] ?? ''}',
                                       '${a['version_name'] ?? ''}',
                                       '${a['down_count'] ?? 0} 次下载',
@@ -939,44 +948,29 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                               ),
                             ),
                             if (!_selMode) ...[
-                              IconButton(
-                                visualDensity: VisualDensity.compact,
-                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                              // 1109：原来 4 个 48px 图标把文字区挤到换行/错位，
+                              //   改成 1 个快捷图标 + 1 个菜单，宽度固定
+                              _miniIcon(
+                                Lz.slidersHorizontal,
+                                C.violet,
+                                () => _quickSet(aid),
+                                tip: '分类/会员',
+                              ),
+                              PopupMenuButton<String>(
                                 padding: EdgeInsets.zero,
-                                tooltip: '快速设置分类/会员',
-                                icon: const Icon(
-                                  Lz.slidersHorizontal,
-                                  size: 19,
-                                  color: C.violet,
-                                ),
-                                onPressed: () => _quickSet(aid),
-                              ),
-                              IconButton(
-                                tooltip: '补全此软件',
-                                icon: const Icon(
-                                  Lz.wand2,
-                                  size: 19,
-                                  color: C.success,
-                                ),
-                                onPressed: _filling
-                                    ? null
-                                    : () => _fill(ids: [aid]),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  Lz.pencil,
-                                  size: 19,
-                                  color: C.brand,
-                                ),
-                                onPressed: () => _edit(a),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Lz.trash2,
-                                  size: 19,
-                                  color: C.danger,
-                                ),
-                                onPressed: () => _del(a),
+                                iconSize: 20,
+                                tooltip: '更多',
+                                color: context.cardBg,
+                                onSelected: (v) {
+                                  if (v == 'fill') _fill(ids: [aid]);
+                                  if (v == 'edit') _edit(a);
+                                  if (v == 'del') _del(a);
+                                },
+                                itemBuilder: (_) => const [
+                                  PopupMenuItem(value: 'fill', child: Text('补全信息')),
+                                  PopupMenuItem(value: 'edit', child: Text('编辑')),
+                                  PopupMenuItem(value: 'del', child: Text('删除')),
+                                ],
                               ),
                             ],
                           ],
