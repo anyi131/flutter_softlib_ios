@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../api/forum_service.dart';
 import '../../../api/user_service.dart';
 import '../../../design/lucide.dart';
+import '../../../design/title_badge.dart';
 import '../../../design/ui.dart';
 import 'forum_gallery.dart';
 import '../../../utils/err_text.dart';
@@ -353,23 +354,8 @@ class _PostPageState extends State<PostPage> {
     );
   }
 
-  /// 1108z：称号徽章（title 非空才渲染；金底小圆角）
-  Widget _titleBadge(String title) {
-    final t = title.trim();
-    if (t.isEmpty) return const SizedBox.shrink();
-    return Container(
-      margin: const EdgeInsets.only(left: 5),
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-      decoration: BoxDecoration(
-        color: C.gold.withAlpha(40),
-        borderRadius: BorderRadius.circular(5),
-        border: Border.all(color: C.gold.withAlpha(170), width: 0.8),
-      ),
-      child: Text(t,
-          style: const TextStyle(
-              fontSize: 9.5, color: C.gold, fontWeight: FontWeight.w700)),
-    );
-  }
+  /// 1109：称号徽章（统一炫酷样式；标题为空不渲染）
+  Widget _titleBadge(String title) => TitleBadge(title, scale: 0.95);
 
   Widget _commentTile(Map<String, dynamic> c) {
     final u = (c['user'] as Map?) ?? const {};
