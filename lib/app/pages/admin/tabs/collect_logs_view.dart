@@ -137,11 +137,80 @@ class _CollectLogsViewState extends State<CollectLogsView>
     ),
   );
 
+  /// 1109 需求3：点任务组 → 明细弹窗（该次采集的软件清单）
+  void _showGroupDetail(Map<String, dynamic> g) {
+    final t = '${g['time'] ?? ''}';
+    final mine = _items.where((it) => '${it['task_time'] ?? ''}' == t).toList();
+    Get.bottomSheet(
+      Container(
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.78),
+        decoration: BoxDecoration(
+          color: context.isDark ? C.bg2 : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            width: 38,
+            height: 4,
+            decoration: BoxDecoration(
+                color: context.t3.withAlpha(60),
+                borderRadius: BorderRadius.circular(99)),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 8),
+            child: Row(children: [
+              Icon(Lz.history, size: 18, color: C.brand),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('采集明细 · $t',
+                        style: Ty.h3.copyWith(fontSize: 15, color: context.t1)),
+                    Text(
+                        '共 ${g['total']} 个 · 成功 ${g['success']} · 失败 ${g['fail']}',
+                        style: Ty.tiny.copyWith(color: context.t3)),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(Lz.x, size: 20, color: context.t3),
+                onPressed: () => Get.back(),
+              ),
+            ]),
+          ),
+          Divider(height: 1, color: context.t3.withAlpha(24)),
+          Flexible(
+            child: mine.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.all(30),
+                    child: Text('该批次明细已被采集站点清理',
+                        style: Ty.small.copyWith(color: context.t3)),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    itemCount: mine.length,
+                    separatorBuilder: (_, __) => Divider(
+                        height: 1, color: context.t3.withAlpha(18)),
+                    itemBuilder: (_, i) => _itemCard(mine[i]),
+                  ),
+          ),
+          SafeArea(top: false, child: const SizedBox(height: 6)),
+        ]),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
   Widget _groupCard(Map<String, dynamic> g) {
     final fail = (g['fail'] as num?)?.toInt() ?? 0;
     final total = (g['total'] as num?)?.toInt() ?? 0;
     final ok = (g['success'] as num?)?.toInt() ?? 0;
-    return AdCard(
+    return GestureDetector(
+      onTap: () => _showGroupDetail(g),
+      child: AdCard(
       margin: const EdgeInsets.only(bottom: 8),
       radius: R.md,
       padding: const EdgeInsets.all(12),
@@ -172,7 +241,13 @@ class _CollectLogsViewState extends State<CollectLogsView>
             const SizedBox(height: 3),
             Text('耗时 ${g['cost']}', style: Ty.tiny.copyWith(color: context.t3)),
           ],
+          const SizedBox(height: 6),
+          Row(children: [
+            Text('查看明细', style: Ty.tiny.copyWith(color: C.brand)),
+            Icon(Lz.chevronRight, size: 13, color: C.brand),
+          ]),
         ],
+      ),
       ),
     );
   }
