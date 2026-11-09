@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 /// ★ 1107e 图片九宫格 + 全屏查看（对照 ARC 的 post images 布局）
@@ -28,8 +29,14 @@ class PostGallery extends StatelessWidget {
           borderRadius: BorderRadius.circular(radius),
           child: AspectRatio(
             aspectRatio: 16 / 9,
-            child: Image.network(imgs.first, fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox()),
+            child: CachedNetworkImage(
+                imageUrl: imgs.first,
+                fit: BoxFit.cover,
+                memCacheWidth: 720,
+                fadeInDuration: const Duration(milliseconds: 120),
+                placeholder: (_, __) => Container(color: const Color(0xFFEDEFF4)),
+                errorWidget: (_, __, ___) => const SizedBox(),
+              ),
           ),
         ),
       );
@@ -51,8 +58,14 @@ class PostGallery extends StatelessWidget {
                 child: SizedBox(
                   width: w,
                   height: w,
-                  child: Image.network(imgs[i], fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const SizedBox()),
+                  child: CachedNetworkImage(
+                    imageUrl: imgs[i],
+                    fit: BoxFit.cover,
+                    memCacheWidth: 400,
+                    fadeInDuration: const Duration(milliseconds: 120),
+                    placeholder: (_, __) => Container(color: const Color(0xFFEDEFF4)),
+                    errorWidget: (_, __, ___) => const SizedBox(),
+                  ),
                 ),
               ),
             ),
