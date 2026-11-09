@@ -284,7 +284,8 @@ class _PostPageState extends State<PostPage> {
                               ),
                             )
                           else
-                            for (final c in _comments) _commentTile(c),
+                            for (var ci = 0; ci < _comments.length; ci++)
+                              _commentTile(_comments[ci], ci + 1),
                         ],
                       ),
                     ),
@@ -398,7 +399,7 @@ class _PostPageState extends State<PostPage> {
   /// 1109：称号徽章（统一炫酷样式；标题为空不渲染）
   Widget _titleBadge(String title) => TitleBadge(title, scale: 0.95);
 
-  Widget _commentTile(Map<String, dynamic> c) {
+  Widget _commentTile(Map<String, dynamic> c, [int floor = 0]) {
     final u = (c['user'] as Map?) ?? const {};
     final isReply = (int.tryParse('${c['parent_id'] ?? 0}') ?? 0) > 0;
     final canDel = UserService.instance.user?.id == int.tryParse('${c['user_id'] ?? 0}') ||
@@ -434,6 +435,22 @@ class _PostPageState extends State<PostPage> {
                               color: context.t2)),
                     ),
                     _titleBadge('${u['title'] ?? ''}'),
+                    // 楼主标识（作者自己回帖）
+                    if ('${c['user_id'] ?? 0}' == '${_post?['user_id'] ?? -1}')
+                      Container(
+                        margin: const EdgeInsets.only(left: 4),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: C.brand.withAlpha(28),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text('楼主',
+                            style: TextStyle(
+                                fontSize: 9,
+                                color: C.brand,
+                                fontWeight: FontWeight.w700)),
+                      ),
                     InlineMedals(
                       medals: ((u['medals'] as List?) ?? const [])
                           .map((e) => '$e')
@@ -473,6 +490,10 @@ class _PostPageState extends State<PostPage> {
                     const SizedBox(width: 8),
                     Text('${c['time_text'] ?? ''}',
                         style: TextStyle(fontSize: 10.5, color: context.t3)),
+                    const Spacer(),
+                    if (floor > 0)
+                      Text('$floor 楼',
+                          style: TextStyle(fontSize: 10, color: context.t3.withAlpha(160))),
                   ],
                 ),
               ],
