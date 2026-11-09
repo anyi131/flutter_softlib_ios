@@ -14,6 +14,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_softlib/app/debug/self_check.dart';
+import 'package:flutter_softlib/app/utils/dl_engine.dart';
+import 'package:flutter_softlib/app/pages/app_details/app_details_logic.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_softlib/app/database/database.dart';
 import 'package:flutter_softlib/app/http/http_api.dart';
@@ -210,6 +212,11 @@ String _appVersion = '';
 Future<void> _initializeServices() async {
   // 初始化下载器
   await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
+  // ★ 1109：新下载引擎（background_downloader 多连接分段）
+  //   事件复用旧通道（AppDetailsLogic.downloadCallback → SendPort），上层零改动
+  DlEngine.onEvent = (id, status, progress) {
+    AppDetailsLogic.downloadCallback(id, status, progress);
+  };
   // 设备信息（供后台操作日志记录型号/系统版本，需求 #10）
   await DeviceInfo.init();
   await Tokens.load(); // ★ 1107g 主题令牌（失败用默认值）
