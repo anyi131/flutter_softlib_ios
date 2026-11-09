@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../api/forum_service.dart';
 import '../../../design/app_anim.dart';
 import '../admin_ui_kit.dart';
 import '../../../design/kit.dart';
+import '../../navigate/circle/post_page.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
 import '../../../utils/err_text.dart';
@@ -199,19 +201,19 @@ class _AdminForumTabState extends State<AdminForumTab> {
                         Text('${s['name'] ?? ''}',
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.t1)),
                         const SizedBox(height: 3),
-                        Row(children: [
+                        const SizedBox(height: 4),
+                        Wrap(spacing: 5, runSpacing: 4, children: [
                           Pill('${s['post_count'] ?? 0} 帖', color: C.brand, small: true),
-                          const SizedBox(width: 5),
                           Pill('排序 ${s['sort'] ?? 0}', color: C.violet, small: true),
-                          if ('${s['descr'] ?? ''}'.isNotEmpty) ...[
-                            const SizedBox(width: 5),
-                            Flexible(
-                              child: Text('${s['descr']}',
-                                  maxLines: 1, overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(fontSize: 10.5, color: context.t3)),
-                            ),
-                          ],
+                          Pill('${s['followers'] ?? 0} 关注', color: C.cyan, small: true),
                         ]),
+                        if ('${s['descr'] ?? ''}'.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text('${s['descr']}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 10.5, color: context.t3)),
+                        ],
                       ],
                     ),
                   ),
@@ -290,21 +292,25 @@ class _AdminForumTabState extends State<AdminForumTab> {
                         style: TextStyle(fontSize: 10.5, color: context.t3)),
                   ]),
                   const SizedBox(height: 9),
-                  Row(
-                    children: [
-                      _chip(p['is_top'] == 1 ? '取消置顶' : '置顶', () => _postAction(p, 'top')),
-                      const SizedBox(width: 8),
-                      _chip(p['status'] == 1 ? '隐藏' : '恢复显示', () => _postAction(p, 'hide')),
-                      const Spacer(),
-                      _chip('删除', () => _postAction(p, 'del'), danger: true),
-                    ],
-                  ),
+                  Wrap(spacing: 8, runSpacing: 6, children: [
+                    _chip('查看', () => _openPost(p)),
+                    _chip(p['is_top'] == 1 ? '取消置顶' : '置顶', () => _postAction(p, 'top')),
+                    _chip(p['status'] == 1 ? '隐藏' : '恢复显示', () => _postAction(p, 'hide')),
+                    _chip('删除', () => _postAction(p, 'del'), danger: true),
+                  ]),
                 ],
               ),
             ),
         ],
       ),
     );
+  }
+
+  /// 1109：后台直接打开帖子（跳到前台详情页）
+  void _openPost(Map<String, dynamic> p) {
+    final id = int.tryParse('${p['id']}') ?? 0;
+    if (id <= 0) return;
+    Get.to(() => PostPage(postId: id));
   }
 
   Widget _stat(String label, String value, Color color) {
