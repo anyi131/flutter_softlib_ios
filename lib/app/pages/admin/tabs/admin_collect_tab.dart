@@ -1590,6 +1590,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
         catId: batch['cat_id'] as int?,
         isVip: batch['is_vip'] as int?,
         vipPrice: batch['vip_price'] as String?,
+        autoCat: batch['auto_cat'] == true, // ★ 1109 按名称自动分类
       );
       ToastUtil.success('已导入 ${r['added']} 条，跳过重复 ${r['skipped']} 条');
       setState(() {
@@ -1610,6 +1611,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
     } catch (_) {}
     int? catId; // null = 不设置（走服务端默认）
     bool isVip = false;
+    bool autoCat = false; // 1109：按名称自动分类
     final price = TextEditingController();
     final go = await Get.dialog<bool>(
       Dialog(
@@ -1629,6 +1631,35 @@ class _AdminCollectTabState extends State<AdminCollectTab>
                 style: Ty.tiny.copyWith(color: ctx.t3),
               ),
               const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: C.gold.withAlpha(20),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: C.gold.withAlpha(70)),
+                ),
+                child: Row(children: [
+                  const Icon(Lz.sparkles, size: 18, color: C.gold),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('按名称自动分类',
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                        Text('含「正能量」→ 学习资料 · 会员 ¥2',
+                            style: Ty.tiny.copyWith(color: ctx.t3)),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: autoCat,
+                    activeThumbColor: C.gold,
+                    onChanged: (v) => setD(() => autoCat = v),
+                  ),
+                ]),
+              ),
+              const SizedBox(height: 10),
               DropdownButtonFormField<int>(
                 initialValue: catId,
                 decoration: const InputDecoration(
@@ -1704,6 +1735,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
       'cat_id': ?catId,
       'is_vip': isVip ? 1 : 0,
       if (isVip) 'vip_price': price.text.trim(),
+      'auto_cat': autoCat, // ★ 1109
     };
   }
 
