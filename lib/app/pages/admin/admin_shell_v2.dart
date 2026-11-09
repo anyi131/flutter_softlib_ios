@@ -51,6 +51,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
     ('订单', Lz.receipt, '数据'),
     ('采集', Lz.downloadCloud, '运营'),
     ('内容', Lz.fileText, '内容'),
+    ('任务', Lz.trophy, '运营'),
     ('界面', Lz.palette, '系统'),
     ('日志', Lz.history, '系统'),
     ('配置', Lz.slidersHorizontal, '系统'),
