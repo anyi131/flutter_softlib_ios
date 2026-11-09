@@ -38,6 +38,7 @@ import '../../api/soft_service.dart';
 import '../../api/user_service.dart';
 import '../../utils/apk_installer.dart';
 import '../../utils/download_dir.dart';
+import '../../utils/dl_engine.dart';
 import '../../utils/lzy_local_parser.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
@@ -1245,14 +1246,22 @@ class AppDetailsLogic extends GetxController {
         if (alive != null && alive.isNotEmpty) dlUrl = alive;
       }
     } catch (_) {}
-    final newTaskId = await FlutterDownloader.enqueue(
-      url: dlUrl,
-      fileName: fileName,
-      savedDir: await DownloadDir.path(),
-      showNotification: true,
-      saveInPublicStorage: false,
-      openFileFromNotification: true,
-    );
+    final _savedDir0 = await DownloadDir.path();
+    // ★ 1109：优先多连接分段下载（background_downloader），失败自动回退旧引擎
+    final newTaskId = await DlEngine.enqueue(
+          url: dlUrl,
+          fileName: fileName,
+          savedDir: _savedDir0,
+          expectedBytes: (_fileSizeMb() * 1024 * 1024).round(),
+        ) ??
+        await FlutterDownloader.enqueue(
+          url: dlUrl,
+          fileName: fileName,
+          savedDir: _savedDir0,
+          showNotification: true,
+          saveInPublicStorage: false,
+          openFileFromNotification: true,
+        );
     if (newTaskId == null) {
       ResolveOverlay.dismiss();
       ToastUtil.error('下载失败，请稍后重试');
@@ -1570,14 +1579,20 @@ class AppDetailsLogic extends GetxController {
           );
         }
       } catch (_) {}
-      final nid = await FlutterDownloader.enqueue(
-        url: _proxyFallbackUrl,
-        fileName: name,
-        savedDir: await DownloadDir.path(),
-        showNotification: true,
-        saveInPublicStorage: false,
-        openFileFromNotification: true,
-      );
+      final _dirP = await DownloadDir.path();
+      final nid = await DlEngine.enqueue(
+            url: _proxyFallbackUrl,
+            fileName: name,
+            savedDir: _dirP,
+          ) ??
+          await FlutterDownloader.enqueue(
+            url: _proxyFallbackUrl,
+            fileName: name,
+            savedDir: _dirP,
+            showNotification: true,
+            saveInPublicStorage: false,
+            openFileFromNotification: true,
+          );
       if (nid == null) return false;
       try {
         await downloadTaskDao.setDownloadTask(
@@ -1739,7 +1754,12 @@ class AppDetailsLogic extends GetxController {
           );
         } catch (_) {}
       }
-      final nt = await FlutterDownloader.enqueue(
+      final nt = await DlEngine.enqueue(
+            url: target,
+            fileName: item?.title != null ? '${item!.title}.apk' : 'download.apk',
+            savedDir: await DownloadDir.path(),
+          ) ??
+          await FlutterDownloader.enqueue(
         url: target,
         savedDir: await DownloadDir.path(),
         fileName: appInfo?.fileName ?? '',
