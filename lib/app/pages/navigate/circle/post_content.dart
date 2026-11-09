@@ -75,7 +75,7 @@ class PostContent extends StatelessWidget {
     s = s.replaceAll(RegExp(r'</\s*(strong|b)\s*>', caseSensitive: false), '**');
     s = s.replaceAll(RegExp(r'<\s*hr\s*/?>', caseSensitive: false), '\n---\n');
     s = s.replaceAllMapped(
-        RegExp(r'<\s*img[^>]*src=["\']([^"\']+)["\'][^>]*>', caseSensitive: false),
+        RegExp(r'''<\s*img[^>]*src=["']([^"']+)["'][^>]*>''', caseSensitive: false),
         (m) => '\n![](${m.group(1)})\n');
     s = _strip(s);
 
