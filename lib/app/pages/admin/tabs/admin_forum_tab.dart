@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../api/forum_service.dart';
 import '../../../design/app_anim.dart';
 import '../admin_ui_kit.dart';
+import '../../../design/kit.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
 import '../../../utils/err_text.dart';
@@ -128,38 +129,89 @@ class _AdminForumTabState extends State<AdminForumTab> {
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+    final totalPosts = _sections.fold<int>(
+        0, (s, x) => s + ((x['post_count'] as num?)?.toInt() ?? 0));
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 30),
         children: [
+          // ── 统计头 ──
           Row(
             children: [
-              Text('板块', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.t1)),
+              Expanded(child: _stat('板块', '${_sections.length}', C.brand)),
+              const SizedBox(width: 10),
+              Expanded(child: _stat('帖子', '$totalPosts', C.violet)),
+              const SizedBox(width: 10),
+              Expanded(child: _stat('待处理', '${_posts.where((p) => p['status'] != 1).length}', C.warning)),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // ── 板块 ──
+          Row(
+            children: [
+              Container(width: 3, height: 15,
+                  decoration: BoxDecoration(color: C.brand, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 7),
+              Text('板块管理', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.t1)),
               const Spacer(),
-              TextButton.icon(
-                onPressed: () => _editSection(),
-                icon: Icon(Lz.plus, size: 16, color: C.brand),
-                label: Text('新增', style: TextStyle(fontSize: 12.5, color: C.brand)),
+              AppPressable(
+                onTap: () => _editSection(),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  decoration: BoxDecoration(
+                      color: C.brand.withAlpha(22), borderRadius: BorderRadius.circular(99)),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Lz.plus, size: 14, color: C.brand),
+                    const SizedBox(width: 3),
+                    Text('新增', style: TextStyle(fontSize: 12, color: C.brand, fontWeight: FontWeight.w700)),
+                  ]),
+                ),
               ),
             ],
           ),
+          const SizedBox(height: 10),
           for (final s in _sections)
             AdCard(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
+                  Container(
+                    width: 38, height: 38,
+                    decoration: BoxDecoration(
+                      color: C.brand.withAlpha(20),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${s['name'] ?? ''}'.isEmpty ? '版' : '${s['name']}'.substring(0, 1),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: C.brand),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('${s['name'] ?? ''}',
-                            style: TextStyle(
-                                fontSize: 13.5, fontWeight: FontWeight.w800, color: context.t1)),
-                        const SizedBox(height: 2),
-                        Text('${s['post_count'] ?? 0} 帖 · 排序 ${s['sort'] ?? 0}',
-                            style: TextStyle(fontSize: 11, color: context.t3)),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.t1)),
+                        const SizedBox(height: 3),
+                        Row(children: [
+                          Pill('${s['post_count'] ?? 0} 帖', color: C.brand, small: true),
+                          const SizedBox(width: 5),
+                          Pill('排序 ${s['sort'] ?? 0}', color: C.violet, small: true),
+                          if ('${s['descr'] ?? ''}'.isNotEmpty) ...[
+                            const SizedBox(width: 5),
+                            Flexible(
+                              child: Text('${s['descr']}',
+                                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 10.5, color: context.t3)),
+                            ),
+                          ],
+                        ]),
                       ],
                     ),
                   ),
@@ -174,66 +226,96 @@ class _AdminForumTabState extends State<AdminForumTab> {
                 ],
               ),
             ),
-          const SizedBox(height: 8),
-          Text('帖子', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.t1)),
-          const SizedBox(height: 6),
+          const SizedBox(height: 16),
+
+          // ── 帖子 ──
+          Row(
+            children: [
+              Container(width: 3, height: 15,
+                  decoration: BoxDecoration(color: C.violet, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 7),
+              Text('帖子审核', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.t1)),
+              const Spacer(),
+              Text('${_posts.length} 条', style: TextStyle(fontSize: 11, color: context.t3)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (_posts.isEmpty)
+            AdCard(
+              padding: const EdgeInsets.symmetric(vertical: 34),
+              child: Center(
+                child: Column(children: [
+                  Icon(Lz.messageCircle, size: 34, color: context.t3.withAlpha(90)),
+                  const SizedBox(height: 8),
+                  Text('暂无帖子', style: TextStyle(fontSize: 12.5, color: context.t3)),
+                ]),
+              ),
+            ),
           for (final p in _posts)
             AdCard(
               margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(12, 11, 12, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      if (p['is_top'] == 1)
-                        Container(
-                          margin: const EdgeInsets.only(right: 6),
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                          decoration: BoxDecoration(
-                              color: C.brand.withAlpha(30),
-                              borderRadius: BorderRadius.circular(4)),
-                          child: Text('置顶',
-                              style: TextStyle(fontSize: 9.5, color: C.brand)),
-                        ),
-                      if (p['status'] != 1)
-                        Container(
-                          margin: const EdgeInsets.only(right: 6),
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                          decoration: BoxDecoration(
-                              color: C.danger.withAlpha(30),
-                              borderRadius: BorderRadius.circular(4)),
-                          child: Text('已隐藏',
-                              style: TextStyle(fontSize: 9.5, color: C.danger)),
-                        ),
+                      if (p['is_top'] == 1) ...[
+                        Pill('置顶', color: C.gold, small: true),
+                        const SizedBox(width: 5),
+                      ],
+                      if (p['status'] != 1) ...[
+                        Pill('已隐藏', color: C.danger, small: true),
+                        const SizedBox(width: 5),
+                      ],
                       Expanded(
                         child: Text('${p['title'] ?? ''}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                fontSize: 13, fontWeight: FontWeight.w700, color: context.t1)),
+                                fontSize: 13.5, fontWeight: FontWeight.w700, color: context.t1)),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Text('${p['nickname'] ?? '匿名'} · ${p['section_name'] ?? ''} · ${p['time_text'] ?? ''}',
-                      style: TextStyle(fontSize: 11, color: context.t3)),
                   const SizedBox(height: 6),
+                  Row(children: [
+                    Icon(Lz.user, size: 12, color: context.t3),
+                    const SizedBox(width: 3),
+                    Text('${p['nickname'] ?? '匿名'}',
+                        style: TextStyle(fontSize: 11, color: context.t2)),
+                    const SizedBox(width: 8),
+                    Pill('${p['section_name'] ?? '未分类'}', color: C.brand, small: true),
+                    const SizedBox(width: 8),
+                    Text('${p['time_text'] ?? ''}',
+                        style: TextStyle(fontSize: 10.5, color: context.t3)),
+                  ]),
+                  const SizedBox(height: 9),
                   Row(
                     children: [
-                      _chip('置顶', () => _postAction(p, 'top')),
+                      _chip(p['is_top'] == 1 ? '取消置顶' : '置顶', () => _postAction(p, 'top')),
                       const SizedBox(width: 8),
-                      _chip(p['status'] == 1 ? '隐藏' : '显示', () => _postAction(p, 'hide')),
-                      const SizedBox(width: 8),
+                      _chip(p['status'] == 1 ? '隐藏' : '恢复显示', () => _postAction(p, 'hide')),
+                      const Spacer(),
                       _chip('删除', () => _postAction(p, 'del'), danger: true),
                     ],
                   ),
                 ],
               ),
             ),
-          const SizedBox(height: 30),
         ],
       ),
+    );
+  }
+
+  Widget _stat(String label, String value, Color color) {
+    return AdCard(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(children: [
+        Text(value,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: color)),
+        const SizedBox(height: 2),
+        Text(label, style: TextStyle(fontSize: 11, color: context.t3)),
+      ]),
     );
   }
 
