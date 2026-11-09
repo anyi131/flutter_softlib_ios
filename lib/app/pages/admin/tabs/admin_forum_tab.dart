@@ -200,8 +200,7 @@ class _AdminForumTabState extends State<AdminForumTab> {
                       children: [
                         Text('${s['name'] ?? ''}',
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.t1)),
-                        const SizedBox(height: 3),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 5),
                         Wrap(spacing: 5, runSpacing: 4, children: [
                           Pill('${s['post_count'] ?? 0} 帖', color: C.brand, small: true),
                           Pill('排序 ${s['sort'] ?? 0}', color: C.violet, small: true),
@@ -218,10 +217,16 @@ class _AdminForumTabState extends State<AdminForumTab> {
                     ),
                   ),
                   IconButton(
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+                    padding: EdgeInsets.zero,
                     icon: Icon(Lz.pencil, size: 18, color: context.t2),
                     onPressed: () => _editSection(s),
                   ),
                   IconButton(
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+                    padding: EdgeInsets.zero,
                     icon: const Icon(Icons.delete_outline, size: 18, color: C.danger),
                     onPressed: () => _delSection(s),
                   ),
