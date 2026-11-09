@@ -547,7 +547,8 @@ class _CircleComponentState extends State<CircleComponent> {
         ),
         const SizedBox(height: 10),
         SizedBox(
-          height: 86,
+          // 1109：加了称号徽章后 86 不够，底部昵称/积分被裁 → 110
+          height: 110,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
