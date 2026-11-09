@@ -1121,6 +1121,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
       ('split', '左右分栏'),
       ('greeting', '时段问候'),
       ('poster_center', '居中海报'),
+      ('hero_dark', '暗夜品牌'),
       ('brand_bar', '品牌底条'),
     ],
     _splashTemplate,
