@@ -8,6 +8,7 @@ import '../../../design/title_badge.dart';
 import '../../../design/ui.dart';
 import 'forum_gallery.dart';
 import 'post_content.dart';
+import 'user_space_page.dart';
 import '../../../design/user_medals.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';
@@ -119,16 +120,47 @@ class _PostPageState extends State<PostPage> {
                       child: ListView(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                         children: [
-                          Text('${p['title'] ?? ''}',
-                              style: TextStyle(
-                                  fontSize: 19, fontWeight: FontWeight.w900, color: context.t1, height: 1.35)),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if ('${p['is_top'] ?? 0}' == '1') ...[
+                                Container(
+                                  margin: const EdgeInsets.only(top: 3, right: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: C.danger.withAlpha(28),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Text('置顶',
+                                      style: TextStyle(
+                                          fontSize: 9.5,
+                                          color: C.danger,
+                                          fontWeight: FontWeight.w800)),
+                                ),
+                              ],
+                              Expanded(
+                                child: Text('${p['title'] ?? ''}',
+                                    style: TextStyle(
+                                        fontSize: 19,
+                                        fontWeight: FontWeight.w900,
+                                        color: context.t1,
+                                        height: 1.35)),
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 8),
                           // 1109：作者行改成两行（昵称弹性 + 元信息下移），
                           //   原来 7 个元素挤一行必然溢出/被裁。
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              CircleAvatar(
+                              GestureDetector(
+                                onTap: () => Get.to(() => UserSpacePage(
+                                      user: Map<String, dynamic>.from(
+                                          (p['user'] as Map?) ?? const {}),
+                                    )),
+                                child: CircleAvatar(
                                 radius: 18,
                                 backgroundColor: C.brand.withAlpha(30),
                                 backgroundImage:
@@ -138,6 +170,7 @@ class _PostPageState extends State<PostPage> {
                                 child: '${((p['user'] as Map?)?['avatar'] ?? '')}'.isEmpty
                                     ? Icon(Lz.user, size: 18, color: C.brand)
                                     : null,
+                              ),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
@@ -465,6 +498,39 @@ class _PostPageState extends State<PostPage> {
                   ],
                 ),
                 const SizedBox(height: 3),
+                // 引用被回复的评论（葫芦侠同款灰底块）
+                if (c['ref'] is Map) ...[
+                  Builder(builder: (_) {
+                    final ref = Map<String, dynamic>.from(c['ref'] as Map);
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.fromLTRB(10, 7, 10, 7),
+                      decoration: BoxDecoration(
+                        color: context.isDark ? C.bg3 : C.lbg1,
+                        border: Border(
+                            left: BorderSide(
+                                color: C.brand.withAlpha(150), width: 2.5)),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('回复 ${ref['nick'] ?? ''}',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: C.brand)),
+                          const SizedBox(height: 2),
+                          Text('${ref['text'] ?? ''}',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 11.5, color: context.t3, height: 1.4)),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
                 Text('${c['content'] ?? ''}',
                     style: TextStyle(fontSize: 13, height: 1.5, color: context.t1)),
                 const SizedBox(height: 4),
