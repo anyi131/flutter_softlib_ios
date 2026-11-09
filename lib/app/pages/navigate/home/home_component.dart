@@ -173,63 +173,6 @@ class _HomeComponentState extends State<HomeComponent> {
     } catch (_) {}
   }
 
-  Widget _featureRow() {
-    if (_featList.isEmpty) return const SizedBox.shrink();
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 10, 0, 4),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: Row(children: [
-            Container(width: 3, height: 14, decoration: BoxDecoration(color: C.gold, borderRadius: BorderRadius.circular(2))),
-            const SizedBox(width: 7),
-            Text('推荐功能', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.t1)),
-            const Spacer(),
-            Text('右滑查看', style: TextStyle(fontSize: 10.5, color: context.t3)),
-          ]),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 76,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: _featList.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
-            itemBuilder: (context, i) {
-              final it = _featList[i];
-              final name = '${it['name'] ?? ''}';
-              final color = Color(int.parse('${it['color'] ?? '#C9A227'}'.replaceFirst('#', '0xFF')));
-              return GestureDetector(
-                onTap: () {
-                  final t = '${it['target'] ?? ''}';
-                  if (t.startsWith('/')) Get.toNamed(t);
-                },
-                child: SizedBox(
-                  width: 68,
-                  child: Column(children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: color.withAlpha(26),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: color.withAlpha(60)),
-                      ),
-                      child: Icon(Lz.calendar, size: 22, color: color),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 10.5, color: context.t2)),
-                  ]),
-                ),
-              );
-            },
-          ),
-        ),
-      ]),
-    );
-  }
-
   Widget _homeBodyInner(int _) {
     _ensureFeat();
     final uiCfg =
@@ -375,6 +318,9 @@ class _HomeComponentState extends State<HomeComponent> {
             SliverToBoxAdapter(child: _storeLatest()),
             SliverToBoxAdapter(child: _storeEditor()),
             if (uiCfg.featureNotice) SliverToBoxAdapter(child: _notice()),
+            if (uiCfg.featureReferral)
+              SliverToBoxAdapter(
+                  child: _sectionHead('全部软件', Icons.apps, '持续更新')),
             if (uiCfg.featureReferral) _storeGrid(),
             tail,
           ],
@@ -1746,6 +1692,35 @@ class _HomeComponentState extends State<HomeComponent> {
 
   // ───────── ② 搜索 ─────────
 
+  /// 1109：通用区块头（左竖条 + 图标 + 标题 + 右侧说明）
+  Widget _sectionHead(String title, IconData icon, [String? trailing]) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 9),
+      child: Row(
+        children: [
+          Container(
+            width: 3,
+            height: 15,
+            decoration: BoxDecoration(
+                color: C.brand, borderRadius: BorderRadius.circular(2)),
+          ),
+          const SizedBox(width: 7),
+          Icon(icon, size: 15, color: C.brand),
+          const SizedBox(width: 5),
+          Text(title,
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.2,
+                  color: context.t1)),
+          const Spacer(),
+          if (trailing != null && trailing.isNotEmpty)
+            Text(trailing, style: TextStyle(fontSize: 11, color: context.t3)),
+        ],
+      ),
+    );
+  }
+
   /// 1108z18：新上架横滑数据
   Future<void> _ensureLatest() async {
     if (_latestApps.isNotEmpty) return;
@@ -1789,6 +1764,13 @@ class _HomeComponentState extends State<HomeComponent> {
                   color: context.isDark ? C.bg2 : Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: context.isDark ? C.bg3 : C.lbg2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(context.isDark ? 40 : 10),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Column(children: [
                   Stack(children: [
@@ -1811,7 +1793,7 @@ class _HomeComponentState extends State<HomeComponent> {
                   const SizedBox(height: 5),
                   Text('${a.title ?? ''}', maxLines: 1, overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: context.t1)),
-                  Text('${a.versionName ?? ''}', maxLines: 1, overflow: TextOverflow.ellipsis,
+                  Text('${a.size ?? ''} · ${a.downCount ?? 0}次', maxLines: 1, overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 9, color: context.t3)),
                 ]),
               ),
@@ -1825,7 +1807,9 @@ class _HomeComponentState extends State<HomeComponent> {
   /// 1108z18：编辑推荐大卡
   Widget _storeEditor() {
     if (_latestApps.isEmpty) return const SizedBox.shrink();
-    final a = _latestApps.reduce((x, y) => ((x.views ?? 0) as int) >= ((y.views ?? 0) as int) ? x : y);
+    final sorted = List<dynamic>.from(_latestApps)
+      ..sort((x, y) => ((y.downCount ?? 0) as int).compareTo((x.downCount ?? 0) as int));
+    final a = sorted.first;
     final icon = '${a.icon ?? ''}';
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -1868,67 +1852,6 @@ class _HomeComponentState extends State<HomeComponent> {
           ),
         ]),
       ]),
-    );
-  }
-
-  /// 1108z14：FastApp 风格三张入口卡（签到 / 任务成就 / 发帖求助）
-  Widget _entryCards() {
-    final items = [
-      ('每日签到', '签到领积分', Lz.calendar, C.success, () => Get.toNamed(Routes.goal)),
-      ('任务与成就', '领奖励拿称号', Lz.trophy, C.gold, () => Get.toNamed(Routes.goal)),
-      ('软件求助', '装不上?来问', Lz.messageCircle, C.brand, () => Get.toNamed(Routes.task)),
-    ];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-      child: Row(
-        children: [
-          for (final it in items) ...[
-            Expanded(
-              child: GestureDetector(
-                onTap: it.$5,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: context.isDark ? C.bg2 : Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: context.isDark ? C.bg3 : C.lbg2),
-                  ),
-                  child: Row(children: [
-                    Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                          color: it.$4.withAlpha(26),
-                          borderRadius: BorderRadius.circular(10)),
-                      child: Icon(it.$3, size: 17, color: it.$4),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(it.$1,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: context.t1)),
-                            Text(it.$2,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    fontSize: 9.5, color: context.t3)),
-                          ]),
-                    ),
-                  ]),
-                ),
-              ),
-            ),
-            if (it != items.last) const SizedBox(width: 8),
-          ],
-        ],
-      ),
     );
   }
 
