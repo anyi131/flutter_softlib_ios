@@ -20,6 +20,7 @@ import 'admin_template.dart';
 import 'tabs/admin_apps_tab.dart';
 import 'tabs/admin_collect_tab.dart';
 import 'tabs/admin_content_tab.dart';
+import 'tabs/admin_goal_tab.dart';
 import 'tabs/admin_jicun_tab.dart';
 import 'tabs/admin_logs_tab.dart';
 import 'tabs/admin_orders_tab.dart';
@@ -127,6 +128,7 @@ class _AdminPageState extends State<AdminPage>
         AdminOrdersTab(),
         AdminCollectTab(),
         AdminContentTab(),
+        AdminGoalTab(),
         AdminUiTab(),
         AdminLogsTab(),
         AdminSplashTab(),
