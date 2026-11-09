@@ -159,11 +159,17 @@ class MineComponent extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(mainAxisSize: MainAxisSize.min, children: [
-                Text(
-                  logic.nickname.isEmpty ? '点击登录' : logic.nickname,
-                  style: Ty.h2.copyWith(color: context.t1, fontSize: 20),
+                Flexible(
+                  child: Text(
+                    logic.nickname.isEmpty ? '点击登录' : logic.nickname,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Ty.h2.copyWith(color: context.t1, fontSize: 20),
+                  ),
                 ),
                 _userTitleBadge(logic.userTitle),
+                // 1109：勋章显示在头像昵称后面
+                _MyMedalsInline(isVip: logic.isVip),
               ]),
               const SizedBox(height: 4),
               Text(
@@ -355,15 +361,8 @@ class MineComponent extends StatelessWidget {
   /// 1109：所有「我的」模板统一入口 —— 在标题下方插入勋章条，
   ///   让勋章真正「接入显示」（不只在弹窗里）。
   List<Widget> _mineBody(BuildContext context, MineLogic logic, int configVer) {
-    final inner = _mineBodyInner(context, logic, configVer);
-    if (inner.isEmpty) return inner;
-    return [
-      inner.first, // 标题行
-      const SizedBox(height: 12),
-      _MedalStrip(onTap: () => _showMedals()),
-      const SizedBox(height: 14),
-      ...inner.sublist(1),
-    ];
+    // 1109：勋章改为「头像昵称后面」的小徽章（不再顶部堆一条大横幅）
+    return _mineBodyInner(context, logic, configVer);
   }
 
   List<Widget> _mineBodyInner(BuildContext context, MineLogic logic, int configVer) {
@@ -1928,3 +1927,42 @@ class _MedalStripState extends State<_MedalStrip> {
   }
 }
 
+
+/// 1109：昵称后的小勋章（读当前用户已获得的成就）
+class _MyMedalsInline extends StatefulWidget {
+  const _MyMedalsInline({this.isVip = false});
+  final bool isVip;
+
+  @override
+  State<_MyMedalsInline> createState() => _MyMedalsInlineState();
+}
+
+class _MyMedalsInlineState extends State<_MyMedalsInline> {
+  List<String> _names = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final all = await GoalService.instance.list();
+      if (!mounted) return;
+      setState(() {
+        _names = all
+            .where((g) => g.kind == 1 && g.claimed == 1 && !g.titleMasked)
+            .map((g) => g.title)
+            .take(3)
+            .toList();
+      });
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_names.isEmpty && !widget.isVip) return const SizedBox.shrink();
+    return InlineMedals(medals: _names, isVip: widget.isVip, size: 16);
+  }
+}
