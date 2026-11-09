@@ -1,5 +1,5 @@
 import '../../design/lottie_box.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' show BubbleDownload;
+// 1109 瘦身：iconoir 只为 1 个图标引整包 → 改用项目内置 Lucide
 import '../../design/lucide.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -398,9 +398,8 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
             ),
             // ★ 1106b：空态图标换成 Iconoir（1.5px 细线风，比 Material 更轻）
             child: Center(
-              child: BubbleDownload(
-                width: 44,
-                height: 44,
+              child: Icon(Lz.download,
+                size: 44,
                 color: C.brand.withAlpha(200),
               ),
             ),
