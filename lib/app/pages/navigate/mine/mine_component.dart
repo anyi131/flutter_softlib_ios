@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../design/app_anim.dart';
 import '../../../design/title_badge.dart';
+import '../../../design/user_medals.dart';
 import '../../../utils/safe_ctx.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
@@ -351,7 +352,21 @@ class MineComponent extends StatelessWidget {
 
   // ───────── ① 头像卡 ─────────
   /// v52m #5：我的页面模板 classic / clean / gradient
+  /// 1109：所有「我的」模板统一入口 —— 在标题下方插入勋章条，
+  ///   让勋章真正「接入显示」（不只在弹窗里）。
   List<Widget> _mineBody(BuildContext context, MineLogic logic, int configVer) {
+    final inner = _mineBodyInner(context, logic, configVer);
+    if (inner.isEmpty) return inner;
+    return [
+      inner.first, // 标题行
+      const SizedBox(height: 12),
+      _MedalStrip(onTap: () => _showMedals()),
+      const SizedBox(height: 14),
+      ...inner.sublist(1),
+    ];
+  }
+
+  List<Widget> _mineBodyInner(BuildContext context, MineLogic logic, int configVer) {
     final tpl =
         SoftService.instance.cachedConfig?.uiConfig.mineTemplate ?? 'classic';
     if (tpl == 'gradient') {
@@ -1382,7 +1397,7 @@ class MineComponent extends StatelessWidget {
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
                             color: ctx0.t1)),
-                    Text('已点亮 $earned / ${achs.length}',
+                    Text('已点亮 ${earned + (Get.isRegistered<MineLogic>(tag: 'mine') && Get.find<MineLogic>(tag: 'mine').isVip ? 1 : 0)} / ${achs.length + 1}',
                         style: TextStyle(fontSize: 11, color: ctx0.t3)),
                   ],
                 ),
@@ -1409,8 +1424,16 @@ class MineComponent extends StatelessWidget {
                             mainAxisSpacing: 16,
                             crossAxisSpacing: 10,
                             childAspectRatio: 0.86),
-                    itemCount: achs.length,
+                    itemCount: achs.length + 1, // 末尾固定一个「会员勋章」
                     itemBuilder: (_, i) {
+                      if (i == achs.length) {
+                        return VipMedalBadge(
+                          earned: Get.isRegistered<MineLogic>(tag: 'mine')
+                              ? (Get.find<MineLogic>(tag: 'mine').isVip)
+                              : false,
+                          size: 54,
+                        );
+                      }
                       final g = achs[i];
                       final got = g.claimed == 1;
                       return MedalBadge(
@@ -1796,3 +1819,112 @@ class _S {
   final VoidCallback onTap;
   _S(this.label, this.icon, this.color, this.onTap);
 }
+
+
+/// 1109：勋章条 —— 我的页顶部横向展示已点亮勋章
+class _MedalStrip extends StatefulWidget {
+  const _MedalStrip({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  State<_MedalStrip> createState() => _MedalStripState();
+}
+
+class _MedalStripState extends State<_MedalStrip> {
+  List<GoalItem> _achs = [];
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final all = await GoalService.instance.list();
+      if (!mounted) return;
+      setState(() {
+        _achs = all.where((g) => g.kind == 1).toList();
+        _loaded = true;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loaded = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded) return const SizedBox.shrink();
+    if (_achs.isEmpty) return const SizedBox.shrink();
+    final earned = _achs.where((g) => g.claimed == 1).toList();
+    final show = earned.isNotEmpty ? earned : _achs;
+    return AppPressable(
+      onTap: widget.onTap,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+        decoration: BoxDecoration(
+          color: context.isDark ? C.bg2 : Colors.white,
+          borderRadius: BorderRadius.circular(R.lg),
+          border: Border.all(
+            color: context.isDark ? C.bg3 : C.lbg2,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Icon(Icons.military_tech_rounded, size: 15, color: C.gold),
+              const SizedBox(width: 6),
+              Text('我的勋章',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: context.t1)),
+              const SizedBox(width: 6),
+              Text('已点亮 ${earned.length}/${_achs.length}',
+                  style: TextStyle(fontSize: 10.5, color: context.t3)),
+              const Spacer(),
+              Text('全部', style: TextStyle(fontSize: 10.5, color: context.t3)),
+              Icon(Lz.chevronRight, size: 12, color: context.t3),
+            ]),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 74,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: show.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                itemBuilder: (_, i) {
+                  final g = show[i];
+                  final got = g.claimed == 1;
+                  return MedalBadge(
+                    name: g.titleMasked && !got ? '神秘成就' : g.title,
+                    icon: _iconFor(g),
+                    earned: got,
+                    size: 46,
+                    rarity: g.titleMasked
+                        ? TitleRarity.legend
+                        : (got ? TitleRarity.epic : TitleRarity.common),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _iconFor(GoalItem g) {
+    final t = '${g.title}${g.category}';
+    if (t.contains('下载')) return Lz.download;
+    if (t.contains('购买') || t.contains('消费')) return Lz.wallet;
+    if (t.contains('签到') || t.contains('登录')) return Lz.calendar;
+    if (t.contains('邀请')) return Lz.users;
+    if (t.contains('评论') || t.contains('发帖')) return Lz.messageCircle;
+    if (t.contains('狂') || t.contains('神')) return Lz.flame;
+    return Lz.trophy;
+  }
+}
+
