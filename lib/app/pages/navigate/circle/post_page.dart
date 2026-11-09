@@ -380,34 +380,52 @@ class _PostPageState extends State<PostPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 1109：昵称弹性收缩，时间挪到操作行 —— 原来 4 个元素挤一行必溢出
                 Row(
                   children: [
-                    Text('${u['nickname'] ?? '匿名'}',
-                        style: TextStyle(
-                            fontSize: 11.5, fontWeight: FontWeight.w700, color: context.t2)),
+                    Flexible(
+                      child: Text('${u['nickname'] ?? '匿名'}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: context.t2)),
+                    ),
                     _titleBadge('${u['title'] ?? ''}'),
-                    if ('${u['is_admin'] ?? 0}' == '1') _adminBadge() else if ('${u['is_vip'] ?? 0}' == '1') _vipBadge(),
-                    const SizedBox(width: 6),
-                    Text('${c['time_text'] ?? ''}',
-                        style: TextStyle(fontSize: 10, color: context.t3)),
+                    if ('${u['is_admin'] ?? 0}' == '1')
+                      _adminBadge()
+                    else if ('${u['is_vip'] ?? 0}' == '1')
+                      _vipBadge(),
                   ],
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text('${c['content'] ?? ''}',
                     style: TextStyle(fontSize: 13, height: 1.5, color: context.t1)),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _replyTo = int.tryParse('${c['id']}') ?? 0;
-                      _replyName = '${u['nickname'] ?? ''}';
-                    });
-                    FocusScope.of(context).requestFocus(FocusNode());
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 3),
-                    child: Text('回复',
-                        style: TextStyle(fontSize: 11, color: C.brand)),
-                  ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _replyTo = int.tryParse('${c['id']}') ?? 0;
+                          _replyName = '${u['nickname'] ?? ''}';
+                        });
+                        FocusScope.of(context).requestFocus(FocusNode());
+                      },
+                      child: Text('回复',
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: C.brand)),
+                    ),
+                    const SizedBox(width: 8),
+                    Text('·',
+                        style: TextStyle(fontSize: 11, color: context.t3.withAlpha(120))),
+                    const SizedBox(width: 8),
+                    Text('${c['time_text'] ?? ''}',
+                        style: TextStyle(fontSize: 10.5, color: context.t3)),
+                  ],
                 ),
               ],
             ),
