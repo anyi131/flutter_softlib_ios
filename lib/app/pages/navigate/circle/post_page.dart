@@ -104,6 +104,8 @@ class _PostPageState extends State<PostPage> {
   Widget build(BuildContext context) {
     final p = _post;
     return Scaffold(
+      // 1109：键盘手动抬升（系统缩放会把内容挤压且收不回）
+      resizeToAvoidBottomInset: false,
       backgroundColor: context.isDark ? C.bg0 : C.lbg0,
       appBar: AppBar(
         title: Text('${p?['section_name'] ?? '帖子'}', style: const TextStyle(fontSize: 15)),
@@ -118,6 +120,8 @@ class _PostPageState extends State<PostPage> {
                   children: [
                     Expanded(
                       child: ListView(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                         children: [
                           Row(
@@ -322,7 +326,12 @@ class _PostPageState extends State<PostPage> {
                         ],
                       ),
                     ),
-                    SafeArea(
+                    AnimatedPadding(
+                      duration: const Duration(milliseconds: 160),
+                      curve: Curves.easeOut,
+                      padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom),
+                      child: SafeArea(
                       top: false,
                       child: Container(
                         padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -375,6 +384,7 @@ class _PostPageState extends State<PostPage> {
                           ],
                         ),
                       ),
+                    ),
                     ),
                   ],
                 ),
