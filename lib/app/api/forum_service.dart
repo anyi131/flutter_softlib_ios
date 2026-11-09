@@ -80,6 +80,7 @@ class ForumService {
     int page = 1,
     int limit = 15,
     String kw = '',
+    int userId = 0,
   }) async {
     try {
       final r = await _dio.get('/api/softlib/forum/post_list', queryParameters: {
@@ -88,6 +89,7 @@ class ForumService {
         'page': page,
         'limit': limit,
         if (kw.isNotEmpty) 'kw': kw,
+        if (userId > 0) 'user_id': userId,
       });
       final d = r.data;
       if (d is Map && d['code'] == 1 && d['data'] is Map) {
