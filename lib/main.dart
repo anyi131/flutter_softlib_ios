@@ -13,13 +13,11 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_softlib/app/debug/self_check.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_softlib/app/database/database.dart';
 import 'package:flutter_softlib/app/http/http_api.dart';
 import 'package:get/get.dart';
-import 'package:flutter_quill/flutter_quill.dart' show FlutterQuillLocalizations;
 
 import 'app/routes/app_pages.dart';
 import 'app/design/tokens.dart';
@@ -44,18 +42,6 @@ Future<void> main() async {
   // ★ 全局错误捕获：任何未捕获异常都不应导致白屏/闪退
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
-    // ★ 1031r sentry_flutter：DSN 为空时完全跳过初始化（零开销）
-    if (kSentryDsn.isNotEmpty) {
-      await SentryFlutter.init(
-        (options) {
-          options.dsn = kSentryDsn;
-          options.environment = kSentryEnv;
-          options.tracesSampleRate = 0.2;
-          options.sendDefaultPii = false;
-          options.attachScreenshot = false;
-        },
-      );
-    }
     // ★ 1016：音效开关读取（本地偏好）
     unawaited(SoundUtil.init());
     // ★ 1028：即存的本机偏好（自动粘贴/存储目录/通知开关）提前读，首屏即可用
@@ -185,12 +171,6 @@ bool _looksLikeImage(String e) =>
     e.contains('picurl') ||
     e.contains('cover');
 
-// ★ 1031r sentry_flutter：全局崩溃收集
-//   填入 DSN 即启用（SDK 初始化 + 原生崩溃钩子自动挂载）；
-//   为空时 SDK 不初始化，所有 Sentry 调用均为 no-op、零开销零发包。
-const String kSentryDsn = '';
-const String kSentryEnv = 'prod';
-
 void _logError(String tag, Object error, StackTrace? stack) {
   debugPrint('[Softlib][$tag] $error');
   if (stack != null) debugPrint(stack.toString());
@@ -209,10 +189,6 @@ void _logError(String tag, Object error, StackTrace? stack) {
   if (n >= 3) return; // 同一错误最多报 3 次，防刷屏
   _reportSeen[key] = n + 1;
   _reportCount++;
-  // ★ 1031r：同步转发到 Sentry（未初始化时内部 no-op）
-  try {
-    Sentry.captureException(error, stackTrace: stack);
-  } catch (_) {}
   try {
     // 不 await（避免阻塞 UI），但立即发起；异常自己吞掉
     SoftService.reportLogStatic(
@@ -423,7 +399,6 @@ class SoftLibApp extends StatelessWidget {
           GlobalMaterialLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
-          FlutterQuillLocalizations.delegate,
         ],
         supportedLocales: const [Locale("zh", "CN"), Locale("en", "US")],
         locale: const Locale("zh", "CN"),
