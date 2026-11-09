@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../api/forum_service.dart';
 import '../../../api/user_service.dart';
 import '../../../design/app_anim.dart';
+import '../../../design/adaptive.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
 import '../../../design/title_badge.dart';
@@ -92,17 +93,17 @@ class _CircleComponentState extends State<CircleComponent> {
                 SliverToBoxAdapter(child: _sectionTitle()),
                 SliverToBoxAdapter(child: _boardGrid()),
               ],
+              // 1109：用户榜独立区块（原来塞在帖子卡里，把布局挤乱）
+              SliverToBoxAdapter(child: _userRank()),
               if (_posts.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
+                    padding: const EdgeInsets.fromLTRB(12, 16, 12, 6),
                     child: Text('最新帖子',
                         style: TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w800, color: context.t2)),
                   ),
                 ),
-              // 1109：底部留白（玻璃底栏悬浮，列表末尾要能滚出来）
-              const SliverToBoxAdapter(child: SizedBox(height: 110)),
               if (_loading)
                 const SliverToBoxAdapter(child: SkeletonPosts())
               else if (_posts.isEmpty)
@@ -125,9 +126,8 @@ class _CircleComponentState extends State<CircleComponent> {
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
-                        // ★ 1109：这里原来又渲染了一遍板块网格（_secGrid），
-                        //   和上方「逛板块」重复 → 屏幕里板块出现两次。已移除。
-                        _userRank(),
+                        // 1109：用户榜已提到帖子列表之前独立成块
+
                         for (int i = 0; i < _posts.length; i++) ...[
                           if (i > 0)
                             Divider(
@@ -143,7 +143,8 @@ class _CircleComponentState extends State<CircleComponent> {
                     ),
                   ),
                 ),
-              const SliverToBoxAdapter(child: SizedBox(height: 30)),
+              // 玻璃底栏悬浮：末尾留出 tab 高度，避免最后一条被挡住
+              SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 16)),
             ],
           ),
         ),
