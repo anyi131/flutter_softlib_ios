@@ -896,6 +896,22 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                                         Pill('置顶', color: C.gold, small: true),
                                         const SizedBox(width: 6),
                                       ],
+                                      // ★ 1109 需求1：显示所属分类
+                                      if ('${a['cat_title'] ?? ''}'.isNotEmpty) ...[
+                                        Pill('${a['cat_title']}', color: C.violet, small: true),
+                                        const SizedBox(width: 6),
+                                      ],
+                                      // ★ 1109：会员专享 + 价格标识
+                                      if ('${a['is_vip'] ?? 0}' == '1') ...[
+                                        Pill(
+                                          '${a['vip_price'] ?? ''}'.isEmpty
+                                              ? '会员'
+                                              : '会员 ¥${a['vip_price']}',
+                                          color: C.rose,
+                                          small: true,
+                                        ),
+                                        const SizedBox(width: 6),
+                                      ],
                                       Pill(
                                         isLocal ? '服务器' : '蓝奏云',
                                         color: isLocal ? C.cyan : C.gold,
