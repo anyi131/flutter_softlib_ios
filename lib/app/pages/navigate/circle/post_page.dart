@@ -106,11 +106,12 @@ class _PostPageState extends State<PostPage> {
     return Scaffold(
       // 1109：键盘手动抬升（系统缩放会把内容挤压且收不回）
       resizeToAvoidBottomInset: false,
-      backgroundColor: context.isDark ? C.bg0 : C.lbg0,
+      backgroundColor: context.isDark ? C.bg0 : Colors.white,
       appBar: AppBar(
         title: Text('${p?['section_name'] ?? '帖子'}', style: const TextStyle(fontSize: 15)),
-        backgroundColor: context.isDark ? C.bg0 : C.lbg0,
+        backgroundColor: context.isDark ? C.bg0 : Colors.white,
         surfaceTintColor: Colors.transparent,
+        elevation: 0,
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
@@ -146,7 +147,7 @@ class _PostPageState extends State<PostPage> {
                               Expanded(
                                 child: Text('${p['title'] ?? ''}',
                                     style: TextStyle(
-                                        fontSize: 19,
+                                        fontSize: 20.5,
                                         fontWeight: FontWeight.w900,
                                         color: context.t1,
                                         height: 1.35)),
@@ -270,7 +271,7 @@ class _PostPageState extends State<PostPage> {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          Divider(color: context.isDark ? Colors.white12 : Colors.black12),
+                          const SizedBox(height: 6),
                           Text('评论 ${_comments.length}',
                               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: context.t1)),
                           const SizedBox(height: 6),
@@ -346,6 +347,7 @@ class _PostPageState extends State<PostPage> {
                             Expanded(
                               child: TextField(
                                 controller: _input,
+                                onTapOutside: (_) => FocusScope.of(context).unfocus(),
                                 minLines: 1,
                                 maxLines: 3,
                                 style: TextStyle(fontSize: 13, color: context.t1),
