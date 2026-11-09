@@ -1408,7 +1408,7 @@ class MineComponent extends StatelessWidget {
                             crossAxisCount: 4,
                             mainAxisSpacing: 16,
                             crossAxisSpacing: 10,
-                            childAspectRatio: 0.78),
+                            childAspectRatio: 0.86),
                     itemCount: achs.length,
                     itemBuilder: (_, i) {
                       final g = achs[i];
