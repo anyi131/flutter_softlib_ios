@@ -47,6 +47,12 @@ class MineLogic extends GetxController {
 
   String nickname = '';
   String userTitle = ''; // 1108z 成就称号
+
+  /// 1108z9：本地同步称号（徽章立即更新）
+  Future<void> refreshUserTitle(String t) async {
+    userTitle = t;
+    update();
+  }
   String uid = '';
   int points = 0;
   String money = '0.00';
