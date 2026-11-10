@@ -1,6 +1,12 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import '../../app_details/url_webview_page.dart';
+import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 
 import '../../../design/ui.dart';
+import '../../../utils/toast_util.dart';
 import '../../../design/buttons.dart';
 import 'forum_gallery.dart';
 import '../../../design/video_box.dart';
@@ -15,8 +21,10 @@ class PostContent extends StatelessWidget {
   final double payNeed;
   final int payCount;
   final VoidCallback? onUnlock;
+  final bool payOwner;
+  final bool revealOwner;
 
-  const PostContent({super.key, required this.text, this.images = const [], this.payNeed = 0, this.payCount = 0, this.onUnlock});
+  const PostContent({super.key, required this.text, this.images = const [], this.payNeed = 0, this.payCount = 0, this.onUnlock, this.payOwner = false, this.revealOwner = false});
 
   static bool _looksLikeHtml(String s) {
     final t = s.trimLeft();
@@ -103,7 +111,8 @@ class PostContent extends StatelessWidget {
         border: Border.all(
             color: context.isDark ? Colors.white12 : Colors.black12),
       ),
-      child: SelectableText(
+      child: Stack(children: [
+      SelectableText(
         code.trimRight(),
         style: TextStyle(
           fontFamily: 'monospace',
@@ -112,6 +121,28 @@ class PostContent extends StatelessWidget {
           color: context.isDark ? const Color(0xFF9AE6B4) : const Color(0xFF1F6F43),
         ),
       ),
+      Positioned(
+        right: 0,
+        top: 0,
+        child: GestureDetector(
+          onTap: () async {
+            await Clipboard.setData(ClipboardData(text: code.trim()));
+            ToastUtil.success("复制代码");
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: context.isDark ? Colors.white12 : Colors.white,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                  color: context.isDark ? Colors.white24 : Colors.black12),
+            ),
+            child: Text("复制",
+                style: TextStyle(fontSize: 10, color: context.t3)),
+          ),
+        ),
+      ),
+      ]),
     );
   }
 
@@ -141,7 +172,7 @@ class PostContent extends StatelessWidget {
         ],
         if (onUnlock != null) ...[
           const SizedBox(height: 12),
-          AppBtn('立即打赏解锁', icon: Icons.card_giftcard_rounded, onTap: onUnlock),
+          AppBtn(payOwner ? '预览我的付费内容' : '立即打赏解锁', icon: Icons.card_giftcard_rounded, onTap: onUnlock),
         ],
       ]),
     );
@@ -151,11 +182,110 @@ class PostContent extends StatelessWidget {
     final out = <TextSpan>[];
     final parts = src.split('**');
     for (var i = 0; i < parts.length; i++) {
-      if (parts[i].isEmpty) continue;
-      out.add(TextSpan(text: parts[i], style: i.isOdd ? bold : base));
+      final seg = parts[i];
+      if (seg.isEmpty) continue;
+      final st = i.isOdd ? bold : base;
+      final re = RegExp(
+          r'(\[[^\]]+\]\([^)]+\)|`[^`]+`|==[^=]+==|https?://[^\s)\]]+)');
+      var last = 0;
+      for (final m in re.allMatches(seg)) {
+        if (m.start > last) {
+          out.add(TextSpan(text: seg.substring(last, m.start), style: st));
+        }
+        final tok = m.group(0)!;
+        if (tok.startsWith('[')) {
+          // [文字](链接)
+          final close = tok.indexOf('](');
+          final label = tok.substring(1, close);
+          final url = tok.substring(close + 2, tok.length - 1);
+          out.add(_linkSpan(label, url, st));
+        } else if (tok.startsWith('`')) {
+          out.add(TextSpan(
+              text: tok.substring(1, tok.length - 1),
+              style: st.copyWith(
+                  fontFamily: 'monospace',
+                  backgroundColor: const Color(0xFFEDF1F7),
+                  color: const Color(0xFFB5402F))));
+        } else if (tok.startsWith('==')) {
+          out.add(TextSpan(
+              text: tok.substring(2, tok.length - 2),
+              style: st.copyWith(backgroundColor: const Color(0xFFFFF3B0))));
+        } else {
+          out.add(_linkSpan(tok, tok, st));
+        }
+        last = m.end;
+      }
+      if (last < seg.length) {
+        out.add(TextSpan(text: seg.substring(last), style: st));
+      }
     }
     if (out.isEmpty) out.add(TextSpan(text: src, style: base));
     return out;
+  }
+
+  /// 链接：品牌色 + 下划线；点击可选「App 内打开 / 浏览器打开 / 复制」
+  static TextSpan _linkSpan(String label, String url, TextStyle st) {
+    final recognizer = TapGestureRecognizer()
+      ..onTap = () async {
+        final clean = url.trim();
+        final u = Uri.tryParse(clean);
+        if (u == null || u.scheme.isEmpty) return;
+        final ctx = Get.context;
+        if (ctx == null) return;
+        final pick = await showModalBottomSheet<String>(
+          context: ctx,
+          backgroundColor: Colors.transparent,
+          builder: (_) => Container(
+            decoration: BoxDecoration(
+              color: ctx.isDark ? const Color(0xFF14181F) : Colors.white,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(22)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                ListTile(
+                  leading: const Icon(Icons.public, size: 20),
+                  title: const Text('App 内打开',
+                      style: TextStyle(fontSize: 14)),
+                  onTap: () => Get.back(result: 'in'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.open_in_new, size: 20),
+                  title: const Text('浏览器打开',
+                      style: TextStyle(fontSize: 14)),
+                  onTap: () => Get.back(result: 'out'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.copy_rounded, size: 20),
+                  title: const Text('复制链接',
+                      style: TextStyle(fontSize: 14)),
+                  onTap: () => Get.back(result: 'copy'),
+                ),
+                const SizedBox(height: 6),
+              ]),
+            ),
+          ),
+        );
+        if (pick == 'in') {
+          Get.to(() => const UrlWebviewPage(),
+              arguments: {'url': clean, 'title': label});
+        } else if (pick == 'out') {
+          await launchUrl(u, mode: LaunchMode.externalApplication);
+        } else if (pick == 'copy') {
+          await Clipboard.setData(ClipboardData(text: clean));
+          ToastUtil.success('链接已复制');
+        }
+      };
+    return TextSpan(
+      text: label,
+      style: st.copyWith(
+        color: C.brand,
+        decoration: TextDecoration.underline,
+        decorationColor: C.brand.withAlpha(110),
+      ),
+      recognizer: recognizer,
+    );
   }
 
   static bool _isImageLine(String s) {
@@ -180,7 +310,14 @@ class PostContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final src = _looksLikeHtml(text) ? _htmlToMd(text) : text;
+    var src = _looksLikeHtml(text) ? _htmlToMd(text) : text;
+    if (src.contains('[pay]')) {
+      if (payOwner && !revealOwner) {
+        src = src.replaceAll(RegExp(r'\[pay\][\s\S]*?\[/pay\]'), '\n[[PAYLOCK]]\n');
+      } else {
+        src = src.replaceAll('[pay]', '').replaceAll('[/pay]', '');
+      }
+    }
     final base =
         TextStyle(fontSize: 15.5, height: 1.95, letterSpacing: 0.2, color: context.t1);
     final bold = base.copyWith(fontWeight: FontWeight.w800);
