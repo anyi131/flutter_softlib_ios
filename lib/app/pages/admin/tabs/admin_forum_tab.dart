@@ -243,6 +243,22 @@ class _AdminForumTabState extends State<AdminForumTab> {
               const SizedBox(width: 7),
               Text('帖子审核', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.t1)),
               const Spacer(),
+              GestureDetector(
+                onTap: _showComments,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: C.brand.withAlpha(20),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text('评论管理',
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: C.brand,
+                          fontWeight: FontWeight.w700)),
+                ),
+              ),
+              const SizedBox(width: 8),
               Text('${_posts.length} 条', style: TextStyle(fontSize: 11, color: context.t3)),
             ],
           ),
@@ -299,6 +315,7 @@ class _AdminForumTabState extends State<AdminForumTab> {
                   const SizedBox(height: 9),
                   Wrap(spacing: 8, runSpacing: 6, children: [
                     _chip('查看', () => _openPost(p)),
+                    _chip('编辑', () => _editPost(p)),
                     _chip(p['is_top'] == 1 ? '取消置顶' : '置顶', () => _postAction(p, 'top')),
                     _chip(p['status'] == 1 ? '隐藏' : '恢复显示', () => _postAction(p, 'hide')),
                     _chip('删除', () => _postAction(p, 'del'), danger: true),
@@ -308,6 +325,199 @@ class _AdminForumTabState extends State<AdminForumTab> {
             ),
         ],
       ),
+    );
+  }
+
+  /// 1109：后台编辑帖子（标题/正文/版块/置顶）——正文支持 Markdown / HTML
+  Future<void> _editPost(Map<String, dynamic> p) async {
+    final id = int.tryParse('${p['id']}') ?? 0;
+    if (id <= 0) return;
+    final titleCtrl = TextEditingController(text: '${p['title'] ?? ''}');
+    final contentCtrl = TextEditingController(text: '${p['content'] ?? ''}');
+    int secId = int.tryParse('${p['section_id'] ?? 0}') ?? 0;
+    bool isTop = p['is_top'] == 1;
+    final ok = await Get.dialog<bool>(StatefulBuilder(
+      builder: (ctx, setS) => AlertDialog(
+        title: const Text('编辑帖子',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+        content: SizedBox(
+          width: 460,
+          child: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              TextField(
+                controller: titleCtrl,
+                decoration: const InputDecoration(labelText: '标题'),
+              ),
+              const SizedBox(height: 10),
+              DropdownButtonFormField<int>(
+                value: secId,
+                decoration: const InputDecoration(labelText: '版块'),
+                items: [
+                  const DropdownMenuItem(value: 0, child: Text('未分类')),
+                  for (final s in _sections)
+                    DropdownMenuItem(
+                      value: int.tryParse('${s['id']}') ?? 0,
+                      child: Text('${s['name'] ?? ''}'),
+                    ),
+                ],
+                onChanged: (v) => setS(() => secId = v ?? 0),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: contentCtrl,
+                minLines: 8,
+                maxLines: 16,
+                style: const TextStyle(fontSize: 13, height: 1.5),
+                decoration: const InputDecoration(
+                  labelText: '正文（支持 Markdown / HTML）',
+                  helperText: '## 标题   - 列表   > 引用   | 表格 |   **粗体**',
+                ),
+              ),
+              const SizedBox(height: 6),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: isTop,
+                onChanged: (v) => setS(() => isTop = v),
+                title: const Text('置顶', style: TextStyle(fontSize: 13)),
+              ),
+            ]),
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Get.back(result: false),
+              child: const Text('取消')),
+          FilledButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    ));
+    if (ok != true) return;
+    if (titleCtrl.text.trim().isEmpty) {
+      ToastUtil.error('标题不能为空');
+      return;
+    }
+    try {
+      await ForumService.instance.adminPostSave(
+        id: id,
+        title: titleCtrl.text.trim(),
+        content: contentCtrl.text,
+        sectionId: secId,
+        isTop: isTop ? 1 : 0,
+      );
+      ToastUtil.success('已保存');
+      _load();
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  /// 1109：后台评论管理（列表 + 删除）
+  Future<void> _showComments() async {
+    final ctx0 = Get.context!;
+    final dark = ctx0.isDark;
+    List<Map<String, dynamic>> rows = [];
+    await Get.bottomSheet(
+      StatefulBuilder(builder: (ctx, setS) {
+        if (rows.isEmpty) {
+          Future.microtask(() async {
+            final r = await ForumService.instance.adminComments(page: 1);
+            if (ctx.mounted) setS(() => rows = r);
+          });
+        }
+        return Container(
+          height: MediaQuery.of(ctx0).size.height * 0.75,
+          decoration: BoxDecoration(
+            color: dark ? C.bg2 : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+          ),
+          child: Column(children: [
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              width: 38,
+              height: 4,
+              decoration: BoxDecoration(
+                  color: ctx0.t3.withAlpha(60),
+                  borderRadius: BorderRadius.circular(99)),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 0, 10, 8),
+              child: Row(children: [
+                Text('评论管理',
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: ctx0.t1)),
+                const Spacer(),
+                Text('${rows.length} 条',
+                    style: TextStyle(fontSize: 11, color: ctx0.t3)),
+                IconButton(
+                  icon: Icon(Lz.x, size: 18, color: ctx0.t3),
+                  onPressed: () => Get.back(),
+                ),
+              ]),
+            ),
+            Divider(height: 1, color: ctx0.t3.withAlpha(24)),
+            Expanded(
+              child: rows.isEmpty
+                  ? Center(
+                      child: Text('暂无评论',
+                          style:
+                              TextStyle(fontSize: 12.5, color: ctx0.t3)))
+                  : ListView.separated(
+                      itemCount: rows.length,
+                      separatorBuilder: (_, __) =>
+                          Divider(height: 1, color: ctx0.t3.withAlpha(16)),
+                      itemBuilder: (_, i) {
+                        final c = rows[i];
+                        final u = (c['user'] as Map?) ?? const {};
+                        return ListTile(
+                          dense: true,
+                          title: Row(children: [
+                            Text('${u['nickname'] ?? '匿名'}',
+                                style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: ctx0.t1)),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text('· ${c['title'] ?? ''}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      fontSize: 11, color: ctx0.t3)),
+                            ),
+                          ]),
+                          subtitle: Text('${c['content'] ?? ''}',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  TextStyle(fontSize: 12, color: ctx0.t2)),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                size: 18, color: C.danger),
+                            onPressed: () async {
+                              try {
+                                await ForumService.instance.commentDel(
+                                    int.tryParse('${c['id']}') ?? 0);
+                                setS(() => rows.removeAt(i));
+                                ToastUtil.success('已删除');
+                              } catch (e) {
+                                ToastUtil.error('删除失败');
+                              }
+                            },
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            SafeArea(top: false, child: const SizedBox(height: 6)),
+          ]),
+        );
+      }),
+      isScrollControlled: true,
     );
   }
 
