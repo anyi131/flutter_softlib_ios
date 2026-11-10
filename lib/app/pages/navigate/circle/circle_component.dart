@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -420,24 +421,39 @@ class _CircleComponentState extends State<CircleComponent> {
               ],
             ),
             const SizedBox(height: 9),
-            Text('${p['title'] ?? ''}',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: context.t1,
-                    height: 1.35)),
-            if ('${p['summary'] ?? ''}'.isNotEmpty) ...[
-              const SizedBox(height: 5),
-              Text('${p['summary']}',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 12.5, color: context.t2, height: 1.55)),
-            ],
-            if (imgs.isNotEmpty) ...[
-              const SizedBox(height: 9),
-              _images(imgs),
+            // 1109：列表卡图片三态——1张：左96px+蒙层计数；2~3张：下方横排；>3张：横排3张+末张+N
+            if (imgs.length == 1)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _listThumb(context, imgs.first, 96, '1图'),
+                  const SizedBox(width: 10),
+                  Expanded(child: _cardText(p, context)),
+                ],
+              )
+            else
+              _cardText(p, context),
+            if (imgs.length > 1) ...[
+              const SizedBox(height: 8),
+              LayoutBuilder(builder: (context, c) {
+                final w = ((c.maxWidth - 12) / 3).clamp(56.0, 120.0);
+                return Row(
+                  children: [
+                    for (int i = 0; i < 3 && i < imgs.length; i++)
+                      Padding(
+                        padding: EdgeInsets.only(
+                            right: i < 2 && imgs.length > 1 ? 6 : 0),
+                        child: _listThumb(
+                            context,
+                            imgs[i],
+                            w,
+                            imgs.length > 3 && i == 2
+                                ? '+${imgs.length - 3}'
+                                : '${i + 1}'),
+                      ),
+                  ],
+                );
+              }),
             ],
             const SizedBox(height: 9),
             Row(
