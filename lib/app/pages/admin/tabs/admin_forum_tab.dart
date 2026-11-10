@@ -119,6 +119,8 @@ class _AdminForumTabState extends State<AdminForumTab> {
     try {
       if (kind == 'top') {
         await _svc.adminPostSet(id, 'is_top', p['is_top'] == 1 ? 0 : 1);
+      } else if (kind == 'pass') {
+        await _svc.adminPostSet(id, 'status', 1);
       } else if (kind == 'hide') {
         await _svc.adminPostSet(id, 'status', p['status'] == 1 ? 0 : 1);
       } else {
@@ -261,7 +263,8 @@ class _AdminForumTabState extends State<AdminForumTab> {
                 ),
               ),
               const SizedBox(width: 8),
-              Text('${_posts.length} 条', style: TextStyle(fontSize: 11, color: context.t3)),
+              Text('待审 ${_posts.where((x) => x['status'] != 1).length} · 共 ${_posts.length}',
+                  style: TextStyle(fontSize: 11, color: context.t3)),
             ],
           ),
           const SizedBox(height: 10),
@@ -288,7 +291,7 @@ class _AdminForumTabState extends State<AdminForumTab> {
                         const SizedBox(width: 5),
                       ],
                       if (p['status'] != 1) ...[
-                        Pill('已隐藏', color: C.danger, small: true),
+                        Pill('待审核', color: C.warning, small: true),
                         const SizedBox(width: 5),
                       ],
                       Expanded(
@@ -317,7 +320,9 @@ class _AdminForumTabState extends State<AdminForumTab> {
                     _chip('查看', () => _openPost(p)),
                     _chip('编辑', () => _editPost(p)),
                     _chip(p['is_top'] == 1 ? '取消置顶' : '置顶', () => _postAction(p, 'top')),
-                    _chip(p['status'] == 1 ? '隐藏' : '恢复显示', () => _postAction(p, 'hide')),
+                    if (p['status'] != 1)
+                      _chip('通过', () => _postAction(p, 'pass'), primary: true),
+                    _chip(p['status'] == 1 ? '隐藏' : '驳回', () => _postAction(p, 'hide')),
                     _chip('删除', () => _postAction(p, 'del'), danger: true),
                   ]),
                 ],
@@ -533,8 +538,11 @@ class _AdminForumTabState extends State<AdminForumTab> {
   }
 
   /// 1109：统一走 AppChip（带图标/描边/按压反馈）
-  Widget _chip(String text, VoidCallback onTap, {bool danger = false}) {
+  Widget _chip(String text, VoidCallback onTap,
+      {bool danger = false, bool primary = false}) {
     return AppChip(text,
-        onTap: onTap, danger: danger, primary: text == '查看');
+        onTap: onTap,
+        danger: danger,
+        primary: primary || text == '查看');
   }
 }
