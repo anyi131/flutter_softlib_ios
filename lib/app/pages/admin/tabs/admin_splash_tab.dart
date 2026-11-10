@@ -14,6 +14,7 @@ import '../../../api/soft_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../design/buttons.dart';
 import '../../navigate/navigate_logic.dart';
 import '../../../utils/toast_util.dart';
 import '../../../design/lucide.dart';
@@ -1491,13 +1492,9 @@ class _AdminSplashTabState extends State<AdminSplashTab> {
                 small: true,
               ),
               const SizedBox(width: 6),
-              AppPressable(
+              AppRemoveBadge(
+                size: 20,
                 onTap: () => setState(() => _cardGoods.removeAt(i)),
-                child: const Icon(
-                  Lz.x,
-                  size: 17,
-                  color: C.danger,
-                ),
               ),
             ],
           ),
