@@ -237,13 +237,9 @@ class _PostPageState extends State<PostPage> {
                           ),
                           const SizedBox(height: 18),
                           // 1109：正文富文本（标题/列表/引用/图片/粗体）
-                          PostContent(
-                            text: '${p['content'] ?? ''}',
-                            images: ((p['images'] as List?) ?? [])
-                                .map((e) => '$e')
-                                .where((e) => e.isNotEmpty)
-                                .toList(),
-                          ),
+                          // 1109：图片交给下面的 PostGallery 统一渲染
+                          //   （那边支持点击全屏 + 长按保存），这里再传一次会重复显示两张
+                          PostContent(text: '${p['content'] ?? ''}'),
                           if ((p['images'] as List?)?.isNotEmpty == true) ...[
                             const SizedBox(height: 10),
                             PostGallery(
