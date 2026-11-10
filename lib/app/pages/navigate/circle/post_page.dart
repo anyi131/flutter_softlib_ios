@@ -212,34 +212,6 @@ class _PostPageState extends State<PostPage> {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          // 1109：版块标签放标题下方（葫芦侠式）
-                          if ('${p['section_name'] ?? ''}'.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 14),
-                              child: Row(children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: C.brand
-                                        .withAlpha(context.isDark ? 30 : 14),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text('${p['section_name']}',
-                                            style: TextStyle(
-                                                fontSize: 11.5,
-                                                color: C.brand,
-                                                fontWeight: FontWeight.w700)),
-                                        const SizedBox(width: 2),
-                                        Icon(Lz.chevronRight,
-                                            size: 10, color: C.brand),
-                                      ]),
-                                ),
-                              ]),
-                            ),
                           // 1109：作者行改成两行（昵称弹性 + 元信息下移），
                           //   原来 7 个元素挤一行必然溢出/被裁。
                           Row(
