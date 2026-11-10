@@ -154,9 +154,19 @@ class _PostPageState extends State<PostPage> {
                   title: '帖子操作',
                   actions: [
                     AppActionItem(
-                      label: '分享',
+                      label: '举报不良内容',
+                      icon: Lz.alertCircle,
+                      onTap: _quickReport,
+                    ),
+                    AppActionItem(
+                      label: '分享到社交网络',
                       icon: Lz.share,
                       onTap: _sharePost,
+                    ),
+                    AppActionItem(
+                      label: '复制全文',
+                      icon: Icons.copy_rounded,
+                      onTap: _copyAll,
                     ),
                     AppActionItem(
                       label: '删除帖子',
@@ -212,6 +222,19 @@ class _PostPageState extends State<PostPage> {
                             ],
                           ),
                           const SizedBox(height: 10),
+                          if ((int.tryParse('${p['likes'] ?? 0}') ?? 0) > 0)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Row(children: [
+                                const Icon(Icons.favorite_rounded,
+                                    size: 13, color: C.danger),
+                                const SizedBox(width: 4),
+                                Text('${p['likes']} 人觉得很赞',
+                                    style: TextStyle(
+                                        fontSize: 11.5,
+                                        color: context.t3)),
+                              ]),
+                            ),
                           // 1109：作者行改成两行（昵称弹性 + 元信息下移），
                           //   原来 7 个元素挤一行必然溢出/被裁。
                           Row(
@@ -309,9 +332,17 @@ class _PostPageState extends State<PostPage> {
                           ),
                           const SizedBox(height: 18),
                           // 1109：正文富文本（标题/列表/引用/图片/粗体）
+                          if ((double.tryParse('${p['pay_need'] ?? 0}') ?? 0) > 0 &&
+                              (int.tryParse('${p['pay_segs'] ?? 0}') ?? 0) == 0)
+                            _payCard(p),
                           // 1109：图片交给下面的 PostGallery 统一渲染
                           //   （那边支持点击全屏 + 长按保存），这里再传一次会重复显示两张
-                          PostContent(text: '${p['content'] ?? ''}'),
+                          PostContent(
+                            text: '${p['content'] ?? ''}',
+                            payNeed: double.tryParse('${p['pay_need'] ?? 0}') ?? 0,
+                            payCount: int.tryParse('${p['pay_count'] ?? 0}') ?? 0,
+                            onUnlock: _payPost,
+                          ),
                           if ((p['images'] as List?)?.isNotEmpty == true) ...[
                             const SizedBox(height: 10),
                             PostGallery(
@@ -551,6 +582,115 @@ class _PostPageState extends State<PostPage> {
     final link = 'https://flrjk.52yfx.cn/forum/post/${widget.postId}';
     await Clipboard.setData(ClipboardData(text: link));
     ToastUtil.success('链接已复制');
+  }
+
+  Future<void> _quickReport() async {
+    final reasons = ['垃圾广告', '色情低俗', '违法违禁', '人身攻击', '其他'];
+    final r = await Get.dialog<String>(SimpleDialog(
+      title: const Text('举报不良内容',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+      children: [
+        for (final x in reasons)
+          SimpleDialogOption(
+            onPressed: () => Get.back(result: x),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(x, style: const TextStyle(fontSize: 14)),
+            ),
+          ),
+      ],
+    ));
+    if (r == null) return;
+    try {
+      await _svc.report(type: 'post', id: widget.postId, reason: r);
+      ToastUtil.success('举报已提交，我们会尽快处理');
+    } catch (_) {
+      ToastUtil.error('提交失败');
+    }
+  }
+
+  Future<void> _copyAll() async {
+    final t = '${_post?['title'] ?? ''}';
+    final c = '${_post?['content'] ?? ''}';
+    await Clipboard.setData(ClipboardData(text: t + '\n\n' + c));
+    ToastUtil.success('已复制全文');
+  }
+
+  /// 1109：打赏解锁隐藏内容
+  Future<void> _payPost() async {
+    if (_post == null) return;
+    final need = double.tryParse('${_post?['pay_need'] ?? 0}') ?? 0;
+    final ok = await showAppConfirm(
+      context,
+      title: '打赏解锁',
+      message: '将从余额扣除 ¥${need.toStringAsFixed(2)}，解锁后可永久查看',
+      okText: '确认打赏',
+    );
+    if (!ok) return;
+    try {
+      final c = await _svc.payPost(widget.postId);
+      if (!mounted) return;
+      setState(() {
+        _post = Map<String, dynamic>.from(_post!)
+          ..['pay_content'] = c
+          ..['pay_paid'] = 1;
+      });
+      ToastUtil.success('打赏成功，已解锁');
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  /// 1109：付费内容卡片（未解锁显示按钮，已解锁直接渲染）
+  Widget _payCard(Map<String, dynamic> p) {
+    final need = double.tryParse('${p['pay_need'] ?? 0}') ?? 0;
+    final content = '${p['pay_content'] ?? ''}';
+    final cnt = int.tryParse('${p['pay_count'] ?? 0}') ?? 0;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: C.gold.withAlpha(context.isDark ? 26 : 14),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: C.gold.withAlpha(70)),
+      ),
+      child: content.isNotEmpty
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(children: [
+                  Icon(Icons.lock_open_rounded, size: 14, color: C.gold),
+                  SizedBox(width: 6),
+                  Text('已解锁内容',
+                      style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: C.gold)),
+                ]),
+                const SizedBox(height: 10),
+                PostContent(text: content),
+              ],
+            )
+          : Column(
+              children: [
+                const Icon(Icons.lock_rounded, size: 26, color: C.gold),
+                const SizedBox(height: 10),
+                Text('打赏 ¥${need.toStringAsFixed(2)} 解锁隐藏内容',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: context.t1)),
+                const SizedBox(height: 4),
+                Text('已有 $cnt 人打赏',
+                    style: TextStyle(fontSize: 11, color: context.t3)),
+                const SizedBox(height: 12),
+                AppBtn('立即打赏 ¥${need.toStringAsFixed(2)}',
+                    icon: Icons.card_giftcard_rounded, onTap: _payPost),
+              ],
+            ),
+    );
   }
 
   Widget _commentTile(Map<String, dynamic> c, [int floor = 0]) {
