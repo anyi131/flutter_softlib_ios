@@ -14,6 +14,7 @@ import '../../../api/admin_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../design/components.dart';
 import '../../../design/glass.dart';
 import '../../../utils/toast_util.dart';
 import '../../../design/lucide.dart';
@@ -1123,7 +1124,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                 const SizedBox(height: 10),
                 Expanded(
                   child: cats.isEmpty
-                      ? const Center(child: Text('暂无分类，点击右上角新增'))
+                      ? AppEmpty(icon: Lz.inbox, title: '暂无分类，点击右上角新增')
                       : ListView.separated(
                           itemCount: cats.length,
                           separatorBuilder: (_, __) =>
