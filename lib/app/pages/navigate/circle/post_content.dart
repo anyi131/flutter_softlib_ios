@@ -120,7 +120,7 @@ class PostContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final src = _looksLikeHtml(text) ? _htmlToMd(text) : text;
     final base =
-        TextStyle(fontSize: 15, height: 1.85, letterSpacing: 0.2, color: context.t1);
+        TextStyle(fontSize: 15.5, height: 1.95, letterSpacing: 0.2, color: context.t1);
     final bold = base.copyWith(fontWeight: FontWeight.w800);
     final lines = src.replaceAll('\r\n', '\n').split('\n');
     final blocks = <Widget>[];
@@ -131,7 +131,7 @@ class PostContent extends StatelessWidget {
       para.clear();
       if (s.isEmpty) return;
       blocks.add(Padding(
-        padding: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.only(bottom: 16),
         child: SelectableText.rich(
             TextSpan(children: _spans(s.replaceAll('\n', ' '), base, bold))),
       ));
