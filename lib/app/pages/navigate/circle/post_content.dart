@@ -92,6 +92,29 @@ class PostContent extends StatelessWidget {
     return s;
   }
 
+  Widget codeBlock(BuildContext context, String code) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: context.isDark ? const Color(0xFF141821) : const Color(0xFFF6F8FB),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+            color: context.isDark ? Colors.white12 : Colors.black12),
+      ),
+      child: SelectableText(
+        code.trimRight(),
+        style: TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 12.5,
+          height: 1.6,
+          color: context.isDark ? const Color(0xFF9AE6B4) : const Color(0xFF1F6F43),
+        ),
+      ),
+    );
+  }
+
   Widget _lockBlock(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -216,6 +239,19 @@ class PostContent extends StatelessWidget {
         continue;
       }
 
+      if (t.startsWith('```')) {
+        flushPara();
+        final buf = StringBuffer();
+        var k3 = i + 1;
+        while (k3 < lines.length && !lines[k3].trim().startsWith('```')) {
+          buf.writeln(lines[k3]);
+          k3++;
+        }
+        i = k3;
+        blocks.add(codeBlock(context, buf.toString()));
+        continue;
+      }
+
       if (t == '[[PAYLOCK]]') {
         flushPara();
         blocks.add(_lockBlock(context));
@@ -239,6 +275,23 @@ class PostContent extends StatelessWidget {
 
       if (_isImageLine(t)) {
         flushPara();
+        final batch = <String>[];
+        var k2 = i;
+        while (k2 < lines.length) {
+          final ln = lines[k2].trim();
+          if (!_isImageLine(ln)) break;
+          final u2 = _imageUrlOf(ln);
+          if (u2 != null && u2.isNotEmpty) batch.add(u2);
+          k2++;
+        }
+        i = k2 - 1;
+        if (batch.length > 1) {
+          blocks.add(Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: PostGallery(images: batch),
+          ));
+          continue;
+        }
         final url = _imageUrlOf(t);
         if (url != null && url.isNotEmpty) {
           blocks.add(Padding(
