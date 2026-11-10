@@ -322,8 +322,6 @@ class _PublishPageState extends State<PublishPage> {
         }
         final buf = StringBuffer();
         if (tx.isNotEmpty) buf.writeln(tx);
-        buf.writeln();
-        buf.writeln('来源：' + url);
         if (img.isNotEmpty) {
           buf.writeln();
           buf.writeln('![](' + img + ')');
