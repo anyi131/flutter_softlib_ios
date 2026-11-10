@@ -165,7 +165,7 @@ class _PostPageState extends State<PostPage> {
                       child: ListView(
                         keyboardDismissBehavior:
                             ScrollViewKeyboardDismissBehavior.onDrag,
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                         children: [
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,7 +196,35 @@ class _PostPageState extends State<PostPage> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 10),
+                          // 1109：版块标签放标题下方（葫芦侠式）
+                          if ('${p['section_name'] ?? ''}'.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
+                              child: Row(children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: C.brand
+                                        .withAlpha(context.isDark ? 30 : 14),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text('${p['section_name']}',
+                                            style: TextStyle(
+                                                fontSize: 11.5,
+                                                color: C.brand,
+                                                fontWeight: FontWeight.w700)),
+                                        const SizedBox(width: 2),
+                                        Icon(Lz.chevronRight,
+                                            size: 10, color: C.brand),
+                                      ]),
+                                ),
+                              ]),
+                            ),
                           // 1109：作者行改成两行（昵称弹性 + 元信息下移），
                           //   原来 7 个元素挤一行必然溢出/被裁。
                           Row(
@@ -243,7 +271,7 @@ class _PostPageState extends State<PostPage> {
                                           color: C.brand.withAlpha(28),
                                           borderRadius: BorderRadius.circular(5),
                                         ),
-                                        child: Text('作者',
+                                        child: Text('楼主',
                                             style: TextStyle(
                                                 fontSize: 9.5,
                                                 color: C.brand,
@@ -269,7 +297,7 @@ class _PostPageState extends State<PostPage> {
                                     ]),
                                     const SizedBox(height: 4),
                                     Text(
-                                      '${p['time_text'] ?? ''} · ${p['views'] ?? 0} 阅读 · 评论 ${_comments.length}',
+                                      '${p['views'] ?? 0} 阅读 · ${_comments.length} 评论    ${p['time_text'] ?? ''}',
                                       style: TextStyle(fontSize: 11, color: context.t3),
                                     ),
                                   ],
@@ -312,7 +340,7 @@ class _PostPageState extends State<PostPage> {
                           const SizedBox(height: 10),
                           const SizedBox(height: 6),
                           Text('评论 ${_comments.length}',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: context.t1)),
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: context.t1)),
                           const SizedBox(height: 6),
                           if (_comments.isEmpty)
                             Padding(
