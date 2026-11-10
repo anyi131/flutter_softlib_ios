@@ -208,3 +208,57 @@ class _AppBtnState extends State<AppBtn> {
     );
   }
 }
+
+/// 1109：图片右上角的「移除」角标 —— 替代原来 12px 黑圆点 + 细叉
+class AppRemoveBadge extends StatefulWidget {
+  final VoidCallback? onTap;
+  final double size;
+
+  const AppRemoveBadge({super.key, this.onTap, this.size = 22});
+
+  @override
+  State<AppRemoveBadge> createState() => _AppRemoveBadgeState();
+}
+
+class _AppRemoveBadgeState extends State<AppRemoveBadge> {
+  bool _down = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = context.isDark;
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _down = true),
+      onTapCancel: () => setState(() => _down = false),
+      onTapUp: (_) => setState(() => _down = false),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _down ? 0.88 : 1,
+        duration: const Duration(milliseconds: 110),
+        child: Container(
+          width: widget.size,
+          height: widget.size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: dark ? const Color(0xFF2A2F3A) : Colors.white,
+            border: Border.all(
+              color: dark ? Colors.white.withAlpha(30) : const Color(0xFF0F172A).withAlpha(16),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(dark ? 120 : 40),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.close_rounded,
+            size: widget.size * 0.58,
+            color: C.danger,
+          ),
+        ),
+      ),
+    );
+  }
+}
