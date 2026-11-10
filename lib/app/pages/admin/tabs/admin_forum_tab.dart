@@ -8,6 +8,8 @@ import '../../../design/kit.dart';
 import '../../navigate/circle/post_page.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
+import '../../../design/buttons.dart';
+import '../../../design/components.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';
 
@@ -264,14 +266,12 @@ class _AdminForumTabState extends State<AdminForumTab> {
           ),
           const SizedBox(height: 10),
           if (_posts.isEmpty)
-            AdCard(
-              padding: const EdgeInsets.symmetric(vertical: 34),
-              child: Center(
-                child: Column(children: [
-                  Icon(Lz.messageCircle, size: 34, color: context.t3.withAlpha(90)),
-                  const SizedBox(height: 8),
-                  Text('暂无帖子', style: TextStyle(fontSize: 12.5, color: context.t3)),
-                ]),
+            AppCard(
+              padding: EdgeInsets.zero,
+              child: AppEmpty(
+                icon: Lz.messageCircle,
+                title: '暂无帖子',
+                subtitle: '用户发帖后会出现在这里，可置顶或隐藏',
               ),
             ),
           for (final p in _posts)
@@ -529,30 +529,12 @@ class _AdminForumTabState extends State<AdminForumTab> {
   }
 
   Widget _stat(String label, String value, Color color) {
-    return AdCard(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(children: [
-        Text(value,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: color)),
-        const SizedBox(height: 2),
-        Text(label, style: TextStyle(fontSize: 11, color: context.t3)),
-      ]),
-    );
+    return AppStatTile(value: value, label: label, color: color);
   }
 
+  /// 1109：统一走 AppChip（带图标/描边/按压反馈）
   Widget _chip(String text, VoidCallback onTap, {bool danger = false}) {
-    return AppPressable(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: (danger ? C.danger : C.brand).withAlpha(24),
-          borderRadius: BorderRadius.circular(R.full),
-        ),
-        child: Text(text,
-            style: TextStyle(
-                fontSize: 11.5, color: danger ? C.danger : C.brand, fontWeight: FontWeight.w600)),
-      ),
-    );
+    return AppChip(text,
+        onTap: onTap, danger: danger, primary: text == '查看');
   }
 }
