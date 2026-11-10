@@ -354,3 +354,184 @@ Future<bool> showAppConfirm(
   );
   return r == true;
 }
+
+/// 1109：AppBar 右侧圆形图标按钮（替代裸 Icon / 默认 PopupMenu）
+class AppIconButton extends StatefulWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+  final double size;
+  final Color? color;
+
+  const AppIconButton({
+    super.key,
+    required this.icon,
+    this.onTap,
+    this.size = 34,
+    this.color,
+  });
+
+  @override
+  State<AppIconButton> createState() => _AppIconButtonState();
+}
+
+class _AppIconButtonState extends State<AppIconButton> {
+  bool _down = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = context.isDark;
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _down = true),
+      onTapCancel: () => setState(() => _down = false),
+      onTapUp: (_) => setState(() => _down = false),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _down ? 0.92 : 1,
+        duration: const Duration(milliseconds: 110),
+        child: Container(
+          width: widget.size,
+          height: widget.size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: dark ? Colors.white.withAlpha(14) : const Color(0xFFF1F4F9),
+            border: Border.all(
+              color: dark
+                  ? Colors.white.withAlpha(24)
+                  : const Color(0xFF0F172A).withAlpha(10),
+            ),
+          ),
+          child: Icon(
+            widget.icon,
+            size: widget.size * 0.52,
+            color: widget.color ?? (dark ? C.t2 : C.lt2),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 动作项（配合 showAppActionSheet）
+class AppActionItem {
+  final String label;
+  final IconData icon;
+  final bool danger;
+  final VoidCallback onTap;
+
+  const AppActionItem({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    this.danger = false,
+  });
+}
+
+/// 1109：底部动作面板 —— 替代系统 PopupMenu（统一圆角/图标托/危险色）
+Future<void> showAppActionSheet(
+  BuildContext context, {
+  String? title,
+  required List<AppActionItem> actions,
+}) async {
+  final dark = context.isDark;
+  await showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withAlpha(dark ? 130 : 70),
+    builder: (ctx) => Container(
+      decoration: BoxDecoration(
+        color: dark ? C.bg2 : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 10, bottom: 6),
+              width: 38,
+              height: 4,
+              decoration: BoxDecoration(
+                color: (dark ? Colors.white : Colors.black).withAlpha(38),
+                borderRadius: BorderRadius.circular(99),
+              ),
+            ),
+            if (title != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
+                child: Row(
+                  children: [
+                    Text(title,
+                        style: TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w900,
+                            color: dark ? C.t1 : C.lt1)),
+                  ],
+                ),
+              ),
+            for (final a in actions)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 4, 14, 4),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () {
+                    Get.back();
+                    Future.microtask(a.onTap);
+                  },
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: (a.danger ? C.danger : C.brand)
+                          .withAlpha(dark ? 16 : 8),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: (a.danger ? C.danger : C.brand)
+                            .withAlpha(dark ? 34 : 20),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: (a.danger ? C.danger : C.brand)
+                                .withAlpha(dark ? 46 : 26),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(a.icon,
+                              size: 17, color: a.danger ? C.danger : C.brand),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            a.label,
+                            style: TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w700,
+                              color:
+                                  a.danger ? C.danger : (dark ? C.t1 : C.lt1),
+                            ),
+                          ),
+                        ),
+                        Icon(Lz.chevronRight,
+                            size: 15,
+                            color: (dark ? C.t3 : C.lt3).withAlpha(140)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+              child:
+                  AppBtn('取消', ghost: true, wide: true, onTap: () => Get.back()),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
