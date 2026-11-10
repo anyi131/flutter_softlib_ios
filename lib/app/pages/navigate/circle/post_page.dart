@@ -5,6 +5,8 @@ import '../../../api/forum_service.dart';
 import '../../../api/user_service.dart';
 import '../../../design/lucide.dart';
 import '../../../design/title_badge.dart';
+import '../../../design/buttons.dart';
+import '../../../design/components.dart';
 import '../../../design/ui.dart';
 import 'forum_gallery.dart';
 import 'post_content.dart';
@@ -57,19 +59,14 @@ class _PostPageState extends State<PostPage> {
 
   /// 1109：删除帖子（作者本人 / 管理员）
   Future<void> _confirmDelPost() async {
-    final ok = await Get.dialog<bool>(AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text('删除帖子', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-      content: const Text('删除后帖子将从圈子消失，确定删除吗？', style: TextStyle(fontSize: 13.5)),
-      actions: [
-        TextButton(onPressed: () => Get.back(result: false), child: const Text('取消')),
-        TextButton(
-          onPressed: () => Get.back(result: true),
-          child: const Text('删除', style: TextStyle(color: C.danger, fontWeight: FontWeight.w700)),
-        ),
-      ],
-    ));
-    if (ok != true) return;
+    final ok = await showAppConfirm(
+      context,
+      title: '删除帖子',
+      message: '删除后帖子将从圈子消失，且无法恢复。',
+      okText: '删除',
+      danger: true,
+    );
+    if (!ok) return;
     try {
       await _svc.postDel(widget.postId);
       ToastUtil.success('已删除');
@@ -460,16 +457,15 @@ class _PostPageState extends State<PostPage> {
     );
   }
 
+  /// 1109：点赞/收藏统一成胶囊按钮（带图标、按压反馈、激活态高亮）
   Widget _action(IconData icon, String text, Color color, VoidCallback onTap) {
-    return InkWell(
+    final active = color != context.t2;
+    return AppChip(
+      text,
       onTap: onTap,
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(width: 4),
-          Text(text, style: TextStyle(fontSize: 12, color: color)),
-        ],
-      ),
+      icon: icon,
+      primary: active,
+      dense: true,
     );
   }
 
@@ -653,20 +649,14 @@ class _PostPageState extends State<PostPage> {
 
   /// 长按删除自己的评论（管理员可删任意）
   Future<void> _confirmDelComment(int id) async {
-    final okdel = await Get.dialog<bool>(AlertDialog(
-      backgroundColor: context.isDark ? C.bg2 : Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text('删除评论', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-      content: const Text('删除后无法恢复，确定删除这条评论吗？', style: TextStyle(fontSize: 13.5)),
-      actions: [
-        TextButton(onPressed: () => Get.back(result: false), child: const Text('取消')),
-        TextButton(
-          onPressed: () => Get.back(result: true),
-          child: const Text('删除', style: TextStyle(color: C.danger, fontWeight: FontWeight.w700)),
-        ),
-      ],
-    ));
-    if (okdel != true) return;
+    final okdel = await showAppConfirm(
+      context,
+      title: '删除评论',
+      message: '删除后无法恢复，确定删除这条评论吗？',
+      okText: '删除',
+      danger: true,
+    );
+    if (!okdel) return;
     try {
       await _svc.commentDel(id);
       if (!mounted) return;
