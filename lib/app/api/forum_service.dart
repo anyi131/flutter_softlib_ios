@@ -102,6 +102,28 @@ class ForumService {
   }
 
   /// 1109：删除帖子（作者本人或管理员）
+  /// 1109：举报帖子/评论
+  /// 1109：打赏解锁付费内容
+  Future<String> payPost(int id) async {
+    final r = await _dio.post('/api/softlib/forum/post_pay',
+        data: {'id': id, ..._auth});
+    final d = r.data;
+    if (d is Map && d['code'] == 1 && d['data'] is Map) {
+      return '${(d['data'] as Map)['content'] ?? ''}';
+    }
+    final m = (d is Map ? d['msg'] : '打赏失败');
+    throw Exception('$m');
+  }
+
+  Future<void> report({required String type, required int id, required String reason}) async {
+    final r = await _dio.post('/api/softlib/forum/report',
+        data: {'type': type, 'id': id, 'reason': reason, ..._auth});
+    final d = r.data;
+    if (d is Map && d['code'] == 1) return;
+    final m = (d is Map ? d['msg'] : '提交失败');
+    throw Exception('$m');
+  }
+
   Future<void> postDel(int id) async {
     final r = await _dio.post('/api/softlib/forum/post_del',
         data: {'id': id, ..._auth});
@@ -142,12 +164,16 @@ class ForumService {
     required int section,
     required String text,
     List<String> images = const [],
+    double payNeed = 0,
+    String payContent = '',
   }) async {
     final r = await _dio.post('/api/softlib/forum/publish', data: {
       'title': title,
       'section': section,
       'text': text,
       'images': images,
+      if (payNeed > 0) 'pay_need': payNeed,
+      if (payNeed > 0) 'pay_content': payContent,
       ..._auth,
     });
     final d = r.data;
@@ -287,6 +313,8 @@ class ForumService {
     required String content,
     int sectionId = 0,
     int isTop = 0,
+    double payNeed = 0,
+    String payContent = '',
   }) async {
     final r = await _dio.post('/api/softlib/forum/admin_post_save', data: {
       'id': id,
@@ -294,6 +322,8 @@ class ForumService {
       'content': content,
       'section_id': sectionId,
       'is_top': isTop,
+      'pay_need': payNeed,
+      'pay_content': payContent,
       ..._auth,
     });
     final d = r.data;
