@@ -223,7 +223,7 @@ class _PostPageState extends State<PostPage> {
                                           (p['user'] as Map?) ?? const {}),
                                     )),
                                 child: CircleAvatar(
-                                radius: 18,
+                                radius: 24,
                                 backgroundColor: C.brand.withAlpha(30),
                                 backgroundImage:
                                     '${((p['user'] as Map?)?['avatar'] ?? '')}'.isNotEmpty
@@ -252,6 +252,21 @@ class _PostPageState extends State<PostPage> {
                                       ),
                                       Container(
                                         margin: const EdgeInsets.only(left: 5),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 5, vertical: 1.5),
+                                        decoration: BoxDecoration(
+                                          color: C.gold.withAlpha(40),
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                        child: Text(
+                                            'Lv.${((int.tryParse('${(p['user'] as Map?)?['score'] ?? 0}') ?? 0) ~/ 10) + 1}',
+                                            style: TextStyle(
+                                                fontSize: 9.5,
+                                                color: const Color(0xFF8A5A00),
+                                                fontWeight: FontWeight.w800)),
+                                      ),
+                                      Container(
+                                        margin: const EdgeInsets.only(left: 4),
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 5, vertical: 1.5),
                                         decoration: BoxDecoration(
