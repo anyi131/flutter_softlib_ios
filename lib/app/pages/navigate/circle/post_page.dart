@@ -55,6 +55,30 @@ class _PostPageState extends State<PostPage> {
     });
   }
 
+  /// 1109：删除帖子（作者本人 / 管理员）
+  Future<void> _confirmDelPost() async {
+    final ok = await Get.dialog<bool>(AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text('删除帖子', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+      content: const Text('删除后帖子将从圈子消失，确定删除吗？', style: TextStyle(fontSize: 13.5)),
+      actions: [
+        TextButton(onPressed: () => Get.back(result: false), child: const Text('取消')),
+        TextButton(
+          onPressed: () => Get.back(result: true),
+          child: const Text('删除', style: TextStyle(color: C.danger, fontWeight: FontWeight.w700)),
+        ),
+      ],
+    ));
+    if (ok != true) return;
+    try {
+      await _svc.postDel(widget.postId);
+      ToastUtil.success('已删除');
+      Get.back();
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
   Future<void> _like() async {
     if (!UserService.instance.isLoggedIn) return ToastUtil.info('请先登录');
     try {
@@ -112,6 +136,24 @@ class _PostPageState extends State<PostPage> {
         backgroundColor: context.isDark ? C.bg0 : Colors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          if (p != null &&
+              (UserService.instance.user?.id ==
+                      int.tryParse('${p['user_id'] ?? 0}') ||
+                  UserService.instance.user?.isAdmin == true))
+            PopupMenuButton<String>(
+              icon: Icon(Lz.more, size: 20, color: context.t2),
+              onSelected: (v) {
+                if (v == 'del') _confirmDelPost();
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(
+                  value: 'del',
+                  child: Text('删除帖子', style: TextStyle(fontSize: 13.5)),
+                ),
+              ],
+            ),
+        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
@@ -147,7 +189,7 @@ class _PostPageState extends State<PostPage> {
                               Expanded(
                                 child: Text('${p['title'] ?? ''}',
                                     style: TextStyle(
-                                        fontSize: 20.5,
+                                        fontSize: 22,
                                         fontWeight: FontWeight.w900,
                                         color: context.t1,
                                         height: 1.35)),
