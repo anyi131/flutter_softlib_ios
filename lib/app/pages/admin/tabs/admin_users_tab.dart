@@ -13,6 +13,7 @@ import '../../../design/adaptive.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
+import '../../../design/components.dart';
 import '../../../design/glass.dart';
 import '../../../utils/app_action.dart';
 import '../../../utils/toast_util.dart';
@@ -1575,7 +1576,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                       ),
                     )
                   : (logs.isEmpty
-                        ? const Center(child: Text('暂无操作记录'))
+                        ? AppEmpty(icon: Lz.inbox, title: '暂无操作记录')
                         : ListView.separated(
                             itemCount: logs.length,
                             separatorBuilder: (_, __) =>
