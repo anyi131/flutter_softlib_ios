@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 
 import 'app/jicun/jicun_prefs.dart';
 import 'app/utils/sound_util.dart';
@@ -44,6 +45,8 @@ Future<void> main() async {
   // ★ 全局错误捕获：任何未捕获异常都不应导致白屏/闪退
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+  // 1109：开启语义树，供 iOS 自动化（Swipt/XCUITest）读取控件
+  SemanticsBinding.instance.ensureSemantics();
     // ★ 1016：音效开关读取（本地偏好）
     unawaited(SoundUtil.init());
     // ★ 1028：即存的本机偏好（自动粘贴/存储目录/通知开关）提前读，首屏即可用
