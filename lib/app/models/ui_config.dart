@@ -188,6 +188,9 @@ class UiConfig {
 
   /// 全局玻璃（Liquid Glass）档位：auto/off/low/medium/high
   final String glassMode;
+
+  /// 1109：圈子首页模板 rich(增强) / lean(精简)
+  final String forumTemplate;
   final String
   adminTemplate; // 管理后台模板：light_card/dark_console/minimal/brand/desk
 
@@ -249,6 +252,7 @@ class UiConfig {
     this.inviteShareText = '',
     this.navTemplate = 'classic',
     this.glassMode = 'auto',
+    this.forumTemplate = 'lean',
     this.adminTemplate = 'light_card',
     this.payNotice = const PayNoticeConfig(),
     this.sfx = const SfxConfig(),
@@ -317,6 +321,7 @@ class UiConfig {
       navTemplate: _s(json['nav_template'], 'classic'),
       // ★ 1020 全局玻璃档位：auto/off/low/medium/high（auto = 按设备能力自动）
       glassMode: _s(json['glass_mode'], 'auto'),
+      forumTemplate: _s(json['forum_template'], 'lean'),
       adminTemplate: _s(json['admin_template'], 'light_card'),
       payNotice: PayNoticeConfig.fromJson(
         json['pay_notice'] is Map ? (json['pay_notice'] as Map) : const {},
@@ -361,6 +366,7 @@ class UiConfig {
       inviteShareText: base.inviteShareText,
       navTemplate: base.navTemplate,
       glassMode: base.glassMode,
+      forumTemplate: base.forumTemplate,
       adminTemplate: base.adminTemplate,
       payNotice: base.payNotice,
       quickSign: base.quickSign,
