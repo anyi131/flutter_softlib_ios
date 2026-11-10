@@ -393,7 +393,8 @@ class _CircleComponentState extends State<CircleComponent> {
                             .map((e) => '$e')
                             .toList(),
                         isVip: '${u['is_vip'] ?? 0}' == '1',
-                        size: 13,
+                        size: 14,
+                        compact: true,
                       ),
                       if ('${u['is_admin'] ?? 0}' == '1') _adminBadge(),
                       if ('${p['section_name'] ?? ''}'.isNotEmpty) ...[
