@@ -5,6 +5,7 @@ import '../../../api/forum_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
+import '../../../design/components.dart';
 import 'post_page.dart';
 
 /// 我的帖子 / 我的收藏
@@ -76,8 +77,13 @@ class _MyForumPageState extends State<MyForumPage>
 
   Widget _list(List<Map<String, dynamic>> data, String empty) {
     if (data.isEmpty) {
-      return Center(
-        child: Text(empty, style: TextStyle(fontSize: 13, color: context.t3)),
+      return AppEmpty(
+        icon: Lz.inbox,
+        title: empty,
+        subtitle: '去圈子逛逛，发现感兴趣的话题',
+        actionLabel: '去圈子',
+        actionIcon: Lz.compass,
+        onAction: () => Get.back(),
       );
     }
     return ListView.separated(
@@ -89,12 +95,9 @@ class _MyForumPageState extends State<MyForumPage>
         return AppPressable(
           onTap: () => Get.to(() => PostPage(postId: int.tryParse('${p['id']}') ?? 0))
               ?.then((_) => _load()),
-          child: Container(
-            padding: const EdgeInsets.all(13),
-            decoration: BoxDecoration(
-              color: context.isDark ? C.bg2 : Colors.white,
-              borderRadius: BorderRadius.circular(R.lg),
-            ),
+          child: AppCard(
+            padding: const EdgeInsets.all(14),
+            margin: EdgeInsets.zero,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
