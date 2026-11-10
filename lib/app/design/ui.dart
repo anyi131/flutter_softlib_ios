@@ -595,6 +595,64 @@ ThemeData buildNewTheme({required bool dark}) {
       backgroundColor: dark ? C.bg3 : const Color(0xFF22252E),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.md)),
     ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: C.brand,
+        textStyle: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        elevation: 0,
+        backgroundColor: C.brand,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        textStyle: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: dark ? C.t1 : C.lt1,
+        side: BorderSide(
+            color: dark ? Colors.white.withAlpha(38) : Colors.black.withAlpha(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      ),
+    ),
+    popupMenuTheme: PopupMenuThemeData(
+      color: dark ? C.bg2 : Colors.white,
+      surfaceTintColor: Colors.transparent,
+      elevation: 10,
+      shadowColor: Colors.black.withAlpha(60),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      textStyle: TextStyle(
+          fontSize: 13.5,
+          fontWeight: FontWeight.w600,
+          color: dark ? C.t1 : C.lt1),
+    ),
+    dividerTheme: DividerThemeData(
+      thickness: 0.6,
+      color: dark ? Colors.white.withAlpha(14) : Colors.black.withAlpha(10),
+      space: 1,
+    ),
+    listTileTheme: ListTileThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      iconColor: dark ? C.t2 : C.lt2,
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor:
+          dark ? Colors.white.withAlpha(12) : const Color(0xFFF1F4F9),
+      selectedColor: C.brand.withAlpha(30),
+      labelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: dark ? C.t1 : C.lt1),
+      side: BorderSide.none,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+    ),
     splashFactory: InkSparkle.splashFactory,
     visualDensity: VisualDensity.adaptivePlatformDensity,
   );
