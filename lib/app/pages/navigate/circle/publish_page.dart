@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../api/forum_service.dart';
+import '../../../api/soft_service.dart';
+import '../../../api/user_service.dart';
 import '../../../api/post_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/ui.dart';
@@ -79,7 +81,10 @@ class _PublishPageState extends State<PublishPage> {
       final id = await ForumService.instance
           .publish(title: t, section: _section, text: c, images: urls);
       if (!mounted) return;
-      ToastUtil.success('发布成功');
+      final needReview =
+          (SoftService.instance.cachedConfig?.uiConfig.forumReview ?? false) &&
+              !(UserService.instance.user?.isAdmin == true);
+      ToastUtil.success(needReview ? '已提交，等待管理员审核' : '发布成功');
       Get.back(result: true);
       if (id > 0) {
         // 发布后直接进详情
@@ -113,12 +118,24 @@ class _PublishPageState extends State<PublishPage> {
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(children: [
-        b('粗体', '**粗体**'),
-        b('标题', '\n## 小标题\n'),
+                b('粗体', '**粗体**'),
+        b('斜体', '*斜体*'),
+        b('删除线', '~~删除线~~'),
+        b('H1', '\n# 大标题\n'),
+        b('H2', '\n## 小标题\n'),
+        b('H3', '\n### 更小标题\n'),
         b('列表', '\n- 条目\n'),
+        b('有序', '\n1. 第一条\n2. 第二条\n'),
         b('引用', '\n> 引用内容\n'),
+        b('代码', '\n```\n代码\n```\n'),
+        b('链接', '[文字](https://)'),
+        b('图片', '![](https://图片地址)'),
         b('分割线', '\n---\n'),
         b('表格', '\n| 列1 | 列2 |\n|---|---|\n| a | b |\n'),
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: AppChip('导入链接', icon: Lz.link, primary: true, onTap: _importLink),
+        ),
       ]),
     );
   }
@@ -191,6 +208,73 @@ class _PublishPageState extends State<PublishPage> {
             style: TextStyle(fontSize: 11, color: context.t3)),
       ],
     );
+  }
+
+  /// 1109：从链接导入标题/正文/首图
+  Future<void> _importLink() async {
+    final ctrl = TextEditingController();
+    final go = await Get.dialog<bool>(AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      title: const Text('导入链接内容',
+          style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('粘贴网页链接，自动抓取标题、正文和首图',
+              style: TextStyle(fontSize: 12, color: context.t3)),
+          const SizedBox(height: 12),
+          TextField(
+            controller: ctrl,
+            keyboardType: TextInputType.url,
+            decoration: InputDecoration(
+              hintText: 'https://',
+              isDense: true,
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消')),
+        FilledButton(
+            onPressed: () => Get.back(result: true), child: const Text('导入')),
+      ],
+    ));
+    if (go != true) return;
+    final url = ctrl.text.trim();
+    if (url.isEmpty) return;
+    ToastUtil.info('正在抓取…');
+    try {
+      final d = await ForumService.instance.fetchLink(url);
+      if (!mounted) return;
+      final t = '${d['title'] ?? ''}'.trim();
+      final tx = '${d['text'] ?? ''}'.trim();
+      final img = '${d['image'] ?? ''}'.trim();
+      setState(() {
+        if (_title.text.trim().isEmpty && t.isNotEmpty) {
+          _title.text = t;
+        }
+        final buf = StringBuffer();
+        if (tx.isNotEmpty) buf.writeln(tx);
+        buf.writeln();
+        buf.writeln('来源：' + url);
+        if (img.isNotEmpty) {
+          buf.writeln();
+          buf.writeln('![](' + img + ')');
+        }
+        final old = _content.text.trim();
+        _content.text = old.isEmpty
+            ? buf.toString()
+            : old + '\n\n' + buf.toString();
+      });
+      ToastUtil.success('已导入，右上角可预览');
+    } catch (e) {
+      ToastUtil.error(e.toString().replaceFirst('Exception: ', ''));
+    }
   }
 
   Widget build(BuildContext context) {
@@ -266,6 +350,7 @@ class _PublishPageState extends State<PublishPage> {
             style: TextStyle(fontSize: 14, height: 1.7, color: context.t1),
             decoration: InputDecoration(
               hintText: '分享你的想法、问题或资源…',
+              helperText: '支持 Markdown 与 HTML，右上角「预览」可看效果',
               hintStyle: TextStyle(fontSize: 14, color: context.t3),
               filled: true,
               fillColor: context.isDark ? C.bg2 : Colors.white,
