@@ -35,11 +35,16 @@ class _PublishPageState extends State<PublishPage> {
   bool _uploading = false;
   /// 1109：发布前预览
   bool _preview = false;
+  bool _payOn = false;
+  final _payPrice = TextEditingController();
+  final _payBody = TextEditingController();
 
   @override
   void dispose() {
     _title.dispose();
     _content.dispose();
+    _payPrice.dispose();
+    _payBody.dispose();
     super.dispose();
   }
 
@@ -79,7 +84,15 @@ class _PublishPageState extends State<PublishPage> {
         if (mounted) setState(() => _uploading = false);
       }
       final id = await ForumService.instance
-          .publish(title: t, section: _section, text: c, images: urls);
+          .publish(
+              title: t,
+              section: _section,
+              text: c,
+              images: urls,
+              payNeed: _payOn
+                  ? (double.tryParse(_payPrice.text.trim()) ?? 0)
+                  : 0,
+              payContent: _payOn ? _payBody.text.trim() : '');
       if (!mounted) return;
       final needReview =
           (SoftService.instance.cachedConfig?.uiConfig.forumReview ?? false) &&
@@ -109,6 +122,42 @@ class _PublishPageState extends State<PublishPage> {
     );
   }
 
+  /// 1109：在光标处插入图片（上传后写入 Markdown，正文任意位置可插图）
+  Future<void> _insertImageAtCursor() async {
+    try {
+      final picked = await ImagePicker()
+          .pickImage(source: ImageSource.gallery, imageQuality: 82);
+      if (picked == null) return;
+      setState(() => _uploading = true);
+      final url = await PostService.instance.uploadImage(File(picked.path));
+      if (url.isEmpty) throw Exception('上传失败');
+      _insertMd('\n![](' + url + ')\n');
+      ToastUtil.success('已插入到光标处');
+    } catch (e) {
+      ToastUtil.error('插图失败');
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
+  /// 1109：把选中内容标记为打赏可见
+  void _markPay() {
+    final sel = _content.selection;
+    if (sel.start < 0 || sel.start == sel.end) {
+      ToastUtil.info("请先选中要隐藏的段落");
+      return;
+    }
+    final t = _content.text;
+    final chosen = t.substring(sel.start, sel.end);
+    final nt = t.replaceRange(sel.start, sel.end, "[pay]" + chosen + "[/pay]");
+    _content.value = TextEditingValue(
+      text: nt,
+      selection: TextSelection.collapsed(
+          offset: sel.start + 5 + chosen.length + 6),
+    );
+    ToastUtil.success("已标记为付费可见");
+  }
+
   Widget _mdBar() {
     Widget b(String label, String insert) => Padding(
           padding: const EdgeInsets.only(right: 8),
@@ -129,9 +178,17 @@ class _PublishPageState extends State<PublishPage> {
         b('引用', '\n> 引用内容\n'),
         b('代码', '\n```\n代码\n```\n'),
         b('链接', '[文字](https://)'),
-        b('图片', '![](https://图片地址)'),
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: AppChip('插入图片',
+              icon: Lz.image, onTap: _insertImageAtCursor),
+        ),
         b('分割线', '\n---\n'),
         b('表格', '\n| 列1 | 列2 |\n|---|---|\n| a | b |\n'),
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: AppChip('设为付费', icon: Lz.lock, onTap: _markPay),
+        ),
         Padding(
           padding: const EdgeInsets.only(right: 8),
           child: AppChip('导入链接', icon: Lz.link, primary: true, onTap: _importLink),
@@ -252,8 +309,8 @@ class _PublishPageState extends State<PublishPage> {
       final d = await ForumService.instance.fetchLink(url);
       if (!mounted) return;
       final t = '${d['title'] ?? ''}'.trim();
-      final tx = '${d['text'] ?? ''}'.trim();
-      final img = '${d['image'] ?? ''}'.trim();
+      final tx = '${d['content'] ?? d['text'] ?? ''}'.trim();
+      final img = '';
       setState(() {
         if (_title.text.trim().isEmpty && t.isNotEmpty) {
           _title.text = t;
@@ -419,6 +476,57 @@ class _PublishPageState extends State<PublishPage> {
                   ),
                 ),
             ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.fromLTRB(14, 6, 14, 12),
+            decoration: BoxDecoration(
+              color: C.gold.withAlpha(context.isDark ? 22 : 10),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: C.gold.withAlpha(60)),
+            ),
+            child: Column(children: [
+              Row(children: [
+                const Icon(Icons.card_giftcard_rounded,
+                    size: 16, color: C.gold),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text('付费可见（打赏后解锁）',
+                      style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: context.t1)),
+                ),
+                Switch(
+                  value: _payOn,
+                  onChanged: (v) => setState(() => _payOn = v),
+                ),
+              ]),
+              if (_payOn) ...[
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _payPrice,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: '打赏金额（元）',
+                    hintText: '1.00',
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _payBody,
+                  minLines: 4,
+                  maxLines: 10,
+                  decoration: const InputDecoration(
+                    labelText: '打赏后可见的内容',
+                    hintText: '例如下载链接、提取码、附件说明…',
+                    alignLabelWithHint: true,
+                  ),
+                ),
+              ],
+            ]),
           ),
           const SizedBox(height: 8),
           Text('发布即表示同意社区规范，违规内容会被删除。',
