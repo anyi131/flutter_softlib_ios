@@ -101,6 +101,16 @@ class ForumService {
     return {'list': [], 'has_more': false};
   }
 
+  /// 1109：删除帖子（作者本人或管理员）
+  Future<void> postDel(int id) async {
+    final r = await _dio.post('/api/softlib/forum/post_del',
+        data: {'id': id, ..._auth});
+    final d = r.data;
+    if (!(d is Map && d['code'] == 1)) {
+      throw Exception('${(d is Map ? d['msg'] : '删除失败')}');
+    }
+  }
+
   Future<Map<String, dynamic>?> postInfo(int id) async {
     try {
       final r = await _dio.get('/api/softlib/forum/post_info',
@@ -252,6 +262,47 @@ class ForumService {
       final list = (d['data'] as Map)['list'];
       if (list is List) {
         return list.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+      }
+    }
+    return [];
+  }
+
+
+  /// 1109：后台编辑帖子（标题/正文/版块/置顶）—— 正文可写 Markdown/HTML
+  Future<void> adminPostSave({
+    required int id,
+    required String title,
+    required String content,
+    int sectionId = 0,
+    int isTop = 0,
+  }) async {
+    final r = await _dio.post('/api/softlib/forum/admin_post_save', data: {
+      'id': id,
+      'title': title,
+      'content': content,
+      'section_id': sectionId,
+      'is_top': isTop,
+      ..._auth,
+    });
+    final d = r.data;
+    if (!(d is Map && d['code'] == 1)) {
+      throw Exception('${(d is Map ? d['msg'] : '保存失败')}');
+    }
+  }
+
+  /// 1109：后台评论列表
+  Future<List<Map<String, dynamic>>> adminComments(
+      {int page = 1, String kw = ''}) async {
+    final r = await _dio.post('/api/softlib/forum/admin_comments',
+        data: {'page': page, if (kw.isNotEmpty) 'kw': kw, ..._auth});
+    final d = r.data;
+    if (d is Map && d['code'] == 1 && d['data'] is Map) {
+      final list = (d['data'] as Map)['list'];
+      if (list is List) {
+        return list
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
       }
     }
     return [];
