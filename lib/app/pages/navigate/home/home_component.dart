@@ -688,12 +688,22 @@ class _HomeComponentState extends State<HomeComponent> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
         decoration: BoxDecoration(
           color: context.cardBg,
-          borderRadius: BorderRadius.circular(R.lg),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: context.isDark
-                ? Colors.white.withAlpha(12)
+                ? Colors.white.withAlpha(14)
                 : Colors.black.withAlpha(6),
           ),
+          // 1109：浅色下加一层柔和投影，卡片不再贴在背景上
+          boxShadow: context.isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(9),
+                    blurRadius: 16,
+                    offset: const Offset(0, 7),
+                  ),
+                ],
         ),
         child: Row(
           children: [
