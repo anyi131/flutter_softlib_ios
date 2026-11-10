@@ -217,7 +217,8 @@ class _PostPageState extends State<PostPage> {
                                             .toList(),
                                         isVip:
                                             '${(p['user'] as Map?)?['is_vip'] ?? 0}' == '1',
-                                        size: 14,
+                                        size: 15,
+                                        compact: true,
                                       ),
                                       if ('${((p['user'] as Map?)?['is_admin'] ?? 0)}' == '1')
                                         _adminBadge()
@@ -501,7 +502,8 @@ class _PostPageState extends State<PostPage> {
                           .map((e) => '$e')
                           .toList(),
                       isVip: '${u['is_vip'] ?? 0}' == '1',
-                      size: 13,
+                      size: 14,
+                      compact: true,
                     ),
                     if ('${u['is_admin'] ?? 0}' == '1')
                       _adminBadge()
