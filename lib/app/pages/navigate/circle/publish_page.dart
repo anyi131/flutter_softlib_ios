@@ -8,6 +8,8 @@ import '../../../api/forum_service.dart';
 import '../../../api/post_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/ui.dart';
+import '../../../design/lucide.dart';
+import 'post_content.dart';
 import '../../../design/buttons.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';
@@ -29,6 +31,8 @@ class _PublishPageState extends State<PublishPage> {
   bool _sending = false;
   final List<File> _images = [];
   bool _uploading = false;
+  /// 1109：发布前预览
+  bool _preview = false;
 
   @override
   void dispose() {
@@ -119,6 +123,76 @@ class _PublishPageState extends State<PublishPage> {
     );
   }
 
+  /// 1109：发布前预览（与帖子详情同一套渲染）
+  Widget _previewView(BuildContext context) {
+    String secName = '';
+    for (final s in widget.sections) {
+      final sid = int.tryParse('${s["id"]}') ?? 0;
+      if (sid == _section) {
+        final nm = s['name'] ?? '';
+        secName = '$nm';
+        break;
+      }
+    }
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 34),
+      children: [
+        Text(
+          _title.text.trim().isEmpty ? '（未填写标题）' : _title.text.trim(),
+          style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              height: 1.4,
+              color: context.t1),
+        ),
+        const SizedBox(height: 10),
+        Row(children: [
+          if (secName.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: C.brand.withAlpha(context.isDark ? 30 : 14),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(secName,
+                  style: TextStyle(
+                      fontSize: 11.5,
+                      color: C.brand,
+                      fontWeight: FontWeight.w700)),
+            ),
+          const Spacer(),
+          Text('预览效果',
+              style: TextStyle(fontSize: 10.5, color: context.t3)),
+        ]),
+        const SizedBox(height: 16),
+        if (_content.text.trim().isEmpty)
+          Text('（正文为空）',
+              style: TextStyle(fontSize: 13, color: context.t3))
+        else
+          PostContent(text: _content.text),
+        if (_images.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final f in _images)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.file(f,
+                      width: 104, height: 104, fit: BoxFit.cover),
+                ),
+            ],
+          ),
+        ],
+        const SizedBox(height: 22),
+        Text('以上即发布后其他用户看到的样子',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11, color: context.t3)),
+      ],
+    );
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.isDark ? C.bg0 : C.lbg0,
@@ -127,6 +201,13 @@ class _PublishPageState extends State<PublishPage> {
         backgroundColor: context.isDark ? C.bg0 : C.lbg0,
         surfaceTintColor: Colors.transparent,
         actions: [
+          AppChip(
+            _preview ? '编辑' : '预览',
+            icon: _preview ? Lz.pencil : Lz.eye,
+            dense: true,
+            onTap: () => setState(() => _preview = !_preview),
+          ),
+          const SizedBox(width: 8),
           TextButton(
             onPressed: _sending ? null : _submit,
             child: Text(_sending ? (_uploading ? '上传图片…' : '发布中…') : '发布',
@@ -134,7 +215,7 @@ class _PublishPageState extends State<PublishPage> {
           ),
         ],
       ),
-      body: ListView(
+      body: _preview ? _previewView(context) : ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 30),
         children: [
           TextField(
