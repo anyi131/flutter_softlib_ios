@@ -339,6 +339,8 @@ class _AdminForumTabState extends State<AdminForumTab> {
     if (id <= 0) return;
     final titleCtrl = TextEditingController(text: '${p['title'] ?? ''}');
     final contentCtrl = TextEditingController(text: '${p['content'] ?? ''}');
+    final _payPriceCtrl = TextEditingController(text: '${p['pay_need'] ?? ''}');
+    final _payBodyCtrl = TextEditingController(text: '${p['pay_content'] ?? ''}');
     int secId = int.tryParse('${p['section_id'] ?? 0}') ?? 0;
     bool isTop = p['is_top'] == 1;
     final ok = await Get.dialog<bool>(StatefulBuilder(
@@ -378,6 +380,24 @@ class _AdminForumTabState extends State<AdminForumTab> {
                   helperText: '## 标题   - 列表   > 引用   | 表格 |   **粗体**',
                 ),
               ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _payPriceCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: '打赏价格（元，0 = 免费）',
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _payBodyCtrl,
+                minLines: 4,
+                maxLines: 10,
+                decoration: const InputDecoration(
+                  labelText: '打赏后可见内容（支持 图片/视频链接）',
+                  alignLabelWithHint: true,
+                ),
+              ),
               const SizedBox(height: 6),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
@@ -411,6 +431,8 @@ class _AdminForumTabState extends State<AdminForumTab> {
         content: contentCtrl.text,
         sectionId: secId,
         isTop: isTop ? 1 : 0,
+        payNeed: double.tryParse(_payPriceCtrl.text.trim()) ?? 0,
+        payContent: _payBodyCtrl.text,
       );
       ToastUtil.success('已保存');
       _load();
