@@ -97,12 +97,16 @@ class InlineMedals extends StatelessWidget {
   final List<String> medals;
   final bool isVip;
   final double size;
+  /// true：昵称旁用的紧凑小圆章（图标+光晕，不占宽度）
+  /// false：卡片里用的文字胶囊
+  final bool compact;
 
   const InlineMedals({
     super.key,
     this.medals = const [],
     this.isVip = false,
     this.size = 14,
+    this.compact = false,
   });
 
   @override
@@ -114,9 +118,41 @@ class InlineMedals extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (isVip) _badge('会员', medalTierOf('', isVip: true), size),
-          for (final m in shown) _badge(m, medalTierOf(m), size),
+          if (isVip)
+            compact
+                ? _dot(medalTierOf('', isVip: true), size)
+                : _badge('会员', medalTierOf('', isVip: true), size),
+          for (final m in shown)
+            compact ? _dot(medalTierOf(m), size) : _badge(m, medalTierOf(m), size),
         ],
+      ),
+    );
+  }
+
+  /// 紧凑圆章（昵称旁）
+  Widget _dot(MedalTier tier, double size) {
+    return Tooltip(
+      message: tier.icon.codePoint.toString(),
+      child: Container(
+        width: size,
+        height: size,
+        margin: const EdgeInsets.only(right: 3),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: tier.colors,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: tier.colors.last.withAlpha(tier.glow ? 140 : 90),
+              blurRadius: size * 0.5,
+              spreadRadius: tier.glow ? 0.8 : 0.2,
+            ),
+          ],
+        ),
+        child: Icon(tier.icon, size: size * 0.58, color: tier.fg),
       ),
     );
   }
