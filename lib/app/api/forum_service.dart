@@ -111,6 +111,18 @@ class ForumService {
     }
   }
 
+  /// 1109：导入链接内容
+  Future<Map<String, dynamic>> fetchLink(String url) async {
+    final r = await _dio.post('/api/softlib/forum/fetch_link',
+        data: {'url': url, ..._auth});
+    final d = r.data;
+    if (d is Map && d['code'] == 1 && d['data'] is Map) {
+      return Map<String, dynamic>.from(d['data'] as Map);
+    }
+    final msg = (d is Map ? d['msg'] : '导入失败');
+    throw Exception('$msg');
+  }
+
   Future<Map<String, dynamic>?> postInfo(int id) async {
     try {
       final r = await _dio.get('/api/softlib/forum/post_info',
