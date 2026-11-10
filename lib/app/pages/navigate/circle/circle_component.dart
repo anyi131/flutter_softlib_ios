@@ -351,6 +351,86 @@ class _CircleComponentState extends State<CircleComponent> {
   }
 
   /// 帖子卡（对齐 ARC 的 arc-post-row card 变体）
+
+  /// 1109：列表卡缩略图（渐变蒙层 + 计数）
+  Widget _listThumb(BuildContext context, String url, double size, String label) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            CachedNetworkImage(
+              imageUrl: url,
+              fit: BoxFit.cover,
+              memCacheWidth: 288,
+              placeholder: (_, __) =>
+                  Container(color: context.isDark ? C.bg2 : C.lbg2),
+              errorWidget: (_, __, ___) =>
+                  Container(color: context.isDark ? C.bg2 : C.lbg2),
+            ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomLeft,
+                  end: Alignment.topRight,
+                  colors: [
+                    Colors.black.withAlpha(150),
+                    Colors.transparent,
+                  ],
+                  stops: const [0, .55],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 7,
+              bottom: 6,
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Lz.image, size: 11, color: Colors.white),
+                const SizedBox(width: 3),
+                Text(label,
+                    style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        shadows: const [
+                          Shadow(blurRadius: 3, color: Colors.black45)
+                        ])),
+              ]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 1109：卡片文字区（标题 + 摘要）
+  Widget _cardText(Map<String, dynamic> p, BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('${p['title'] ?? ''}',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: context.t1,
+                height: 1.35)),
+        if ('${p['summary'] ?? ''}'.isNotEmpty) ...[
+          const SizedBox(height: 5),
+          Text('${p['summary']}',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 12.5, color: context.t2, height: 1.55)),
+        ],
+      ],
+    );
+  }
   Widget _postCard(Map<String, dynamic> p) {
     final u = (p['user'] as Map?) ?? const {};
     final imgs = (p['images'] as List?)?.whereType<String>().toList() ?? const <String>[];
