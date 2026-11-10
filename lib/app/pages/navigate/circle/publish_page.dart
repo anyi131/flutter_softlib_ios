@@ -8,6 +8,7 @@ import '../../../api/forum_service.dart';
 import '../../../api/post_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/ui.dart';
+import '../../../design/buttons.dart';
 import '../../../utils/err_text.dart';
 import '../../../utils/toast_util.dart';
 
@@ -100,19 +101,9 @@ class _PublishPageState extends State<PublishPage> {
   }
 
   Widget _mdBar() {
-    Widget b(String label, String insert) => GestureDetector(
-          onTap: () => _insertMd(insert),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              color: C.brand.withAlpha(18),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: C.brand.withAlpha(50)),
-            ),
-            child: Text(label,
-                style: TextStyle(fontSize: 12, color: C.brand, fontWeight: FontWeight.w600)),
-          ),
+    Widget b(String label, String insert) => Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: AppChip(label, onTap: () => _insertMd(insert)),
         );
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
