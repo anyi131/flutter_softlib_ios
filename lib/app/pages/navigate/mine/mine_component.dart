@@ -1435,14 +1435,16 @@ class MineComponent extends StatelessWidget {
                       }
                       final g = achs[i];
                       final got = g.claimed == 1;
+                      final tier = medalTierOf(
+                          g.titleMasked ? '神秘成就' : g.title);
                       return MedalBadge(
                         name: g.titleMasked && !got ? '神秘成就' : g.title,
-                        icon: _medalIcon(g),
+                        icon: tier.icon,
                         earned: got,
                         size: 54,
                         rarity: g.titleMasked
                             ? TitleRarity.legend
-                            : (got ? TitleRarity.epic : TitleRarity.common),
+                            : (got ? tier.rarity : TitleRarity.common),
                       );
                     },
                   ),
