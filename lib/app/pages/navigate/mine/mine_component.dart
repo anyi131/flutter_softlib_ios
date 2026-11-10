@@ -1438,7 +1438,7 @@ class MineComponent extends StatelessWidget {
                       final tier = medalTierOf(
                           g.titleMasked ? '神秘成就' : g.title);
                       return MedalBadge(
-                        name: g.titleMasked && !got ? '神秘成就' : g.title,
+                        name: (g.titleMasked || g.title.contains('？')) && !got ? '神秘成就' : g.title,
                         icon: tier.icon,
                         earned: got,
                         size: 54,
