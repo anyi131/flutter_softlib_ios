@@ -67,6 +67,10 @@ class _PublishPageState extends State<PublishPage> {
     final t = _title.text.trim();
     final c = _content.text.trim();
     if (t.length < 2) return ToastUtil.info('标题至少 2 个字');
+    if (_content.text.contains('[pay]') &&
+        (!_payOn || (double.tryParse(_payPrice.text.trim()) ?? 0) <= 0)) {
+      return ToastUtil.info('你标记了付费段落，请打开「付费可见」并填写打赏金额');
+    }
     if (c.length < 2) return ToastUtil.info('正文至少 2 个字');
     if (_section <= 0) return ToastUtil.info('请选择板块');
     if (_sending) return;
@@ -155,7 +159,8 @@ class _PublishPageState extends State<PublishPage> {
       selection: TextSelection.collapsed(
           offset: sel.start + 5 + chosen.length + 6),
     );
-    ToastUtil.success("已标记为付费可见");
+    if (!_payOn) setState(() => _payOn = true);
+    ToastUtil.success("已标记为付费可见，记得填打赏金额");
   }
 
   Widget _mdBar() {
