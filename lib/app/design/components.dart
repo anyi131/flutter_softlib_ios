@@ -447,15 +447,6 @@ Future<void> showAppActionSheet(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              margin: const EdgeInsets.only(top: 10, bottom: 6),
-              width: 38,
-              height: 4,
-              decoration: BoxDecoration(
-                color: (dark ? Colors.white : Colors.black).withAlpha(38),
-                borderRadius: BorderRadius.circular(99),
-              ),
-            ),
             if (title != null)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
