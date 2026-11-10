@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../design/ui.dart';
+import '../../../design/buttons.dart';
+import 'forum_gallery.dart';
+import '../../../design/video_box.dart';
+import 'forum_gallery.dart';
 
 /// 1109：帖子正文渲染（轻量富文本，零外部依赖）
 /// ① Markdown 子集：标题 / 列表 / 引用 / 分割线 / 粗体 / 图片 / 表格
@@ -8,8 +12,11 @@ import '../../../design/ui.dart';
 class PostContent extends StatelessWidget {
   final String text;
   final List<String> images;
+  final double payNeed;
+  final int payCount;
+  final VoidCallback? onUnlock;
 
-  const PostContent({super.key, required this.text, this.images = const []});
+  const PostContent({super.key, required this.text, this.images = const [], this.payNeed = 0, this.payCount = 0, this.onUnlock});
 
   static bool _looksLikeHtml(String s) {
     final t = s.trimLeft();
@@ -83,6 +90,38 @@ class PostContent extends StatelessWidget {
       s = s.replaceAll('@@T$i@@', tables[i]);
     }
     return s;
+  }
+
+  Widget _lockBlock(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: C.gold.withAlpha(context.isDark ? 26 : 14),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: C.gold.withAlpha(70)),
+      ),
+      child: Column(children: [
+        const Icon(Icons.lock_rounded, size: 24, color: C.gold),
+        const SizedBox(height: 8),
+        Text('这部分内容需要打赏 ¥${payNeed.toStringAsFixed(2)}',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w800,
+                color: context.t1)),
+        if (payCount > 0) ...[
+          const SizedBox(height: 3),
+          Text('已有 $payCount 人打赏',
+              style: TextStyle(fontSize: 10.5, color: context.t3)),
+        ],
+        if (onUnlock != null) ...[
+          const SizedBox(height: 12),
+          AppBtn('立即打赏解锁', icon: Icons.card_giftcard_rounded, onTap: onUnlock),
+        ],
+      ]),
+    );
   }
 
   static List<TextSpan> _spans(String src, TextStyle base, TextStyle bold) {
@@ -177,13 +216,36 @@ class PostContent extends StatelessWidget {
         continue;
       }
 
+      if (t == '[[PAYLOCK]]') {
+        flushPara();
+        blocks.add(_lockBlock(context));
+        continue;
+      }
+
+      final lowT = t.toLowerCase();
+      final isVideo = (lowT.startsWith('http') &&
+              (lowT.endsWith('.mp4') ||
+                  lowT.endsWith('.m3u8') ||
+                  lowT.endsWith('.webm'))) ||
+          lowT.startsWith('!video(');
+      if (isVideo) {
+        flushPara();
+        final vurl = lowT.startsWith('!video(')
+            ? t.substring(t.indexOf('(') + 1, t.lastIndexOf(')'))
+            : t;
+        blocks.add(InlineVideoCard(url: vurl));
+        continue;
+      }
+
       if (_isImageLine(t)) {
         flushPara();
         final url = _imageUrlOf(t);
         if (url != null && url.isNotEmpty) {
           blocks.add(Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: ClipRRect(
+            child: GestureDetector(
+              onTap: () => showImageGallery(context, [url], 0),
+              child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
                 url,
@@ -202,6 +264,7 @@ class PostContent extends StatelessWidget {
                         ),
                       ),
               ),
+            ),
             ),
           ));
         }
@@ -312,13 +375,16 @@ class PostContent extends StatelessWidget {
             for (final url in images)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: ClipRRect(
+                child: GestureDetector(
+                  onTap: () => showImageGallery(context, [url], 0),
+                  child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(url,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => const SizedBox.shrink()),
                 ),
               ),
+                ),
           ],
         ),
       ));
