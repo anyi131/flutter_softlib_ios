@@ -55,13 +55,21 @@ class _CircleComponentState extends State<CircleComponent> {
   }
 
   Future<void> _load() async {
-    _ensureSections();
     setState(() => _loading = true);
-    final secs = await _svc.sections();
-    final p = await _svc.posts(order: _order, limit: 20);
+    // 1109：sections/rank/posts 一次并发拉全，避免 _secList 异步竞态导致统计/横滑空白
+    final results = await Future.wait([
+      _svc.sections(),
+      _svc.posts(order: _order, limit: 20),
+      _rankList.isEmpty ? _svc.userRank() : Future.value(_rankList),
+    ]);
+    final secs = results[0] as List<Map<String, dynamic>>;
+    final p = results[1] as Map<String, dynamic>;
+    final rank = results[2] as List<Map<String, dynamic>>;
     if (!mounted) return;
     setState(() {
       _sections = secs;
+      _secList = secs;
+      _rankList = rank;
       _posts = (p['list'] as List? ?? [])
           .whereType<Map>()
           .map((e) => Map<String, dynamic>.from(e))
