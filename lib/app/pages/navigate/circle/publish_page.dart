@@ -203,22 +203,26 @@ class _PublishPageState extends State<PublishPage> {
               for (int i = 0; i < _images.length; i++)
                 Stack(
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.file(_images[i],
-                          width: 78, height: 78, fit: BoxFit.cover),
+                    // 1109：缩略图加圆角/描边，右上角换成 AppRemoveBadge（白底+红叉+投影）
+                    Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: context.isDark ? C.bg2 : Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: context.isDark ? C.bg3 : C.lbg2),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(_images[i],
+                            width: 74, height: 74, fit: BoxFit.cover),
+                      ),
                     ),
                     Positioned(
-                      right: 0,
-                      top: 0,
-                      child: GestureDetector(
+                      right: -6,
+                      top: -6,
+                      child: AppRemoveBadge(
                         onTap: () => setState(() => _images.removeAt(i)),
-                        child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: const BoxDecoration(
-                              color: Colors.black54, shape: BoxShape.circle),
-                          child: const Icon(Icons.close, size: 12, color: Colors.white),
-                        ),
                       ),
                     ),
                   ],
@@ -230,11 +234,22 @@ class _PublishPageState extends State<PublishPage> {
                     width: 78,
                     height: 78,
                     decoration: BoxDecoration(
-                      color: context.isDark ? C.bg2 : C.lbg2,
-                      borderRadius: BorderRadius.circular(8),
+                      color: context.isDark ? C.bg2 : C.brand.withAlpha(8),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: C.brand.withAlpha(context.isDark ? 40 : 26),
+                        width: 1,
+                      ),
                     ),
-                    child: Icon(Icons.add_photo_alternate_outlined,
-                        size: 24, color: context.t3),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add_rounded, size: 22, color: C.brand),
+                        const SizedBox(height: 2),
+                        Text('添加图片',
+                            style: TextStyle(fontSize: 9.5, color: C.brand)),
+                      ],
+                    ),
                   ),
                 ),
             ],
