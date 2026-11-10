@@ -83,6 +83,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
   /// ★ 1020：全局玻璃档位（auto/off/low/medium/high）
   String _glassMode = 'auto';
   String _forumTemplate = 'lean';
+  bool _forumReview = false;
   String _adminTemplate = 'light_card';
   // v52w：邀请配置
   final _inviteScoreCtrl = TextEditingController();
@@ -189,6 +190,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         _navTemplate = '${ui['nav_template'] ?? 'classic'}';
         _glassMode = '${ui['glass_mode'] ?? 'auto'}';
         _forumTemplate = '${ui['forum_template'] ?? 'lean'}';
+        _forumReview = (ui['forum_review'] ?? 0) == 1;
         _adminTemplate = '${ui['admin_template'] ?? 'light_card'}';
         // ★ 1014 修复：值实际存在 home.invite_score（保存时写这里），
         //   但原读取只看顶层 → 读不到就回退默认 50，
@@ -313,6 +315,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
         'nav_template': _navTemplate,
         'glass_mode': _glassMode,
         'forum_template': _forumTemplate,
+        'forum_review': _forumReview ? 1 : 0,
         'admin_template': _adminTemplate,
         'invite_share_text': _inviteShareCtrl.text.trim(),
         // ★ 需求3：支付弹窗文案（后台可配）
@@ -435,6 +438,7 @@ class _AdminUiTabState extends State<AdminUiTab> {
             _card('线报列表模板', _tipsTemplatePicker()),
             _card('我的页面模板', _mineTemplatePicker()),
             _card('圈子首页模板', _forumTemplatePicker()),
+            _card('发帖审核', _forumReviewRow()),
             _card('开屏页模板', _splashTemplatePicker()),
             _card('关于软件模板', _aboutTemplatePicker()),
             _card('登录/注册模板', _authTemplatePicker()),
@@ -1116,6 +1120,30 @@ class _AdminUiTabState extends State<AdminUiTab> {
     _mineTemplate,
     (v) => setState(() => _mineTemplate = v),
   );
+
+  Widget _forumReviewRow() => Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('普通用户发帖需审核',
+                    style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: context.t1)),
+                const SizedBox(height: 2),
+                Text('开启后普通用户发的帖子进入待审核，管理员通过才公开',
+                    style: TextStyle(fontSize: 10.5, color: context.t3)),
+              ],
+            ),
+          ),
+          Switch(
+            value: _forumReview,
+            onChanged: (v) => setState(() => _forumReview = v),
+          ),
+        ],
+      );
 
   Widget _forumTemplatePicker() => _chipRow(
     const [
