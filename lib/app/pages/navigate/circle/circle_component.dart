@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../api/forum_service.dart';
+import '../../../api/soft_service.dart';
 import '../../../api/user_service.dart';
 import '../../../design/app_anim.dart';
 import '../../../design/adaptive.dart';
@@ -88,14 +89,14 @@ class _CircleComponentState extends State<CircleComponent> {
           onRefresh: _load,
           child: CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(child: _header()),
+              SliverToBoxAdapter(child: _rich ? _headerRich() : _header()),
               SliverToBoxAdapter(child: _tabs()),
               if (_sections.isNotEmpty) ...[
                 SliverToBoxAdapter(child: _sectionTitle()),
-                SliverToBoxAdapter(child: _boardGrid()),
+                SliverToBoxAdapter(child: _rich ? _boardGridRich() : _boardGrid()),
               ],
               // 1109：用户榜独立区块（原来塞在帖子卡里，把布局挤乱）
-              SliverToBoxAdapter(child: _userRank()),
+              if (!_rich) SliverToBoxAdapter(child: _userRank()),
               if (_posts.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
@@ -145,6 +146,7 @@ class _CircleComponentState extends State<CircleComponent> {
                   ),
                 ),
               // 玻璃底栏悬浮：末尾留出 tab 高度，避免最后一条被挡住
+              if (_rich) SliverToBoxAdapter(child: _userRank()),
               SliverToBoxAdapter(child: SizedBox(height: context.tabSpace + 16)),
             ],
           ),
@@ -684,6 +686,234 @@ class _CircleComponentState extends State<CircleComponent> {
   }
 
   /// 1108z16：用户榜横滑（活跃用户 top8）
+  /// 1109：当前圈子首页模板（后台 ui_config.forum_template）
+  bool get _rich =>
+      (SoftService.instance.cachedConfig?.uiConfig.forumTemplate ?? 'lean') ==
+      'rich';
+
+  Widget _roundBtnWhite(IconData icon, VoidCallback onTap,
+      {bool solid = false}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: solid ? Colors.white : Colors.white.withAlpha(46),
+          border: Border.all(
+              color: solid ? Colors.white : Colors.white.withAlpha(64)),
+          boxShadow: solid
+              ? [
+                  BoxShadow(
+                      color: Colors.black.withAlpha(30),
+                      blurRadius: 12,
+                      offset: const Offset(0, 5)),
+                ]
+              : null,
+        ),
+        child: Icon(icon,
+            size: 17, color: solid ? C.brand : Colors.white),
+      ),
+    );
+  }
+
+  Widget _statChip(String v, String label) => Expanded(
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+          decoration: BoxDecoration(
+            color: Colors.white.withAlpha(38),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withAlpha(52)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(v,
+                  style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      height: 1.1)),
+              const SizedBox(height: 2),
+              Text(label,
+                  style: TextStyle(
+                      fontSize: 9.5, color: Colors.white.withAlpha(190))),
+            ],
+          ),
+        ),
+      );
+
+  /// 增强版头图：品牌渐变 + 统计
+  Widget _headerRich() {
+    final total = _secList.fold<int>(
+        0, (m, s) => m + (int.tryParse('${s['post_count'] ?? 0}') ?? 0));
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [C.brand, C.violet, const Color(0xFFA855F7)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: C.violet.withAlpha(70),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -50,
+            top: -60,
+            child: Container(
+              width: 160,
+              height: 160,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(colors: [
+                  Colors.white.withAlpha(52),
+                  Colors.white.withAlpha(0),
+                ]),
+              ),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('圈子',
+                          style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: -0.6,
+                              height: 1.15)),
+                      const SizedBox(height: 5),
+                      Text('和同好聊聊软件，分享好用的工具',
+                          style: TextStyle(
+                              fontSize: 11.5,
+                              color: Colors.white.withAlpha(200))),
+                    ],
+                  ),
+                ),
+                _roundBtnWhite(Lz.search,
+                    () => Get.to(() => const CircleSearchPage())),
+                const SizedBox(width: 8),
+                _roundBtnWhite(Lz.pencil, _openPublish, solid: true),
+              ]),
+              const SizedBox(height: 14),
+              Row(children: [
+                _statChip('$total', '帖子'),
+                const SizedBox(width: 8),
+                _statChip('${_secList.length}', '板块'),
+                const SizedBox(width: 8),
+                _statChip('${_rankList.length}', '活跃用户'),
+              ]),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 增强版板块：横滑彩色卡
+  Widget _boardGridRich() {
+    if (_secList.isEmpty) return const SizedBox.shrink();
+    const palettes = [
+      [Color(0xFF5B9BFF), Color(0xFF2E6BFF)],
+      [Color(0xFF34D399), Color(0xFF059669)],
+      [Color(0xFFFBBF24), Color(0xFFF59E0B)],
+      [Color(0xFFA78BFA), Color(0xFF7C4DFF)],
+      [Color(0xFFF472B6), Color(0xFFDB2777)],
+    ];
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: SizedBox(
+        height: 104,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: _secList.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          itemBuilder: (_, i) {
+            final s = _secList[i];
+            final name = '${s['name'] ?? ''}';
+            final c = palettes[i % palettes.length];
+            return GestureDetector(
+              onTap: () =>
+                  Get.to(() => SectionPage(section: s))?.then((_) => _load()),
+              child: Container(
+                width: 96,
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 9),
+                decoration: BoxDecoration(
+                  color: context.isDark ? C.bg2 : Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: context.isDark
+                      ? null
+                      : [
+                          BoxShadow(
+                              color: Colors.black.withAlpha(10),
+                              blurRadius: 14,
+                              offset: const Offset(0, 6)),
+                        ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 30,
+                      height: 30,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        gradient: LinearGradient(colors: c),
+                        boxShadow: [
+                          BoxShadow(
+                              color: c.last.withAlpha(90),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4)),
+                        ],
+                      ),
+                      child: Text(
+                        name.isNotEmpty ? name.substring(0, 1) : '版',
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white),
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w800,
+                            color: context.t1)),
+                    const SizedBox(height: 2),
+                    Text('${s['post_count'] ?? 0} 帖',
+                        style:
+                            TextStyle(fontSize: 10, color: context.t3)),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _userRank() {
     if (_rankList.isEmpty) return const SizedBox.shrink();
     return Container(
