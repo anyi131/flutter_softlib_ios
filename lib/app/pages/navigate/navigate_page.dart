@@ -121,7 +121,7 @@ class _NavigatePageState extends State<NavigatePage> {
         borderRadius: BorderRadius.circular(R.full),
         child: BackdropFilter(
           // 强模糊 + 极低不透明度 = iOS 26 的"液态玻璃"
-          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: Container(
             height: 66,
             decoration: BoxDecoration(
