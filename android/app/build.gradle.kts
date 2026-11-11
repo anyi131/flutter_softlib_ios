@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.soft.anyi"
-    compileSdk = 36
+    compileSdk = 37
 //    ndkVersion = flutter.ndkVersion
     ndkVersion = "27.0.12077973"
 
@@ -28,7 +28,7 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
-        targetSdk = 36
+        targetSdk = 37
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
@@ -36,6 +36,29 @@ android {
         ndk {
             // 只保留 arm64-v8a，减小体积；如需兼容老设备可加 armeabi-v7a
             abiFilters.add("arm64-v8a")
+        }
+    }
+
+    // ★ 1109 瘦身：插件 AAR 会带上 x86_64/armeabi-v7a 的 .so（本 App 用不到），
+    //   这些不会被 abiFilters 过滤，必须显式从打包里排除，省约 1.6MB
+    packaging {
+        jniLibs {
+            excludes += listOf(
+                "lib/x86/**",
+                "lib/x86_64/**",
+                "lib/armeabi-v7a/**",
+                "lib/mips/**",
+                "lib/mips64/**"
+            )
+        }
+        resources {
+            excludes += listOf(
+                "META-INF/*.kotlin_module",
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE*",
+                "META-INF/NOTICE*",
+                "META-INF/versions/**"
+            )
         }
     }
 
