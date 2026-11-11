@@ -611,7 +611,7 @@ class _UpdateCardState extends State<_UpdateCard> {
     final isDark = context.isDark;
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.72,
+        maxHeight: MediaQuery.sizeOf(context).height * 0.72,
       ),
       child: Container(
         clipBehavior: Clip.antiAlias,
@@ -944,7 +944,7 @@ class _UpdateCardState extends State<_UpdateCard> {
       radius: 20,
       top: [
         SizedBox(
-          height: MediaQuery.of(context).size.height * 0.5,
+          height: MediaQuery.sizeOf(context).height * 0.5,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
