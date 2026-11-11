@@ -19,6 +19,7 @@ import '../../../design/theme_controller.dart';
 import '../../../design/kit.dart';
 import '../../../design/lucide.dart';
 import '../../../design/ui.dart';
+import '../../../design/chunked.dart';
 import '../../../utils/toast_util.dart';
 import '../../../routes/app_pages.dart';
 import '../../navigate/navigate_logic.dart';
@@ -1323,19 +1324,24 @@ class MineComponent extends StatelessWidget {
   Widget _serviceGridInner(BuildContext context, MineLogic logic, int _) {
     final items = _serviceItems(logic);
 
+    // 1109: chunk the service grid (mine page first frame was 246ms)
     return KitCard(
       radius: R.lg,
       padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Column(
+      child: ChunkedListBuilder(
+        count: items.length,
+        first: 8,
+        step: 8,
+        sliverBuilder: (ctx, ready) => Column(
         children: [
-          for (int i = 0; i < items.length; i += context.serviceCols)
+          for (int i = 0; i < ready.length; i += context.serviceCols)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
                 children: [
                   for (int j = i; j < i + context.serviceCols; j++)
                     Expanded(
-                      child: j < items.length
+                      child: j < ready.length
                           ? _gridCell(context, items[j])
                           : const SizedBox.shrink(),
                     ),
@@ -1343,6 +1349,7 @@ class MineComponent extends StatelessWidget {
               ),
             ),
         ],
+      ),
       ),
     );
   }
