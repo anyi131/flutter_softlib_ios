@@ -1835,20 +1835,18 @@ class _AppDetailsPageState extends State<AppDetailsPage>
     //   避免「字段格式差异」或「本地缓存过期」导致会员被误判。
     final isVipUser = UserService.instance.user?.canFreeDownload == true;
 
+    // 1109：底栏与页面同色 + 0.6px 细分割线 —— 原来白色+大圆角+重阴影，
+    //   在浅灰页面上像一块浮起来的独立面板（用户反馈「不一体」）
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       decoration: BoxDecoration(
-        color: GlassTheme.enabled
-            ? GlassTheme.cardColor(context)
-            : (isDark ? C.bg2 : Colors.white),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(isDark ? 70 : 16),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+        color: isDark ? C.bg0 : C.lbg0,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? Colors.white12 : Colors.black.withAlpha(14),
+            width: 0.6,
           ),
-        ],
+        ),
       ),
       child: SafeArea(
         top: false,
