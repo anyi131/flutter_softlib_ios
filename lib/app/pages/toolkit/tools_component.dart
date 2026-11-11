@@ -712,7 +712,7 @@ class _ToolsComponentState extends State<ToolsComponent>
   Widget _iconGrid(List<Map<String, dynamic>> tools) {
     final n = Ad.columns(context, minItem: 82, max: 5);
     final w =
-        (MediaQuery.of(context).size.width -
+        (MediaQuery.sizeOf(context).width -
             context.pagePadding * 2 -
             8 * (n - 1)) /
         n;
