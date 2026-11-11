@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'lucide.dart';
 import 'ui.dart';
+import 'adaptive.dart';
 
 /// 1109：全局按钮体系 —— 统一替代散落各处的「裸 Container + Text」小按钮
 ///   · AppChip  小操作（编辑/置顶/删除…）：带图标、带描边、按压回弹
