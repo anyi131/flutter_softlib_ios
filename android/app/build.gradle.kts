@@ -130,6 +130,11 @@ flutter {
 }
 
 dependencies {
+    // 1109：把 androidx.core 钉在 1.17.x —— 1.19 要求 AGP 9.1，会卡住构建
+    constraints {
+        implementation("androidx.core:core:1.17.0")
+        implementation("androidx.core:core-ktx:1.17.0")
+    }
     // ★ 1015：QQ 登录 SDK（本地 jar，来自腾讯官方）
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     // ★ 1101：flutter_local_notifications desugaring 依赖
