@@ -491,7 +491,7 @@ class _VideoPageState extends State<VideoPage> {
         const ColoredBox(color: C.bg0),
         if (p != null && p.isNotEmpty)
           ImageFiltered(
-            imageFilter: ui.ImageFilter.blur(sigmaX: 42, sigmaY: 42),
+            imageFilter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
             child: Image.network(
               p,
               fit: BoxFit.cover,
