@@ -9,6 +9,7 @@ import 'package:flutter/semantics.dart';
 
 import 'app/jicun/jicun_prefs.dart';
 import 'app/utils/sound_util.dart';
+import 'app/utils/perf_probe.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
