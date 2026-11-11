@@ -125,7 +125,7 @@ class _GalleryPageState extends State<_GalleryPage> {
             duration: AppAnim.base,
             child: Container(
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 6,
+                top: MediaQuery.paddingOf(context).top + 6,
               ),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -172,7 +172,7 @@ class _GalleryPageState extends State<_GalleryPage> {
             Positioned(
               left: 0,
               right: 0,
-              bottom: MediaQuery.of(context).padding.bottom + 16,
+              bottom: MediaQuery.paddingOf(context).bottom + 16,
               child: Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -195,7 +195,7 @@ class _GalleryPageState extends State<_GalleryPage> {
             Positioned(
               left: 0,
               right: 0,
-              bottom: MediaQuery.of(context).padding.bottom + 48,
+              bottom: MediaQuery.paddingOf(context).bottom + 48,
               child: SizedBox(
                 height: 44,
                 child: ListView.separated(
