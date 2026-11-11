@@ -51,6 +51,8 @@ Future<void> main() async {
   if (kDebugMode || kSemanticsOn) {
     SemanticsBinding.instance.ensureSemantics();
   }
+  // 1109：真机帧耗时自动上报（>32ms 的帧聚合上报，服务端落 crash_log）
+  PerfProbe.install();
     // ★ 1016：音效开关读取（本地偏好）
     unawaited(SoundUtil.init());
     // ★ 1028：即存的本机偏好（自动粘贴/存储目录/通知开关）提前读，首屏即可用
