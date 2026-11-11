@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../design/adaptive.dart';
 import '../../design/ui.dart';
 import '../../design/lazy_indexed_stack.dart';
+import '../../utils/perf_probe.dart';
 import '../../design/app_anim.dart';
 import 'admin_save_bus.dart';
 import 'admin_ui_kit.dart';
@@ -65,6 +66,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
   void initState() {
     super.initState();
     _i = widget.tab.index;
+    PerfProbe.mark('后台·${_items[_i].$1}');
     widget.tab.addListener(_onTab);
   }
 
@@ -82,6 +84,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
   void _go(int i) {
     widget.tab.animateTo(i);
     setState(() => _i = i);
+    PerfProbe.mark('后台·${_items[i].$1}');
   }
 
   String get _tpl {
