@@ -138,6 +138,10 @@ class F {
 class Deco {
   Deco._();
 
+  /// 1109：页面背景子树缓存（光晕渐变很贵，36 处页面共用一份）
+  static Widget? _pageBgLight;
+  static Widget? _pageBgDark;
+
   static bool dark(BuildContext c) => Theme.of(c).brightness == Brightness.dark;
 
   /// ★ 1031f 黑色渐变遮罩（图片上压字用）：标准/柔和两档，浅深模式通用
@@ -216,100 +220,101 @@ class Deco {
     ),
   );
 
-  /// 1109：背景子树缓存 —— 36 处页面共用一份，切换页面不再重建
-  ///   （光晕渐变层每页新建是切页 100~250ms 尖峰的主要来源之一）
-  static Widget? _pageBgLight;
-  static Widget? _pageBgDark;
-
   static Widget pageBackground(BuildContext context, {Widget? child}) {
     final isDark = dark(context);
-    final cached = isDark ? _pageBgDark : _pageBgLight;
     return RepaintBoundary(
       child: Stack(
         fit: StackFit.expand,
         children: [
-          cached ?? _buildBg(isDark),
+          _pageBg(isDark),
           if (child != null) Positioned.fill(child: child),
         ],
       ),
     );
   }
-
-  /// 实际构建光晕背景（结果按深浅缓存，全 App 复用）
-  static Widget _buildBg(bool isDark) {
+  /// 1109：页面光晕背景（构建一次，全 App 复用）
+  static Widget _pageBg(bool isDark) {
+    final cached = isDark ? _pageBgDark : _pageBgLight;
+    if (cached != null) return cached;
     final w = Stack(
       fit: StackFit.expand,
       children: [
         Container(color: isDark ? C.bg0 : C.lbg0),
-          // 顶部品牌光晕
-          Positioned(
-            top: -180,
-            left: -100,
-            right: -100,
-            child: Container(
-              height: 420,
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  colors: [
-                    C.brand.withAlpha(isDark ? 62 : 34),
-                    C.brand.withAlpha(0),
-                  ],
-                  radius: 0.8,
-                ),
+        // 顶部品牌光晕
+        Positioned(
+          top: -180,
+          left: -100,
+          right: -100,
+          child: Container(
+            height: 420,
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                colors: [
+                  C.brand.withAlpha(isDark ? 62 : 34),
+                  C.brand.withAlpha(0),
+                ],
+                radius: 0.8,
               ),
             ),
           ),
-          // 右上青色副光晕
-          Positioned(
-            top: 180,
-            right: -140,
-            child: Container(
-              width: 340,
-              height: 340,
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  colors: [
-                    C.cyan.withAlpha(isDark ? 34 : 20),
-                    C.cyan.withAlpha(0),
-                  ],
-                ),
+        ),
+        // 右上青色副光晕
+        Positioned(
+          top: 180,
+          right: -140,
+          child: Container(
+            width: 340,
+            height: 340,
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                colors: [
+                  C.cyan.withAlpha(isDark ? 34 : 20),
+                  C.cyan.withAlpha(0),
+                ],
               ),
             ),
           ),
-          // 左下紫罗兰光晕
-          Positioned(
-            bottom: 60,
-            left: -150,
-            child: Container(
-              width: 320,
-              height: 320,
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  colors: [
-                    C.violet.withAlpha(isDark ? 30 : 18),
-                    C.violet.withAlpha(0),
-                  ],
-                ),
+        ),
+        // 左下紫罗兰光晕
+        Positioned(
+          bottom: 60,
+          left: -150,
+          child: Container(
+            width: 320,
+            height: 320,
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                colors: [
+                  C.violet.withAlpha(isDark ? 30 : 18),
+                  C.violet.withAlpha(0),
+                ],
               ),
             ),
           ),
-          // ★ 1020 玻璃模式：再加两处柔光斑
-          //   半透明卡片需要「底下有东西可透」才像玻璃；
-          //   只有纯色底时玻璃卡片看起来会发灰、显脏。
-          //   这里只加极淡的光斑（不模糊、不耗性能），卡片透过去就有层次了。
-          if (GlassTheme.enabled) ...[
-            Positioned(
-              top: 320,
-              left: -120,
-              child: _glowBlob(C.mint.withAlpha(isDark ? 26 : 16), 300),
-            ),
-            Positioned(
-              bottom: 220,
-              right: -130,
-              child: _glowBlob(C.brand.withAlpha(isDark ? 30 : 14), 320),
-            ),
-          ],
-          
+        ),
+        // ★ 1020 玻璃模式：柔光斑（半透明卡片需要"底下有东西可透"）
+        if (GlassTheme.enabled) ...[
+          Positioned(
+            top: 320,
+            left: -120,
+            child: _glowBlob(C.mint.withAlpha(isDark ? 26 : 16), 300),
+          ),
+          Positioned(
+            bottom: 220,
+            right: -130,
+            child: _glowBlob(C.brand.withAlpha(isDark ? 30 : 14), 320),
+          ),
+        ],
+      ],
+    );
+    if (isDark) {
+      _pageBgDark = w;
+    } else {
+      _pageBgLight = w;
+    }
+    return w;
+  }
+
 
   /// 玻璃卡片
   static Widget glass(
