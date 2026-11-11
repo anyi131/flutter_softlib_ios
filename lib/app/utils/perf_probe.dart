@@ -41,15 +41,12 @@ class PerfProbe {
       final ms = buildMs > rasterMs ? buildMs : rasterMs;
       _frames++;
       _sumMs += ms;
-      if (ms > (_worst?.buildDuration.inMicroseconds / 1000 ?? 0)) {
+      final worstNow = _worst?.buildDuration.inMicroseconds ?? 0;
+      if (ms * 1000 > worstNow) {
         _worst = t;
       }
       if (ms >= 32) {
         _slowCount++;
-        if (_worst == null ||
-            ms > (_worst!.buildDuration.inMicroseconds / 1000)) {
-          _worst = t;
-        }
       }
     }
     final now = DateTime.now();
