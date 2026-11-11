@@ -1,4 +1,12 @@
 allprojects {
+    // 1109：强制 androidx.core 1.17.x —— 1.19 要求 AGP 9.1，而 AGP 9 会打断
+    //   flutter_inappwebview 的构建脚本（proguard-android.txt 已废弃）
+    configurations.all {
+        resolutionStrategy {
+            force("androidx.core:core:1.17.0")
+            force("androidx.core:core-ktx:1.17.0")
+        }
+    }
     repositories {
         google()
         mavenCentral()
