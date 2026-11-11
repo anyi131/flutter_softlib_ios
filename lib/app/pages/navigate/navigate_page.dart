@@ -78,7 +78,7 @@ class _NavigatePageState extends State<NavigatePage> {
 
   @override
   Widget build(BuildContext context) {
-    final inset = MediaQuery.of(context).padding.bottom;
+    final inset = MediaQuery.paddingOf(context).bottom;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
