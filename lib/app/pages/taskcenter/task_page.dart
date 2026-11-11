@@ -158,7 +158,7 @@ class _TaskPageState extends State<TaskPage> {
         source: ImageSource.gallery,
         imageQuality: 80,
       );
-      if (f == null) return;
+      if (f == null || !mounted) return;
       setState(() => _shotLocal = f.path);
       ToastUtil.info('正在上传截图…');
       final url = await _svc.uploadShot(f.path);
