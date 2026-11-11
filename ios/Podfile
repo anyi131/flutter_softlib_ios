@@ -2,7 +2,7 @@
 #
 # ★ 与安卓无关，仅作用于 ios/ 目录。
 #   iOS 最低版本：13.0（Flutter 3.38 官方要求；各插件均满足）
-platform :ios, '14.0'
+platform :ios, '16.0'
 
 # CocoaPods 分析统计开关，保持默认即可
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
