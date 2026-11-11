@@ -63,9 +63,8 @@ class PerfProbe {
   static void _flush() {
     if (_frames == 0) return;
     final worstMs = _worst == null
-        ? 0
-        : (_worst!.buildDuration.inMicroseconds / 1000)
-            .clamp(0, 99999);
+        ? 0.0
+        : _worst!.buildDuration.inMicroseconds / 1000.0;
     final avgMs = _sumMs / _frames;
     final msg = '[$_page] frames=$_frames slow=$_slowCount '
         'avg=${avgMs.toStringAsFixed(1)}ms worst=${worstMs.toStringAsFixed(0)}ms';
