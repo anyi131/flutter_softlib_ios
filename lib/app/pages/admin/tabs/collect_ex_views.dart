@@ -199,7 +199,7 @@ class _CollectStatsViewState extends State<CollectStatsView> {
     final (label, value, color, icon) = c;
     return Container(
       width:
-          (MediaQuery.of(context).size.width -
+          (MediaQuery.sizeOf(context).width -
               context.pagePadding * 2 -
               (context.isCompact ? 10 : 14) -
               (context.isWide ? 40 : 28)) /
