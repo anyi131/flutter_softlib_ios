@@ -486,7 +486,7 @@ class _PublishPageState extends State<PublishPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.add_rounded, size: 22, color: C.brand),
+                            Icon(Icons.add_rounded, size: 22, color: C.brand),
                             const SizedBox(height: 2),
                             Text('添加图片',
                                 style: TextStyle(fontSize: 9.5, color: C.brand)),
