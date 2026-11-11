@@ -825,11 +825,9 @@ class _ToolsComponentState extends State<ToolsComponent>
             ],
           ),
         );
-                    return const SizedBox.shrink();
             }),
         ],
       ),
-    );
     );
   }
 
