@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../design/adaptive.dart';
 import '../../design/ui.dart';
+import '../../design/lazy_indexed_stack.dart';
 import '../../design/app_anim.dart';
 import 'admin_save_bus.dart';
 import 'admin_ui_kit.dart';
@@ -99,7 +100,8 @@ class _AdminShellV2State extends State<AdminShellV2> {
   @override
   Widget build(BuildContext context) {
     final cur = _i >= 0 && _i < _items.length ? _items[_i] : _items[0];
-    final body = IndexedStack(index: _i, children: widget.children);
+    // 1109: build admin tabs lazily (was a single 872ms frame)
+    final body = LazyIndexedStack(index: _i, children: widget.children);
 
     // ── 按模板切换**骨架结构** ──
     final shell = switch (_tpl) {
