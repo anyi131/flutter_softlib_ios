@@ -12,14 +12,14 @@ class ChunkedListBuilder extends StatefulWidget {
   const ChunkedListBuilder({
     super.key,
     required this.count,
-    required this.itemBuilder,
+    this.itemBuilder,
     required this.sliverBuilder,
     this.first = 24,
     this.step = 24,
   });
 
   final int count;
-  final Widget Function(BuildContext context, int index) itemBuilder;
+  final Widget Function(BuildContext context, int index)? itemBuilder;
   final Widget Function(BuildContext context, List<int> ready) sliverBuilder;
   final int first;
   final int step;
