@@ -586,7 +586,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
       right: 0,
       child: ClipRRect(
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: Container(
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top + 6,
