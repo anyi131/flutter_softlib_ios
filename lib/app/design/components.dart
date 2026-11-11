@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'buttons.dart';
 import 'lucide.dart';
 import 'ui.dart';
+import 'adaptive.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 1109：全局基础组件
