@@ -372,7 +372,7 @@ class AuthScaffold extends StatelessWidget {
   }
 
   Widget _buildSplit(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final leftW = w >= 600 ? w * 0.34 : w * 0.30;
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -454,7 +454,7 @@ class AuthScaffold extends StatelessWidget {
               width: double.infinity,
               padding: EdgeInsets.fromLTRB(
                 context.pagePadding,
-                MediaQuery.of(context).padding.top + 10,
+                MediaQuery.paddingOf(context).top + 10,
                 context.pagePadding,
                 34,
               ),
@@ -522,7 +522,7 @@ class AuthScaffold extends StatelessWidget {
           children: [
             Container(
               width: double.infinity,
-              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+              padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
               decoration: BoxDecoration(gradient: Deco.brandGradient),
               child: SizedBox(
                 height: 56,
