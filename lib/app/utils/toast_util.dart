@@ -100,7 +100,7 @@ class _ToastWidgetState extends State<_ToastWidget>
     return Positioned(
       left: 20,
       right: 20,
-      bottom: MediaQuery.of(context).padding.bottom + 90,
+      bottom: MediaQuery.paddingOf(context).bottom + 90,
       child: IgnorePointer(
         child: SlideTransition(
           position: Tween<Offset>(
