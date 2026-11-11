@@ -110,7 +110,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
               // ★ 骨架屏：内容框架先占位，数据到了就地填充
               //   避免「空白转圈 → 内容」的突变闪烁
               if (logic.isLoadingInfo) {
-                final topInset = MediaQuery.of(context).padding.top;
+                final topInset = MediaQuery.paddingOf(context).top;
                 return ListView(
                   physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.fromLTRB(
@@ -167,7 +167,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                 );
               }
               // 顶部留白避开悬浮玻璃顶栏，避免主卡被遮挡
-              final topInset = MediaQuery.of(context).padding.top;
+              final topInset = MediaQuery.paddingOf(context).top;
               // v331j：Obx 包裹——后台切详情模板后（含 Get 路由复用实例）立即生效
               return Obx(
                 () => ListView(
@@ -589,7 +589,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: Container(
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 6,
+              top: MediaQuery.paddingOf(context).top + 6,
               bottom: 8,
               left: 12,
               right: 12,
@@ -1468,7 +1468,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
                         : C.lbg2,
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.88,
+                        maxWidth: MediaQuery.sizeOf(context).width * 0.88,
                       ),
                       child: CachedNetworkImage(
                         // ★ 1101：截图条 230pt×3x≈690px，450 不够放大 1.5 倍
