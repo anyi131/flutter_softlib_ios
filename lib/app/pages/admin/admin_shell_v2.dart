@@ -678,7 +678,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                         _go(i);
                       },
                       child: Container(
-                        width: (MediaQuery.of(context).size.width - 62) / 3,
+                        width: (MediaQuery.sizeOf(context).width - 62) / 3,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           color: _i == i
