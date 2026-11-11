@@ -66,7 +66,7 @@ dependencies:
   device_marketing_names: ^2.0.5
   vibration: ^3.2.1
   wakelock_plus: ^1.8.2
-  flutter_local_notifications: ^23.0.0
+  flutter_local_notifications: ^22.3.3
   flutter_slidable: ^5.2.0
   skeletonizer: ^3.0.0
   qr_flutter: ^4.1.0
