@@ -352,7 +352,7 @@ class _PublishPageState extends State<PublishPage> {
           : ListView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: EdgeInsets.fromLTRB(
-                  16, 8, 16, 40 + MediaQuery.of(context).viewInsets.bottom),
+                  16, 8, 16, 40 + MediaQuery.viewInsetsOf(context).bottom),
               children: [
                 TextField(
                   controller: _title,
