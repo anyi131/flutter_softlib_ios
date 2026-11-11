@@ -611,7 +611,7 @@ class _SplashPageState extends State<SplashPage>
           _splashImage(),
           ClipRect(
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
               child: Container(color: Colors.black.withAlpha(90)),
             ),
           ),
