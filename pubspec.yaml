@@ -42,7 +42,7 @@ dependencies:
 
   json_serializable: ^6.13.0
   json_annotation: ^4.11.0
-  connectivity_plus: ^7.3.2
+  connectivity_plus: 7.3.0
   path_provider: ^2.1.5
   package_info_plus: ^10.2.2
   shared_preferences: ^2.5.4
