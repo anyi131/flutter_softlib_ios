@@ -512,11 +512,16 @@ class _CircleComponentState extends State<CircleComponent> {
             // 1109：列表卡图片三态——1张：左96px+蒙层计数；2~3张：下方横排；>3张：横排3张+末张+N
             if (imgs.length == 1)
               Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _listThumb(context, imgs.first, 96, '1图'),
                   const SizedBox(width: 10),
-                  Expanded(child: _cardText(p, context)),
+                  Expanded(
+                    child: SizedBox(
+                      height: 96,
+                      child: _cardText(p, context),
+                    ),
+                  ),
                 ],
               )
             else
