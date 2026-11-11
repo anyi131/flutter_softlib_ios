@@ -95,10 +95,17 @@ class _NavigatePageState extends State<NavigatePage> {
           builder: (logic) => Stack(
             children: [
               Deco.pageBackground(context),
+              // 1109：7 个 Tab 首帧全部构建是「点哪儿都卡一下」的根源。
+              //   改成懒构建：只构建已访问过的页，未访问的先放占位。
               PageView(
                 physics: const NeverScrollableScrollPhysics(),
                 controller: logic.pageController,
-                children: logic.pages,
+                children: [
+                  for (var i = 0; i < logic.pages.length; i++)
+                    logic.visited(i)
+                        ? logic.pages[i]
+                        : const SizedBox.shrink(),
+                ],
               ),
             ],
           ),
