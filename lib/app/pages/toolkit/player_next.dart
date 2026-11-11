@@ -348,7 +348,7 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   Widget _topBar() {
-    final padTop = MediaQuery.of(context).padding.top;
+    final padTop = MediaQuery.paddingOf(context).top;
     return Positioned(
       left: 0,
       right: 0,
@@ -417,7 +417,7 @@ class _VideoPageState extends State<VideoPage> {
     final v = _c?.value;
     final pos = _dragging ? _drag : (v?.position ?? Duration.zero);
     final dur = v?.duration ?? Duration.zero;
-    final padBottom = MediaQuery.of(context).padding.bottom;
+    final padBottom = MediaQuery.paddingOf(context).bottom;
     return Positioned(
       left: 0,
       right: 0,
@@ -508,7 +508,7 @@ class _VideoPageState extends State<VideoPage> {
     final v = c?.value;
     final pos = _dragging ? _drag : (v?.position ?? Duration.zero);
     final dur = v?.duration ?? Duration.zero;
-    final padBottom = MediaQuery.of(context).padding.bottom;
+    final padBottom = MediaQuery.paddingOf(context).bottom;
     return SafeArea(
       bottom: false,
       child: Padding(
@@ -611,7 +611,7 @@ class _VideoPageState extends State<VideoPage> {
   Widget _cover() {
     final p = widget.poster;
     final playing = _c?.value.isPlaying ?? false;
-    final mq = MediaQuery.of(context).size;
+    final mq = MediaQuery.sizeOf(context);
     final side = (mq.width - 96).clamp(180.0, 320.0).toDouble();
     return AnimatedScale(
       scale: playing ? 1 : .94,
