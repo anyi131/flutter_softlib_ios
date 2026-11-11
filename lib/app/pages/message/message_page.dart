@@ -132,7 +132,7 @@ class _MessagePageState extends State<MessagePage> {
 
   @override
   Widget build(BuildContext context) {
-    final topInset = MediaQuery.of(context).padding.top;
+    final topInset = MediaQuery.paddingOf(context).top;
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -538,7 +538,7 @@ class _MessagePageState extends State<MessagePage> {
     await Get.bottomSheet(
       Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.72,
+          maxHeight: MediaQuery.sizeOf(context).height * 0.72,
         ),
         decoration: BoxDecoration(
           color: context.isDark ? C.bg2 : Colors.white,
