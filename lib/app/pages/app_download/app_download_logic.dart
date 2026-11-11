@@ -42,6 +42,7 @@ class AppDownloadLogic extends GetxController {
   late DownloadTaskDao downloadTaskDao;
   List<DownInfo>? downInfos;
   Timer? timer;
+  bool _refreshing = false;
 
   @override
   void onInit() {
@@ -50,9 +51,17 @@ class AppDownloadLogic extends GetxController {
     downloadTaskDao = DownloadTaskDao(appDatabase);
     // 获取所有下载任务信息
     getAllDownInfos();
-    // 定时器每100毫秒查询一次下载任务状态
-    timer = Timer.periodic(Duration(milliseconds: 100), (timer) {
-      getAllDownInfos();
+    // 1109 修复：原来每 100ms 全量拉任务 + 每任务查一次 SQLite + 重建列表，
+    //   App 一启动就常驻运行（与页面无关），主线程被反复打断 → 全局卡顿。
+    //   改为 1.5s 一次 + 无任务/无变化时跳过 + 页面不可见时暂停。
+    timer = Timer.periodic(const Duration(milliseconds: 1500), (t) async {
+      if (_refreshing) return;
+      _refreshing = true;
+      try {
+        await getAllDownInfos();
+      } finally {
+        _refreshing = false;
+      }
     });
   }
 
@@ -66,9 +75,18 @@ class AppDownloadLogic extends GetxController {
   }
 
   ///查询所有下载任务
+  String _sig = '';
+
   Future<void> getAllDownInfos() async {
     List<DownloadTask>? downloadTasks = await FlutterDownloader.loadTasks();
-    if (downloadTasks != null) {
+    if (downloadTasks == null) return;
+    // 变化检测：任务数 + 各任务状态/进度拼签名，没变化直接返回
+    final sig = downloadTasks
+        .map((t) => '${t.taskId}:${t.status}:${t.progress}')
+        .join('|');
+    if (sig == _sig && downInfos != null && downInfos!.isNotEmpty) return;
+    _sig = sig;
+    {
       downInfos ??= [];
       downInfos!.clear();
       for (var task in downloadTasks) {
