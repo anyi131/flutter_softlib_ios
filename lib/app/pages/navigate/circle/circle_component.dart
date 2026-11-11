@@ -156,7 +156,10 @@ class _CircleComponentState extends State<CircleComponent> {
                               endIndent: 12,
                               color: context.isDark ? C.bg3 : C.lbg2,
                             ),
-                          _postCard(_posts[i]),
+                          RepaintBoundary(
+                            key: ValueKey('post_${_posts[i]['id']}'),
+                            child: _postCard(_posts[i]),
+                          ),
                         ],
                       ],
                     ),
