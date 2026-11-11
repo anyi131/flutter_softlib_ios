@@ -382,9 +382,16 @@ class SoftLibApp extends StatelessWidget {
             ThemeController.instance
                 .setDynamicSchemes(android: lightDynamic, ios: darkDynamic);
           });
-          return GetMaterialApp(
+          // 1109：性能浮层开关 —— 服务端 ui_config.perf_overlay=1 或
+      //   --dart-define=PERF=true 时显示 UI/Raster 线程耗时曲线
+      const bool kPerfByDefine = bool.fromEnvironment('PERF');
+      final bool kPerfByServer =
+          SoftService.instance.cachedConfig?.uiConfig.perfOverlay == true;
+      final bool perfVisible = kPerfByDefine || kPerfByServer;
+      return GetMaterialApp(
         title: '安逸软件汇',
         debugShowCheckedModeBanner: false,
+        showPerformanceOverlay: perfVisible,
         initialRoute: Routes.splash,
         getPages: AppPages.routes,
         builder: (context, child) {
