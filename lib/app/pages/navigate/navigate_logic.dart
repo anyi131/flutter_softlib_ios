@@ -26,6 +26,7 @@ import '../../api/user_service.dart';
 import '../../utils/permission_utils.dart';
 import '../../widgets/icon_font.dart';
 import '../../design/lucide.dart';
+import '../../utils/perf_probe.dart';
 
 class NavigateLogic extends GetxController with WidgetsBindingObserver {
   /// 底部 Tab —— 由后台「界面配置」动态决定（默认全开）
@@ -266,6 +267,9 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
   void changePage(int index) {
     currentIndex = index;
     _visitedTabs.add(index); // 1109：懒构建标记
+    // 1109：帧耗时按页面归类上报
+    const names = ['首页','应用','工具','圈子','线报','即存','我的'];
+    if (index >= 0 && index < names.length) PerfProbe.mark(names[index]);
     pageController.jumpToPage(index);
     update(['navigate']);
   }
