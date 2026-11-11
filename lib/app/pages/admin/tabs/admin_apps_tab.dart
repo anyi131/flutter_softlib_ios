@@ -1410,7 +1410,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                           child: OutlinedButton.icon(
                             onPressed: () async {
                               try {
-                                final picked = await FilePicker.platform
+                                final picked = await FilePicker
                                     .pickFiles(withData: false);
                                 if (picked == null || picked.files.isEmpty)
                                   return;
