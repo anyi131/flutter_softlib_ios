@@ -439,7 +439,7 @@ class _SplashPageState extends State<SplashPage>
       // 右上角倒计时
       Widget countdown() => Positioned(
         right: 20,
-        top: MediaQuery.of(context).padding.top + 12,
+        top: MediaQuery.paddingOf(context).top + 12,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
           decoration: BoxDecoration(
@@ -545,7 +545,7 @@ class _SplashPageState extends State<SplashPage>
                   24,
                   34,
                   24,
-                  MediaQuery.of(context).padding.bottom + 34,
+                  MediaQuery.paddingOf(context).bottom + 34,
                 ),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
@@ -2315,7 +2315,7 @@ class _SplashPageState extends State<SplashPage>
 
         // ── 右上角倒计时跳过 ──
         Positioned(
-          top: MediaQuery.of(context).padding.top + 8,
+          top: MediaQuery.paddingOf(context).top + 8,
           right: 14,
           child: _heroSkip(total: total, left: left, dark: dark, ringA: ringA),
         ),
