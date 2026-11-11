@@ -216,13 +216,31 @@ class Deco {
     ),
   );
 
+  /// 1109：背景子树缓存 —— 36 处页面共用一份，切换页面不再重建
+  ///   （光晕渐变层每页新建是切页 100~250ms 尖峰的主要来源之一）
+  static Widget? _pageBgLight;
+  static Widget? _pageBgDark;
+
   static Widget pageBackground(BuildContext context, {Widget? child}) {
     final isDark = dark(context);
+    final cached = isDark ? _pageBgDark : _pageBgLight;
     return RepaintBoundary(
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Container(color: isDark ? C.bg0 : C.lbg0),
+          cached ?? _buildBg(isDark),
+          if (child != null) Positioned.fill(child: child),
+        ],
+      ),
+    );
+  }
+
+  /// 实际构建光晕背景（结果按深浅缓存，全 App 复用）
+  static Widget _buildBg(bool isDark) {
+    final w = Stack(
+      fit: StackFit.expand,
+      children: [
+        Container(color: isDark ? C.bg0 : C.lbg0),
           // 顶部品牌光晕
           Positioned(
             top: -180,
@@ -291,11 +309,7 @@ class Deco {
               child: _glowBlob(C.brand.withAlpha(isDark ? 30 : 14), 320),
             ),
           ],
-          if (child != null) Positioned.fill(child: child),
-        ],
-      ),
-    );
-  }
+          
 
   /// 玻璃卡片
   static Widget glass(
