@@ -565,7 +565,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
     Get.bottomSheet(
       Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.78,
+          maxHeight: MediaQuery.sizeOf(context).height * 0.78,
         ),
         decoration: BoxDecoration(
           color: context.isDark ? C.bg1 : Colors.white,
