@@ -83,6 +83,10 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
   List<NavigationDestination> labels = List.of(_baseLabels);
   List<Widget> pages = _basePages();
 
+  /// 1109：懒构建 —— 记录用户实际到过的 Tab，没到过的先不 build
+  final Set<int> _visitedTabs = {0};
+  bool visited(int i) => _visitedTabs.contains(i);
+
   /// 维护页是否正显示（防止重复 push）
   bool _maintainShown = false;
 
@@ -261,6 +265,7 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
   /// 切换页面
   void changePage(int index) {
     currentIndex = index;
+    _visitedTabs.add(index); // 1109：懒构建标记
     pageController.jumpToPage(index);
     update(['navigate']);
   }
