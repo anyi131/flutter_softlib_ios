@@ -106,7 +106,7 @@ class _VipPageState extends State<VipPage> {
 
   @override
   Widget build(BuildContext context) {
-    final topInset = MediaQuery.of(context).padding.top;
+    final topInset = MediaQuery.paddingOf(context).top;
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -229,7 +229,7 @@ class _VipPageState extends State<VipPage> {
         16,
         12,
         16,
-        MediaQuery.of(context).padding.bottom + 12,
+        MediaQuery.paddingOf(context).bottom + 12,
       ),
       decoration: BoxDecoration(
         color: context.isDark ? C.bg1.withAlpha(245) : Colors.white,
