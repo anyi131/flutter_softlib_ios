@@ -12,6 +12,7 @@ import '../../design/adaptive.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
+import '../../design/chunked.dart';
 import '../../api/user_service.dart';
 import '../../utils/err_text.dart';
 import '../../utils/tool_ctx.dart';
@@ -716,10 +717,18 @@ class _ToolsComponentState extends State<ToolsComponent>
             context.pagePadding * 2 -
             8 * (n - 1)) /
         n;
-    return Wrap(
-      spacing: 8,
-      runSpacing: 14,
-      children: tools.map<Widget>((t) {
+    // 1109：208 个图标分帧构建（原来单帧 200ms+）
+    return ChunkedListBuilder(
+      count: tools.length,
+      first: 20,
+      step: 20,
+      sliverBuilder: (ctx, ready) => Wrap(
+        spacing: 8,
+        runSpacing: 14,
+        children: [
+          for (final i in ready)
+            Builder(builder: (context) {
+              final t = tools[i];
         final fav = _favIds.contains(int.tryParse('${t['id']}') ?? 0);
         return SizedBox(
           width: w,
@@ -816,7 +825,11 @@ class _ToolsComponentState extends State<ToolsComponent>
             ],
           ),
         );
-      }).toList(),
+                    return const SizedBox.shrink();
+            }),
+        ],
+      ),
+    );
     );
   }
 
