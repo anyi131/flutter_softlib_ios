@@ -28,6 +28,13 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 60
     steps:
+      - name: Select newest Xcode
+        run: |
+          ls /Applications | grep -i xcode || true
+          LATEST=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$LATEST" ]; then sudo xcode-select -s "$LATEST"; fi
+          xcodebuild -version
+
       - name: Checkout
         uses: actions/checkout@v4
 
