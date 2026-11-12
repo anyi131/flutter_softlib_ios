@@ -1315,18 +1315,18 @@ class MineLogic extends GetxController {
           cli.close();
           if (bytes.isNotEmpty) {
             await target.writeAsBytes(bytes, flush: true);
-            await Share.shareXFiles(
-              [XFile(target.path)],
+            await SharePlus.instance.share(ShareParams(
+              files: [XFile(target.path)],
               text: text,
               subject: name,
-            );
+            ));
             return;
           }
         } catch (_) {
           // 忽略，走下面的纯文字分享
         }
       }
-      await Share.share(text, subject: name);
+      await SharePlus.instance.share(ShareParams(text: text, subject: name));
     } catch (e) {
       ToastUtil.error('分享失败：${ErrText.of(e)}');
     }
