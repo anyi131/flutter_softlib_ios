@@ -77,9 +77,9 @@ class _InvitePosterPageState extends State<InvitePosterPage> {
       return;
     }
     try {
-      await Share.shareXFiles([
-        XFile.fromData(bytes, mimeType: 'image/png', name: 'invite.png'),
-      ], text: '我的邀请码：${widget.code}');
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile.fromData(bytes, mimeType: 'image/png', name: 'invite.png')],
+        text: '我的邀请码：${widget.code}'));
     } catch (_) {
       await _save();
     }
