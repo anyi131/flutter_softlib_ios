@@ -135,7 +135,11 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                       20,
                     ),
                     itemCount: _list.length,
-                    itemBuilder: (context, i) => _userCard(_list[i]),
+                    // 1109：卡片重绘隔离
+                    itemBuilder: (context, i) => RepaintBoundary(
+                      key: ValueKey('u_${_list[i]['id']}'),
+                      child: _userCard(_list[i]),
+                    ),
                   ),
           ),
         ),
