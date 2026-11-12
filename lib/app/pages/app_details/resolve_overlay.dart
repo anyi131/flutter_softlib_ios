@@ -38,9 +38,23 @@ class ResolveOverlay {
     final ctx = Get.context;
     if (ctx == null) return;
     final _ctx = SafeCtx.of();
-    if (_ctx != null) {
-      Overlay.of(_ctx).insert(_entry!);
+    if (_ctx == null) return;
+    // ★ 1109：Overlay.of() 在路由过渡/弹窗遮盖期间会断言失败（表现为
+    //   Null check operator，真机 /appDetails 高频出现）——
+    //   浮层显示失败绝不阻断下载主流程，下一帧再试一次。
+    try {
+      Overlay.of(_ctx, rootOverlay: true).insert(_entry!);
       _inserted = true;
+    } catch (_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          final c2 = SafeCtx.of();
+          if (c2 != null && _entry != null && !_inserted) {
+            Overlay.of(c2, rootOverlay: true).insert(_entry!);
+            _inserted = true;
+          }
+        } catch (_) {}
+      });
     }
   }
 
