@@ -125,6 +125,28 @@ class MainActivity : FlutterActivity() {
     }
 
     // ★ 1015：把 QQ 授权结果转发给桥接（新版 Flutter 已无 PluginRegistry API）
+    // 1109：Android 高刷 —— 请求设备最高刷新率模式（120Hz 机型生效，60Hz 机型无感）
+    override fun onResume() {
+        super.onResume()
+        try {
+            val display = if (android.os.Build.VERSION.SDK_INT >= 30) {
+                display
+            } else {
+                @Suppress("DEPRECATION")
+                window.windowManager.defaultDisplay
+            }
+            val modes = display?.supportedModes ?: return
+            val best = modes.maxByOrNull { it.refreshRate } ?: return
+            val lp = window.attributes
+            if (lp.preferredDisplayModeId != best.modeId) {
+                lp.preferredDisplayModeId = best.modeId
+                window.attributes = lp
+            }
+        } catch (e: Throwable) {
+            android.util.Log.w("HighRefresh", "onResume: ${e.message}")
+        }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         try {
             QQLoginBridge.handleActivityResult(requestCode, resultCode, data)
