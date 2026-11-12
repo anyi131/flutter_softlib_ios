@@ -461,9 +461,9 @@ class AppDownloadLogic extends GetxController {
       return;
     }
     try {
-      await Share.shareXFiles([
-        XFile(path),
-      ], text: dowInfo?.appName ?? '分享一个安装包');
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(path)],
+        text: dowInfo?.appName ?? '分享一个安装包'));
     } catch (e) {
       ToastUtil.error('分享失败：$e');
     }
