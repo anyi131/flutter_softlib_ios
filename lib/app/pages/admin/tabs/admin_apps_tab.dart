@@ -1412,9 +1412,9 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
                               try {
                                 // file_picker 13：直接返回 List<PlatformFile>
                                 final picked =
-                                    await FilePicker.pickFiles();
-                                if (picked == null || picked.isEmpty) return;
-                                final f = picked.first;
+                                    await FilePicker().pickFiles();
+                                if (picked == null || picked.files.isEmpty) return;
+                                final f = picked.files.first;
                                 setS(() {
                                   parsing = true;
                                   err = '';
