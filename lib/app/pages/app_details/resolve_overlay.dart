@@ -33,17 +33,32 @@ class ResolveOverlay {
     final ctx = Get.context;
     if (ctx == null) return;
     final _ctx = SafeCtx.of();
-    if (_ctx != null) Overlay.of(_ctx).insert(_entry!);
+    if (_ctx != null) {
+      Overlay.of(_ctx).insert(_entry!);
+      _inserted = true;
+    }
   }
 
   /// 更新阶段文案
   static void stage(String text) => _state?.setStage(text);
 
   /// 关闭（幂等）
+  /// ★ 1109：remove() 对「从未 insert」或「已被移除」的 entry 会抛
+  ///   Null check operator —— 真机日志 zone 通道反复出现（/index、/appDetails）。
+  ///   这里：只在真正插入过时才 remove，并兜异常。
+  static bool _inserted = false;
+
   static void dismiss() {
-    _entry?.remove();
+    final e = _entry;
     _entry = null;
     _state = null;
+    if (e == null || !_inserted) return;
+    _inserted = false;
+    try {
+      if (e.mounted) {
+        e.remove();
+      }
+    } catch (_) {}
   }
 }
 
