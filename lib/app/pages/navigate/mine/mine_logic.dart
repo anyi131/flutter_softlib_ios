@@ -68,6 +68,7 @@ class MineLogic extends GetxController {
   // ★ 1031q：全局消息红点轮询（30 秒一次，仅前台）
   bool _pollPaused = false;
   Timer? _msgPoll;
+  _LifeObs? _lifeObs;
   void _startMsgPoll() {
     _msgPoll?.cancel();
     _msgPoll = Timer.periodic(const Duration(seconds: 30), (_) {
@@ -335,6 +336,10 @@ class MineLogic extends GetxController {
   bool _msgOpening = false;
   @override
   void onClose() {
+    if (_lifeObs != null) {
+      WidgetsBinding.instance.removeObserver(_lifeObs!);
+      _lifeObs = null;
+    }
     _msgPoll?.cancel();
     super.onClose();
   }
