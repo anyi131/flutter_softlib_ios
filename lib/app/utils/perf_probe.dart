@@ -4,6 +4,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
 import '../api/global_error_reporter.dart';
+import '../api/soft_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 /// 1109：真机帧耗时采集 —— 不需要用户截图，App 自己上报
 ///
@@ -23,11 +25,13 @@ class PerfProbe {
   static String _page = '';
   static DateTime _lastFlush = DateTime.now();
   static bool _installed = false;
+  static String _version = '';
 
   static void install() {
     if (_installed) return;
     _installed = true;
     SchedulerBinding.instance.addTimingsCallback(_onTimings);
+    PackageInfo.fromPlatform().then((i) => _version = 'v${i.version}+${i.buildNumber}').catchError((_) {});
   }
 
   /// 页面切换时调用，让上报能按页面归类
@@ -66,7 +70,14 @@ class PerfProbe {
     final msg = '[$_page] frames=$_frames slow=$_slowCount '
         'avg=${avgMs.toStringAsFixed(1)}ms worst=${worstMs.toStringAsFixed(0)}ms';
     // 走现成的上报通道（节流每小时 20 条由通道自己控制）
-    GlobalErrorReporter.report('perf', msg);
+    // 1109：带版本号，服务器日报才能按版本对比
+    try {
+      SoftService.reportLogStatic(
+        tag: 'perf',
+        error: msg,
+        version: _version,
+      ).catchError((_) {});
+    } catch (_) {}
     _frames = 0;
     _sumMs = 0;
     _slowCount = 0;
