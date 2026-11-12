@@ -565,7 +565,8 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                         width: 40,
                         height: 40,
                         fit: BoxFit.cover,
-                      ),
+  errorWidget: (c, u, e) => const ColoredBox(color: Color(0x14FFFFFF), child: SizedBox.expand()),
+),
               ),
               const SizedBox(width: 10),
               Expanded(
