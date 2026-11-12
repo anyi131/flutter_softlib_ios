@@ -416,7 +416,8 @@ class _ReportListWidgetState extends State<ReportListWidget>
                 memCacheWidth: 900,
                 imageUrl: img,
                 fit: BoxFit.cover,
-              ),
+  errorWidget: (c, u, e) => const ColoredBox(color: Color(0x14FFFFFF), child: SizedBox.expand()),
+),
             ),
             Padding(
               padding: const EdgeInsets.all(12),
