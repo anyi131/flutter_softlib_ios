@@ -132,6 +132,9 @@ class _AppStaggerInState extends State<AppStaggerIn>
 
   @override
   Widget build(BuildContext context) {
+    // 1109：动画结束直接返回 child，不再包 Opacity/Transform
+    //   （AnimatedBuilder 每帧通知 + Opacity 离屏合成，长列表滚动时是持续成本）
+    if (_c.value >= 1) return widget.child;
     return AnimatedBuilder(
       animation: _a,
       builder: (context, child) {
