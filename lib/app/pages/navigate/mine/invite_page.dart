@@ -83,7 +83,7 @@ class _InvitePageState extends State<InvitePage> {
   }
 
   Future<void> _share() async {
-    await Share.share(_shareText, subject: '安逸软件汇邀请');
+    await SharePlus.instance.share(ShareParams(text: _shareText, subject: '安逸软件汇邀请'));
   }
 
   /// ★ 1016：生成邀请海报（图片，带二维码）
