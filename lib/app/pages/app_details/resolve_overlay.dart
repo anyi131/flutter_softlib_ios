@@ -25,6 +25,11 @@ class ResolveOverlay {
 
   /// 显示（幂等：已在显示则更新阶段文案）
   static void show({String stage = '正在解析下载地址…'}) {
+    // 1109：残留的「未插入」entry 先清理（上次 ctx 为 null 时会留下）
+    if (_entry != null && !_inserted) {
+      _entry = null;
+      _state = null;
+    }
     if (_entry != null) {
       _state?.setStage(stage);
       return;
