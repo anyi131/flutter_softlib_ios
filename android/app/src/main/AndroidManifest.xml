@@ -24,6 +24,12 @@
             android:enableOnBackInvokedCallback="true"
             android:icon="@mipmap/ic_launcher">
 
+        <!-- ★ 1109 决定性实验：关闭 Impeller，回落 Skia 渲染 -->
+        <meta-data
+                android:name="io.flutter.embedding.android.EnableImpeller"
+                android:value="false" />
+
+
         <!-- ✅ 这里插入 flutter_downloader 的 Provider 配置 -->
         <provider
                 android:name="vn.hunghd.flutterdownloader.DownloadedFileProvider"
