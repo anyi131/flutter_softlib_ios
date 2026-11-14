@@ -40,6 +40,10 @@ class _PostPageState extends State<PostPage> {
   /// 1109：点赞防连点 —— 原来没有锁，快速点两下 = 两个请求，最终状态不确定，
   /// 数字会 0→1→0 闪跳。
   bool _liking = false;
+  /// ★ 1109：点赞状态用 ValueNotifier 隔离 —— 原来 setState 重建整个详情页
+  ///   （图片/评论全部重新布局），肉眼就是「闪一下」。
+  late final ValueNotifier<bool> _likedVN = ValueNotifier<bool>(false);
+  late final ValueNotifier<int> _likesVN = ValueNotifier<int>(0);
 
   @override
   void initState() {
@@ -49,6 +53,8 @@ class _PostPageState extends State<PostPage> {
 
   @override
   void dispose() {
+    _likedVN.dispose();
+    _likesVN.dispose();
     _input.dispose();
     super.dispose();
   }
@@ -57,6 +63,8 @@ class _PostPageState extends State<PostPage> {
     final p = await _svc.postInfo(widget.postId);
     final c = await _svc.comments(widget.postId);
     if (!mounted) return;
+    _likedVN.value = (p['liked'] ?? 0) == 1;
+    _likesVN.value = int.tryParse('${p['likes'] ?? 0}') ?? 0;
     setState(() {
       _post = p;
       _comments = c;
@@ -96,25 +104,22 @@ class _PostPageState extends State<PostPage> {
     final oldLikes = _post!['likes'];
     final wasLiked = oldLiked == 1;
     final cur = int.tryParse('${oldLikes ?? 0}') ?? 0;
-    setState(() {
-      _post!['liked'] = wasLiked ? 0 : 1;
-      _post!['likes'] = (cur + (wasLiked ? -1 : 1)) < 0
-          ? 0
-          : (cur + (wasLiked ? -1 : 1));
-    });
+    _likedVN.value = !wasLiked;
+    _likesVN.value = (cur + (wasLiked ? -1 : 1)) < 0
+        ? 0
+        : (cur + (wasLiked ? -1 : 1));
     try {
       final r = await _svc.toggleLike(widget.postId);
       if (!mounted || _post == null) return;
-      setState(() {
-        _post!['liked'] = r['liked'];
-        _post!['likes'] = r['likes'];
-      });
+      final sLiked = (r['liked'] ?? 0) == 1;
+      final sLikes =
+          int.tryParse('${r['likes'] ?? _likesVN.value}') ?? _likesVN.value;
+      if (sLiked != _likedVN.value) _likedVN.value = sLiked;
+      if (sLikes != _likesVN.value) _likesVN.value = sLikes;
     } catch (e) {
-      if (mounted && _post != null) {
-        setState(() {
-          _post!['liked'] = oldLiked;
-          _post!['likes'] = oldLikes;
-        });
+      if (mounted) {
+        _likedVN.value = wasLiked;
+        _likesVN.value = cur;
       }
       ToastUtil.error(ErrText.of(e));
     } finally {
@@ -386,11 +391,20 @@ class _PostPageState extends State<PostPage> {
                           const SizedBox(height: 16),
                           Row(
                             children: [
-                              _action(
-                                p['liked'] == 1 ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                '${p['likes'] ?? 0}',
-                                p['liked'] == 1 ? C.danger : context.t2,
-                                _like,
+                              ValueListenableBuilder<bool>(
+                                valueListenable: _likedVN,
+                                builder: (_, liked, __) =>
+                                    ValueListenableBuilder<int>(
+                                  valueListenable: _likesVN,
+                                  builder: (_, likes, ___) => _action(
+                                    liked
+                                        ? Icons.favorite_rounded
+                                        : Icons.favorite_border_rounded,
+                                    '$likes',
+                                    liked ? C.danger : context.t2,
+                                    _like,
+                                  ),
+                                ),
                               ),
                               const SizedBox(width: 18),
                               _action(
