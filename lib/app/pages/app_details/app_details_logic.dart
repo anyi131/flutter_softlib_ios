@@ -1239,13 +1239,19 @@ class AppDetailsLogic extends GetxController {
     // ★ 1029i：下载前并发探测蓝奏各节点（每条只取 1KB），挑真能连通的那条。
     //   解析到坏 IPv6 或单节点抽风时，不会再让用户白等 30 秒才失败。
     var dlUrl = parseUrl!;
-    try {
-      if (LzyLine.isDirect(dlUrl)) {
-        ResolveOverlay.stage('选择下载线路…');
-        final alive = await LzyLine.pickAlive(dlUrl);
-        if (alive != null && alive.isNotEmpty) dlUrl = alive;
-      }
-    } catch (_) {}
+    // ★ 1109：本机直连蓝奏 CDN 卡死过 → 直接用服务端中转，不再白等
+    if (_preferProxy && _proxyFallbackUrl.isNotEmpty) {
+      dlUrl = _proxyFallbackUrl;
+      ResolveOverlay.dismiss();
+    } else {
+      try {
+        if (LzyLine.isDirect(dlUrl)) {
+          ResolveOverlay.stage('选择下载线路…');
+          final alive = await LzyLine.pickAlive(dlUrl);
+          if (alive != null && alive.isNotEmpty) dlUrl = alive;
+        }
+      } catch (_) {}
+    }
     final _savedDir0 = await DownloadDir.path();
     // ★ 1109：优先多连接分段下载（background_downloader），失败自动回退旧引擎
     final newTaskId = await DlEngine.enqueue(
@@ -1297,6 +1303,8 @@ class AppDetailsLogic extends GetxController {
   /// 轮询下载进度（保证进度条实时更新）
   void _startProgressPolling() {
     _progressTimer?.cancel();
+    _stallHandled = false;
+    _stallAnchor = null;
     _progressTimer = Timer.periodic(const Duration(milliseconds: 700), (
       t,
     ) async {
@@ -1311,6 +1319,24 @@ class AppDetailsLogic extends GetxController {
       if (t0.status == DownloadTaskStatus.complete) {
         t.cancel();
         _onDownloadComplete();
+      }
+      // ★ 1109：0 字节卡死主动兜底（原来只有 failed 才走兜底，CDN 不通时
+      //   任务永远 running，兜底等于摆设）
+      if (t0.status == DownloadTaskStatus.running && !_stallHandled) {
+        final now = DateTime.now();
+        if (t0.progress > 0) {
+          _stallAnchor = null;
+        } else {
+          _stallAnchor ??= now;
+          if (now.difference(_stallAnchor!).inSeconds >= 8) {
+            _stallHandled = true;
+            _stallAnchor = null;
+            t.cancel();
+            if (await _retryWithProxy()) return;
+            _showDownloadFailedSheet();
+            return;
+          }
+        }
       }
       if (t0.status == DownloadTaskStatus.canceled ||
           t0.status == DownloadTaskStatus.failed) {
@@ -1410,6 +1436,13 @@ class AppDetailsLogic extends GetxController {
 
   /// ★ 153.1：本次解析的分享页地址（本地解析没有 proxyUrl 时，失败后用它补取）
   String _sharePageUrlForProxy = '';
+
+  /// ★ 1109：0 字节停滞计时。flutter_downloader 在 CDN 不可达时会一直报
+  ///   running + 0 字节，永远不进 failed —— 导致 _retryWithProxy() 兜底从不触发。
+  DateTime? _stallAnchor;
+  bool _stallHandled = false;
+  /// 本机直连已卡死过 → 后续下载直接走中转
+  static bool _preferProxy = false;
 
   void _showDownloadFailedSheet() {
     _failCount++;
@@ -1603,6 +1636,7 @@ class AppDetailsLogic extends GetxController {
           appSize: appInfo?.fileSize ?? '',
         );
       } catch (_) {}
+      _preferProxy = true; // ★ 1109：记住本机直连不通，后续直接走中转
       _uiPhase = phaseDownloading;
       _shownProgress = 0;
       _explicitReset = false;
