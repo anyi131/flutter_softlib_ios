@@ -26,7 +26,6 @@ import '../../api/user_service.dart';
 import '../../utils/permission_utils.dart';
 import '../../widgets/icon_font.dart';
 import '../../design/lucide.dart';
-import '../../utils/perf_probe.dart';
 
 class NavigateLogic extends GetxController with WidgetsBindingObserver {
   /// 底部 Tab —— 由后台「界面配置」动态决定（默认全开）
@@ -83,10 +82,6 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
   // 之前初始只有 5 个（缺即存），配置拉取失败时会少一个 Tab。
   List<NavigationDestination> labels = List.of(_baseLabels);
   List<Widget> pages = _basePages();
-
-  /// 1109：懒构建 —— 记录用户实际到过的 Tab，没到过的先不 build
-  final Set<int> _visitedTabs = {0};
-  bool visited(int i) => _visitedTabs.contains(i);
 
   /// 维护页是否正显示（防止重复 push）
   bool _maintainShown = false;
@@ -266,10 +261,6 @@ class NavigateLogic extends GetxController with WidgetsBindingObserver {
   /// 切换页面
   void changePage(int index) {
     currentIndex = index;
-    _visitedTabs.add(index); // 1109：懒构建标记
-    // 1109：帧耗时按页面归类上报
-    const names = ['首页','应用','工具','圈子','线报','即存','我的'];
-    if (index >= 0 && index < names.length) PerfProbe.mark(names[index]);
     pageController.jumpToPage(index);
     update(['navigate']);
   }

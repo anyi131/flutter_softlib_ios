@@ -9,7 +9,6 @@ import 'package:flutter/semantics.dart';
 
 import 'app/jicun/jicun_prefs.dart';
 import 'app/utils/sound_util.dart';
-import 'app/utils/perf_probe.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
@@ -46,14 +45,8 @@ Future<void> main() async {
   // ★ 全局错误捕获：任何未捕获异常都不应导致白屏/闪退
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
-  // 1109：语义树默认关闭 —— 常开会让每帧都维护语义节点，掉帧明显。
-  //   仅 debug 或 --dart-define=SEMANTICS=true 时开启（真机自动化用）。
-  const bool kSemanticsOn = bool.fromEnvironment('SEMANTICS');
-  if (kDebugMode || kSemanticsOn) {
-    SemanticsBinding.instance.ensureSemantics();
-  }
-  // 1109：真机帧耗时自动上报（>32ms 的帧聚合上报，服务端落 crash_log）
-  PerfProbe.install();
+  // 1109：开启语义树，供 iOS 自动化（Swipt/XCUITest）读取控件
+  SemanticsBinding.instance.ensureSemantics();
     // ★ 1016：音效开关读取（本地偏好）
     unawaited(SoundUtil.init());
     // ★ 1028：即存的本机偏好（自动粘贴/存储目录/通知开关）提前读，首屏即可用
@@ -385,16 +378,9 @@ class SoftLibApp extends StatelessWidget {
             ThemeController.instance
                 .setDynamicSchemes(android: lightDynamic, ios: darkDynamic);
           });
-          // 1109：性能浮层开关 —— 服务端 ui_config.perf_overlay=1 或
-      //   --dart-define=PERF=true 时显示 UI/Raster 线程耗时曲线
-      const bool kPerfByDefine = bool.fromEnvironment('PERF');
-      final bool kPerfByServer =
-          SoftService.instance.cachedConfig?.uiConfig.perfOverlay == true;
-      final bool perfVisible = kPerfByDefine || kPerfByServer;
-      return GetMaterialApp(
+          return GetMaterialApp(
         title: '安逸软件汇',
         debugShowCheckedModeBanner: false,
-        showPerformanceOverlay: perfVisible,
         initialRoute: Routes.splash,
         getPages: AppPages.routes,
         builder: (context, child) {

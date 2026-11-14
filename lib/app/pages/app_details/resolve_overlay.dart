@@ -25,11 +25,6 @@ class ResolveOverlay {
 
   /// 显示（幂等：已在显示则更新阶段文案）
   static void show({String stage = '正在解析下载地址…'}) {
-    // 1109：残留的「未插入」entry 先清理（上次 ctx 为 null 时会留下）
-    if (_entry != null && !_inserted) {
-      _entry = null;
-      _state = null;
-    }
     if (_entry != null) {
       _state?.setStage(stage);
       return;
@@ -38,46 +33,17 @@ class ResolveOverlay {
     final ctx = Get.context;
     if (ctx == null) return;
     final _ctx = SafeCtx.of();
-    if (_ctx == null) return;
-    // ★ 1109：Overlay.of() 在路由过渡/弹窗遮盖期间会断言失败（表现为
-    //   Null check operator，真机 /appDetails 高频出现）——
-    //   浮层显示失败绝不阻断下载主流程，下一帧再试一次。
-    try {
-      Overlay.of(_ctx, rootOverlay: true).insert(_entry!);
-      _inserted = true;
-    } catch (_) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        try {
-          final c2 = SafeCtx.of();
-          if (c2 != null && _entry != null && !_inserted) {
-            Overlay.of(c2, rootOverlay: true).insert(_entry!);
-            _inserted = true;
-          }
-        } catch (_) {}
-      });
-    }
+    if (_ctx != null) Overlay.of(_ctx).insert(_entry!);
   }
 
   /// 更新阶段文案
   static void stage(String text) => _state?.setStage(text);
 
   /// 关闭（幂等）
-  /// ★ 1109：remove() 对「从未 insert」或「已被移除」的 entry 会抛
-  ///   Null check operator —— 真机日志 zone 通道反复出现（/index、/appDetails）。
-  ///   这里：只在真正插入过时才 remove，并兜异常。
-  static bool _inserted = false;
-
   static void dismiss() {
-    final e = _entry;
+    _entry?.remove();
     _entry = null;
     _state = null;
-    if (e == null || !_inserted) return;
-    _inserted = false;
-    try {
-      if (e.mounted) {
-        e.remove();
-      }
-    } catch (_) {}
   }
 }
 

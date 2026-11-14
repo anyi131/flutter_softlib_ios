@@ -57,19 +57,11 @@ class _CircleComponentState extends State<CircleComponent> {
   Future<void> _load() async {
     setState(() => _loading = true);
     // 1109：sections/rank/posts 一次并发拉全，避免 _secList 异步竞态导致统计/横滑空白
-    List<dynamic> results;
-    try {
-      results = await Future.wait([
-        _svc.sections(),
-        _svc.posts(order: _order, limit: 20),
-        _rankList.isEmpty ? _svc.userRank() : Future.value(_rankList),
-      ]);
-    } catch (_) {
-      // 1109：异常也必须收掉骨架屏，否则 shimmer 会永久 repeat() 持续重绘，
-      //   整个 App 一直掉帧（用户反馈「到处卡」的根因之一）
-      if (mounted) setState(() => _loading = false);
-      return;
-    }
+    final results = await Future.wait([
+      _svc.sections(),
+      _svc.posts(order: _order, limit: 20),
+      _rankList.isEmpty ? _svc.userRank() : Future.value(_rankList),
+    ]);
     final secs = results[0] as List<Map<String, dynamic>>;
     final p = results[1] as Map<String, dynamic>;
     final rank = results[2] as List<Map<String, dynamic>>;
@@ -156,10 +148,7 @@ class _CircleComponentState extends State<CircleComponent> {
                               endIndent: 12,
                               color: context.isDark ? C.bg3 : C.lbg2,
                             ),
-                          RepaintBoundary(
-                            key: ValueKey('post_${_posts[i]['id']}'),
-                            child: _postCard(_posts[i]),
-                          ),
+                          _postCard(_posts[i]),
                         ],
                       ],
                     ),

@@ -12,7 +12,6 @@ import '../../design/adaptive.dart';
 import '../../design/app_anim.dart';
 import '../../design/kit.dart';
 import '../../design/ui.dart';
-import '../../design/chunked.dart';
 import '../../api/user_service.dart';
 import '../../utils/err_text.dart';
 import '../../utils/tool_ctx.dart';
@@ -713,22 +712,14 @@ class _ToolsComponentState extends State<ToolsComponent>
   Widget _iconGrid(List<Map<String, dynamic>> tools) {
     final n = Ad.columns(context, minItem: 82, max: 5);
     final w =
-        (MediaQuery.sizeOf(context).width -
+        (MediaQuery.of(context).size.width -
             context.pagePadding * 2 -
             8 * (n - 1)) /
         n;
-    // 1109：208 个图标分帧构建（原来单帧 200ms+）
-    return ChunkedListBuilder(
-      count: tools.length,
-      first: 20,
-      step: 20,
-      sliverBuilder: (ctx, ready) => Wrap(
-        spacing: 8,
-        runSpacing: 14,
-        children: [
-          for (final i in ready)
-            Builder(builder: (context) {
-              final t = tools[i];
+    return Wrap(
+      spacing: 8,
+      runSpacing: 14,
+      children: tools.map<Widget>((t) {
         final fav = _favIds.contains(int.tryParse('${t['id']}') ?? 0);
         return SizedBox(
           width: w,
@@ -825,9 +816,7 @@ class _ToolsComponentState extends State<ToolsComponent>
             ],
           ),
         );
-            }),
-        ],
-      ),
+      }).toList(),
     );
   }
 

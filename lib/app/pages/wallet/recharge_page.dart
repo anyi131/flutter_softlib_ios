@@ -129,7 +129,7 @@ class _RechargePageState extends State<RechargePage> {
 
   @override
   Widget build(BuildContext context) {
-    final topInset = MediaQuery.paddingOf(context).top;
+    final topInset = MediaQuery.of(context).padding.top;
     final me = UserService.instance.user;
     return Scaffold(
       backgroundColor: Colors.transparent,

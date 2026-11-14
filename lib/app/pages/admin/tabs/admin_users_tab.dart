@@ -135,11 +135,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                       20,
                     ),
                     itemCount: _list.length,
-                    // 1109：卡片重绘隔离
-                    itemBuilder: (context, i) => RepaintBoundary(
-                      key: ValueKey('u_${_list[i]['id']}'),
-                      child: _userCard(_list[i]),
-                    ),
+                    itemBuilder: (context, i) => _userCard(_list[i]),
                   ),
           ),
         ),
@@ -565,8 +561,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                         width: 40,
                         height: 40,
                         fit: BoxFit.cover,
-  errorWidget: (c, u, e) => const ColoredBox(color: Color(0x14FFFFFF), child: SizedBox.expand()),
-),
+                      ),
               ),
               const SizedBox(width: 10),
               Expanded(

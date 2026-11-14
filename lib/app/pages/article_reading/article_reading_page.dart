@@ -135,7 +135,7 @@ class ArticleReadingPage extends StatelessWidget {
 
           // 关闭按钮
           Positioned(
-            top: MediaQuery.paddingOf(context).top + 16,
+            top: MediaQuery.of(context).padding.top + 16,
             right: 16,
             child: AppPressable(
               onTap: logic.hideImagePreview,

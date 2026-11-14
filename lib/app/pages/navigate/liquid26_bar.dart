@@ -27,7 +27,7 @@ class Liquid26Bar {
         borderRadius: BorderRadius.circular(30),
         child: BackdropFilter(
           // 真实液态玻璃折射层：模糊 + 饱和（iOS 26 特征）
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
           child: Container(
             height: 64,
             decoration: BoxDecoration(

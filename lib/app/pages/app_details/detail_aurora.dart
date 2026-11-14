@@ -248,7 +248,7 @@ class DetailAurora {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 4),
           decoration: BoxDecoration(
@@ -335,7 +335,7 @@ class DetailAurora {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(22),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          filter: ImageFilter.blur(sigmaX: 26, sigmaY: 26),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 6),
             decoration: BoxDecoration(

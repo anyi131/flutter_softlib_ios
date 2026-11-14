@@ -279,8 +279,7 @@ class _ReviewTabState extends State<ReviewTab> {
                         width: 36,
                         height: 36,
                         fit: BoxFit.cover,
-  errorWidget: (c, u, e) => const ColoredBox(color: Color(0x14FFFFFF), child: SizedBox.expand()),
-)
+                      )
                     : Container(
                         width: 36,
                         height: 36,

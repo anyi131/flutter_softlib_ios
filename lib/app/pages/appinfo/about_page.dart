@@ -834,13 +834,13 @@ class _AboutPageState extends State<AboutPage> {
         ..writeln('推荐一个好用的软件库：$name')
         ..writeln(desc);
       if (url.isNotEmpty) text.writeln(url);
-      await SharePlus.instance.share(ShareParams(
-        text: text.toString().trim(),
+      await Share.share(
+        text.toString().trim(),
         subject: name,
         sharePositionOrigin: box != null
             ? box.localToGlobal(Offset.zero) & box.size
             : null,
-      ));
+      );
     } catch (e) {
       ToastUtil.error('分享失败');
     }

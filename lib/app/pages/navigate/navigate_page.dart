@@ -78,7 +78,7 @@ class _NavigatePageState extends State<NavigatePage> {
 
   @override
   Widget build(BuildContext context) {
-    final inset = MediaQuery.paddingOf(context).bottom;
+    final inset = MediaQuery.of(context).padding.bottom;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
@@ -95,17 +95,10 @@ class _NavigatePageState extends State<NavigatePage> {
           builder: (logic) => Stack(
             children: [
               Deco.pageBackground(context),
-              // 1109：7 个 Tab 首帧全部构建是「点哪儿都卡一下」的根源。
-              //   改成懒构建：只构建已访问过的页，未访问的先放占位。
               PageView(
                 physics: const NeverScrollableScrollPhysics(),
                 controller: logic.pageController,
-                children: [
-                  for (var i = 0; i < logic.pages.length; i++)
-                    logic.visited(i)
-                        ? logic.pages[i]
-                        : const SizedBox.shrink(),
-                ],
+                children: logic.pages,
               ),
             ],
           ),
@@ -128,7 +121,7 @@ class _NavigatePageState extends State<NavigatePage> {
         borderRadius: BorderRadius.circular(R.full),
         child: BackdropFilter(
           // 强模糊 + 极低不透明度 = iOS 26 的"液态玻璃"
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
           child: Container(
             height: 66,
             decoration: BoxDecoration(

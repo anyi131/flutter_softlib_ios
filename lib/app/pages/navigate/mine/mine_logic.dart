@@ -68,7 +68,6 @@ class MineLogic extends GetxController {
   // ★ 1031q：全局消息红点轮询（30 秒一次，仅前台）
   bool _pollPaused = false;
   Timer? _msgPoll;
-  _LifeObs? _lifeObs;
   void _startMsgPoll() {
     _msgPoll?.cancel();
     _msgPoll = Timer.periodic(const Duration(seconds: 30), (_) {
@@ -336,10 +335,6 @@ class MineLogic extends GetxController {
   bool _msgOpening = false;
   @override
   void onClose() {
-    if (_lifeObs != null) {
-      WidgetsBinding.instance.removeObserver(_lifeObs!);
-      _lifeObs = null;
-    }
     _msgPoll?.cancel();
     super.onClose();
   }
@@ -1320,18 +1315,18 @@ class MineLogic extends GetxController {
           cli.close();
           if (bytes.isNotEmpty) {
             await target.writeAsBytes(bytes, flush: true);
-            await SharePlus.instance.share(ShareParams(
-              files: [XFile(target.path)],
+            await Share.shareXFiles(
+              [XFile(target.path)],
               text: text,
               subject: name,
-            ));
+            );
             return;
           }
         } catch (_) {
           // 忽略，走下面的纯文字分享
         }
       }
-      await SharePlus.instance.share(ShareParams(text: text, subject: name));
+      await Share.share(text, subject: name);
     } catch (e) {
       ToastUtil.error('分享失败：${ErrText.of(e)}');
     }

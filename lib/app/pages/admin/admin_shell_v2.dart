@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../design/adaptive.dart';
 import '../../design/ui.dart';
-import '../../design/lazy_indexed_stack.dart';
-import '../../utils/perf_probe.dart';
 import '../../design/app_anim.dart';
 import 'admin_save_bus.dart';
 import 'admin_ui_kit.dart';
@@ -66,7 +64,6 @@ class _AdminShellV2State extends State<AdminShellV2> {
   void initState() {
     super.initState();
     _i = widget.tab.index;
-    PerfProbe.mark('后台·${_items[_i].$1}');
     widget.tab.addListener(_onTab);
   }
 
@@ -84,7 +81,6 @@ class _AdminShellV2State extends State<AdminShellV2> {
   void _go(int i) {
     widget.tab.animateTo(i);
     setState(() => _i = i);
-    PerfProbe.mark('后台·${_items[i].$1}');
   }
 
   String get _tpl {
@@ -103,8 +99,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
   @override
   Widget build(BuildContext context) {
     final cur = _i >= 0 && _i < _items.length ? _items[_i] : _items[0];
-    // 1109: build admin tabs lazily (was a single 872ms frame)
-    final body = LazyIndexedStack(index: _i, children: widget.children);
+    final body = IndexedStack(index: _i, children: widget.children);
 
     // ── 按模板切换**骨架结构** ──
     final shell = switch (_tpl) {
@@ -683,7 +678,7 @@ class _AdminShellV2State extends State<AdminShellV2> {
                         _go(i);
                       },
                       child: Container(
-                        width: (MediaQuery.sizeOf(context).width - 62) / 3,
+                        width: (MediaQuery.of(context).size.width - 62) / 3,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           color: _i == i

@@ -261,9 +261,7 @@ class _PostVideoPlayerState extends State<PostVideoPlayer> {
               CachedNetworkImage(
                   // ★ 1101：视频封面全宽，400 拉伸糊
                   memCacheWidth: 900,
-                  imageUrl: widget.cover, fit: BoxFit.cover,
-  errorWidget: (c, u, e) => const ColoredBox(color: Color(0x14FFFFFF), child: SizedBox.expand()),
-),
+                  imageUrl: widget.cover, fit: BoxFit.cover),
             Container(
               color: Colors.black38,
               alignment: Alignment.center,

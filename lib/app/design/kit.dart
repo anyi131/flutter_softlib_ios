@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import 'ui.dart';
-import 'adaptive.dart';
 import 'glass.dart';
 import 'glass_theme.dart';
 import 'app_anim.dart';

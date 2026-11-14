@@ -144,7 +144,7 @@ class _CollectLogsViewState extends State<CollectLogsView>
     Get.bottomSheet(
       Container(
         constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(context).height * 0.78),
+            maxHeight: MediaQuery.of(context).size.height * 0.78),
         decoration: BoxDecoration(
           color: context.isDark ? C.bg2 : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),

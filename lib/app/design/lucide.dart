@@ -6,7 +6,7 @@
 /// 用法：`import '../../design/lucide.dart';` 然后 `Lz.xxx`，
 /// 需要调大小时给 Icon(size: ...) 覆盖即可（默认 24）。
 import 'package:flutter/widgets.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class Lz {
   Lz._();

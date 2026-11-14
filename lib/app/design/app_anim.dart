@@ -117,7 +117,7 @@ class _AppStaggerInState extends State<AppStaggerIn>
     super.didChangeDependencies();
     // ★★ 另一种「卡住」的场景：列表在不可见时被构建（TickerMode=false），
     //   动画不会走 → 直接置为完全可见，绝不留给用户一片空白。
-    if (_c.value < 1 && !TickerMode.valuesOf(context).enabled) {
+    if (_c.value < 1 && !TickerMode.of(context)) {
       _c.value = 1;
     }
   }
@@ -132,9 +132,6 @@ class _AppStaggerInState extends State<AppStaggerIn>
 
   @override
   Widget build(BuildContext context) {
-    // 1109：动画结束直接返回 child，不再包 Opacity/Transform
-    //   （AnimatedBuilder 每帧通知 + Opacity 离屏合成，长列表滚动时是持续成本）
-    if (_c.value >= 1) return widget.child;
     return AnimatedBuilder(
       animation: _a,
       builder: (context, child) {
@@ -235,7 +232,7 @@ class _AppScaleInState extends State<AppScaleIn>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_c.value < 1 && !TickerMode.valuesOf(context).enabled) _c.value = 1;
+    if (_c.value < 1 && !TickerMode.of(context)) _c.value = 1;
   }
 
   @override
@@ -294,7 +291,7 @@ class _AppCountUpState extends State<AppCountUp>
   void didChangeDependencies() {
     super.didChangeDependencies();
     // ★ 1016：Ticker 被 mute 时直接跳到目标值，别显示一个卡住的 0
-    if (_c.value < 1 && !TickerMode.valuesOf(context).enabled) _c.value = 1;
+    if (_c.value < 1 && !TickerMode.of(context)) _c.value = 1;
   }
 
   @override

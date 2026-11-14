@@ -76,10 +76,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
               final tpl =
                   SoftService.instance.cachedConfig?.uiConfig.tipsTemplate ??
                   'card';
-              // 1109：重绘隔离
-              return RepaintBoundary(
-                key: ValueKey('r_${report.id}'),
-                child: switch (tpl) {
+              return switch (tpl) {
                 'compact' => _buildCompact(context, report, logic),
                 'timeline' => _buildTimeline(context, report, logic),
                 'minimal_row' => _buildMiniRow(context, report, logic),
@@ -88,9 +85,8 @@ class _ReportListWidgetState extends State<ReportListWidget>
                 // ★ v3.3.4：新增两款骨架级模板
                 'magazine' => _buildMagazine(context, report, logic),
                 'headline' => _buildHeadline(context, report, logic),
-                  _ => _buildItem(context, report),
-                },
-              );
+                _ => _buildItem(context, report),
+              };
             },
           ),
         );
@@ -416,8 +412,7 @@ class _ReportListWidgetState extends State<ReportListWidget>
                 memCacheWidth: 900,
                 imageUrl: img,
                 fit: BoxFit.cover,
-  errorWidget: (c, u, e) => const ColoredBox(color: Color(0x14FFFFFF), child: SizedBox.expand()),
-),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(12),

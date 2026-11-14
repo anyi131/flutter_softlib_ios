@@ -137,7 +137,7 @@ class _PayWebPageState extends State<PayWebPage> {
 
   @override
   Widget build(BuildContext context) {
-    final topInset = MediaQuery.paddingOf(context).top;
+    final topInset = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: context.isDark ? C.bg0 : C.lbg0,
       body: Column(

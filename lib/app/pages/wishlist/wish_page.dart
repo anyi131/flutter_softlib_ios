@@ -128,7 +128,7 @@ class _WishPageState extends State<WishPage> {
     Get.bottomSheet(
       Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
+          bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
         child: SheetSurface(
           color: context.isDark ? C.bg1 : Colors.white,

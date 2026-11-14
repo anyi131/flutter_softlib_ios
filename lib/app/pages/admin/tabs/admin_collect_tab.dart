@@ -16,7 +16,6 @@ import '../../../api/admin_service.dart';
 import '../../../design/adaptive.dart';
 import '../../../design/kit.dart';
 import '../../../design/ui.dart';
-import '../../../design/lazy_indexed_stack.dart';
 import '../../../utils/app_action.dart';
 import '../../../utils/toast_util.dart';
 import 'collect_account_card.dart';
@@ -264,7 +263,7 @@ class _AdminCollectTabState extends State<AdminCollectTab>
       children: [
         _subBar(),
         Expanded(
-          child: LazyIndexedStack(
+          child: IndexedStack(
             index: _subIndex,
             children: [
               _collectPane(),

@@ -115,7 +115,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> {
                   16,
                   10,
                   16,
-                  10 + MediaQuery.paddingOf(context).bottom,
+                  10 + MediaQuery.of(context).padding.bottom,
                 ),
                 decoration: BoxDecoration(
                   color: context.isDark ? C.bg1 : Colors.white,

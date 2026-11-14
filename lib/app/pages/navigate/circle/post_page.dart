@@ -34,8 +34,6 @@ class _PostPageState extends State<PostPage> {
   List<Map<String, dynamic>> _comments = [];
   bool _loading = true;
   bool _sending = false;
-  /// 作者预览：临时展开自己的付费段落
-  bool _ownRevealed = false;
   int _cPage = 1;
   bool _cMore = false;
   bool _cLoadingMore = false;
@@ -343,11 +341,7 @@ class _PostPageState extends State<PostPage> {
                             text: '${p['content'] ?? ''}',
                             payNeed: double.tryParse('${p['pay_need'] ?? 0}') ?? 0,
                             payCount: int.tryParse('${p['pay_count'] ?? 0}') ?? 0,
-                            payOwner: '${p['pay_owner'] ?? 0}' == '1',
-                            revealOwner: _ownRevealed,
-                            onUnlock: ('${p['pay_owner'] ?? 0}' == '1')
-                                ? () => setState(() => _ownRevealed = true)
-                                : _payPost,
+                            onUnlock: _payPost,
                           ),
                           if ((p['images'] as List?)?.isNotEmpty == true) ...[
                             const SizedBox(height: 10),
@@ -453,7 +447,7 @@ class _PostPageState extends State<PostPage> {
                       duration: const Duration(milliseconds: 160),
                       curve: Curves.easeOut,
                       padding: EdgeInsets.only(
-                          bottom: MediaQuery.viewInsetsOf(context).bottom),
+                          bottom: MediaQuery.of(context).viewInsets.bottom),
                       child: SafeArea(
                       top: false,
                       child: Container(

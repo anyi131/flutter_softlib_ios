@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.soft.anyi"
-    compileSdk = 37
+    compileSdk = 36
 //    ndkVersion = flutter.ndkVersion
     ndkVersion = "27.0.12077973"
 
@@ -28,7 +28,7 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
-        targetSdk = 37
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
@@ -36,29 +36,6 @@ android {
         ndk {
             // 只保留 arm64-v8a，减小体积；如需兼容老设备可加 armeabi-v7a
             abiFilters.add("arm64-v8a")
-        }
-    }
-
-    // ★ 1109 瘦身：插件 AAR 会带上 x86_64/armeabi-v7a 的 .so（本 App 用不到），
-    //   这些不会被 abiFilters 过滤，必须显式从打包里排除，省约 1.6MB
-    packaging {
-        jniLibs {
-            excludes += listOf(
-                "lib/x86/**",
-                "lib/x86_64/**",
-                "lib/armeabi-v7a/**",
-                "lib/mips/**",
-                "lib/mips64/**"
-            )
-        }
-        resources {
-            excludes += listOf(
-                "META-INF/*.kotlin_module",
-                "META-INF/DEPENDENCIES",
-                "META-INF/LICENSE*",
-                "META-INF/NOTICE*",
-                "META-INF/versions/**"
-            )
         }
     }
 
@@ -130,11 +107,6 @@ flutter {
 }
 
 dependencies {
-    // 1109：把 androidx.core 钉在 1.17.x —— 1.19 要求 AGP 9.1，会卡住构建
-    constraints {
-        implementation("androidx.core:core:1.17.0")
-        implementation("androidx.core:core-ktx:1.17.0")
-    }
     // ★ 1015：QQ 登录 SDK（本地 jar，来自腾讯官方）
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     // ★ 1101：flutter_local_notifications desugaring 依赖

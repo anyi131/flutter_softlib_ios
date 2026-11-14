@@ -82,7 +82,7 @@ class NavTemplates {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(R.full),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
           child: Container(
             height: 66,
             decoration: BoxDecoration(
@@ -182,7 +182,7 @@ class NavTemplates {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(R.xxl),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
           child: Container(
             height: 62,
             decoration: BoxDecoration(
@@ -566,7 +566,7 @@ class NavTemplates {
         borderRadius: BorderRadius.circular(R.full),
         child: BackdropFilter(
           // 重模糊：Liquid Glass 的「折射」底
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          filter: ImageFilter.blur(sigmaX: 34, sigmaY: 34),
           child: Container(
             height: 68,
             decoration: BoxDecoration(

@@ -42,7 +42,6 @@ class AppDownloadLogic extends GetxController {
   late DownloadTaskDao downloadTaskDao;
   List<DownInfo>? downInfos;
   Timer? timer;
-  bool _refreshing = false;
 
   @override
   void onInit() {
@@ -51,30 +50,9 @@ class AppDownloadLogic extends GetxController {
     downloadTaskDao = DownloadTaskDao(appDatabase);
     // 获取所有下载任务信息
     getAllDownInfos();
-    // 1109 修复：原来每 100ms 全量拉任务 + 每任务查一次 SQLite + 重建列表，
-    //   App 一启动就常驻运行（与页面无关），主线程被反复打断 → 全局卡顿。
-    //   改为 1.5s 一次 + 无任务/无变化时跳过 + 页面不可见时暂停。
-    _startPoll();
-  }
-
-  /// 1109 深度审计修复：轮询自适应 —— 有任务 1.5s，无任务 5s
-  ///   （lazyPut 常驻整个会话，固定 1.5s 的平台通道调用仍在打扰主线程）
-  void _startPoll() {
-    timer?.cancel();
-    timer = Timer.periodic(const Duration(milliseconds: 1500), (t) async {
-      if (_refreshing) return;
-      _refreshing = true;
-      try {
-        await getAllDownInfos();
-        // 无任何任务（列表空）→ 切到 5s 慢轮询；有任务 → 保持 1.5s
-        final idle = downInfos == null || downInfos!.isEmpty;
-        if (idle && t.tick % 3 != 0) {
-          // 1.5s×3 = 4.5s ≈ 5s：三次里跳过两次
-          return;
-        }
-      } finally {
-        _refreshing = false;
-      }
+    // 定时器每100毫秒查询一次下载任务状态
+    timer = Timer.periodic(Duration(milliseconds: 100), (timer) {
+      getAllDownInfos();
     });
   }
 
@@ -88,18 +66,9 @@ class AppDownloadLogic extends GetxController {
   }
 
   ///查询所有下载任务
-  String _sig = '';
-
   Future<void> getAllDownInfos() async {
     List<DownloadTask>? downloadTasks = await FlutterDownloader.loadTasks();
-    if (downloadTasks == null) return;
-    // 变化检测：任务数 + 各任务状态/进度拼签名，没变化直接返回
-    final sig = downloadTasks
-        .map((t) => '${t.taskId}:${t.status}:${t.progress}')
-        .join('|');
-    if (sig == _sig && downInfos != null && downInfos!.isNotEmpty) return;
-    _sig = sig;
-    {
+    if (downloadTasks != null) {
       downInfos ??= [];
       downInfos!.clear();
       for (var task in downloadTasks) {
@@ -474,9 +443,9 @@ class AppDownloadLogic extends GetxController {
       return;
     }
     try {
-      await SharePlus.instance.share(ShareParams(
-        files: [XFile(path)],
-        text: dowInfo?.appName ?? '分享一个安装包'));
+      await Share.shareXFiles([
+        XFile(path),
+      ], text: dowInfo?.appName ?? '分享一个安装包');
     } catch (e) {
       ToastUtil.error('分享失败：$e');
     }

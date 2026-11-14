@@ -106,7 +106,7 @@ class _QQLoginPageState extends State<QQLoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final topInset = MediaQuery.paddingOf(context).top;
+    final topInset = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(

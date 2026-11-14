@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'ui.dart';
-import 'adaptive.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 全局玻璃主题（Liquid Glass）—— 含**自动降级**

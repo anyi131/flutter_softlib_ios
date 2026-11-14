@@ -776,7 +776,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
     Get.bottomSheet(
       Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * 0.8,
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
         ),
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
         decoration: BoxDecoration(
