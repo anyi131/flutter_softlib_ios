@@ -65,9 +65,9 @@ class _PostPageState extends State<PostPage> {
     final p = await _svc.postInfo(widget.postId);
     final c = await _svc.comments(widget.postId);
     if (!mounted) return;
-    _likedVN.value = (p['liked'] ?? 0) == 1;
-    _likesVN.value = int.tryParse('${p['likes'] ?? 0}') ?? 0;
-    _markedVN.value = (p['marked'] ?? 0) == 1;
+    _likedVN.value = (p?['liked'] ?? 0) == 1;
+    _likesVN.value = int.tryParse('${p?['likes'] ?? 0}') ?? 0;
+    _markedVN.value = (p?['marked'] ?? 0) == 1;
     setState(() {
       _post = p;
       _comments = c;
