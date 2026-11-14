@@ -92,15 +92,33 @@ class _PublishPageState extends State<PublishPage> {
     setState(() => _sending = true);
     try {
       final urls = <String>[];
+      var upFail = 0;
       if (_images.isNotEmpty) {
         setState(() => _uploading = true);
         for (final f in _images) {
           try {
             final u = await PostService.instance.uploadImage(f);
-            if (u.isNotEmpty) urls.add(u);
-          } catch (_) {}
+            if (u.isNotEmpty) {
+              urls.add(u);
+            } else {
+              upFail++;
+            }
+          } catch (_) {
+            // ★ 1109：原来这里静默吞异常 —— 上传失败用户毫无感知，
+            //   帖子发出去却没有图（用户反馈「帖子没有图片」的根因）。
+            upFail++;
+          }
         }
         if (mounted) setState(() => _uploading = false);
+      }
+      // 全部图都失败 → 不要发出一个没有图的帖子，让用户重试
+      if (upFail > 0 && urls.isEmpty) {
+        if (mounted) setState(() => _sending = false);
+        ToastUtil.error('图片上传失败（$upFail 张），请检查网络后重试');
+        return;
+      }
+      if (upFail > 0 && mounted) {
+        ToastUtil.info('有 $upFail 张图片上传失败，已跳过');
       }
       final id = await ForumService.instance
           .publish(
