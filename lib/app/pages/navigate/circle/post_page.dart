@@ -44,6 +44,7 @@ class _PostPageState extends State<PostPage> {
   ///   （图片/评论全部重新布局），肉眼就是「闪一下」。
   late final ValueNotifier<bool> _likedVN = ValueNotifier<bool>(false);
   late final ValueNotifier<int> _likesVN = ValueNotifier<int>(0);
+  late final ValueNotifier<bool> _markedVN = ValueNotifier<bool>(false);
 
   @override
   void initState() {
@@ -55,6 +56,7 @@ class _PostPageState extends State<PostPage> {
   void dispose() {
     _likedVN.dispose();
     _likesVN.dispose();
+    _markedVN.dispose();
     _input.dispose();
     super.dispose();
   }
@@ -65,6 +67,7 @@ class _PostPageState extends State<PostPage> {
     if (!mounted) return;
     _likedVN.value = (p['liked'] ?? 0) == 1;
     _likesVN.value = int.tryParse('${p['likes'] ?? 0}') ?? 0;
+    _markedVN.value = (p['marked'] ?? 0) == 1;
     setState(() {
       _post = p;
       _comments = c;
@@ -132,7 +135,8 @@ class _PostPageState extends State<PostPage> {
     try {
       final r = await _svc.toggleMark(widget.postId);
       if (!mounted || _post == null) return;
-      setState(() => _post!['marked'] = r['marked']);
+      final m = (r['marked'] ?? 0) == 1;
+      if (m != _markedVN.value) _markedVN.value = m;
       ToastUtil.success(r['marked'] == 1 ? '已收藏' : '已取消收藏');
     } catch (e) {
       ToastUtil.error(ErrText.of(e));
@@ -407,11 +411,16 @@ class _PostPageState extends State<PostPage> {
                                 ),
                               ),
                               const SizedBox(width: 18),
-                              _action(
-                                p['marked'] == 1 ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                                '收藏',
-                                p['marked'] == 1 ? C.brand : context.t2,
-                                _mark,
+                              ValueListenableBuilder<bool>(
+                                valueListenable: _markedVN,
+                                builder: (_, marked, __) => _action(
+                                  marked
+                                      ? Icons.bookmark_rounded
+                                      : Icons.bookmark_border_rounded,
+                                  '收藏',
+                                  marked ? C.brand : context.t2,
+                                  _mark,
+                                ),
                               ),
                             ],
                           ),
