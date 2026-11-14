@@ -1200,11 +1200,40 @@ class MineComponent extends StatelessWidget {
                 },
                 child: Column(
                   children: [
-                    Icon(items[i].$3, size: 19, color: items[i].$4),
+                    // ★ 1109：有未读消息时，图标右上角加红点（原来只有数字，不够醒目）
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(items[i].$3, size: 19, color: items[i].$4),
+                        if (items[i].$1 == '消息' && logic.messageCount > 0)
+                          Positioned(
+                            right: -3,
+                            top: -3,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: C.danger,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: context.isDark ? C.bg0 : Colors.white,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: 7),
                     Text(
                       items[i].$2,
-                      style: Ty.h3.copyWith(color: context.t1, fontSize: 14),
+                      style: Ty.h3.copyWith(
+                        // 有未读时数字标红，和红点呼应
+                        color: items[i].$1 == '消息' && logic.messageCount > 0
+                            ? C.danger
+                            : context.t1,
+                        fontSize: 14,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
