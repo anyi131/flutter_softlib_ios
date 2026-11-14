@@ -361,7 +361,7 @@ class MineLogic extends GetxController {
     _refreshUnread();
   }
 
-  Future<void> _refreshUnread() async {
+  Future<void> _refreshUnread({int retry = 0}) async {
     try {
       final n = await MessageService.instance.unread();
       if (n != messageCount) {
@@ -373,7 +373,20 @@ class MineLogic extends GetxController {
         messageCount = n;
         update();
       }
-    } catch (_) {}
+    } catch (e) {
+      // ★ 1109：原来 catch (_) {} 静默吞异常 —— 未读数刷新一失败，数字和红点
+      //   就永远停在旧值，用户看到「有新通知但没有红点」。
+      //   现在：短退避重试 2 次（2s / 5s），仍失败才上报，便于后台排查。
+      if (retry < 2) {
+        await Future.delayed(Duration(seconds: 2 + retry * 3));
+        if (!isClosed) await _refreshUnread(retry: retry + 1);
+      } else {
+        SoftService.reportLogStatic(
+          tag: 'unread',
+          error: '[unread] 刷新未读数失败（已重试 2 次）: $e',
+        ).catchError((_) {});
+      }
+    }
   }
 
   /// 充值余额 —— 打开会员中心（复用现有支付通道）
