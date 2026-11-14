@@ -42,6 +42,7 @@ class AppDownloadLogic extends GetxController {
   late DownloadTaskDao downloadTaskDao;
   List<DownInfo>? downInfos;
   Timer? timer;
+  bool _refreshing = false;
 
   @override
   void onInit() {
@@ -50,9 +51,22 @@ class AppDownloadLogic extends GetxController {
     downloadTaskDao = DownloadTaskDao(appDatabase);
     // 获取所有下载任务信息
     getAllDownInfos();
-    // 定时器每100毫秒查询一次下载任务状态
-    timer = Timer.periodic(Duration(milliseconds: 100), (timer) {
-      getAllDownInfos();
+    // 1109：原来 100ms 全量拉任务，主线程被反复打断 → 改 1.5s + 空任务降频
+    _startPoll();
+  }
+
+  void _startPoll() {
+    timer?.cancel();
+    timer = Timer.periodic(const Duration(milliseconds: 1500), (t) async {
+      if (_refreshing) return;
+      _refreshing = true;
+      try {
+        await getAllDownInfos();
+        final idle = downInfos == null || downInfos!.isEmpty;
+        if (idle && t.tick % 3 != 0) return;
+      } finally {
+        _refreshing = false;
+      }
     });
   }
 
