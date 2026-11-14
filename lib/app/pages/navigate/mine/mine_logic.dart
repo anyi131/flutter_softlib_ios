@@ -68,6 +68,7 @@ class MineLogic extends GetxController {
   // ★ 1031q：全局消息红点轮询（30 秒一次，仅前台）
   bool _pollPaused = false;
   Timer? _msgPoll;
+  _LifeObs? _lifeObs;
   void _startMsgPoll() {
     _msgPoll?.cancel();
     _msgPoll = Timer.periodic(const Duration(seconds: 30), (_) {
@@ -76,12 +77,13 @@ class MineLogic extends GetxController {
       _refreshUnread();
     });
     // 前后台切换：后台暂停省电，回前台立即查一次
-    WidgetsBinding.instance.addObserver(_LifeObs(onChange: (state) {
+    _lifeObs ??= _LifeObs(onChange: (state) {
       _pollPaused = state == AppLifecycleState.paused;
       if (state == AppLifecycleState.resumed) {
         if (UserService.instance.isLoggedIn) _refreshUnread();
       }
-    }));
+    });
+    WidgetsBinding.instance.addObserver(_lifeObs!);
   }
 
   @override
@@ -336,6 +338,10 @@ class MineLogic extends GetxController {
   @override
   void onClose() {
     _msgPoll?.cancel();
+    if (_lifeObs != null) {
+      WidgetsBinding.instance.removeObserver(_lifeObs!);
+      _lifeObs = null;
+    }
     super.onClose();
   }
 
