@@ -25,6 +25,10 @@ class ResolveOverlay {
 
   /// 显示（幂等：已在显示则更新阶段文案）
   static void show({String stage = '正在解析下载地址…'}) {
+    if (_entry != null && !_inserted) {
+      _entry = null;
+      _state = null;
+    }
     if (_entry != null) {
       _state?.setStage(stage);
       return;
@@ -33,17 +37,38 @@ class ResolveOverlay {
     final ctx = Get.context;
     if (ctx == null) return;
     final _ctx = SafeCtx.of();
-    if (_ctx != null) Overlay.of(_ctx).insert(_entry!);
+    if (_ctx == null) return;
+    try {
+      Overlay.of(_ctx, rootOverlay: true).insert(_entry!);
+      _inserted = true;
+    } catch (_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          final c2 = SafeCtx.of();
+          if (c2 != null && _entry != null && !_inserted) {
+            Overlay.of(c2, rootOverlay: true).insert(_entry!);
+            _inserted = true;
+          }
+        } catch (_) {}
+      });
+    }
   }
 
   /// 更新阶段文案
   static void stage(String text) => _state?.setStage(text);
 
   /// 关闭（幂等）
+  static bool _inserted = false;
+
   static void dismiss() {
-    _entry?.remove();
+    final e = _entry;
     _entry = null;
     _state = null;
+    if (e == null || !_inserted) return;
+    _inserted = false;
+    try {
+      e.remove();
+    } catch (_) {}
   }
 }
 
