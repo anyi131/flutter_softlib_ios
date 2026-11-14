@@ -37,6 +37,9 @@ class _PostPageState extends State<PostPage> {
   int _cPage = 1;
   bool _cMore = false;
   bool _cLoadingMore = false;
+  /// 1109：点赞防连点 —— 原来没有锁，快速点两下 = 两个请求，最终状态不确定，
+  /// 数字会 0→1→0 闪跳。
+  bool _liking = false;
 
   @override
   void initState() {
@@ -84,6 +87,21 @@ class _PostPageState extends State<PostPage> {
 
   Future<void> _like() async {
     if (!UserService.instance.isLoggedIn) return ToastUtil.info('请先登录');
+    if (_liking || _post == null) return;
+    _liking = true;
+    // ★ 1109：乐观更新 —— 点下立刻变色/加一，不等网络。
+    //   原来要等接口返回才变，用户以为没点上又点一次，两次请求互相抵消，
+    //   数字 0→1→0 闪跳，看起来就是「跳动」。
+    final oldLiked = _post!['liked'];
+    final oldLikes = _post!['likes'];
+    final wasLiked = oldLiked == 1;
+    final cur = int.tryParse('${oldLikes ?? 0}') ?? 0;
+    setState(() {
+      _post!['liked'] = wasLiked ? 0 : 1;
+      _post!['likes'] = (cur + (wasLiked ? -1 : 1)) < 0
+          ? 0
+          : (cur + (wasLiked ? -1 : 1));
+    });
     try {
       final r = await _svc.toggleLike(widget.postId);
       if (!mounted || _post == null) return;
@@ -92,7 +110,15 @@ class _PostPageState extends State<PostPage> {
         _post!['likes'] = r['likes'];
       });
     } catch (e) {
+      if (mounted && _post != null) {
+        setState(() {
+          _post!['liked'] = oldLiked;
+          _post!['likes'] = oldLikes;
+        });
+      }
       ToastUtil.error(ErrText.of(e));
+    } finally {
+      _liking = false;
     }
   }
 
