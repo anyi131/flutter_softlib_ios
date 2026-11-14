@@ -234,8 +234,29 @@ class _PublishPageState extends State<PublishPage> {
   }
 
   /// 正文 Markdown 文本（富文本 → Markdown，详情页沿用原渲染器）
-  String _mdText() =>
-      DeltaToMarkdown().convert(_quill.document.toDelta()).trim();
+
+  /// ★ 1109：规范化 Markdown 图片语法。
+  ///   Quill 里「带链接的图片」经 DeltaToMarkdown 转换后会产出畸形结构：
+  ///     !\[\]([http://img](http://img))   ← 图片语法套了一层链接
+  ///   任何渲染器都识别不了 → 用户看到「帖子没有图片」。
+  String _normalizeMd(String s) {
+    var x = s;
+    // 1) 去掉 [ ] ( ) 的无意义转义（* 与 ` 保留）
+    x = x.replaceAllMapped(RegExp(r'\\([\[\]()])'), (m) => m.group(1)!);
+    // 2) 图片外面包了链接： [![](url)](href)  →  ![](url)
+    x = x.replaceAllMapped(RegExp(r'\[!\[\]\(([^)]+)\)\]\([^)]*\)'),
+        (m) => '![](${m.group(1)})');
+    // 3) 图片套链接（畸形）： ![]([url](url))  →  ![](url)
+    x = x.replaceAllMapped(RegExp(r'!\[\]\(\[([^\]\s]+)\]\([^)]*\)\)'),
+        (m) => '![](${m.group(1)})');
+    // 4) 兜底：![](...) 里还有一层括号
+    x = x.replaceAllMapped(RegExp(r'!\[\]\(\s*\[([^\]\s]+)\]\([^)]*\)\s*\)'),
+        (m) => '![](${m.group(1)})');
+    return x;
+}
+
+  String _mdText() => _normalizeMd(
+      DeltaToMarkdown().convert(_quill.document.toDelta()).trim());
 
   /// 用纯文本覆盖正文（导入链接用；保留原有内容则追加）
   void _setMd(String md, {bool append = false}) {
