@@ -79,7 +79,10 @@ class _AppChipState extends State<AppChip> {
         child: AnimatedOpacity(
           opacity: widget.onTap == null ? 0.45 : 1,
           duration: const Duration(milliseconds: 120),
-          child: Container(
+          child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+         
             height: widget.dense ? 26 : 30,
             padding: EdgeInsets.symmetric(
                 horizontal: widget.dense ? 8 : 10, vertical: 0),
