@@ -367,7 +367,12 @@ class _PostPageState extends State<PostPage> {
                             text: '${p['content'] ?? ''}',
                             payNeed: double.tryParse('${p['pay_need'] ?? 0}') ?? 0,
                             payCount: int.tryParse('${p['pay_count'] ?? 0}') ?? 0,
-                            onUnlock: _payPost,
+                            // ★ 1109：作者视角 —— 帖子作者本人应直接看到付费段，
+                            //   而不是被自己的付费墙挡住（回滚丢失）
+                            payOwner: '${p['pay_owner'] ?? 0}' == '1',
+                            onUnlock: ('${p['pay_owner'] ?? 0}' == '1')
+                                ? null
+                                : _payPost,
                           ),
                           if ((p['images'] as List?)?.isNotEmpty == true) ...[
                             const SizedBox(height: 10),
