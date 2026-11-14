@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_quill/flutter_quill.dart' as fq;
+import 'package:markdown_quill/markdown_quill.dart';
 
 import '../../../api/forum_service.dart';
 import '../../../api/soft_service.dart';
@@ -28,7 +30,10 @@ class PublishPage extends StatefulWidget {
 
 class _PublishPageState extends State<PublishPage> {
   final _title = TextEditingController();
-  final _content = TextEditingController();
+  /// ★ 1109：富文本编辑器（Quill）。正文仍以 Markdown 形式提交，
+  ///   详情页沿用原有 Markdown 渲染器，服务端零改动。
+  late final fq.QuillController _quill;
+  final _editorFocus = FocusNode();
   late int _section = widget.sectionId ?? (widget.sections.isNotEmpty ? int.tryParse('${widget.sections.first['id']}') ?? 0 : 0);
   bool _sending = false;
   final List<File> _images = [];
@@ -40,9 +45,16 @@ class _PublishPageState extends State<PublishPage> {
   final _payBody = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _quill = fq.QuillController.basic();
+  }
+
+  @override
   void dispose() {
+    _quill.dispose();
+    _editorFocus.dispose();
     _title.dispose();
-    _content.dispose();
     _payPrice.dispose();
     _payBody.dispose();
     super.dispose();
@@ -65,9 +77,12 @@ class _PublishPageState extends State<PublishPage> {
 
   Future<void> _submit() async {
     final t = _title.text.trim();
-    final c = _content.text.trim();
+    final c = DeltaToMarkdown()
+        .convert(_quill.document.toDelta())
+        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+        .trim();
     if (t.length < 2) return ToastUtil.info('标题至少 2 个字');
-    if (_content.text.contains('[pay]') &&
+    if (c.contains('[pay]') &&
         (!_payOn || (double.tryParse(_payPrice.text.trim()) ?? 0) <= 0)) {
       return ToastUtil.info('你标记了付费段落，请打开「付费可见」并填写打赏金额');
     }
@@ -116,14 +131,12 @@ class _PublishPageState extends State<PublishPage> {
   @override
   /// 1109：Markdown 工具栏（插入语法，发帖不用背语法）
   void _insertMd(String text) {
-    final sel = _content.selection;
-    final start = sel.start >= 0 ? sel.start : _content.text.length;
-    final end = sel.end >= 0 ? sel.end : _content.text.length;
-    final t = _content.text.replaceRange(start, end, text);
-    _content.value = TextEditingValue(
-      text: t,
-      selection: TextSelection.collapsed(offset: start + text.length),
-    );
+    final doc = _quill.document;
+    final sel = _quill.selection;
+    final start = sel.isValid ? sel.start : doc.length - 1;
+    final end = sel.isValid ? sel.end : doc.length - 1;
+    if (end > start) doc.replace(start, end - start, '');
+    doc.insert(start, text);
   }
 
   /// 1109：在光标处插入图片（上传后写入 Markdown，正文任意位置可插图）
@@ -135,7 +148,10 @@ class _PublishPageState extends State<PublishPage> {
       setState(() => _uploading = true);
       final url = await PostService.instance.uploadImage(File(picked.path));
       if (url.isEmpty) throw Exception('上传失败');
-      _insertMd('\n![](' + url + ')\n');
+      final doc = _quill.document;
+      final sel = _quill.selection;
+      final at = sel.isValid ? sel.start : doc.length - 1;
+      doc.insert(at, fq.BlockEmbed.image(url));
       ToastUtil.success('已插入到光标处');
     } catch (e) {
       ToastUtil.error('插图失败');
@@ -146,50 +162,47 @@ class _PublishPageState extends State<PublishPage> {
 
   /// 1109：把选中内容标记为打赏可见
   void _markPay() {
-    final sel = _content.selection;
-    if (sel.start < 0 || sel.start == sel.end) {
+    final sel = _quill.selection;
+    if (!sel.isValid || sel.start == sel.end) {
       ToastUtil.info("请先选中要隐藏的段落");
       return;
     }
-    final t = _content.text;
-    final chosen = t.substring(sel.start, sel.end);
-    final nt = t.replaceRange(sel.start, sel.end, "[pay]" + chosen + "[/pay]");
-    _content.value = TextEditingValue(
-      text: nt,
-      selection: TextSelection.collapsed(
-          offset: sel.start + 5 + chosen.length + 6),
-    );
+    final doc = _quill.document;
+    final plain = doc.toPlainText();
+    if (sel.end > plain.length) {
+      ToastUtil.info("选区无效，请重新选择");
+      return;
+    }
+    final chosen = plain.substring(sel.start, sel.end);
+    doc.replace(sel.start, sel.end - sel.start, '[pay]$chosen[/pay]');
     if (!_payOn) setState(() => _payOn = true);
     ToastUtil.success("已标记为付费可见，记得填打赏金额");
   }
 
   Widget _mdBar() {
-    Widget b(String label, String insert) => Padding(
+    Widget b(String label, String tip, fq.Attribute attr) => Padding(
           padding: const EdgeInsets.only(right: 8),
-          child: AppChip(label, onTap: () => _insertMd(insert)),
+          child: AppChip(label, onTap: () => _toggleAttr(attr)),
         );
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(children: [
-                b('粗体', '**粗体**'),
-        b('斜体', '*斜体*'),
-        b('删除线', '~~删除线~~'),
-        b('H1', '\n# 大标题\n'),
-        b('H2', '\n## 小标题\n'),
-        b('H3', '\n### 更小标题\n'),
-        b('列表', '\n- 条目\n'),
-        b('有序', '\n1. 第一条\n2. 第二条\n'),
-        b('引用', '\n> 引用内容\n'),
-        b('代码', '\n```\n代码\n```\n'),
-        b('链接', '[文字](https://)'),
+        b('粗体', '', fq.Attribute.bold),
+        b('斜体', '', fq.Attribute.italic),
+        b('下划线', '', fq.Attribute.underline),
+        b('删除线', '', fq.Attribute.strikeThrough),
+        b('H1', '', fq.Attribute.h1),
+        b('H2', '', fq.Attribute.h2),
+        b('H3', '', fq.Attribute.h3),
+        b('列表', '', fq.Attribute.ul),
+        b('有序', '', fq.Attribute.ol),
+        b('引用', '', fq.Attribute.blockQuote),
+        b('代码', '', fq.Attribute.codeBlock),
         Padding(
           padding: const EdgeInsets.only(right: 8),
-          child: AppChip('插入图片',
-              icon: Lz.image, onTap: _insertImageAtCursor),
+          child: AppChip('插入图片', icon: Lz.image, onTap: _insertImageAtCursor),
         ),
-        b('分割线', '\n---\n'),
-        b('表格', '\n| 列1 | 列2 |\n|---|---|\n| a | b |\n'),
         Padding(
           padding: const EdgeInsets.only(right: 8),
           child: AppChip('设为付费', icon: Lz.lock, onTap: _markPay),
@@ -199,6 +212,31 @@ class _PublishPageState extends State<PublishPage> {
           child: AppChip('导入链接', icon: Lz.link, primary: true, onTap: _importLink),
         ),
       ]),
+    );
+  }
+
+  /// 正文 Markdown 文本（富文本 → Markdown，详情页沿用原渲染器）
+  String _mdText() =>
+      DeltaToMarkdown().convert(_quill.document.toDelta()).trim();
+
+  /// 用纯文本覆盖正文（导入链接用；保留原有内容则追加）
+  void _setMd(String md, {bool append = false}) {
+    final doc = _quill.document;
+    final old = _mdText();
+    final full = append && old.isNotEmpty ? '$old\n\n$md' : md;
+    final len = doc.length;
+    if (len > 1) {
+      doc.replace(0, len - 1, full);
+    } else {
+      doc.insert(0, full);
+    }
+  }
+
+  /// 切换当前选区格式（再点一次取消）
+  void _toggleAttr(fq.Attribute attr) {
+    final cur = _quill.getSelectionStyle().attributes[attr.key];
+    _quill.formatSelection(
+      cur == attr ? fq.Attribute.clone(attr, null) : attr,
     );
   }
 
@@ -244,11 +282,11 @@ class _PublishPageState extends State<PublishPage> {
               style: TextStyle(fontSize: 10.5, color: context.t3)),
         ]),
         const SizedBox(height: 16),
-        if (_content.text.trim().isEmpty)
+        if (_mdText().isEmpty)
           Text('（正文为空）',
               style: TextStyle(fontSize: 13, color: context.t3))
         else
-          PostContent(text: _content.text),
+          PostContent(text: _mdText()),
         if (_images.isNotEmpty) ...[
           const SizedBox(height: 4),
           Wrap(
@@ -326,10 +364,7 @@ class _PublishPageState extends State<PublishPage> {
           buf.writeln();
           buf.writeln('![](' + img + ')');
         }
-        final old = _content.text.trim();
-        _content.text = old.isEmpty
-            ? buf.toString()
-            : old + '\n\n' + buf.toString();
+        _setMd(buf.toString(), append: true);
       });
       ToastUtil.success('已导入，右上角可预览');
     } catch (e) {
@@ -402,24 +437,26 @@ class _PublishPageState extends State<PublishPage> {
           ),
           const SizedBox(height: 12),
           _mdBar(),
-          TextField(
-            controller: _content,
-            minLines: 10,
-            maxLines: 30,
-            maxLength: 5000,
-            style: TextStyle(fontSize: 14, height: 1.7, color: context.t1),
-            decoration: InputDecoration(
-              hintText: '分享你的想法、问题或资源…',
-              helperText: '支持 Markdown 与 HTML，右上角「预览」可看效果',
-              hintStyle: TextStyle(fontSize: 14, color: context.t3),
-              filled: true,
-              fillColor: context.isDark ? C.bg2 : Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(R.md),
-                borderSide: BorderSide.none,
-              ),
-              counterStyle: TextStyle(fontSize: 10, color: context.t3),
+          Container(
+            constraints: const BoxConstraints(minHeight: 260, maxHeight: 520),
+            decoration: BoxDecoration(
+              color: context.isDark ? C.bg2 : Colors.white,
+              borderRadius: BorderRadius.circular(R.md),
             ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: fq.QuillEditor.basic(
+              controller: _quill,
+              config: const fq.QuillEditorConfig(
+                placeholder: '分享你的想法、问题或资源…',
+                expands: false,
+                padding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text('支持富文本排版，右上角「预览」可看效果',
+                style: TextStyle(fontSize: 11, color: context.t3)),
           ),
           const SizedBox(height: 10),
           Wrap(
