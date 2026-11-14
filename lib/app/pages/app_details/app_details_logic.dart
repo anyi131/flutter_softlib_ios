@@ -38,7 +38,6 @@ import '../../api/soft_service.dart';
 import '../../api/user_service.dart';
 import '../../utils/apk_installer.dart';
 import '../../utils/download_dir.dart';
-import '../../utils/dl_engine.dart';
 import '../../utils/lzy_local_parser.dart';
 import '../../utils/jump_util.dart';
 import '../../utils/toast_util.dart';
@@ -1239,29 +1238,27 @@ class AppDetailsLogic extends GetxController {
     // ★ 1029i：下载前并发探测蓝奏各节点（每条只取 1KB），挑真能连通的那条。
     //   解析到坏 IPv6 或单节点抽风时，不会再让用户白等 30 秒才失败。
     var dlUrl = parseUrl!;
-    try {
-      if (LzyLine.isDirect(dlUrl)) {
-        ResolveOverlay.stage('选择下载线路…');
-        final alive = await LzyLine.pickAlive(dlUrl);
-        if (alive != null && alive.isNotEmpty) dlUrl = alive;
-      }
-    } catch (_) {}
-    final _savedDir0 = await DownloadDir.path();
-    // ★ 1109：优先多连接分段下载（background_downloader），失败自动回退旧引擎
-    final newTaskId = await DlEngine.enqueue(
-          url: dlUrl,
-          fileName: fileName,
-          savedDir: _savedDir0,
-          expectedBytes: (_fileSizeMb() * 1024 * 1024).round(),
-        ) ??
-        await FlutterDownloader.enqueue(
-          url: dlUrl,
-          fileName: fileName,
-          savedDir: _savedDir0,
-          showNotification: true,
-          saveInPublicStorage: false,
-          openFileFromNotification: true,
-        );
+    // ★ 1109：本机直连蓝奏 CDN 已卡死过 → 直接用服务端中转，不再白等
+    if (_preferProxy && _proxyFallbackUrl.isNotEmpty) {
+      dlUrl = _proxyFallbackUrl;
+      ResolveOverlay.dismiss();
+    } else {
+      try {
+        if (LzyLine.isDirect(dlUrl)) {
+          ResolveOverlay.stage('选择下载线路…');
+          final alive = await LzyLine.pickAlive(dlUrl);
+          if (alive != null && alive.isNotEmpty) dlUrl = alive;
+        }
+      } catch (_) {}
+    }
+    final newTaskId = await FlutterDownloader.enqueue(
+      url: dlUrl,
+      fileName: fileName,
+      savedDir: await DownloadDir.path(),
+      showNotification: true,
+      saveInPublicStorage: false,
+      openFileFromNotification: true,
+    );
     if (newTaskId == null) {
       ResolveOverlay.dismiss();
       ToastUtil.error('下载失败，请稍后重试');
@@ -1297,6 +1294,7 @@ class AppDetailsLogic extends GetxController {
   /// 轮询下载进度（保证进度条实时更新）
   void _startProgressPolling() {
     _progressTimer?.cancel();
+    // ★ 1109：新一轮下载，重置 0 字节停滞检测
     _stallHandled = false;
     _stallAnchor = null;
     _progressTimer = Timer.periodic(const Duration(milliseconds: 700), (
@@ -1314,20 +1312,21 @@ class AppDetailsLogic extends GetxController {
         t.cancel();
         _onDownloadComplete();
       }
-      // ★ 1109：0 字节卡死主动兜底（原来只有 failed 才走兜底）
+      // ★ 1109：0 字节卡死主动兜底（原来只有 failed 才走兜底，而 CDN 不通
+      //   时任务永远是 running，兜底等于摆设）
       if (t0.status == DownloadTaskStatus.running && !_stallHandled) {
         final now = DateTime.now();
         if (t0.progress > 0) {
-          _stallAnchor = null;
+          _stallAnchor = null; // 有字节了，说明线路通
         } else {
           _stallAnchor ??= now;
-          if (now.difference(_stallAnchor!).inSeconds >= 20) {
+          if (now.difference(_stallAnchor!).inSeconds >= 8) {
             _stallHandled = true;
             _stallAnchor = null;
             t.cancel();
             SoftService.reportLogStatic(
               tag: 'proxy',
-              error: '[stall] 20s 0字节，尝试中转兜底',
+              error: '[stall] 8s 0字节，尝试中转兜底',
             ).catchError((_) {});
             if (await _retryWithProxy()) return;
             _showDownloadFailedSheet();
@@ -1434,10 +1433,14 @@ class AppDetailsLogic extends GetxController {
   /// ★ 153.1：本次解析的分享页地址（本地解析没有 proxyUrl 时，失败后用它补取）
   String _sharePageUrlForProxy = '';
 
-  /// ★ 1109：0 字节停滞计时。flutter_downloader 在 CDN 不可达时会一直报
-  ///   running + 0 字节，永远不进 failed —— 导致 _retryWithProxy() 兜底从不触发。
+  /// ★ 1109：0 字节停滞计时器。
+  ///   flutter_downloader 在 CDN 不可达时会一直报 running + 0 字节，
+  ///   永远不进 failed 分支 —— 导致 _retryWithProxy() 兜底从不触发。
+  ///   这里主动计时：8 秒无任何字节 → 判定线路不通，切中转。
   DateTime? _stallAnchor;
   bool _stallHandled = false;
+  /// ★ 1109：本次运行内直连已卡死过 → 后续下载直接走中转，不再等 8 秒
+  static bool _preferProxy = false;
 
   void _showDownloadFailedSheet() {
     _failCount++;
@@ -1607,20 +1610,14 @@ class AppDetailsLogic extends GetxController {
           );
         }
       } catch (_) {}
-      final _dirP = await DownloadDir.path();
-      final nid = await DlEngine.enqueue(
-            url: _proxyFallbackUrl,
-            fileName: name,
-            savedDir: _dirP,
-          ) ??
-          await FlutterDownloader.enqueue(
-            url: _proxyFallbackUrl,
-            fileName: name,
-            savedDir: _dirP,
-            showNotification: true,
-            saveInPublicStorage: false,
-            openFileFromNotification: true,
-          );
+      final nid = await FlutterDownloader.enqueue(
+        url: _proxyFallbackUrl,
+        fileName: name,
+        savedDir: await DownloadDir.path(),
+        showNotification: true,
+        saveInPublicStorage: false,
+        openFileFromNotification: true,
+      );
       if (nid == null) return false;
       try {
         await downloadTaskDao.setDownloadTask(
@@ -1631,6 +1628,7 @@ class AppDetailsLogic extends GetxController {
           appSize: appInfo?.fileSize ?? '',
         );
       } catch (_) {}
+      _preferProxy = true; // ★ 1109：记住本机直连不通，后续直接走中转
       _uiPhase = phaseDownloading;
       _shownProgress = 0;
       _explicitReset = false;
@@ -1782,12 +1780,7 @@ class AppDetailsLogic extends GetxController {
           );
         } catch (_) {}
       }
-      final nt = await DlEngine.enqueue(
-            url: target,
-            fileName: item?.title != null ? '${item!.title}.apk' : 'download.apk',
-            savedDir: await DownloadDir.path(),
-          ) ??
-          await FlutterDownloader.enqueue(
+      final nt = await FlutterDownloader.enqueue(
         url: target,
         savedDir: await DownloadDir.path(),
         fileName: appInfo?.fileName ?? '',
