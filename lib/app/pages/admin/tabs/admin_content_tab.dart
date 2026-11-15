@@ -59,7 +59,7 @@ class _AdminContentTabState extends State<AdminContentTab>
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
+    if (_posts.isEmpty) setState(() => _loading = true);
     try {
       final p = await _svc.posts();
       // ★ 动态审核（1013d）：走审核列表接口，带 status / counts；
@@ -143,7 +143,7 @@ class _AdminContentTabState extends State<AdminContentTab>
           ],
         ),
         Expanded(
-          child: _loading
+          child: _loading && _posts.isEmpty
               ? const LoadingState(text: '加载内容数据…')
               : TabBarView(
                   controller: _tab,
