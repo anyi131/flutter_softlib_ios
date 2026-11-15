@@ -35,7 +35,7 @@ class _PerfMonitorViewState extends State<PerfMonitorView> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
+    if (_slowest.isEmpty) setState(() => _loading = true);
     try {
       final r = await _svc.perfSummary(days: _days);
       if (!mounted) return;
@@ -90,7 +90,7 @@ class _PerfMonitorViewState extends State<PerfMonitorView> {
           ),
         ),
         Expanded(
-          child: _loading
+          child: _loading && _slowest.isEmpty
               ? const LoadingState(text: '加载性能数据…')
               : (_slowest.isEmpty && _failTop.isEmpty
                     ? const EmptyState(
