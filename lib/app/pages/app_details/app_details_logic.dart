@@ -777,7 +777,7 @@ class AppDetailsLogic extends GetxController {
     );
     await Future.delayed(const Duration(milliseconds: 400));
     final ctx = Get.context;
-    if (ctx == null) return;
+    if (ctx == null || !ctx.mounted) return;
     final name = appInfo?.fileName ?? '安装包';
     final go = await showDialog<bool>(
       context: ctx,
