@@ -430,17 +430,24 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              RadioListTile<bool>(
-                value: false,
+              // 1109: Flutter 3.32+ RadioListTile 的 groupValue/onChanged 已废弃，
+              //   改由 RadioGroup 统一管理选中值
+              RadioGroup<bool>(
                 groupValue: vip,
                 onChanged: (v) => isVip.value = v ?? false,
-                title: const Text('免费下载'),
-              ),
-              RadioListTile<bool>(
-                value: true,
-                groupValue: vip,
-                onChanged: (v) => isVip.value = v ?? true,
-                title: const Text('会员专享'),
+                child: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RadioListTile<bool>(
+                      value: false,
+                      title: Text('免费下载'),
+                    ),
+                    RadioListTile<bool>(
+                      value: true,
+                      title: Text('会员专享'),
+                    ),
+                  ],
+                ),
               ),
               if (vip) ...[
                 TextField(
