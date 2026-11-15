@@ -365,7 +365,7 @@ class _AdminGoalTabState extends State<AdminGoalTab> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+    if (_loading && _rows.isEmpty) return const Center(child: CircularProgressIndicator(strokeWidth: 2));
     final tasks = _rows.where((r) => '${r['kind']}' == '0').toList();
     final achs = _rows.where((r) => '${r['kind']}' != '0').toList();
     final onCount = _rows.where((r) => '${r['enable_switch']}' == '1').length;
