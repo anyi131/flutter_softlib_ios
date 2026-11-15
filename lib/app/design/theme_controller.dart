@@ -18,7 +18,6 @@ class ThemeController extends GetxController {
   static final ThemeController instance = ThemeController._();
 
   static const _key = 'app_theme_mode';
-  static const _keyPalette = 'app_theme_palette';
 
   final Rx<ThemeMode> mode = ThemeMode.light.obs;
   final Rx<ThemePalette> palette = ThemePalette.all.first.obs;
