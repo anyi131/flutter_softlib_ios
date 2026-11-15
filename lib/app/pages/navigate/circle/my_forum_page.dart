@@ -39,7 +39,7 @@ class _MyForumPageState extends State<MyForumPage>
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
+    if (_posts.isEmpty) setState(() => _loading = true);
     final p = await _svc.myPosts();
     final m = await _svc.myMarks();
     if (!mounted) return;
