@@ -1384,7 +1384,9 @@ class MineComponent extends StatelessWidget {
     } catch (_) {}
     final achs = list.where((g) => g.kind == 1).toList();
     final earned = achs.where((g) => g.claimed == 1).length;
-    final ctx0 = Get.context!;
+    final ctx0 = Get.context;
+    // 1109: await 之后 context 可能已失效，先确认可用再用
+    if (ctx0 == null || !ctx0.mounted) return;
     Get.bottomSheet(
       Container(
         constraints: BoxConstraints(
