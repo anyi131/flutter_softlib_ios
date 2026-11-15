@@ -92,7 +92,7 @@ class _CollectStatsViewState extends State<CollectStatsView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const LoadingState(text: '加载软件数据…');
+    if (_loading && _items.isEmpty) return const LoadingState(text: '加载软件数据…');
     if (_err.isNotEmpty && _items.isEmpty) {
       return EmptyState(
         text: _err,
