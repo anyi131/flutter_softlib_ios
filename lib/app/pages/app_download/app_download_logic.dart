@@ -47,6 +47,8 @@ class AppDownloadLogic extends GetxController {
   ///   卡住的任务永远不上报，客服在「下载记录」里查不到任何痕迹
   final Map<String, DateTime> _stallSince = {};
   final Set<String> _stallReported = {};
+  /// 每个任务上一次看到的进度百分比（判断是否还在增长）
+  final Map<String, int> _lastPct = {};
 
   @override
   void onInit() {
@@ -130,7 +132,15 @@ class AppDownloadLogic extends GetxController {
   void _checkStalled(List<DownloadTask> tasks) {
     final now = DateTime.now();
     for (final t in tasks) {
-      if (t.status == DownloadTaskStatus.running && t.progress <= 0) {
+      if (t.status == DownloadTaskStatus.running) {
+        final pct = (t.progress * 100).floor();
+        final prev = _lastPct[t.taskId];
+        if (prev == null || pct > prev) {
+          // 进度还在走（或首次见到）→ 重置计时
+          _lastPct[t.taskId] = pct;
+          _stallSince[t.taskId] = now;
+          continue;
+        }
         _stallSince.putIfAbsent(t.taskId, () => now);
         final secs = now.difference(_stallSince[t.taskId]!).inSeconds;
         if (secs >= 10 && !_stallReported.contains(t.taskId)) {
@@ -150,13 +160,15 @@ class AppDownloadLogic extends GetxController {
                 ok: false,
                 errCode: 'DL_STALL',
                 progress: 0,
-                error: '[下载卡住] 任务 ${secs}s 无任何字节（直连线路不通）',
+                error:
+                    '[下载卡住] 任务 ${secs}s 停在 ${((t.progress) * 100).floor()}% 无增长（线路断流）',
               )
               .catchError((_) {});
         }
       } else {
         _stallSince.remove(t.taskId);
         _stallReported.remove(t.taskId);
+        _lastPct.remove(t.taskId);
       }
     }
   }
