@@ -150,10 +150,10 @@ class _PostPageState extends State<PostPage> {
     setState(() => _sending = true);
     try {
       await _svc.addComment(widget.postId, t, parent: _replyTo);
+      if (!mounted) return;
       _input.clear();
       setState(() => _replyTo = 0);
-      FocusScope.of(context).unfocus();
-      if (!mounted) return; // 1107r
+      FocusScope.of(context).unfocus(); // 1107r
       await _load();
     } catch (e) {
       ToastUtil.error(ErrText.of(e));
