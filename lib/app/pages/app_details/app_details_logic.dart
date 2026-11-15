@@ -1187,7 +1187,7 @@ class AppDetailsLogic extends GetxController {
 
     // ★ 1105h：记下本次解析附带的中转兜底地址（直连被风控时静默换链）
     _proxyFallbackUrl = SoftService.lastParseProxyUrl;
-    _proxyRetried = false;
+    _proxyRetryCount = 0;
     // ★ 1106g：本地解析成功时没有 proxyUrl（只有服务端会给）。
     //   这里在**下载前**就补取一次，避免等到失败时再请求（那时票据/网络都可能出问题）。
     if (_proxyFallbackUrl.isEmpty && _sharePageUrlForProxy.isNotEmpty) {
@@ -1933,7 +1933,7 @@ class AppDetailsLogic extends GetxController {
         _failCount = 0; // ★ 1104e：重新解析成功，失败话术/浏览器兜底重置
         // ★ 1105h：重新解析会带新的 proxyUrl，重置中转兜底状态
         _proxyFallbackUrl = SoftService.lastParseProxyUrl;
-        _proxyRetried = false;
+        _proxyRetryCount = 0;
         await addDownload(
           (appInfo?.fileName ?? item?.title ?? 'download'),
           fresh,
