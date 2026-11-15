@@ -1305,6 +1305,7 @@ class AppDetailsLogic extends GetxController {
     _progressTimer?.cancel();
     _stallHandled = false;
     _stallAnchor = null;
+    _lastPct = -1;
     _progressTimer = Timer.periodic(const Duration(milliseconds: 700), (
       t,
     ) async {
@@ -1324,12 +1325,16 @@ class AppDetailsLogic extends GetxController {
       //   任务永远 running，兜底等于摆设）
       if (t0.status == DownloadTaskStatus.running && !_stallHandled) {
         final now = DateTime.now();
-        if (t0.progress > 0) {
-          _stallAnchor = null;
+        final pct = (t0.progress * 100).floor();
+        if (pct > _lastPct) {
+          // 进度还在走 → 重置计时
+          _lastPct = pct;
+          _stallAnchor = now;
         } else {
           _stallAnchor ??= now;
-          // 1109b：3 秒无字节就切线路（原来 8 秒，用户等不及直接换软件了）
-          //   切换时给明确反馈，否则用户以为卡死
+          // 1109c：3 秒没有任何新字节就切线路。
+          //   注意这里是「进度不再增长」而不是「进度为 0」——
+          //   真机上常见的卡法是下到 46% 断流，任务仍是 running。
           if (now.difference(_stallAnchor!).inSeconds >= 3) {
             _stallHandled = true;
             _stallAnchor = null;
@@ -1464,6 +1469,9 @@ class AppDetailsLogic extends GetxController {
   ///   running + 0 字节，永远不进 failed —— 导致 _retryWithProxy() 兜底从不触发。
   DateTime? _stallAnchor;
   bool _stallHandled = false;
+  /// 1109c：上一次的进度百分比 —— 用于判断「进度是否还在增长」。
+  ///   原来只看 progress<=0，卡在 46% 断流时永远不会触发切换。
+  int _lastPct = -1;
   /// 本机直连已卡死过 → 后续下载直接走中转
   static bool _preferProxy = false;
 
