@@ -1013,7 +1013,7 @@ class StatItem extends StatelessWidget {
       children: [
         Text(
           value,
-          style: Ty.h3.copyWith(fontSize: 16, color: _c ?? context.t1),
+          style: Ty.h3.copyWith(fontSize: 16, color: _c),
         ),
         const SizedBox(height: 3),
         Text(label, style: Ty.tiny.copyWith(color: context.t3)),
