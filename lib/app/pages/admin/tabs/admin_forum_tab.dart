@@ -357,7 +357,7 @@ class _AdminForumTabState extends State<AdminForumTab> {
               ),
               const SizedBox(height: 10),
               DropdownButtonFormField<int>(
-                value: secId,
+                initialValue: secId,
                 decoration: const InputDecoration(labelText: '版块'),
                 items: [
                   const DropdownMenuItem(value: 0, child: Text('未分类')),
