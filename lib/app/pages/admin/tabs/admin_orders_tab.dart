@@ -123,7 +123,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
         _searchRow(),
         _filterRow(),
         Expanded(
-          child: _loading
+          child: _loading && _list.isEmpty
               ? const AdListSkeleton(rows: 6)
               : (_list.isEmpty
                     ? const EmptyState(
