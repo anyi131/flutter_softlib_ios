@@ -85,7 +85,7 @@ class UpdateFlow {
     } catch (_) {}
     // ★ 1016：安全取 context（启动阶段可能为 null，绝不能崩）
     final ctx = Get.context ?? Get.key.currentContext;
-    if (ctx == null) return;
+    if (ctx == null || !ctx.mounted) return;
     showGlassDialog(
       // ★ 1016：原来是 Get.context! —— 启动阶段 / 页面切换时 Get.context 可能为 null，
       //   会直接抛「Null check operator used on a null value」（已在真机日志里抓到）。
