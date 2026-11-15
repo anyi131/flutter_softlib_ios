@@ -429,7 +429,7 @@ class _CollectConfigViewState extends State<CollectConfigView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading && _cats.isEmpty) return LoadingState(text: '加载${widget.title}…');
+    if (_loading && _fields.isEmpty) return LoadingState(text: '加载${widget.title}…');
     if (_err.isNotEmpty && _fields.isEmpty) {
       return EmptyState(
         text: _err,
