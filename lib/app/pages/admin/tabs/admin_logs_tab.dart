@@ -514,7 +514,7 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
         ],
         if (_mode == 0)
           Expanded(
-            child: _loading
+            child: _loading && _list.isEmpty
                 ? const LoadingState(text: '加载操作日志…')
                 : (_list.isEmpty
                       ? const EmptyState(
