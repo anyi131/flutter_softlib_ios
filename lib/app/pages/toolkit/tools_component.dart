@@ -257,7 +257,7 @@ class _ToolsComponentState extends State<ToolsComponent>
               children: [
                 _header(),
                 Expanded(
-                  child: _loading
+                  child: _loading && _groups.isEmpty
                       ? const LoadingState(text: '正在加载工具箱…')
                       : (_groups.isEmpty
                             ? EmptyState(
@@ -1237,7 +1237,7 @@ class _ToolSearchPageState extends State<ToolSearchPage> {
   }
 
   Widget _body() {
-    if (_loading) return const LoadingState(text: '搜索中…');
+    if (_loading && _groups.isEmpty) return const LoadingState(text: '搜索中…');
     if (!_searched) {
       return EmptyState(
         icon: Lz.search,
