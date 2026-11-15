@@ -1338,6 +1338,24 @@ class AppDetailsLogic extends GetxController {
             final okProxy = await _retryWithProxy();
             ResolveOverlay.dismiss();
             if (okProxy) return;
+            // 1109b：切换也失败时必须上报 —— 之前只弹窗不上报，
+            //   用户在「下载记录」里完全看不到这次失败（客服查不到记录）
+            try {
+              await SoftService.instance.reportDownloadResult(
+                appId: appIdInt,
+                title: (item?.title ?? '').isNotEmpty
+                    ? item!.title
+                    : (appInfo?.fileName ?? ''),
+                url: dowUrl,
+                ok: false,
+                errCode: 'DL_STALL',
+                freeMb: await _freeSpaceMb(),
+                fileMb: _fileSizeMb(),
+                progress: _shownProgress,
+                retryCnt: 1,
+                error: '[下载卡住] 直连与中转均无法下载（3 秒无字节，已尝试切换线路）',
+              );
+            } catch (_) {}
             _showDownloadFailedSheet();
             return;
           }
