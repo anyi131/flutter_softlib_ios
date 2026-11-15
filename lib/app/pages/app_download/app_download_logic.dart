@@ -154,7 +154,7 @@ class AppDownloadLogic extends GetxController {
           }
           SoftService.instance
               .reportDownloadResult(
-                appId: info?.appId ?? 0,
+                appId: int.tryParse('${info?.appId ?? 0}') ?? 0,
                 title: (info?.appName ?? t.filename) ?? '',
                 url: t.url,
                 ok: false,
