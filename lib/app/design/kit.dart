@@ -551,19 +551,6 @@ class GlassCard extends StatelessWidget {
     );
   }
 
-  Widget _legacyGlass(BuildContext context) {
-    return Deco.glass(
-      context,
-      radius: radius,
-      blur: blur,
-      alpha: alpha,
-      padding: padding,
-      margin: margin,
-      onTap: onTap,
-      glow: glow,
-      child: child,
-    );
-  }
 }
 
 /// ─────────── 标签 ───────────
