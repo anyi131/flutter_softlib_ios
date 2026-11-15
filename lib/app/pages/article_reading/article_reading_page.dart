@@ -142,7 +142,7 @@ class ArticleReadingPage extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withValues(alpha: 0.7),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Lz.x, color: Colors.white, size: 24),
