@@ -150,7 +150,7 @@ class AppDownloadLogic extends GetxController {
                 ok: false,
                 errCode: 'DL_STALL',
                 progress: 0,
-                error: '[下载卡住] 任务 \${secs}s 无任何字节（直连线路不通）',
+                error: '[下载卡住] 任务 ${secs}s 无任何字节（直连线路不通）',
               )
               .catchError((_) {});
         }
