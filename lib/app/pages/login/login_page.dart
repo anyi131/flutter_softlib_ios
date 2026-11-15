@@ -453,7 +453,7 @@ class _LoginPageState extends State<LoginPage> {
                 //   这时不该再让用户「输入密码登录」，直接关掉登录页回去。
                 if (UserService.instance.isLoggedIn) {
                   await _notifyMine();
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   Navigator.of(context).pop(true);
                   return;
                 }
