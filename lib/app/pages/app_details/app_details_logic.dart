@@ -1328,11 +1328,16 @@ class AppDetailsLogic extends GetxController {
           _stallAnchor = null;
         } else {
           _stallAnchor ??= now;
-          if (now.difference(_stallAnchor!).inSeconds >= 8) {
+          // 1109b：3 秒无字节就切线路（原来 8 秒，用户等不及直接换软件了）
+          //   切换时给明确反馈，否则用户以为卡死
+          if (now.difference(_stallAnchor!).inSeconds >= 3) {
             _stallHandled = true;
             _stallAnchor = null;
             t.cancel();
-            if (await _retryWithProxy()) return;
+            ResolveOverlay.show(stage: '直连不通，正在切换中转线路…');
+            final okProxy = await _retryWithProxy();
+            ResolveOverlay.dismiss();
+            if (okProxy) return;
             _showDownloadFailedSheet();
             return;
           }
