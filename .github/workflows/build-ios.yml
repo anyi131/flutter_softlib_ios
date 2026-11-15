@@ -10,10 +10,7 @@ name: Build iOS
 # 或用上面这些自签工具，详见 README-iOS.md。
 
 on:
-  push:
-    branches: ["master", "main"]
-  pull_request:
-    branches: ["master", "main"]
+  # 1109c：只在手动触发时构建，push 不再自动打包
   workflow_dispatch:
 
 permissions:
