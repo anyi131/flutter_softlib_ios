@@ -43,8 +43,10 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
     _load();
   }
 
-  Future<void> _load() async {
-    setState(() => _loading = true);
+  Future<void> _load({bool silent = false}) async {
+    // ★ 1109：静默刷新 —— 保存/置顶/删除后重新拉列表时，不要把列表卸载成骨架屏。
+    //   卸载会丢失滚动位置，用户保存一条就被弹回最顶上（大量反馈）。
+    if (!silent) setState(() => _loading = true);
     try {
       final l = await _svc.apps(keyword: _kw);
       if (mounted)
@@ -121,7 +123,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
             ? '已置顶 ${r['updated'] ?? target.length} 个'
             : '已取消置顶 ${r['updated'] ?? target.length} 个',
       );
-      await _load();
+      await _load(silent: true);
     } catch (e) {
       if (mounted) {
         ToastUtil.error(ErrText.of(e));
@@ -170,7 +172,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
         _sel.clear();
       });
       ToastUtil.success('已更新 ${r['updated'] ?? target.length} 个软件');
-      await _load();
+      await _load(silent: true);
     } catch (e) {
       if (mounted) {
         ToastUtil.error(ErrText.of(e));
@@ -221,7 +223,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
         '检查 $total 个 · 补全 $filled · 已完整 $skipped · 失败 $failed',
         details,
       );
-      await _load();
+      await _load(silent: true);
     } catch (e) {
       if (mounted) setState(() => _filling = false);
       ToastUtil.error(ErrText.of(e));
@@ -511,7 +513,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
         _sel.clear();
       });
       ToastUtil.success('已更新 ${r['updated'] ?? target.length} 个软件');
-      await _load();
+      await _load(silent: true);
     } catch (e) {
       if (mounted) {
         ToastUtil.error(ErrText.of(e));
@@ -852,7 +854,7 @@ class _AdminAppsTabState extends State<AdminAppsTab> {
             ),
           ),
         Expanded(
-          child: _loading
+          child: _loading && _list.isEmpty
               ? const AdListSkeleton(rows: 7)
               : RefreshIndicator(
                   onRefresh: _load,
