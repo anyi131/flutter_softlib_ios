@@ -674,6 +674,7 @@ class _ReviewTabState extends State<ReviewTab> {
     bool sending = false;
     String err = '';
 
+    if (!context.mounted) return;
     await showGlassDialog(
       context: context,
       barrierDismissible: false,
