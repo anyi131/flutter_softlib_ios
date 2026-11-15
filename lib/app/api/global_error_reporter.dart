@@ -59,7 +59,7 @@ class GlobalErrorReporter {
         'error': msg,
         'device': DeviceInfo.model,
         'os': DeviceInfo.os,
-      }).catchError((_) {});
+      }).ignore(); // 1109: onError 必须返回值，改用 ignore() 消除隐患
     } catch (_) {}
   }
 }
