@@ -1237,7 +1237,7 @@ class _ToolSearchPageState extends State<ToolSearchPage> {
   }
 
   Widget _body() {
-    if (_loading && _groups.isEmpty) return const LoadingState(text: '搜索中…');
+    if (_loading) return const LoadingState(text: '搜索中…');   // 搜索是重置列表，保留 loading 反馈
     if (!_searched) {
       return EmptyState(
         icon: Lz.search,
