@@ -34,7 +34,7 @@ class _ConfigHistoryViewState extends State<ConfigHistoryView> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
+    if (_list.isEmpty) setState(() => _loading = true);
     try {
       final list = await _svc.configHistory();
       if (!mounted) return;
@@ -196,7 +196,7 @@ class _ConfigHistoryViewState extends State<ConfigHistoryView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const LoadingState(text: '加载配置历史…');
+    if (_loading && _list.isEmpty) return const LoadingState(text: '加载配置历史…');
     return Column(
       children: [
         Padding(
