@@ -39,7 +39,7 @@ class _MyForumPageState extends State<MyForumPage>
   }
 
   Future<void> _load() async {
-    if (_posts.isEmpty) setState(() => _loading = true);
+    if (_posts.isEmpty) if (_posts.isEmpty) setState(() => _loading = true);
     final p = await _svc.myPosts();
     final m = await _svc.myMarks();
     if (!mounted) return;
@@ -66,7 +66,7 @@ class _MyForumPageState extends State<MyForumPage>
           tabs: const [Tab(text: '我的帖子'), Tab(text: '我的收藏')],
         ),
       ),
-      body: _loading
+      body: _loading && _posts.isEmpty
           ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
           : TabBarView(
               controller: _tab,
