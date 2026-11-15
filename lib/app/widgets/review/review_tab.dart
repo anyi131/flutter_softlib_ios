@@ -553,6 +553,7 @@ class _ReviewTabState extends State<ReviewTab> {
     final ctrl = TextEditingController();
     bool sending = false;
     String err = '';
+    if (!context.mounted) return;
     await showGlassDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
