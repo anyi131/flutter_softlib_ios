@@ -18,6 +18,7 @@ class PermissionUtils {
   static Future<void> requestAppPermissions(BuildContext context) async {
     // 媒体/存储权限
     await _requestMediaAndStoragePermissions(context);
+    if (!context.mounted) return;
 
     // 通知权限
     await _requestNotificationPermission(context);
@@ -38,6 +39,7 @@ class PermissionUtils {
 
     Map<Permission, PermissionStatus> statuses = await mediaPermissions
         .request();
+    if (!context.mounted) return;
 
     // 检查各项媒体权限
     bool allMediaGranted = true;
@@ -70,6 +72,7 @@ class PermissionUtils {
     final storageStatus = await Permission.storage.status;
     if (storageStatus != PermissionStatus.granted) {
       final newStorageStatus = await Permission.storage.request();
+      if (!context.mounted) return;
       if (newStorageStatus != PermissionStatus.granted) {
         _handlePermissionDenial(context, '旧版存储权限', {
           Permission.storage: newStorageStatus,
@@ -84,6 +87,7 @@ class PermissionUtils {
     final status = await Permission.notification.status;
     if (status != PermissionStatus.granted) {
       final newStatus = await Permission.notification.request();
+      if (!context.mounted) return;
       if (newStatus != PermissionStatus.granted) {
         _handlePermissionDenial(context, '通知权限', {
           Permission.notification: newStatus,
