@@ -380,7 +380,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
           onPressed: () async {
             if (await _c.canGoBack()) {
               _c.goBack();
-            } else if (mounted) {
+            } else if (context.mounted) {
               Navigator.of(context).pop();
             }
           },
