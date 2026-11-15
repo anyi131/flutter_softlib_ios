@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
 
 import 'lucide.dart';
-import 'ui.dart';
 
 /// 1109：正文内联视频卡片（点击进入全屏播放）
 class InlineVideoCard extends StatelessWidget {
