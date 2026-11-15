@@ -230,7 +230,7 @@ class AppDetailsLogic extends GetxController {
     _silentRetry = 0;
     _failCount = 0; // ★ 1104e：换软件后失败话术/浏览器兜底从头计
     _proxyFallbackUrl = ''; // ★ 1105h：换软件清空中转兜底地址
-    _proxyRetried = false;
+    _proxyRetryCount = 0;
     _shownProgress = 0;
     _uiPhase = phaseIdle;
     _taskKey = '';
@@ -1460,7 +1460,9 @@ class AppDetailsLogic extends GetxController {
 
   /// ★ 1105h：服务端给的中转兜底地址（直连被源站风控时静默换链重下）
   String _proxyFallbackUrl = '';
-  bool _proxyRetried = false;
+  /// 1109c：中转重试次数（原来只允许 1 次，一次失败就彻底放弃）
+  int _proxyRetryCount = 0;
+  static const int _proxyRetryMax = 2;
 
   /// ★ 153.1：本次解析的分享页地址（本地解析没有 proxyUrl 时，失败后用它补取）
   String _sharePageUrlForProxy = '';
@@ -1617,14 +1619,16 @@ class AppDetailsLogic extends GetxController {
         logger.e('proxy fetch: $e');
       }
     }
-    if (_proxyFallbackUrl.isEmpty || _proxyRetried) {
+    if (_proxyFallbackUrl.isEmpty ||
+        _proxyRetryCount >= _proxyRetryMax) {
       SoftService.reportLogStatic(
         tag: 'proxy',
-        error: '[proxy] skip empty=${_proxyFallbackUrl.isEmpty} retried=$_proxyRetried',
+        error:
+            '[proxy] skip empty=${_proxyFallbackUrl.isEmpty} retried=$_proxyRetryCount/$_proxyRetryMax',
       ).catchError((_) {});
       return false;
     }
-    _proxyRetried = true;
+    _proxyRetryCount++;
     try {
       final old = downloadTask;
       var name = (old?.filename ?? '').trim();
