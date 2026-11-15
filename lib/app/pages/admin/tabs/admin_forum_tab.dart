@@ -34,7 +34,7 @@ class _AdminForumTabState extends State<AdminForumTab> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
+    if (_posts.isEmpty) setState(() => _loading = true);
     try {
       final s = await _svc.adminSections();
       final p = await _svc.adminPosts();
@@ -134,7 +134,7 @@ class _AdminForumTabState extends State<AdminForumTab> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+    if (_loading && _posts.isEmpty) return const Center(child: CircularProgressIndicator(strokeWidth: 2));
     final totalPosts = _sections.fold<int>(
         0, (s, x) => s + ((x['post_count'] as num?)?.toInt() ?? 0));
     return RefreshIndicator(
