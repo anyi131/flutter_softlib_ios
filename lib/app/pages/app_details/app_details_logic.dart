@@ -990,7 +990,7 @@ class AppDetailsLogic extends GetxController {
       final msg = await NetGuard.confirmMessage((expect * 1024 * 1024).round());
       if (msg != null) {
         final ctx0 = Get.context;
-        if (ctx0 != null) {
+        if (ctx0 != null && ctx0.mounted) {
           final ok = await showDialog<bool>(
             context: ctx0,
             builder: (c) => AppDialog(
