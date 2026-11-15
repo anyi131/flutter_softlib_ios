@@ -43,6 +43,10 @@ class AppDownloadLogic extends GetxController {
   List<DownInfo>? downInfos;
   Timer? timer;
   bool _refreshing = false;
+  /// 1109b：全局卡死检测 —— 用户离开详情页后页面轮询就停了，
+  ///   卡住的任务永远不上报，客服在「下载记录」里查不到任何痕迹
+  final Map<String, DateTime> _stallSince = {};
+  final Set<String> _stallReported = {};
 
   @override
   void onInit() {
@@ -116,9 +120,45 @@ class AppDownloadLogic extends GetxController {
         final bOrder = statusOrder[b.status] ?? 99;
         return aOrder.compareTo(bOrder);
       });
+      _checkStalled(downloadTasks);
     }
 
     update(['downInfos']);
+  }
+
+  /// 全局卡死检测：running 且 0 字节超过 10 秒 → 上报一次（每任务只报一次）
+  void _checkStalled(List<DownloadTask> tasks) {
+    final now = DateTime.now();
+    for (final t in tasks) {
+      if (t.status == DownloadTaskStatus.running && t.progress <= 0) {
+        _stallSince.putIfAbsent(t.taskId, () => now);
+        final secs = now.difference(_stallSince[t.taskId]!).inSeconds;
+        if (secs >= 10 && !_stallReported.contains(t.taskId)) {
+          _stallReported.add(t.taskId);
+          DownInfo? info;
+          for (final d in (downInfos ?? const <DownInfo>[])) {
+            if (d.taskId == t.taskId) {
+              info = d;
+              break;
+            }
+          }
+          SoftService.instance
+              .reportDownloadResult(
+                appId: info?.appId ?? 0,
+                title: (info?.appName ?? t.filename) ?? '',
+                url: t.url,
+                ok: false,
+                errCode: 'DL_STALL',
+                progress: 0,
+                error: '[下载卡住] 任务 \${secs}s 无任何字节（直连线路不通）',
+              )
+              .catchError((_) {});
+        }
+      } else {
+        _stallSince.remove(t.taskId);
+        _stallReported.remove(t.taskId);
+      }
+    }
   }
 
   ///暂停下载
