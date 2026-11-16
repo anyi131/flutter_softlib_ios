@@ -82,18 +82,25 @@ class DlEngine {
     final useParallel = expectedBytes == null || expectedBytes >= minParallelBytes;
     final id = '$prefix${DateTime.now().microsecondsSinceEpoch}';
     try {
-      final task = bg.ParallelDownloadTask(
+      // 1109f：ParallelDownloadTask（多段并发）在真机上下到一半会断流，
+      //   改用标准的 DownloadTask（系统原生单连接下载，断点续传由 WorkManager 管），
+      //   稳定优先。UA 必须显式给，否则部分 CDN 会把默认 UA 当异常客户端限速。
+      final task = bg.DownloadTask(
         taskId: id,
         url: url,
         filename: fileName,
         directory: savedDir,
         baseDirectory: bg.BaseDirectory.root, // savedDir 是绝对路径
-        chunks: useParallel ? chunks : 1,
         allowPause: true,
-        retries: 2,
+        retries: 3,
         updates: bg.Updates.progress,
         requiresWiFi: false,
-        headers: headers,
+        headers: <String, String>{
+          'User-Agent':
+              'Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 '
+                  '(KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36',
+          ...headers,
+        },
       );
       _bind();
       _tasks[id] = task;
