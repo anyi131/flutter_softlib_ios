@@ -171,6 +171,55 @@ class DlEngine {
     }
   }
 
+  /// 1109g: 下载前自检 —— 用 Dart 原生 HttpClient 跑一次 1MB 试下载，
+  ///   上报 DNS 地址数 / HTTP 码 / 收到字节 / 耗时 / 异常类型。
+  ///   目的：拿到设备侧真实证据，不再靠服务器端猜测。
+  static Future<void> diagnose(String url) async {
+    final sb = StringBuffer('[diag] ');
+    final sw = Stopwatch()..start();
+    HttpClient? client;
+    try {
+      final uri = Uri.parse(url);
+      sb.write('host=\${uri.host} scheme=\${uri.scheme} ');
+      try {
+        final addrs = await InternetAddress.lookup(uri.host)
+            .timeout(const Duration(seconds: 6));
+        final v4 =
+            addrs.where((a) => a.type == InternetAddressType.IPv4).length;
+        final v6 =
+            addrs.where((a) => a.type == InternetAddressType.IPv6).length;
+        sb.write('dns=v4:\$v4/v6:\$v6 ');
+        if (addrs.isNotEmpty) sb.write('first=\${addrs.first.address} ');
+      } catch (e) {
+        sb.write('dns=FAIL(\${e.runtimeType}) ');
+      }
+      client = HttpClient()
+        ..connectionTimeout = const Duration(seconds: 8)
+        ..idleTimeout = const Duration(seconds: 8);
+      final req = await client.getUrl(uri);
+      req.headers.set('User-Agent',
+          'Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 '
+          '(KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36');
+      req.headers.set('Range', 'bytes=0-1048575');
+      final resp = await req.close().timeout(const Duration(seconds: 12));
+      var got = 0;
+      await for (final chunk in resp) {
+        got += chunk.length;
+        if (got >= 1048576) break;
+      }
+      sb.write('http=\${resp.statusCode} got=\$got ');
+    } catch (e) {
+      sb.write('ERR=\${e.runtimeType} ');
+    } finally {
+      try {
+        client?.close(force: true);
+      } catch (_) {}
+    }
+    sw.stop();
+    sb.write('ms=\${sw.elapsedMilliseconds}');
+    onStallReport?.call(sb.toString());
+  }
+
   static void _ensureStallTimer() {
     _stallTimer ??= Timer.periodic(const Duration(seconds: 2), (_) {
       _checkStalls();
