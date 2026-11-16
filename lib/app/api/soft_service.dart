@@ -4,6 +4,7 @@ import 'api_http.dart';
 import 'package:dio/dio.dart';
 
 import '../utils/err_text.dart';
+import '../utils/lzy_local_parser.dart';
 import '../utils/sound_util.dart';
 
 import 'package:get/get.dart';
@@ -502,7 +503,19 @@ class SoftService {
     final ticket = await _applyParseTicket(lzyUrl);
     if (ticket == null) return null; // 未登录 / 无权限 / 网络异常 → 一律不解析
 
-    // ② 自建 API 优先（运维可随时更新，无需发版）
+    // ② 本地解析优先 —— 用手机自己的 IP 直接抓蓝奏云分享页。
+    //   服务端 IP 长期高频抓取容易被 CDN 风控，拿到的直链在客户端下不动；
+    //   本地解析是「真实用户 IP + 浏览器 UA」，CDN 不会拦。
+    try {
+      final local = await LzyLocalParser.parse(lzyUrl)
+          .timeout(const Duration(seconds: 12));
+      if (local != null && local.isNotEmpty) {
+        lastParseChannel = 'local';
+        return local;
+      }
+    } catch (_) {}
+
+    // ③ 本地失败 → 自建 API（运维可随时更新，无需发版）
     final a = await resolveLzyByApi(lzyUrl, ticket: ticket);
     if (a != null && a.isNotEmpty) {
       lastParseChannel = 'api';
