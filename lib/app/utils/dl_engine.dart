@@ -74,6 +74,8 @@ class DlEngine {
     /// 1109e：中转兜底地址 —— 新引擎自己检测卡死并用它重下，
     ///   不再依赖详情页轮询（详情页查不到 pdl_ 任务，检测永远不执行）
     String proxyUrl = '',
+    /// 1109e：自定义请求头（urlV4 需要带 Host 头）
+    Map<String, String> headers = const {},
   }) async {
     if (!enabled) return null;
     // 小文件不用分段
@@ -91,6 +93,7 @@ class DlEngine {
         retries: 2,
         updates: bg.Updates.progress,
         requiresWiFi: false,
+        headers: headers,
       );
       _bind();
       _tasks[id] = task;
