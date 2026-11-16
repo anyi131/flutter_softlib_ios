@@ -50,7 +50,16 @@ class PostGallery extends StatelessWidget {
       );
     }
 
-    final cols = imgs.length <= 3 ? imgs.length : 3;
+    // 1109h：4 张图用 2×2，不要 3+1 ——
+    //   3 列时第二行只有 1 张，列表卡片高度不够会被裁掉，看起来「4 图只显示 3 张」。
+    final int cols;
+    if (imgs.length == 4) {
+      cols = 2;
+    } else if (imgs.length <= 3) {
+      cols = imgs.length;
+    } else {
+      cols = 3;
+    }
     return LayoutBuilder(builder: (c, box) {
       const gap = 4.0;
       final w = (box.maxWidth - gap * (cols - 1)) / cols;
