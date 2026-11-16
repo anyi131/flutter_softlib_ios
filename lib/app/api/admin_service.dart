@@ -644,6 +644,15 @@ class AdminService {
   Future<void> clearOpLogs({int days = 30, bool all = false}) async =>
       _post('op_log_clear', all ? {'mode': 'all'} : {'days': days});
 
+  /// 1109h：一键清理全部日志（crash/download/parse/op/sec/perf/loginfail）
+  ///   days=0 表示全清，默认保留 7 天
+  Future<Map<String, dynamic>> clearAllLogs({int days = 7}) async {
+    final r = await _post('log_clear_all', {'days': days});
+    return (r is Map && r['data'] is Map)
+        ? Map<String, dynamic>.from(r['data'] as Map)
+        : <String, dynamic>{};
+  }
+
   Future<List<Map<String, dynamic>>> reviews() async {
     final d = (await _post('reviews'))['data'];
     return d is List ? d.map((e) => Map<String, dynamic>.from(e)).toList() : [];
