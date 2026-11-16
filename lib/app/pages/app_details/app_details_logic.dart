@@ -1258,6 +1258,8 @@ class AppDetailsLogic extends GetxController {
           url: dlUrl,
           fileName: fileName,
           savedDir: _savedDir0,
+          // 1109e：把中转地址交给新引擎，卡住时它能自己切换重下
+          proxyUrl: _proxyFallbackUrl,
           expectedBytes: (_fileSizeMb() * 1024 * 1024).round(),
         ) ??
         await FlutterDownloader.enqueue(
