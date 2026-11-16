@@ -217,6 +217,9 @@ Future<void> _initializeServices() async {
   await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
   // ★ 1109：新下载引擎（background_downloader 多连接分段）
   //   事件复用旧通道（AppDetailsLogic.downloadCallback → SendPort），上层零改动
+  DlEngine.onStallReport = (msg) {
+    SoftService.reportLogStatic(tag: 'dl', error: msg).catchError((_) {});
+  };
   DlEngine.onEvent = (id, status, progress) {
     AppDetailsLogic.downloadCallback(id, status, progress);
   };
