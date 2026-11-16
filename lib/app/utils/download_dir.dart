@@ -17,12 +17,22 @@ class DownloadDir {
 
   static Future<String> path() async {
     if (Platform.isAndroid) {
+      // 1109g：分区存储下直接写 /storage/emulated/0 需要「所有文件访问」权限；
+      //   没权限时目录能建出来，但大文件写到 97% 会卡死（用户实测）。
+      //   改用 app 私有外部目录（一定可写），装包由 FileProvider 直接读。
+      try {
+        final ext = await getExternalStorageDirectory();
+        if (ext != null) {
+          final d = Directory('${ext.path}/$folderName');
+          if (!d.existsSync()) d.createSync(recursive: true);
+          return d.path;
+        }
+      } catch (_) {}
       try {
         final dir = Directory('/storage/emulated/0/$folderName');
         if (!dir.existsSync()) dir.createSync(recursive: true);
         return dir.path;
       } catch (_) {
-        // 没有「所有文件访问」权限 → 退回系统 Download，保证下载不失败
         return '/storage/emulated/0/Download';
       }
     }
