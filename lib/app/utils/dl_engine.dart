@@ -35,7 +35,7 @@ class DlEngine {
   DlEngine._();
 
   /// 分段数（4 段已被实践验证；过高会被源站限流）
-  static const int chunks = 4;
+  static const int chunks = 1; // 1109f：关闭分段，改单线程直连排查「下到一半断流」
 
   /// 小于该体积（字节）不分段：小文件分段的握手开销反而更慢
   static const int minParallelBytes = 8 * 1024 * 1024;
