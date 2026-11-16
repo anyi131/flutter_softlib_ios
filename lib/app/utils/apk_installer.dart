@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import '../api/soft_service.dart';
 
 /// 调用系统安装器安装 APK
 ///
@@ -31,10 +32,24 @@ class ApkInstaller {
   }
 
   /// 安装 APK（返回是否成功唤起安装器）
+  /// 安装结果上报（成功/被拒/异常都记一条，后台按 tag=install 过滤）
+  static Future<void> _report(String result, String path, [Object? err]) async {
+    try {
+      final f = File(path);
+      final mb = f.existsSync() ? (f.lengthSync() / 1024 / 1024).round() : -1;
+      await SoftService.reportLogStatic(
+        tag: 'install',
+        error: '[install] $result file=${path.split('/').last} size=${mb}MB'
+            '${err == null ? '' : ' err=$err'}',
+      );
+    } catch (_) {}
+  }
+
   static Future<bool> install(String path) async {
     if (!Platform.isAndroid) return false;
     try {
       final ok = await _ch.invokeMethod<bool>('installApk', {'path': path});
+      _report(ok == true ? 'OK' : 'REJECTED', path);
       return ok ?? false;
     } catch (_) {
       return false;
