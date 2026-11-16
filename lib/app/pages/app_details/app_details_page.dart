@@ -72,7 +72,9 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   void _syncRouteArgs() {
     final args = Get.arguments;
     if (args is! Map) return;
-    final want = int.tryParse('${args['appId'] ?? 0}') ?? 0;
+    // 1109h：兼容两种入参（列表页传 appId，消息/通知入口传 id）
+    final want =
+        int.tryParse('${args['appId'] ?? args['id'] ?? 0}') ?? 0;
     if (want <= 0) return;
     if (logic.appIdInt == want && logic.item != null) return;
 
