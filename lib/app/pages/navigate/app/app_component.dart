@@ -552,6 +552,10 @@ class _AppComponentState extends State<AppComponent> {
           'loading=$_loading parsing=$_folderParsing err=$_err '
           'style=${AppStyleController.instance.listStyle.value.name} '
           'cat=$_cat kw=$_kw src=$_source';
+      // 1109h：只在「异常状态」上报 —— 正常加载/切分类不再刷日志
+      //   （之前 7 天 2366 条，把错误日志淹没了）
+      final abnormal = _err.isNotEmpty || (!_loading && _apps.isEmpty);
+      if (!abnormal) return;
       if (sig == _lastSig) return;
       _lastSig = sig;
       SoftService.reportLogStatic(
