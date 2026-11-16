@@ -662,6 +662,19 @@ class AppDetailsLogic extends GetxController {
   int _completeHandledCount = 0;
   Future<void> _onDownloadComplete() async {
     if (_askedInstall) return;
+    // 1109h：完成也落一条记录，否则后台「下载记录」看不到成功项
+    try {
+      await SoftService.instance.reportDownloadResult(
+        appId: appIdInt,
+        title: (item?.title ?? '').isNotEmpty
+            ? item!.title
+            : (appInfo?.fileName ?? ''),
+        url: dowUrl,
+        ok: true,
+        progress: 100,
+        error: '',
+      );
+    } catch (_) {}
     _askedInstall = true; // ★ 同步先占坑，async 竞态两路只会活一路
     // ★ v331s：完成校验以「文件实际大小」为准——下载器偶发把断流判为
     //   complete（上一版用 _shownProgress 判断会误伤正常完成：显示层
@@ -1365,6 +1378,21 @@ class AppDetailsLogic extends GetxController {
         t.cancel();
         _onDownloadComplete();
       }
+      // 1109h：文件已下完但下载器没回调 complete（真机卡在 100%）。
+      //   进度 >=99% 且仍 running 超过 6 秒 → 主动收尾。
+      if (t0.status == DownloadTaskStatus.running &&
+          t0.progress >= 0.99 &&
+          !_askedInstall) {
+        _nearDoneAt ??= DateTime.now();
+        if (DateTime.now().difference(_nearDoneAt!).inSeconds >= 6) {
+          _nearDoneAt = null;
+          t.cancel();
+          _onDownloadComplete();
+          return;
+        }
+      } else if (t0.progress < 0.99) {
+        _nearDoneAt = null;
+      }
       // ★ 1109：0 字节卡死主动兜底（原来只有 failed 才走兜底，CDN 不通时
       //   任务永远 running，兜底等于摆设）
       if (t0.status == DownloadTaskStatus.running && !_stallHandled) {
@@ -1523,6 +1551,8 @@ class AppDetailsLogic extends GetxController {
   int _lastPct = -1;
   /// 连续查不到任务对象的次数
   int _noTaskTicks = 0;
+  /// 进度到 99% 但状态还没 complete 的起始时间
+  DateTime? _nearDoneAt;
   /// 本机直连已卡死过 → 后续下载直接走中转
   static bool _preferProxy = false;
 
