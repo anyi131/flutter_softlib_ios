@@ -1258,11 +1258,16 @@ class AppDetailsLogic extends GetxController {
     // ★ 1109：优先多连接分段下载（background_downloader），失败自动回退旧引擎
     // 1109e：优先用「已解析到 IPv4」的地址 + Host 头，绕开 CDN 的 IPv6 死节点。
     //   浏览器有 Happy Eyeballs 会自动回退，所以会出现「浏览器能下、App 卡住」。
-    final useV4 =
-        _urlV4.isNotEmpty && _hostHeader.isNotEmpty && Platform.isAndroid;
-    final enqUrl = useV4 ? _urlV4 : dlUrl;
-    final enqHeaders =
-        useV4 ? {'Host': _hostHeader} : const <String, String>{};
+    // 1109f：蓝奏 CDN 在部分用户网络下根本下不完（实测 47%/92% 断流），
+    //   直接走中转，一次成功。直连/直链仅作为中转不可用时的回退。
+    var enqUrl = dlUrl;
+    var enqHeaders = const <String, String>{};
+    if (_proxyFallbackUrl.isNotEmpty) {
+      enqUrl = _proxyFallbackUrl;
+    } else if (_urlV4.isNotEmpty && _hostHeader.isNotEmpty && Platform.isAndroid) {
+      enqUrl = _urlV4;
+      enqHeaders = {'Host': _hostHeader};
+    }
     final newTaskId = await DlEngine.enqueue(
           url: enqUrl,
           fileName: fileName,
