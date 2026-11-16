@@ -1187,6 +1187,8 @@ class AppDetailsLogic extends GetxController {
 
     // ★ 1105h：记下本次解析附带的中转兜底地址（直连被风控时静默换链）
     _proxyFallbackUrl = SoftService.lastParseProxyUrl;
+    _urlV4 = SoftService.lastParseUrlV4;
+    _hostHeader = SoftService.lastParseHost;
     _proxyRetryCount = 0;
     // ★ 1106g：本地解析成功时没有 proxyUrl（只有服务端会给）。
     //   这里在**下载前**就补取一次，避免等到失败时再请求（那时票据/网络都可能出问题）。
@@ -1254,18 +1256,26 @@ class AppDetailsLogic extends GetxController {
     }
     final _savedDir0 = await DownloadDir.path();
     // ★ 1109：优先多连接分段下载（background_downloader），失败自动回退旧引擎
+    // 1109e：优先用「已解析到 IPv4」的地址 + Host 头，绕开 CDN 的 IPv6 死节点。
+    //   浏览器有 Happy Eyeballs 会自动回退，所以会出现「浏览器能下、App 卡住」。
+    final useV4 =
+        _urlV4.isNotEmpty && _hostHeader.isNotEmpty && Platform.isAndroid;
+    final enqUrl = useV4 ? _urlV4 : dlUrl;
+    final enqHeaders =
+        useV4 ? {'Host': _hostHeader} : const <String, String>{};
     final newTaskId = await DlEngine.enqueue(
-          url: dlUrl,
+          url: enqUrl,
           fileName: fileName,
           savedDir: _savedDir0,
-          // 1109e：把中转地址交给新引擎，卡住时它能自己切换重下
           proxyUrl: _proxyFallbackUrl,
+          headers: enqHeaders,
           expectedBytes: (_fileSizeMb() * 1024 * 1024).round(),
         ) ??
         await FlutterDownloader.enqueue(
-          url: dlUrl,
+          url: enqUrl,
           fileName: fileName,
           savedDir: _savedDir0,
+          headers: enqHeaders,
           showNotification: true,
           saveInPublicStorage: false,
           openFileFromNotification: true,
@@ -1491,6 +1501,9 @@ class AppDetailsLogic extends GetxController {
 
   /// ★ 1105h：服务端给的中转兜底地址（直连被源站风控时静默换链重下）
   String _proxyFallbackUrl = '';
+  /// 1109e：IPv4 专用直链 + Host 头（绕开蓝奏 CDN 不可用的 IPv6 节点）
+  String _urlV4 = '';
+  String _hostHeader = '';
   /// 1109c：中转重试次数（原来只允许 1 次，一次失败就彻底放弃）
   int _proxyRetryCount = 0;
   static const int _proxyRetryMax = 2;
