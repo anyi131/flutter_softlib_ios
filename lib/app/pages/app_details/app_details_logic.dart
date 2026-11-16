@@ -1254,6 +1254,8 @@ class AppDetailsLogic extends GetxController {
         }
       } catch (_) {}
     }
+    // 1109g：入队前跑一次 1MB 自检，把设备侧真实网络情况上报（不阻塞）
+    DlEngine.diagnose(dlUrl).catchError((_) {});
     final _savedDir0 = await DownloadDir.path();
     // ★ 1109：优先多连接分段下载（background_downloader），失败自动回退旧引擎
     // 1109e：优先用「已解析到 IPv4」的地址 + Host 头，绕开 CDN 的 IPv6 死节点。
