@@ -18,9 +18,14 @@ class PostGallery extends StatelessWidget {
     required this.images,
     this.maxVisible = 9,
     this.radius = 8,
+    this.allImages,
   });
 
   final List<String> images;
+
+  /// 1109h：全屏查看用的完整列表（正文图 + 九宫格图）。
+  ///   为空时退回 images 本身。修复「点开只能看 1/1」。
+  final List<String>? allImages;
   final int maxVisible;
   final double radius;
 
@@ -31,7 +36,8 @@ class PostGallery extends StatelessWidget {
 
     if (imgs.length == 1) {
       return GestureDetector(
-        onTap: () => showImageGallery(context, imgs, 0),
+        onTap: () => showImageGallery(context, allImages ?? imgs,
+                (allImages ?? imgs).indexOf(imgs.first)),
         onLongPress: () => saveForumImage(imgs.first),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(radius),
@@ -69,7 +75,8 @@ class PostGallery extends StatelessWidget {
         children: [
           for (int i = 0; i < imgs.length; i++)
             GestureDetector(
-              onTap: () => showImageGallery(context, imgs, i),
+              onTap: () => showImageGallery(context, allImages ?? imgs,
+                    (allImages ?? imgs).indexOf(imgs[i])),
               onLongPress: () => saveForumImage(imgs[i]),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(radius),
