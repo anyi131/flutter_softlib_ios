@@ -126,7 +126,10 @@ class _MessagePageState extends State<MessagePage> {
     } else if (lt == 'vip') {
       Get.toNamed(Routes.vip);
     } else if (lt == 'app' && lid > 0) {
-      Get.toNamed(Routes.appDetails, arguments: {'id': lid});
+      // 1109h：详情页读的是 args['appId']，这里原来传 'id' →
+      //   收到 0 导致「获取软件信息失败」
+      Get.toNamed(Routes.appDetails,
+          arguments: {'appId': lid.toString()});
     }
   }
 
