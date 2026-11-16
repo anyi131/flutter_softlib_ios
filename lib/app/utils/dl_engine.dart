@@ -13,6 +13,24 @@ import 'package:flutter_downloader/flutter_downloader.dart' as fd;
 /// 旧引擎：flutter_downloader（单连接），保留用于历史任务与降级
 ///
 /// taskId 以 `pdl_` 开头的走新引擎，其余走旧引擎 —— 老任务/老安装不受影响。
+class _StallWatch {
+  _StallWatch({
+    required this.fileName,
+    required this.savedDir,
+    required this.proxyUrl,
+  });
+
+  final String fileName;
+  final String savedDir;
+  final String proxyUrl;
+  int pct = 0;
+  DateTime at = DateTime.now();
+  bool retried = false;
+  bool switching = false;
+  bool reported = false;
+  bool done = false;
+}
+
 class DlEngine {
   DlEngine._();
 
@@ -31,6 +49,13 @@ class DlEngine {
   static void Function(String id, int status, int progress)? onEvent;
 
   static StreamSubscription? _sub;
+
+  /// 卡死上报出口（由 main.dart 注入 → SoftService.reportLogStatic）
+  static void Function(String msg)? onStallReport;
+
+  /// 每个新引擎任务的卡死监控
+  static final Map<String, _StallWatch> _watch = {};
+  static Timer? _stallTimer;
   static final Map<String, bg.DownloadTask> _tasks = {};
   static final Map<String, String> _paths = {};
 
@@ -46,6 +71,9 @@ class DlEngine {
     required String savedDir,
     bool showNotification = true,
     int? expectedBytes,
+    /// 1109e：中转兜底地址 —— 新引擎自己检测卡死并用它重下，
+    ///   不再依赖详情页轮询（详情页查不到 pdl_ 任务，检测永远不执行）
+    String proxyUrl = '',
   }) async {
     if (!enabled) return null;
     // 小文件不用分段
@@ -67,6 +95,12 @@ class DlEngine {
       _bind();
       _tasks[id] = task;
       _paths[id] = _join(savedDir, fileName);
+      _watch[id] = _StallWatch(
+        fileName: fileName,
+        savedDir: savedDir,
+        proxyUrl: proxyUrl,
+      );
+      _ensureStallTimer();
       final ok = await bg.FileDownloader().enqueue(task);
       if (!ok) {
         _emit(id, 4, 0); // failed
@@ -91,8 +125,20 @@ class DlEngine {
     if (u is bg.TaskProgressUpdate) {
       final p = (u.progress * 100).round().clamp(0, 100);
       _emit(id, 2, p); // running
+      final w = _watch[id];
+      if (w != null && p > w.pct) {
+        w.pct = p;
+        w.at = DateTime.now();
+      }
     } else if (u is bg.TaskStatusUpdate) {
       _emit(id, _mapStatus(u.status), u.status == bg.TaskStatus.complete ? 100 : 0);
+      if (u.status == bg.TaskStatus.complete ||
+          u.status == bg.TaskStatus.failed ||
+          u.status == bg.TaskStatus.canceled) {
+        final w = _watch[id];
+        if (w != null) w.done = true;
+        _watch.remove(id);
+      }
     }
   }
 
@@ -112,6 +158,64 @@ class DlEngine {
         return 5;
       case bg.TaskStatus.paused:
         return 6;
+    }
+  }
+
+  static void _ensureStallTimer() {
+    _stallTimer ??= Timer.periodic(const Duration(seconds: 2), (_) {
+      _checkStalls();
+    });
+  }
+
+  /// 每 2 秒扫一遍：进度 8 秒没增长 → 用中转地址重下一次（每任务一次）
+  static void _checkStalls() {
+    if (_watch.isEmpty) return;
+    final now = DateTime.now();
+    for (final e in _watch.entries.toList()) {
+      final id = e.key;
+      final w = e.value;
+      if (w.done || w.switching) continue;
+      final idle = now.difference(w.at).inSeconds;
+      if (idle < 8) continue;
+      if (w.retried || w.proxyUrl.isEmpty) {
+        // 已经试过中转（或没有中转地址）→ 只上报，不再重试
+        if (!w.reported) {
+          w.reported = true;
+          onStallReport?.call(
+            '[stall] 任务 ${w.pct}% 停住 ${idle}s 无法继续'
+            '${w.proxyUrl.isEmpty ? "（无中转地址）" : "（中转也失败）"}',
+          );
+        }
+        continue;
+      }
+      w.retried = true;
+      w.switching = true;
+      onStallReport?.call('[stall] ${w.pct}% 停住 ${idle}s，切换中转重下');
+      _switchToProxy(id, w);
+    }
+  }
+
+  static Future<void> _switchToProxy(String oldId, _StallWatch w) async {
+    try {
+      await remove(oldId, shouldDeleteContent: true);
+    } catch (_) {}
+    _watch.remove(oldId);
+    _tasks.remove(oldId);
+    try {
+      final newId = await enqueue(
+        url: w.proxyUrl,
+        fileName: w.fileName,
+        savedDir: w.savedDir,
+        proxyUrl: '',
+      );
+      if (newId != null) {
+        onEvent?.call(newId, 1, 0);
+        onStallReport?.call('[stall] 已用中转重下 newTask=${newId.substring(0, 8)}');
+      } else {
+        onStallReport?.call('[stall] 中转重下失败（enqueue 返回 null）');
+      }
+    } catch (e) {
+      onStallReport?.call('[stall] 中转重下异常 $e');
     }
   }
 
