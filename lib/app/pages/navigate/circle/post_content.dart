@@ -100,6 +100,76 @@ class PostContent extends StatelessWidget {
     return s;
   }
 
+
+  // ───────── 1109：轻量语法着色（无第三方依赖，dart 3 装不了 highlight 包）─────────
+  static final _kw = RegExp(
+      r'\b(if|else|for|while|do|return|function|class|const|let|var|new|try|catch|finally|throw|import|export|from|echo|curl|cd|ls|cat|sudo|bash|sh|apt|apk|npm|git|docker|systemctl|nginx|mysql|php|dart|flutter|go|func|package|type|struct|interface|public|private|protected|static|void|int|string|bool|float|double|null|true|false|this|self|super|async|await|yield|switch|case|break|continue|default|namespace|use|fn|impl|match|SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|CREATE|TABLE|ALTER|INDEX)\b');
+  static final _str = RegExp(
+      r'''("([^"\\]|\\.)*"|'([^'\\]|\\.)*')''');
+  static final _num = RegExp(r'\b\d+(\.\d+)?\b');
+  static final _cmt = RegExp(r'(#|//)[^\n]*');
+
+  List<TextSpan> _highlightCode(BuildContext context, String code) {
+    final base = TextStyle(
+      fontFamily: 'monospace',
+      fontSize: 12.5,
+      height: 1.6,
+      color: context.isDark ? const Color(0xFFE6EDF3) : const Color(0xFF24292F),
+    );
+    final kw = base.copyWith(
+        color: context.isDark ? const Color(0xFFFF7B72) : const Color(0xFFCF222E),
+        fontWeight: FontWeight.w700);
+    final str = base.copyWith(
+        color: context.isDark ? const Color(0xFFA5D6FF) : const Color(0xFF0A3069));
+    final num = base.copyWith(
+        color: context.isDark ? const Color(0xFF79C0FF) : const Color(0xFF0550AE));
+    final cmt = base.copyWith(
+        color: context.isDark ? const Color(0xFF8B949E) : const Color(0xFF6E7781),
+        fontStyle: FontStyle.italic);
+
+    final spans = <TextSpan>[];
+    var i = 0;
+    while (i < code.length) {
+      // 注释优先
+      final c = _cmt.matchAsPrefix(code, i);
+      if (c != null) {
+        spans.add(TextSpan(text: c.group(0), style: cmt));
+        i = c.end;
+        continue;
+      }
+      final q = _str.matchAsPrefix(code, i);
+      if (q != null) {
+        spans.add(TextSpan(text: q.group(0), style: str));
+        i = q.end;
+        continue;
+      }
+      final n = _num.matchAsPrefix(code, i);
+      if (n != null) {
+        spans.add(TextSpan(text: n.group(0), style: num));
+        i = n.end;
+        continue;
+      }
+      final k = _kw.matchAsPrefix(code, i);
+      if (k != null) {
+        spans.add(TextSpan(text: k.group(0), style: kw));
+        i = k.end;
+        continue;
+      }
+      // 普通字符：攒一段再输出
+      final start = i;
+      i++;
+      while (i < code.length &&
+          _cmt.matchAsPrefix(code, i) == null &&
+          _str.matchAsPrefix(code, i) == null &&
+          _num.matchAsPrefix(code, i) == null &&
+          _kw.matchAsPrefix(code, i) == null) {
+        i++;
+      }
+      spans.add(TextSpan(text: code.substring(start, i), style: base));
+    }
+    return spans;
+  }
+
   Widget codeBlock(BuildContext context, String code) {
     return Container(
       width: double.infinity,
@@ -288,6 +358,19 @@ class PostContent extends StatelessWidget {
     );
   }
 
+  /// 1109h：正文 markdown 图 + images 字段 → 全屏浏览完整列表
+  List<String> _collectAllImages() {
+    final out = <String>[];
+    for (final line in text.split('\n')) {
+      final u = _imageUrlOf(line.trim());
+      if (u != null && u.isNotEmpty && !out.contains(u)) out.add(u);
+    }
+    for (final u in images) {
+      if (u.isNotEmpty && !out.contains(u)) out.add(u);
+    }
+    return out;
+  }
+
   static bool _isImageLine(String s) {
     final t = s.trim();
     if (t.startsWith('![')) return true;
@@ -434,7 +517,11 @@ class PostContent extends StatelessWidget {
           blocks.add(Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: GestureDetector(
-              onTap: () => showImageGallery(context, [url], 0),
+              onTap: () {
+                final all = _collectAllImages();
+                showImageGallery(
+                    context, all.isEmpty ? [url] : all, all.indexOf(url));
+              },
               child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
@@ -557,26 +644,12 @@ class PostContent extends StatelessWidget {
     }
     flushPara();
 
+    // 1109h：九宫格图改用 PostGallery（原来竖着堆单列大图，
+    //   与列表页完全不一致）；全屏浏览带上正文图，点开能看全部。
     if (images.isNotEmpty) {
       blocks.add(Padding(
         padding: const EdgeInsets.only(top: 4),
-        child: Column(
-          children: [
-            for (final url in images)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: GestureDetector(
-                  onTap: () => showImageGallery(context, [url], 0),
-                  child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(url,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const SizedBox.shrink()),
-                ),
-              ),
-                ),
-          ],
-        ),
+        child: PostGallery(images: images, allImages: _collectAllImages()),
       ));
     }
 
