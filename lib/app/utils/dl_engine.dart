@@ -180,7 +180,7 @@ class DlEngine {
     HttpClient? client;
     try {
       final uri = Uri.parse(url);
-      sb.write('host=\${uri.host} scheme=\${uri.scheme} ');
+      sb.write('host=${uri.host} scheme=${uri.scheme} ');
       try {
         final addrs = await InternetAddress.lookup(uri.host)
             .timeout(const Duration(seconds: 6));
@@ -188,10 +188,10 @@ class DlEngine {
             addrs.where((a) => a.type == InternetAddressType.IPv4).length;
         final v6 =
             addrs.where((a) => a.type == InternetAddressType.IPv6).length;
-        sb.write('dns=v4:\$v4/v6:\$v6 ');
-        if (addrs.isNotEmpty) sb.write('first=\${addrs.first.address} ');
+        sb.write('dns=v4:$v4/v6:$v6 ');
+        if (addrs.isNotEmpty) sb.write('first=${addrs.first.address} ');
       } catch (e) {
-        sb.write('dns=FAIL(\${e.runtimeType}) ');
+        sb.write('dns=FAIL(${e.runtimeType}) ');
       }
       client = HttpClient()
         ..connectionTimeout = const Duration(seconds: 8)
@@ -207,16 +207,16 @@ class DlEngine {
         got += chunk.length;
         if (got >= 1048576) break;
       }
-      sb.write('http=\${resp.statusCode} got=\$got ');
+      sb.write('http=${resp.statusCode} got=$got ');
     } catch (e) {
-      sb.write('ERR=\${e.runtimeType} ');
+      sb.write('ERR=${e.runtimeType} ');
     } finally {
       try {
         client?.close(force: true);
       } catch (_) {}
     }
     sw.stop();
-    sb.write('ms=\${sw.elapsedMilliseconds}');
+    sb.write('ms=${sw.elapsedMilliseconds}');
     onStallReport?.call(sb.toString());
   }
 
