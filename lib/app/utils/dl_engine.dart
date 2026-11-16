@@ -41,7 +41,9 @@ class DlEngine {
   static const int minParallelBytes = 8 * 1024 * 1024;
 
   /// 新引擎总开关（出问题可一键降级：false 则完全走旧引擎）
-  static const bool enabled = true;
+  // 1109h：实测数据 —— 178 版(纯 flutter_downloader) 成功率 82~100%，
+  //   246+ 引入本引擎后 0 条成功、普遍卡在 47%/97%/100%。整体关闭。
+  static const bool enabled = false;
 
   static const String prefix = 'pdl_';
 
