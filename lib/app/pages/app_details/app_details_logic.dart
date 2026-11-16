@@ -1270,6 +1270,24 @@ class AppDetailsLogic extends GetxController {
         );
     if (newTaskId == null) {
       ResolveOverlay.dismiss();
+      // 1109d：入队失败原来只弹个 Toast，服务器完全看不到，
+      //   客服排查时「点了下载但没有任何记录」就是卡在这一步
+      SoftService.reportLogStatic(
+        tag: 'dl',
+        error: '[enqueue-fail] 下载任务创建失败 url=${dlUrl.length > 80 ? dlUrl.substring(0, 80) : dlUrl}',
+      ).catchError((_) {});
+      try {
+        await SoftService.instance.reportDownloadResult(
+          appId: appIdInt,
+          title: (item?.title ?? '').isNotEmpty
+              ? item!.title
+              : (appInfo?.fileName ?? ''),
+          url: dlUrl,
+          ok: false,
+          errCode: 'DL_ENQUEUE_FAIL',
+          error: '[入队失败] 下载任务未能创建（下载引擎异常）',
+        );
+      } catch (_) {}
       ToastUtil.error('下载失败，请稍后重试');
       return;
     }
@@ -1313,6 +1331,16 @@ class AppDetailsLogic extends GetxController {
       await getTaskInfo();
       final t0 = downloadTask;
       if (t0 == null) {
+        // 1109d：任务对象查不到（新引擎 pdl_ 任务不在 FlutterDownloader 列表里）
+        //   → 轮询直接空转，切换/上报全都不会发生。这里连查 6 次就报一次。
+        _noTaskTicks++;
+        if (_noTaskTicks == 6) {
+          SoftService.reportLogStatic(
+            tag: 'dl',
+            error:
+                '[no-task] 轮询 6 次仍未拿到任务对象 taskId=${taskId ?? "null"}',
+          ).catchError((_) {});
+        }
         // ★ 1012b：任务瞬时查不到不停止轮询（状态机粘滞由 getTaskInfo 负责），
         //   避免查空一次后轮询停摆、进度条永远卡住
         return;
@@ -1474,6 +1502,8 @@ class AppDetailsLogic extends GetxController {
   /// 1109c：上一次的进度百分比 —— 用于判断「进度是否还在增长」。
   ///   原来只看 progress<=0，卡在 46% 断流时永远不会触发切换。
   int _lastPct = -1;
+  /// 连续查不到任务对象的次数
+  int _noTaskTicks = 0;
   /// 本机直连已卡死过 → 后续下载直接走中转
   static bool _preferProxy = false;
 
