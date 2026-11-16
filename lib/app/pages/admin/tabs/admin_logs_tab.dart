@@ -332,6 +332,11 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                                 onPressed: () => Get.back(result: 'days'),
                                 child: const Text('清理 30 天前'),
                               ),
+                              // 1109h：清理所有日志表（崩溃/下载/解析/操作/安全/性能）
+                              TextButton(
+                                onPressed: () => Get.back(result: 'week'),
+                                child: const Text('清理全部日志(7天前)'),
+                              ),
                               FilledButton(
                                 onPressed: () => Get.back(result: 'all'),
                                 child: Text(
@@ -344,8 +349,16 @@ class _AdminLogsTabState extends State<AdminLogsTab> {
                         );
                         if (mode == null) return;
                         try {
-                          await _svc.clearOpLogs(days: 30, all: mode == 'all');
-                          ToastUtil.success(mode == 'all' ? '已清空全部日志' : '已清理');
+                          if (mode == 'week') {
+                            final rr = await _svc.clearAllLogs(days: 7);
+                            ToastUtil.success(
+                                '已清理全部日志，共 ${rr['total'] ?? 0} 条');
+                          } else {
+                            await _svc.clearOpLogs(
+                                days: 30, all: mode == 'all');
+                            ToastUtil.success(
+                                mode == 'all' ? '已清空全部日志' : '已清理');
+                          }
                           _load(reset: true);
                         } catch (e) {
                           ToastUtil.error(ErrText.of(e));
