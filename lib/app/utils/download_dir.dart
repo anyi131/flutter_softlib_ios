@@ -45,11 +45,19 @@ class DownloadDir {
   /// 找已下载文件时的兜底扫描目录（先新目录，再老目录）
   static Future<List<String>> fallbackDirs() async {
     if (Platform.isAndroid) {
-      return [
+      final list = <String>[
         '/storage/emulated/0/$folderName',
         '/storage/emulated/0/Download',
         '/storage/emulated/0/Android/data/com.soft.anyi/files',
       ];
+      try {
+        final ext = await getExternalStorageDirectory();
+        if (ext != null) {
+          final p1 = '${ext.path}/$folderName';
+          if (!list.contains(p1)) list.insert(0, p1);
+        }
+      } catch (_) {}
+      return list;
     }
     final docs = await getApplicationDocumentsDirectory();
     return ['${docs.path}/$folderName', '${docs.path}/downloads', docs.path];
