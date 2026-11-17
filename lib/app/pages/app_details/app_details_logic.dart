@@ -1394,9 +1394,9 @@ class AppDetailsLogic extends GetxController {
       //   任务永远 running，兜底等于摆设）
       if (t0.status == DownloadTaskStatus.running && !_stallHandled) {
         final now = DateTime.now();
-        if (t0.progress > _lastProgress + 0.000001) {
+        if (t0.progress.toDouble() > _lastProgress) {
           // 有任何新字节就重置计时
-          _lastProgress = t0.progress;
+          _lastProgress = t0.progress.toDouble();
           _stallAnchor = now;
         } else {
           _stallAnchor ??= now;
