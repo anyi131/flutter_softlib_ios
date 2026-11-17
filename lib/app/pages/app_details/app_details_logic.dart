@@ -1343,7 +1343,7 @@ class AppDetailsLogic extends GetxController {
     _progressTimer?.cancel();
     _stallHandled = false;
     _stallAnchor = null;
-    _lastPct = -1;
+    _lastProgress = -1;
     _noTaskTicks = 0;
     _progressTimer = Timer.periodic(const Duration(milliseconds: 700), (
       t,
@@ -1394,17 +1394,17 @@ class AppDetailsLogic extends GetxController {
       //   任务永远 running，兜底等于摆设）
       if (t0.status == DownloadTaskStatus.running && !_stallHandled) {
         final now = DateTime.now();
-        final pct = (t0.progress * 100).floor();
-        if (pct > _lastPct) {
-          // 进度还在走 → 重置计时
-          _lastPct = pct;
+        if (t0.progress > _lastProgress + 0.000001) {
+          // 有任何新字节就重置计时
+          _lastProgress = t0.progress;
           _stallAnchor = now;
         } else {
           _stallAnchor ??= now;
           // 1109c：3 秒没有任何新字节就切线路。
           //   注意这里是「进度不再增长」而不是「进度为 0」——
           //   真机上常见的卡法是下到 46% 断流，任务仍是 running。
-          if (now.difference(_stallAnchor!).inSeconds >= 3) {
+          // 阈值 12 秒：慢速网络下大文件可能长时间不到 1%
+          if (now.difference(_stallAnchor!).inSeconds >= 12) {
             _stallHandled = true;
             _stallAnchor = null;
             t.cancel();
@@ -1545,7 +1545,11 @@ class AppDetailsLogic extends GetxController {
   bool _stallHandled = false;
   /// 1109c：上一次的进度百分比 —— 用于判断「进度是否还在增长」。
   ///   原来只看 progress<=0，卡在 46% 断流时永远不会触发切换。
-  int _lastPct = -1;
+  /// 1109k：存原始进度值（0..1 的 double）。
+  ///   之前用 (progress*100).floor() 取整比较 —— 92MB 的包在 288KB/s 下
+  ///   要 3.2 秒才涨 1%，3 秒阈值必然误判「卡死」，于是反复切线路、
+  ///   弹「下载没有完成」，其实文件一直在下、最后也装上了。
+  double _lastProgress = -1;
   /// 连续查不到任务对象的次数
   int _noTaskTicks = 0;
   /// 进度到 99% 但状态还没 complete 的起始时间
