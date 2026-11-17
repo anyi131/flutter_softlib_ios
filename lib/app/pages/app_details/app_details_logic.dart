@@ -109,7 +109,9 @@ class AppDetailsLogic extends GetxController {
   double get uiProgress {
     final t = downloadTask;
     if (t != null && t.status != DownloadTaskStatus.failed) {
-      return _shownProgress > t.progress ? _shownProgress : t.progress;
+      return _shownProgress > t.progress
+          ? _shownProgress
+          : t.progress.toDouble();
     }
     return _shownProgress;
   }
