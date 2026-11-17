@@ -374,6 +374,12 @@ class _PostPageState extends State<PostPage> {
                           //   （那边支持点击全屏 + 长按保存），这里再传一次会重复显示两张
                           PostContent(
                             text: '${p['content'] ?? ''}',
+                            // 1109i：九宫格图交给 PostContent 统一渲染，
+                            //   避免「正文内联大图」+「九宫格」两套布局并存
+                            images: ((p['images'] as List?) ?? const [])
+                                .map((e) => '$e')
+                                .where((e) => e.isNotEmpty)
+                                .toList(),
                             payNeed: double.tryParse('${p['pay_need'] ?? 0}') ?? 0,
                             payCount: int.tryParse('${p['pay_count'] ?? 0}') ?? 0,
                             // ★ 1109：作者视角 —— 帖子作者本人应直接看到付费段，
@@ -383,15 +389,7 @@ class _PostPageState extends State<PostPage> {
                                 ? null
                                 : _payPost,
                           ),
-                          if ((p['images'] as List?)?.isNotEmpty == true) ...[
-                            const SizedBox(height: 10),
-                            PostGallery(
-                              images: (p['images'] as List)
-                                  .map((e) => '$e')
-                                  .where((e) => e.isNotEmpty)
-                                  .toList(),
-                            ),
-                          ],
+
                           const SizedBox(height: 16),
                           Row(
                             children: [
