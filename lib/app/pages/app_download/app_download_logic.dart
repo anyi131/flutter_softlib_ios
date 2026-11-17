@@ -48,7 +48,8 @@ class AppDownloadLogic extends GetxController {
   final Map<String, DateTime> _stallSince = {};
   final Set<String> _stallReported = {};
   /// 每个任务上一次看到的进度百分比（判断是否还在增长）
-  final Map<String, int> _lastPct = {};
+  /// 1109k：存原始进度（0..1），不取整
+  final Map<String, double> _lastProgress = {};
 
   @override
   void onInit() {
@@ -133,17 +134,16 @@ class AppDownloadLogic extends GetxController {
     final now = DateTime.now();
     for (final t in tasks) {
       if (t.status == DownloadTaskStatus.running) {
-        final pct = (t.progress * 100).floor();
-        final prev = _lastPct[t.taskId];
-        if (prev == null || pct > prev) {
+        final prev = _lastProgress[t.taskId];
+        if (prev == null || t.progress > prev + 0.000001) {
           // 进度还在走（或首次见到）→ 重置计时
-          _lastPct[t.taskId] = pct;
+          _lastProgress[t.taskId] = t.progress;
           _stallSince[t.taskId] = now;
           continue;
         }
         _stallSince.putIfAbsent(t.taskId, () => now);
         final secs = now.difference(_stallSince[t.taskId]!).inSeconds;
-        if (secs >= 10 && !_stallReported.contains(t.taskId)) {
+        if (secs >= 20 && !_stallReported.contains(t.taskId)) {
           _stallReported.add(t.taskId);
           DownInfo? info;
           for (final d in (downInfos ?? const <DownInfo>[])) {
@@ -168,7 +168,7 @@ class AppDownloadLogic extends GetxController {
       } else {
         _stallSince.remove(t.taskId);
         _stallReported.remove(t.taskId);
-        _lastPct.remove(t.taskId);
+        _lastProgress.remove(t.taskId);
       }
     }
   }
