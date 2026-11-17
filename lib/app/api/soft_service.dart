@@ -511,6 +511,9 @@ class SoftService {
           .timeout(const Duration(seconds: 12));
       if (local != null && local.isNotEmpty) {
         lastParseChannel = 'local';
+        // 1109m：本地解析只给直链，没有中转兜底地址。
+        //   后台补一次服务端解析，只为拿到 proxyUrl（失败无所谓）。
+        _warmProxyUrl(lzyUrl);
         return local;
       }
     } catch (_) {}
@@ -572,6 +575,18 @@ class SoftService {
   }
 
   /// 自建 API 解析直链（运维入口，服务端已发票据后才调用）
+
+  /// 1109m：本地解析成功后，后台静默取一次中转兜底地址。
+  ///   本地解析不走服务端，lastParseProxyUrl 一直是空的，
+  ///   真机上就出现「[proxy] 预取 proxyUrl=EMPTY」。
+  Future<void> _warmProxyUrl(String lzyUrl) async {
+    try {
+      final t = await _applyParseTicket(lzyUrl);
+      if (t == null) return;
+      await resolveLzyByApi(lzyUrl, ticket: t);
+    } catch (_) {}
+  }
+
   Future<String?> resolveLzyByApi(String lzyUrl, {String? ticket}) async {
     try {
       // ★ 1014：自建解析接口只需 url + 服务端签发的票据，
