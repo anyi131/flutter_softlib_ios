@@ -2014,7 +2014,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
   Widget _progressPanel(AppDetailsLogic download, DownloadTask? task) {
     final total = download.appInfo?.fileSize ?? '';
     final progress = download.uiProgress;
-    final done = calculateDownloadedSize(total, progress);
+    final done = calculateDownloadedSize(total, progress.round());
     final st = task?.status;
     final isPaused = st == DownloadTaskStatus.paused;
     final isFailed = st == DownloadTaskStatus.failed;
