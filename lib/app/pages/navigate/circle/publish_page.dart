@@ -63,7 +63,9 @@ class _PublishPageState extends State<PublishPage> {
   }
 
   Future<void> _pick() async {
-    if (_images.length >= 9) return ToastUtil.info('最多 9 张图');
+    if (_images.length + _remoteImages.length >= 9) {
+      return ToastUtil.info('最多 9 张图');
+    }
     try {
       final picked = await ImagePicker().pickMultiImage(imageQuality: 82);
       if (picked.isEmpty) return;
@@ -552,6 +554,45 @@ class _PublishPageState extends State<PublishPage> {
             spacing: 8,
             runSpacing: 8,
             children: [
+              // 1109j：导入链接转来的附件图（网络图，可单独删）
+              for (int ri = 0; ri < _remoteImages.length; ri++)
+                Stack(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: context.isDark ? C.bg2 : Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: context.isDark ? C.bg3 : C.lbg2),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          _remoteImages[ri],
+                          width: 74,
+                          height: 74,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 74,
+                            height: 74,
+                            color: context.isDark ? C.bg3 : C.lbg2,
+                            child: Icon(Lz.image,
+                                size: 20, color: context.t3),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      right: -6,
+                      top: -6,
+                      child: AppRemoveBadge(
+                        onTap: () =>
+                            setState(() => _remoteImages.removeAt(ri)),
+                      ),
+                    ),
+                  ],
+                ),
               for (int i = 0; i < _images.length; i++)
                 Stack(
                   children: [
@@ -579,7 +620,7 @@ class _PublishPageState extends State<PublishPage> {
                     ),
                   ],
                 ),
-              if (_images.length < 9)
+              if (_images.length + _remoteImages.length < 9)
                 GestureDetector(
                   onTap: _pick,
                   child: Container(
