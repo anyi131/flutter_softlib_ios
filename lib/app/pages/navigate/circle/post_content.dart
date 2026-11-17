@@ -495,16 +495,6 @@ class PostContent extends StatelessWidget {
 
       if (_isImageLine(t)) {
         flushPara();
-        // 1109i：帖子有 images 字段时，正文内联图跳过 ——
-        //   统一由末尾 PostGallery 宫格渲染，跟列表页保持一致
-        if (images.isNotEmpty) {
-          var kk = i;
-          while (kk < lines.length && _isImageLine(lines[kk].trim())) {
-            kk++;
-          }
-          i = kk - 1;
-          continue;
-        }
         final batch = <String>[];
         var k2 = i;
         while (k2 < lines.length) {
@@ -536,7 +526,9 @@ class PostContent extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
                 url,
-                fit: BoxFit.cover,
+                // 1109j：不再强制 16:9 —— 竖版截图会被裁掉大半。
+                //   按原比例显示 + 限制最大高度。
+                fit: BoxFit.contain,
                 errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                 loadingBuilder: (c, child, p) => p == null
                     ? child
@@ -656,10 +648,18 @@ class PostContent extends StatelessWidget {
 
     // 1109h：九宫格图改用 PostGallery（原来竖着堆单列大图，
     //   与列表页完全不一致）；全屏浏览带上正文图，点开能看全部。
-    if (images.isNotEmpty) {
+    // 1109j：两套并存 —— 正文内联图（作者排版）+ 附件九宫格。
+    //   过滤掉正文里已出现过的图，避免同一张显示两次。
+    final inlineSet = <String>{};
+    for (final line in text.split('\n')) {
+      final u = _imageUrlOf(line.trim());
+      if (u != null && u.isNotEmpty) inlineSet.add(u);
+    }
+    final extra = images.where((e) => !inlineSet.contains(e)).toList();
+    if (extra.isNotEmpty) {
       blocks.add(Padding(
         padding: const EdgeInsets.only(top: 4),
-        child: PostGallery(images: images, allImages: _collectAllImages()),
+        child: PostGallery(images: extra, allImages: _collectAllImages()),
       ));
     }
 
