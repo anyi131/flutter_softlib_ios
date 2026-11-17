@@ -495,6 +495,16 @@ class PostContent extends StatelessWidget {
 
       if (_isImageLine(t)) {
         flushPara();
+        // 1109i：帖子有 images 字段时，正文内联图跳过 ——
+        //   统一由末尾 PostGallery 宫格渲染，跟列表页保持一致
+        if (images.isNotEmpty) {
+          var kk = i;
+          while (kk < lines.length && _isImageLine(lines[kk].trim())) {
+            kk++;
+          }
+          i = kk - 1;
+          continue;
+        }
         final batch = <String>[];
         var k2 = i;
         while (k2 < lines.length) {
