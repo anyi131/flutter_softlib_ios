@@ -712,19 +712,24 @@ class AppDetailsLogic extends GetxController {
 
       if (f != null) {
         final actual = f.lengthSync();
-        int expectBytes = 0;
-        // ① 先问服务端最新大小（蓝奏云文件可能已更新）
+        // 1109i：以「文件头」为准，不再拿体积猜。
+        //   真 APK 是 ZIP 结构，前两字节固定 0x50 0x4B（PK）；
+        //   风控拦截页是 HTML，开头是 '<'。
+        //   之前只比体积，采集记录的大小和实际包不一致就误判「不完整」，
+        //   用户被弹一堆错，最后其实装成功了。
+        var isApk = false;
         try {
-          final fresh = await SoftService.instance.lzyFileInfo(dowUrl);
-          expectBytes = _sizeToBytes('${fresh?['size'] ?? ''}');
-        } catch (_) {}
-        // ② 退到本地记录的 fileSize
-        if (expectBytes <= 0) {
-          expectBytes = _sizeToBytes(appInfo?.fileSize ?? '');
+          final raf = await f.open();
+          final head = await raf.read(4);
+          await raf.close();
+          isApk = head.length >= 2 && head[0] == 0x50 && head[1] == 0x4B;
+        } catch (e) {
+          logger.e('[download] 读文件头失败: $e');
+          isApk = true; // 读不到就放行，别误伤
         }
-        if (actual < 1024) {
+        if (!isApk) {
           fileOk = false;
-        } else if (expectBytes > 0 && actual < expectBytes * 0.85) {
+        } else if (actual < 1024) {
           fileOk = false;
         }
       }
