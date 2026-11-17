@@ -1372,24 +1372,10 @@ class AppDetailsLogic extends GetxController {
       }
       // 1109h：文件已下完但下载器没回调 complete（真机卡在 100%）。
       //   进度 >=99% 且仍 running 超过 6 秒 → 主动收尾。
-      if (t0.status == DownloadTaskStatus.running &&
-          t0.progress >= 0.99 &&
-          !_askedInstall) {
-        _nearDoneAt ??= DateTime.now();
-        if (DateTime.now().difference(_nearDoneAt!).inSeconds >= 6) {
-          _nearDoneAt = null;
-          t.cancel();
-          // 1109i：等 3 秒让最后一段写完再校验。必须用一次性 Timer，
-          //   不能在周期回调里 await —— 否则多个 tick 并发收尾，
-          //   会连弹多次「下载不完整」（真机已复现）。
-          Timer(const Duration(seconds: 3), () {
-            if (!isClosed) _onDownloadComplete();
-          });
-          return;
-        }
-      } else if (t0.progress < 0.99) {
-        _nearDoneAt = null;
-      }
+            // 1109l：删掉「进度到 99% 主动收尾」——progress 是 0..100 的 int，
+      //   原写成 >= 0.99（实际等于 1%），导致 34% 就弹「下载完成」。
+      //   完成统一由下载器的 complete 回调驱动。
+
       // ★ 1109：0 字节卡死主动兜底（原来只有 failed 才走兜底，CDN 不通时
       //   任务永远 running，兜底等于摆设）
       if (t0.status == DownloadTaskStatus.running && !_stallHandled) {
@@ -1534,8 +1520,6 @@ class AppDetailsLogic extends GetxController {
   double _lastProgress = -1;
   /// 连续查不到任务对象的次数
   int _noTaskTicks = 0;
-  /// 进度到 99% 但状态还没 complete 的起始时间
-  DateTime? _nearDoneAt;
   /// 本机直连已卡死过 → 后续下载直接走中转
   static bool _preferProxy = false;
 
