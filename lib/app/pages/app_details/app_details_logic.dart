@@ -1374,10 +1374,12 @@ class AppDetailsLogic extends GetxController {
         if (DateTime.now().difference(_nearDoneAt!).inSeconds >= 6) {
           _nearDoneAt = null;
           t.cancel();
-          // 1109i：先等 3 秒让下载器写完最后一段并落盘，
-          //   否则校验读到未写完的文件 → 误判「下载不完整」
-          await Future.delayed(const Duration(seconds: 3));
-          _onDownloadComplete();
+          // 1109i：等 3 秒让最后一段写完再校验。必须用一次性 Timer，
+          //   不能在周期回调里 await —— 否则多个 tick 并发收尾，
+          //   会连弹多次「下载不完整」（真机已复现）。
+          Timer(const Duration(seconds: 3), () {
+            if (mounted) _onDownloadComplete();
+          });
           return;
         }
       } else if (t0.progress < 0.99) {
@@ -1618,7 +1620,12 @@ class AppDetailsLogic extends GetxController {
   ///   「网络异常验证页」HTML 当成文件下完了，只有几十 KB）原来只弹一句
   ///   Toast 就完了——用户 1104 反馈「加强了为什么没弹浏览器兜底」的另一半根因。
   ///   这里补弹与失败弹窗同款的浏览器兜底（文案强调文件不完整）。
+  /// 弹窗是否已打开（防循环弹窗）
+  bool _incompleteDialogOpen = false;
+
   void _showIncompleteDialog() {
+    if (_incompleteDialogOpen) return;
+    _incompleteDialogOpen = true;
     _failCount++;
     final page = (item?.url ?? '').trim();
     final origin = page.isNotEmpty ? page : dowUrl;
