@@ -1678,7 +1678,8 @@ class AppDetailsLogic extends GetxController {
           ),
         ],
       ),
-    );
+    )
+        .whenComplete(() => _incompleteDialogOpen = false);
   }
 
   /// ★ 1105h：直连下载被源站风控拦截（下到验证页 HTML / 直接连不上）时，
