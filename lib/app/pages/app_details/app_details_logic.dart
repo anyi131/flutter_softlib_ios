@@ -1405,33 +1405,15 @@ class AppDetailsLogic extends GetxController {
           //   真机上常见的卡法是下到 46% 断流，任务仍是 running。
           // 阈值 12 秒：慢速网络下大文件可能长时间不到 1%
           if (now.difference(_stallAnchor!).inSeconds >= 12) {
-            _stallHandled = true;
-            _stallAnchor = null;
-            t.cancel();
-            ResolveOverlay.show(stage: '直连不通，正在切换中转线路…');
-            final okProxy = await _retryWithProxy();
-            ResolveOverlay.dismiss();
-            if (okProxy) return;
-            // 1109b：切换也失败时必须上报 —— 之前只弹窗不上报，
-            //   用户在「下载记录」里完全看不到这次失败（客服查不到记录）
-            try {
-              await SoftService.instance.reportDownloadResult(
-                appId: appIdInt,
-                title: (item?.title ?? '').isNotEmpty
-                    ? item!.title
-                    : (appInfo?.fileName ?? ''),
-                url: dowUrl,
-                ok: false,
-                errCode: 'DL_STALL',
-                freeMb: await _freeSpaceMb(),
-                fileMb: _fileSizeMb(),
-                progress: _shownProgress,
-                retryCnt: 1,
-                error: '[下载卡住] 直连与中转均无法下载（3 秒无字节，已尝试切换线路）',
-              );
-            } catch (_) {}
-            _showDownloadFailedSheet();
-            return;
+            // 1109k：只记录，不干预 —— 之前的「自动切线路」在真机上反复
+            //   打断正常下载（进度归零重来、弹「下载没有完成」但其实下完了）。
+            //   现在只上报一条日志，让用户自己决定要不要重试。
+            _stallAnchor = now;
+            SoftService.reportLogStatic(
+              tag: 'dl',
+              error:
+                  '[stall] 界面停在 ${(t0.progress * 100).toStringAsFixed(1)}% 12s 无变化（仅记录，不干预）',
+            ).catchError((_) {});
           }
         }
       }
