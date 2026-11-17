@@ -83,7 +83,7 @@ class AppDetailsLogic extends GetxController {
   ///   「有任务 → 查不到任务」需要连续两次确认（DB 写入延迟时文件名兜底会抖动）。
   String? _renderedTaskId;
   int _renderedStatus = -1;
-  int _renderedProgress = -1;
+  double _renderedProgress = -1;
 
   /// ★ 需求1：刚点过下载的宽限窗口（3 秒内 UI 保持进度条初始态，
   ///   防止任务记录尚未落库时按钮闪回「下载」态）
@@ -173,7 +173,7 @@ class AppDetailsLogic extends GetxController {
         // ★ v331r：回调自带 progress——先实时刷新显示（不等 DB 查询），
         //   彻底解决进度条滞后/不实时
         if (status == 2 /* running */ && prog > _shownProgress) {
-          _shownProgress = prog;
+          _shownProgress = prog.toDouble();
           _uiPhase = phaseDownloading;
           update(['download']);
         }
@@ -1473,7 +1473,7 @@ class AppDetailsLogic extends GetxController {
           }(),
           freeMb: await _freeSpaceMb(),
           fileMb: _fileSizeMb(),
-          progress: _shownProgress,
+          progress: _shownProgress.round(),
           retryCnt: _silentRetry,
           error: () {
             if (t0.status == DownloadTaskStatus.canceled) {
