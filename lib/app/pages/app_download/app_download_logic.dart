@@ -135,9 +135,9 @@ class AppDownloadLogic extends GetxController {
     for (final t in tasks) {
       if (t.status == DownloadTaskStatus.running) {
         final prev = _lastProgress[t.taskId];
-        if (prev == null || t.progress > prev + 0.000001) {
+        if (prev == null || t.progress.toDouble() > prev) {
           // 进度还在走（或首次见到）→ 重置计时
-          _lastProgress[t.taskId] = t.progress;
+          _lastProgress[t.taskId] = t.progress.toDouble();
           _stallSince[t.taskId] = now;
           continue;
         }
