@@ -1383,7 +1383,7 @@ class AppDetailsLogic extends GetxController {
           //   不能在周期回调里 await —— 否则多个 tick 并发收尾，
           //   会连弹多次「下载不完整」（真机已复现）。
           Timer(const Duration(seconds: 3), () {
-            if (mounted) _onDownloadComplete();
+            if (!isClosed) _onDownloadComplete();
           });
           return;
         }
