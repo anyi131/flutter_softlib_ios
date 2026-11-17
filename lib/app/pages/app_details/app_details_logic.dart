@@ -662,19 +662,6 @@ class AppDetailsLogic extends GetxController {
   int _completeHandledCount = 0;
   Future<void> _onDownloadComplete() async {
     if (_askedInstall) return;
-    // 1109h：完成也落一条记录，否则后台「下载记录」看不到成功项
-    try {
-      await SoftService.instance.reportDownloadResult(
-        appId: appIdInt,
-        title: (item?.title ?? '').isNotEmpty
-            ? item!.title
-            : (appInfo?.fileName ?? ''),
-        url: dowUrl,
-        ok: true,
-        progress: 100,
-        error: '',
-      );
-    } catch (_) {}
     _askedInstall = true; // ★ 同步先占坑，async 竞态两路只会活一路
     // ★ v331s：完成校验以「文件实际大小」为准——下载器偶发把断流判为
     //   complete（上一版用 _shownProgress 判断会误伤正常完成：显示层
@@ -1387,6 +1374,9 @@ class AppDetailsLogic extends GetxController {
         if (DateTime.now().difference(_nearDoneAt!).inSeconds >= 6) {
           _nearDoneAt = null;
           t.cancel();
+          // 1109i：先等 3 秒让下载器写完最后一段并落盘，
+          //   否则校验读到未写完的文件 → 误判「下载不完整」
+          await Future.delayed(const Duration(seconds: 3));
           _onDownloadComplete();
           return;
         }
