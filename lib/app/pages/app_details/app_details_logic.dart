@@ -1343,7 +1343,7 @@ class AppDetailsLogic extends GetxController {
     _progressTimer?.cancel();
     _stallHandled = false;
     _stallAnchor = null;
-    _lastProgress = -1;
+    _lastProgress = -1.0;
     _noTaskTicks = 0;
     _progressTimer = Timer.periodic(const Duration(milliseconds: 700), (
       t,
