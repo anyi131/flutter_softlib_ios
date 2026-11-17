@@ -932,8 +932,16 @@ class AppDetailsLogic extends GetxController {
       // 无任务但未显式取消/重开：粘滞保持当前态（进度条/安装态）
       phase = _uiPhase;
     }
+    // 1109m：任务换了（切线路/重新下载）→ 进度归零，
+    //   否则界面还挂着上一条任务的 90%，看着像「进度不动」。
+    final _tidNow = t?.taskId;
+    if (_tidNow != null &&
+        _renderedTaskId != null &&
+        _tidNow != _renderedTaskId) {
+      _shownProgress = 0;
+    }
     if (t != null && t.status != DownloadTaskStatus.failed) {
-      // 进度单调不减（显示层）
+      // 同一任务内单调不减，防止抖动倒退
       if (t.progress > _shownProgress) _shownProgress = t.progress;
     }
     if (phase == phaseDone) _shownProgress = 100;
