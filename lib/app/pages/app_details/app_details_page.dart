@@ -2063,7 +2063,7 @@ class _AppDetailsPageState extends State<AppDetailsPage>
             ),
             const Spacer(),
             Text(
-              '$progress%',
+              '${progress.toStringAsFixed(1)}%',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
             ),
           ],
