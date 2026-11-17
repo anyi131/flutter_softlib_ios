@@ -97,13 +97,16 @@ class AppDetailsLogic extends GetxController {
   static const String phaseDownloading = 'downloading';
   static const String phaseDone = 'done';
   String _uiPhase = phaseIdle;
-  int _shownProgress = 0;
+  /// 1109n：显示进度改成 double（0..100，一位小数）。
+  ///   下载器只给 int 百分比（1% 一格，92MB 文件在 288KB/s 下 3.2 秒才跳一格），
+  ///   所以这里用「已下载文件字节 / 总字节」算真实进度，UI 才能流畅爬。
+  double _shownProgress = 0;
   bool _explicitReset = false;
 
   String get downloadUiPhase => _uiPhase;
 
-  /// 显示层进度：与真实任务进度取 max，保证单调不减
-  int get uiProgress {
+  /// 显示层进度（0..100 一位小数）
+  double get uiProgress {
     final t = downloadTask;
     if (t != null && t.status != DownloadTaskStatus.failed) {
       return _shownProgress > t.progress ? _shownProgress : t.progress;
@@ -942,9 +945,27 @@ class AppDetailsLogic extends GetxController {
     }
     if (t != null && t.status != DownloadTaskStatus.failed) {
       // 同一任务内单调不减，防止抖动倒退
-      if (t.progress > _shownProgress) _shownProgress = t.progress;
+      if (t.progress > _shownProgress) _shownProgress = t.progress.toDouble();
     }
-    if (phase == phaseDone) _shownProgress = 100;
+    // 1109n：用「文件实际大小 / 总大小」覆盖，拿到比 1% 细一百倍的进度
+    if (t != null && t.status == DownloadTaskStatus.running) {
+      try {
+        final _dir = t.savedDir;
+        final _fn = t.filename;
+        if (_dir.isNotEmpty && _fn != null && _fn.isNotEmpty) {
+          final _f = File('$_dir/$_fn');
+          if (_f.existsSync()) {
+            final _cur = _f.lengthSync();
+            final _total = _sizeToBytes(appInfo?.fileSize ?? '');
+            if (_total > 0 && _cur > 0) {
+              final _p = (_cur * 100.0 / _total).clamp(0.0, 99.9);
+              if (_p > _shownProgress) _shownProgress = _p;
+            }
+          }
+        }
+      } catch (_) {}
+    }
+    if (phase == phaseDone) _shownProgress = 100.0;
 
     final newId = t?.taskId;
     final changed =
