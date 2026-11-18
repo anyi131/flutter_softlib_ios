@@ -159,6 +159,9 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
       if (!mounted) return;
       setState(() {
         _result = r;
+        // 1109s：解析成功上报（监控）
+        unawaited(JicunParseService.reportStat(
+            url, true, JicunParseService.instance.lastRoute, 0, '', ''));
         // 1109r：解析成功后提示今日剩余次数
         if (JicunParseService.lastRemaining >= 0) {
           ToastUtil.info(
