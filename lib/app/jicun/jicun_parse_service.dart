@@ -53,6 +53,11 @@ class JicunParseService {
         : (JicunSettings.instance.cfg.timeout * 3) ~/ 5),
   );
 
+  /// 1109r：最近一次解析的配额（服务端下发 quota.remaining），
+  ///   放在这里而不是塞进 ParseResult —— 避免动那个类的结构。
+  static int lastRemaining = -1;
+  static int lastLimit = -1;
+
   HttpClient? _shared;
   HttpClient get _client => _shared ??= HttpClient()
     ..connectionTimeout = const Duration(seconds: 8)
@@ -223,6 +228,17 @@ class JicunParseService {
       }
       throw ParseException('返回内容无法识别');
     }
+    // 1109r：记下剩余次数（不动 ParseResult）
+    try {
+      final q = body['quota'] ??
+          (body['data'] is Map ? (body['data'] as Map)['quota'] : null);
+      if (q is Map) {
+        final r = q['remaining'];
+        final l = q['daily_limit'];
+        if (r is num) lastRemaining = r.toInt();
+        if (l is num) lastLimit = l.toInt();
+      }
+    } catch (_) {}
     if (_isSuccess(body) && _dataOf(body) is Map) {
       // 明文地址在这里统一升 https(上游同款,Android 禁明文)。
       final data = secureMediaUrls(_dataOf(body)) as Map<String, dynamic>;
