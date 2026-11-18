@@ -100,6 +100,19 @@ class JicunParseService {
       }
     }
 
+    // 1.5 1109s：先直连 MeowSave（用各自 IP，不经过本站服务器）
+    //   成功就直接返回；失败（网络/配额/风控）静默回落到服务端链路。
+    try {
+      final direct = await _parseDirect(shareUrl);
+      if (direct != null &&
+          (direct.hasVideo || direct.hasImages || direct.hasAudio)) {
+        lastRoute = 'direct-meow';
+        return direct;
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[meow] 直连失败，回落服务端: $e');
+    }
+
     // 2. 平台级覆盖。
     final ov = label.isNotEmpty ? _override[label] : null;
     if (ov != null) {
