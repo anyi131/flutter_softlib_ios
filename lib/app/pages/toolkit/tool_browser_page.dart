@@ -103,7 +103,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
                   tag: 'tool',
                   error:
                       '[webview] ${widget.title} ${widget.url} -> ${e.errorCode} ${e.description}',
-                ).catchError((_) {});
+                ).ignore();
               } catch (_) {}
             }
           },
@@ -236,7 +236,7 @@ class _ToolBrowserPageState extends State<ToolBrowserPage> {
   void _injectShim(String url) {
     if (_disposed) return;
     if (!url.startsWith('http://') && !url.startsWith('https://')) return;
-    _c.runJavaScript(_shimJs).catchError((_) {});
+    _c.runJavaScript(_shimJs).ignore();
   }
 
   /// JS 桥回调
