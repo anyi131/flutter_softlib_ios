@@ -405,6 +405,21 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
               isDense: true,
             ),
           ),
+          // 1109r：今日剩余解析次数（服务端按用户下发）
+          if (JicunParseService.lastRemaining >= 0) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.bolt_rounded, size: 13, color: context.t3),
+                const SizedBox(width: 4),
+                Text(
+                  '今日剩余 ${JicunParseService.lastRemaining}'
+                  '${JicunParseService.lastLimit > 0 ? ' / ${JicunParseService.lastLimit}' : ''} 次',
+                  style: TextStyle(fontSize: 11.5, color: context.t3),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 10),
           Row(
             children: [
