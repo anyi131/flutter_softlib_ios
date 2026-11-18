@@ -179,6 +179,168 @@ class JicunParseService {
         : ParseException(friendly.isEmpty ? '解析失败,请稍后再试' : friendly);
   }
 
+  // ─────────────── 1109s：直连 MeowSave（各自 IP，不过本站服务器） ───────────────
+  static const String _meowBase = 'https://api.videofix.top/meow';
+  static const String _meowUa = 'MeowSave/1.1.5 (Android34;Pixel 7)';
+
+  static int _meowVid = 0;
+  static String _meowTok = '';
+  static bool _meowLoaded = false;
+
+  Future<void> _loadMeowIdentity() async {
+    if (_meowLoaded) return;
+    try {
+      final sp = await SharedPreferences.getInstance();
+      _meowVid = sp.getInt('meow_visitor_id') ?? 0;
+      _meowTok = sp.getString('meow_visitor_token') ?? '';
+    } catch (_) {}
+    _meowLoaded = true;
+  }
+
+  Future<void> _saveMeowIdentity(int vid, String tok) async {
+    _meowVid = vid;
+    _meowTok = tok;
+    try {
+      final sp = await SharedPreferences.getInstance();
+      await sp.setInt('meow_visitor_id', vid);
+      await sp.setString('meow_visitor_token', tok);
+    } catch (_) {}
+  }
+
+  Future<Map<String, dynamic>?> _meowPost(
+      String path, Map<String, dynamic> body) async {
+    HttpClient? c;
+    try {
+      c = HttpClient()..connectionTimeout = const Duration(seconds: 8);
+      final req = await c.postUrl(Uri.parse('$_meowBase$path'));
+      req.headers.set('Content-Type', 'application/json; charset=utf-8');
+      req.headers.set('Accept', 'application/json');
+      req.headers.set('User-Agent', _meowUa);
+      req.add(utf8.encode(jsonEncode(body)));
+      final resp = await req.close().timeout(const Duration(seconds: 20));
+      final txt = await resp.transform(utf8.decoder).join();
+      final j = jsonDecode(txt);
+      return j is Map ? Map<String, dynamic>.from(j) : null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('[meow] $path 失败: $e');
+      return null;
+    } finally {
+      try {
+        c?.close(force: true);
+      } catch (_) {}
+    }
+  }
+
+  Future<Map<String, dynamic>?> _meowRegister() async {
+    final j = await _meowPost('/api/v1/visitor/register', {
+      'install_id': DateTime.now().microsecondsSinceEpoch.toRadixString(16),
+      'model': 'Pixel 7',
+      'brand': 'google',
+      'manufacturer': 'Google',
+      'android': '14',
+      'sdk': 34,
+      'app_version': '1.1.5',
+      'app_code': 4,
+      'screen': '1080x2400',
+      'locale': 'zh-CN',
+    });
+    if (j == null || j['ok'] != true) return null;
+    final d = j['data'];
+    if (d is! Map) return null;
+    final vid = (d['visitor_id'] as num?)?.toInt() ?? 0;
+    final tok = '${d['token'] ?? ''}';
+    if (vid <= 0 || tok.isEmpty) return null;
+    await _saveMeowIdentity(vid, tok);
+    return Map<String, dynamic>.from(d);
+  }
+
+  Map<String, dynamic> _meowToMediaParser(Map<String, dynamic> d) {
+    final items = (d['items'] is List) ? d['items'] as List : const [];
+    final videos = <Map<String, dynamic>>[];
+    final images = <String>[];
+    for (final it in items) {
+      if (it is! Map) continue;
+      final u = '${it['url'] ?? ''}';
+      if (!u.startsWith('http')) continue;
+      final kind = '${it['kind'] ?? 'video'}';
+      if (kind == 'video' || kind == 'audio') {
+        videos.add(Map<String, dynamic>.from(it));
+      } else {
+        images.add(u);
+      }
+    }
+    final main = videos.isNotEmpty ? videos.first : null;
+    return {
+      'platform': '${d['platform'] ?? ''}',
+      'title': '${d['title'] ?? ''}',
+      'desc': '${d['desc'] ?? ''}',
+      'cover': '${d['cover'] ?? ''}',
+      'author': {'name': '${d['author'] ?? ''}'},
+      'url': main != null ? '${main['url']}' : '',
+      'label': main != null ? '${main['label'] ?? ''}' : '',
+      'size': main != null ? (main['size'] ?? 0) : 0,
+      'bit_rate': main != null ? (main['bit_rate'] ?? 0) : 0,
+      'format': main != null ? '${main['format'] ?? 'mp4'}' : 'mp4',
+      'images': images,
+      'video_backup': videos
+          .skip(1)
+          .map((v) => {
+                'url': '${v['url']}',
+                'label': '${v['label'] ?? ''}',
+                'size': v['size'] ?? 0,
+              })
+          .toList(),
+      'quota': d['quota'],
+    };
+  }
+
+  Future<ParseResult?> _parseDirect(String shareUrl) async {
+    await _loadMeowIdentity();
+    if (_meowTok.isEmpty) {
+      final reg = await _meowRegister();
+      if (reg == null) return null;
+    }
+    var j = await _meowPost('/api/v1/parse', {
+      'url': shareUrl,
+      'interface': 'jhjx3',
+      'visitor_id': _meowVid,
+      'visitor_token': _meowTok,
+    });
+    if (j != null && j['ok'] != true) {
+      final err = j['error'];
+      final code = (err is Map) ? '${err['code'] ?? ''}' : '';
+      if (code == 'unauthorized') {
+        await _saveMeowIdentity(0, '');
+        final reg = await _meowRegister();
+        if (reg != null) {
+          j = await _meowPost('/api/v1/parse', {
+            'url': shareUrl,
+            'interface': 'jhjx3',
+            'visitor_id': _meowVid,
+            'visitor_token': _meowTok,
+          });
+        }
+      }
+    }
+    if (j == null || j['ok'] != true) return null;
+    final d = j['data'];
+    if (d is! Map) return null;
+    final mapped = _meowToMediaParser(Map<String, dynamic>.from(d));
+    try {
+      final q = mapped['quota'];
+      if (q is Map) {
+        final r = q['remaining'];
+        final l = q['daily_limit'];
+        if (r is num) lastRemaining = r.toInt();
+        if (l is num) lastLimit = l.toInt();
+      }
+    } catch (_) {}
+    if ('${mapped['url']}'.isEmpty && (mapped['images'] as List).isEmpty) {
+      return null;
+    }
+    return ParseResult.fromUpstream(mapped);
+  }
+
   Future<ParseResult> _request(
     String endpoint,
     String shareUrl,
