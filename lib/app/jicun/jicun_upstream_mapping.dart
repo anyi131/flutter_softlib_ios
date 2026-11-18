@@ -940,7 +940,6 @@ class ParseResult {
       audioUrl: isAudio ? url : null,
       lyrics: _qishuiLyrics(data),
       coverFromFallback: cover == null,
-      remaining: _remain,
     );
   }
 
