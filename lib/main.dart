@@ -125,7 +125,7 @@ Future<void> main() async {
           tag: 'boot',
           error: '[v=$_appVersion] App 启动',
           version: _appVersion.isEmpty ? 'unknown' : _appVersion,
-        ).catchError((_) {});
+        ).ignore();
       } catch (_) {}
       runApp(const SoftLibApp());
       // ★ 1031r app_links：Deep Link 绑定（首帧后 600ms 兜底延迟已内置）
@@ -201,7 +201,7 @@ void _logError(String tag, Object error, StackTrace? stack) {
       error: '[v=$_appVersion][route=$route] ' + error.toString(),
       stack: stack?.toString() ?? '',
       version: _appVersion.isEmpty ? 'unknown' : _appVersion,
-    ).catchError((_) {});
+    ).ignore();
   } catch (_) {}
 }
 
@@ -218,7 +218,7 @@ Future<void> _initializeServices() async {
   // ★ 1109：新下载引擎（background_downloader 多连接分段）
   //   事件复用旧通道（AppDetailsLogic.downloadCallback → SendPort），上层零改动
   DlEngine.onStallReport = (msg) {
-    SoftService.reportLogStatic(tag: 'dl', error: msg).catchError((_) {});
+    SoftService.reportLogStatic(tag: 'dl', error: msg).ignore();
   };
   DlEngine.onEvent = (id, status, progress) {
     AppDetailsLogic.downloadCallback(id, status, progress);
