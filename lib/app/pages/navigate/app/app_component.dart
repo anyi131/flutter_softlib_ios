@@ -561,7 +561,7 @@ class _AppComponentState extends State<AppComponent> {
       SoftService.reportLogStatic(
         tag: 'applist',
         error: '[applist] $sig',
-      ).catchError((_) {});
+      ).ignore();
     } catch (_) {}
   }
 
