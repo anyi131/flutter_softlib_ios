@@ -1103,7 +1103,7 @@ class _ToolsComponentState extends State<ToolsComponent>
         tag: 'open',
         error:
             '[open] ${t['title']} kind=${t['kind']} url=${t['api_url'] ?? t['target'] ?? ''}',
-      ).catchError((_) {});
+      ).ignore();
     } catch (_) {}
     openTool(t);
   }
