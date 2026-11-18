@@ -174,7 +174,9 @@ class _VideoPageState extends State<VideoPage> {
     if (old != null) {
       old.removeListener(_onVal);
       // ★ 先断开监听再销毁：销毁失败的 controller 会抛异常，别让它污染初始化流程
-      unawaited(old.dispose().ignore());
+      try {
+        old.dispose();
+      } catch (_) {}
     }
 
     final c = MpvController.networkUrl(
