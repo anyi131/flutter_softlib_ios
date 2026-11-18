@@ -703,11 +703,7 @@ class ParseResult {
     this.primaryQualities = const [],
     this.lyrics = '',
     this.coverFromFallback = false,
-    this.remaining = -1,
   });
-
-  /// 今日剩余解析次数（-1 = 接口没给）
-  final int remaining;
 
   factory ParseResult.fromJson(Map<String, dynamic> json) {
     // 接口字段可能缺、可能是 null,也可能类型不符(上游是第三方解析站),
@@ -793,14 +789,6 @@ class ParseResult {
     String platform = '',
   }) {
     if (!_isUpstreamFormat(data)) return ParseResult.fromJson(data);
-
-    var _remain = -1;
-    try {
-      final q = data['quota'];
-      if (q is Map && q['remaining'] is num) {
-        _remain = (q['remaining'] as num).toInt();
-      }
-    } catch (_) {}
 
     final videoUrl = _strOrNull(data['url']);
     final coverUrl = _strOrNull(data['cover']);
@@ -1014,4 +1002,499 @@ class ParseResult {
   /// 外挂一堆实况图时 `video_list` 是空的,但媒体卡该列出来的确实是三条。
   bool get hasMultiVideo => _orderedVideos.length > 1;
 
-  /// 媒体卡该列出来的视频条目:主视频在前,`video_list` 合集其次,实况图最
+  /// 媒体卡该列出来的视频条目:主视频在前,`video_list` 合集其次,实况图最后。
+  ///
+  /// 普通单条链接只有 `video_url`,直接包一条;有多条时主视频也留着 —— 合集链接
+  /// 里它是第一条,实况图链接里它是那条真视频。
+  /// 实况图自带静态封面,拿它当缩略图 —— 那是这张实况图的第一帧。
+  ///
+  /// **按资源去重**,见 [_identityOf]:上游对合集/多视频会把主视频再放进 `video_list`
+  /// 一次(接口文档写的是"首项与 video_url 相同",QQ 音乐实测两条一模一样),
+  /// 照单全收媒体卡里第一条就会重复出现。
+  List<VideoItem> get videoItems =>
+      List<VideoItem>.unmodifiable(_orderedVideos);
+
+  List<VideoItem> get _orderedVideos {
+    final seen = <String>{};
+    final ordered = <VideoItem>[];
+    void add(VideoItem item) {
+      if (seen.add(_identityOf(item.url))) ordered.add(item);
+    }
+
+    if (videoUrl != null) {
+      // 主视频带上面那份清晰度:它是下载弹窗要用的东西(见 [primaryQualities])。
+      add(
+        VideoItem(
+          url: videoUrl!,
+          coverUrl: coverUrl,
+          qualities: _qualitiesFor(videoUrl!),
+        ),
+      );
+    }
+    for (final v in videos) {
+      add(v);
+    }
+    for (final p in livePhotos) {
+      add(VideoItem(url: p.videoUrl, coverUrl: p.thumbUrl));
+    }
+    return ordered;
+  }
+
+  /// 地址为 [url] 的那一条该配哪份清晰度。
+  ///
+  /// `video_list` 里已经带了同一条地址时用它的 —— 那是上游自己挂在视频对象上的,
+  /// 比根上的 `primaryQualities` 更贴切。没带才退回根上那份。
+  List<VideoQuality> _qualitiesFor(String url) {
+    final id = _identityOf(url);
+    for (final v in videos) {
+      if (_identityOf(v.url) == id && v.qualities.isNotEmpty) {
+        return v.qualities;
+      }
+    }
+    return primaryQualities;
+  }
+
+  bool get hasVideo =>
+      videoUrl != null || videos.isNotEmpty || livePhotos.isNotEmpty;
+  bool get hasAudio => audioUrl != null;
+
+  /// 有没有图集可看。实况图不算 —— 它是视频,只有下载下来是图片的才算图集。
+  bool get hasImages => imageUrls.isNotEmpty;
+
+  /// 有没有文案可看。
+  ///
+  /// 只看描述 —— 标题和作者在文案卡上不显示,不算「有文案」。
+  /// 描述为空时整张文案卡都不该出现。
+  bool get hasCopy => desc.isNotEmpty;
+
+  /// 主视频:播放器和「单条下载」都只认这一个入口。
+  ///
+  /// 不能直接读 `video_url` 字段 —— 实况帖那个字段是 **null**,视频只存在于
+  /// `image_list[].live_photo_url` 里(实测 https://v.douyin.com/87q9bOkq0bs/:
+  /// cover_url 有、audio_url 有、video_url 为 null,image_list 是一条实况)。
+  /// 早先播放器与下载各自读 `videoUrl`,那条链接的表现就是:有封面、点不播放、
+  /// 不显示时长(播放器拿到空地址)、下载按钮点了没反应。
+  ///
+  /// 只有一条 `video_list`、没有 `video_url` 的链接同理 —— 也走这里。
+  VideoItem? get primaryVideo =>
+      _orderedVideos.isEmpty ? null : _orderedVideos.first;
+
+  /// 主视频地址。没有可播的视频时是 null。
+  ///
+  /// 下载用这个(或者用户在清晰度弹窗里选的那一档)。**预览不该用它** —— 见
+  /// [previewVideoUrl]。
+  String? get primaryVideoUrl => primaryVideo?.url;
+
+  /// 预览该播哪一条。多档清晰度时给**最低码率**那一档。
+  ///
+  /// 为什么不让预览播主地址:上游给的主地址往往是最高档。实测那条抖音是
+  /// **8K / 34.7 Mbps / 7.27GB**,而预览用的 ExoPlayer 是按「秒数」缓冲的 ——
+  /// 34 Mbps 缓冲几十秒就是 200MB 上下,真机上直接把 256MB 的 Java 堆吃光,
+  /// 报 `java.lang.OutOfMemoryError` 然后闪退(tombstone 实测:
+  /// target footprint 268435456)。低码率那档是 1.7 Mbps,同样几十秒只要 10MB。
+  ///
+  /// 用户下载时仍然可以在弹窗里选原画 —— 只是"看"和"存"用不同的档,这也是
+  /// 各家播放器的常规做法。
+  ///
+  /// 只有一档(media-parser 的结果)时就是那一档本身,行为跟以前一致。
+  String? get previewVideoUrl {
+    final video = primaryVideo;
+    if (video == null) return null;
+    if (video.qualities.isEmpty) return video.url;
+    // qualities 是按档位从高到低排的(见 [dedupeQualities]),所以最后一条最低。
+    return video.qualities.last.url;
+  }
+
+  /// 主视频的封面。实况图用它自己的静态帧,其余用接口给的 `cover_url`。
+  String? get primaryVideoCoverUrl => primaryVideo?.coverUrl ?? coverUrl;
+
+  /// 接口给了**独立的**音轨。
+  ///
+  /// 两个条件都要:`audio_url` 有值,而且它不能**就是视频地址** —— 上游有平台在拿不到
+  /// 纯音频时把视频地址回填进 `audio_url`(汽水音乐拿 `main_url`、豆包同款),那种
+  /// 「音频」下下来是一段有画面有声音的 MP4。
+  ///
+  /// **APP 的音频卡就是按它出现的**(见 lib/pages/preview.dart 的 `PreviewKind.forResult`):
+  /// 没有独立音轨就只呈现视频卡。这样「点下载音频」永远不会落下一个视频文件 ——
+  /// 面板呈现什么,完全由接口返回的东西决定。
+  ///
+  /// 拿 [primaryVideoUrl] 而不是 `videoUrl` 比:实况帖那个字段是 null(视频只在实况
+  /// 里),只有 `video_list` 的链接同理。
+  bool get hasStandaloneAudio =>
+      audioUrl != null && audioUrl != primaryVideoUrl;
+
+  /// 文案卡显示的内容,也是「复制文案」复制的东西。
+  ///
+  /// 只取描述:标题和作者不上卡片,复制时也不带 —— 用户要的就是那段文案。
+  String get copyText => desc;
+
+  /// 换一个平台名,其余原样。上游没给 `platform` 时用它补(见 [_request])。
+  ParseResult withPlatform(String value) => ParseResult(
+    title: title,
+    desc: desc,
+    platform: value,
+    authorName: authorName,
+    videoUrl: videoUrl,
+    coverUrl: coverUrl,
+    audioUrl: audioUrl,
+    imageUrls: imageUrls,
+    videos: videos,
+    livePhotos: livePhotos,
+    primaryQualities: primaryQualities,
+    lyrics: lyrics,
+    coverFromFallback: coverFromFallback,
+  );
+
+  /// 换一张封面,其余原样 —— 补封面用(见 [coverFromFallback] 与
+  /// [ParseService.parse])。
+  ///
+  /// 换完就**不再算兜底图**:这一次补成功了,不该再补第二次。
+  ParseResult withCover(String url) => ParseResult(
+    title: title,
+    desc: desc,
+    platform: platform,
+    authorName: authorName,
+    videoUrl: videoUrl,
+    coverUrl: url,
+    audioUrl: audioUrl,
+    imageUrls: imageUrls,
+    videos: videos,
+    livePhotos: livePhotos,
+    primaryQualities: primaryQualities,
+    lyrics: lyrics,
+  );
+
+  /// 存历史用。字段名和 [ParseResult.fromJson] 对齐,能原样读回来 ——
+  /// 包括 `image_list`、`video_list` 和实况图,漏了历史里就会变成空。
+  ///
+  /// 清晰度列表跟着 `video_list` 走(见 [_qualityList] 的读法)。没有清晰度的
+  /// 视频不带这个键 —— 老记录读回来也是空列表,不会变成「有分辨率可选的旧记录」。
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'title': title,
+    'desc': desc,
+    'platform': platform,
+    'author': <String, dynamic>{'nickname': authorName},
+    'video_url': videoUrl,
+    'cover_url': coverUrl,
+    'audio_url': audioUrl,
+    'lyrics': lyrics,
+    'image_list': imageUrls,
+    // 根上那份(单条 `video_url` 的清晰度)单独存:它可能不在 `video_list` 里,
+    // 只存 video_list 的话历史记录读回来就没有分辨率可选了。
+    'qualities': <Map<String, dynamic>>[
+      for (final q in primaryQualities)
+        <String, dynamic>{
+          'url': q.url,
+          'quality': q.label,
+          'bit_rate': q.bitrate,
+          'size': q.size,
+        },
+    ],
+    'video_list': <Map<String, dynamic>>[
+      for (final v in videos)
+        <String, dynamic>{
+          'url': v.url,
+          'cover_url': v.coverUrl,
+          if (v.qualities.isNotEmpty)
+            'qualities': <Map<String, dynamic>>[
+              for (final q in v.qualities)
+                <String, dynamic>{
+                  'url': q.url,
+                  'quality': q.label,
+                  'bit_rate': q.bitrate,
+                  'size': q.size,
+                },
+            ],
+        },
+    ],
+    'live_photo_list': <Map<String, dynamic>>[
+      for (final p in livePhotos)
+        <String, dynamic>{'live_photo_url': p.videoUrl, 'url': p.thumbUrl},
+    ],
+  };
+
+  /// 去掉上游回填的「伪图片」,顺手按资源去重。
+  ///
+  /// 快手纯视频链接实测:`image_list` 是 `[封面, 封面]` —— 两条一模一样,就是
+  /// `cover_url`。照单全收就会判成「又有视频又有图」,卡片变成混合预览,网格里
+  /// 两格还是同一张封面(点哪格都是封面)。
+  ///
+  /// 规则:先按资源去重(见 [_identityOf]);有视频时再把与封面同一个资源的那些
+  /// 去掉 —— 那是视频的封面,不是一张能单独下载的图。纯图集(没有视频)不动:
+  /// 图集的封面本来就等于第一张图。
+  ///
+  /// 这里的"有视频"只算真能播的视频(`video_url` / `video_list`),**不含实况图**:
+  /// 实况图的静态帧在 `image_list` 里是带 `live_photo_url` 的对象,本来就进不了
+  /// `images`;而帖子封面常常就是图集第一张真图(最右实测),把实况算成"有视频"
+  /// 会把那张真图当封面剔掉。
+  ///
+  /// **动图(实况)那张静态帧同样要剔掉** —— 见 [livePhotos]。付费通道的实况帖
+  /// (`type` = `live`)把同一批帧给两遍:`images[]` 一份、`live_photo[].image` 再一份,
+  /// 两边路径完全相同。实况那张已经**带着自己的 mp4** 出现在媒体卡里(缩略图就是这张
+  /// 帧),再当图集列一遍就是同一张图出现两次 —— 实测一条 18 张动图的帖子,混合卡排成
+  /// 「18 个 MP4 + 紧跟 18 张同样的静态帧」,看着就像后一半动图变成了图片。
+  static List<String> _cleanImages(
+    List<String> images, {
+    required String? coverUrl,
+    required bool hasVideo,
+    List<LivePhoto> livePhotos = const <LivePhoto>[],
+  }) {
+    final cover = coverUrl == null ? '' : _identityOf(coverUrl);
+    final liveThumbs = <String>{
+      for (final p in livePhotos)
+        if (p.thumbUrl != null && p.thumbUrl!.isNotEmpty)
+          _identityOf(p.thumbUrl!),
+    };
+    final seen = <String>{};
+    final cleaned = <String>[];
+    for (final url in images) {
+      final id = _identityOf(url);
+      if (!seen.add(id)) continue;
+      if (hasVideo && id == cover) continue;
+      if (liveThumbs.contains(id)) continue;
+      cleaned.add(url);
+    }
+    return cleaned;
+  }
+
+  /// 同一个资源的判据:**去掉 scheme / host / query,只比路径**。
+  ///
+  /// 平台给同一张图的不同尺寸、不同签名,差别只在 host 或 query 上 —— 实测遇到过
+  /// 同一张图:封面挂在一台 CDN、`image_list` 里那条挂在另一台,路径完全相同,
+  /// HEAD 回来字节数也一样。只比整串就会漏掉,于是视频封面被当成一张可下载的图,
+  /// 卡片又变回混合预览。
+  static String _identityOf(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return url;
+    return uri.path.isEmpty ? url : uri.path;
+  }
+
+  static String _str(Object? value) => _strOrNull(value) ?? '';
+
+  /// 从 `image_list` 里分出来的两堆东西:真图片和实况图。
+  static ({List<String> images, List<LivePhoto> livePhotos}) _mediaList(
+    Object? value,
+  ) {
+    if (value is! List) {
+      return (images: const <String>[], livePhotos: const <LivePhoto>[]);
+    }
+    final images = <String>[];
+    final livePhotos = <LivePhoto>[];
+    for (final item in value) {
+      switch (item) {
+        case String text:
+          final url = _strOrNull(text);
+          if (url != null) images.add(url);
+        case Map map:
+          final url = _strOrNull(map['url']);
+          // 有 live_photo_url 就是实况图:主地址是静态图(留着当缩略图),
+          // 真用来下载的是那个 MP4。
+          final live = _strOrNull(map['live_photo_url']);
+          if (live != null) {
+            livePhotos.add(LivePhoto(videoUrl: live, thumbUrl: url));
+          } else if (url != null) {
+            images.add(url);
+          }
+        default:
+          break;
+      }
+    }
+    return (images: images, livePhotos: livePhotos);
+  }
+
+  /// 上游应答里那条**独立音频**的地址。
+  ///
+  /// 实测(2026-09-20)上游把音频放在 `music` 里:快手图集帖是 `.m4a`、抖音实况帖
+  /// 是 `.mp3`,两个都是这条帖子的原声。字段形态不止一种,所以三道都收:
+  ///   1. 直接给地址的字段(`audio_url` / `audio` / `sound_url` …);
+  ///   2. `music` —— 对象 `{title, author, url, cover}` 或一个纯地址字符串;
+  ///   3. 都没有(`music` 是空对象 `{}`,豆包 AI 音乐分享实测就是这样)→ null,
+  ///      没有独立音轨,音频卡不出现(只呈现视频卡)。
+  static String? _upstreamAudioUrl(Map<String, dynamic> data) {
+    for (final key in const <String>[
+      'audio_url',
+      'audio',
+      'music_url',
+      'sound_url',
+      'music',
+    ]) {
+      final url = _audioUrlOf(data[key]);
+      if (url != null) return url;
+    }
+    return null;
+  }
+
+  /// 一个音频字段的值 → 地址。字符串直接用;对象里找那几个常见的地址键。
+  static String? _audioUrlOf(Object? value) {
+    switch (value) {
+      case String text:
+        return _strOrNull(text);
+      case Map map:
+        for (final key in const <String>['url', 'play_url', 'audio_url']) {
+          final url = _strOrNull(map[key]);
+          if (url != null) return url;
+        }
+        return null;
+      default:
+        return null;
+    }
+  }
+
+  /// 应答里的歌词原文(LRC 或纯文本)。没有就是空串。
+  ///
+  /// 键名各家叫法不一,常见的几个都收 —— 服务端加歌词时叫什么名字就不用再来改
+  /// 客户端。**单个键名可能是数组**(有的接口给 `["第一行","第二行"]`),那种也
+  /// 按行拼起来,总比整条丢掉强。
+  ///
+  /// 这里**不洗文本**(不走 `cleanCopyText`):歌词里的标点连打、表情、换行都是
+  /// 原文的一部分,压一遍就不是用户看到的那首歌词了。
+  static String _lyricsOf(Map<String, dynamic> data) {
+    for (final key in const <String>[
+      'lyrics',
+      'lyric',
+      'lrc',
+      'lyric_text',
+      'lyricText',
+    ]) {
+      final value = data[key];
+      if (value is String && value.trim().isNotEmpty) return value.trim();
+      if (value is List) {
+        final lines = [
+          for (final line in value)
+            if (line is String && line.trim().isNotEmpty) line.trim(),
+        ];
+        if (lines.isNotEmpty) return lines.join('\n');
+      }
+    }
+    return '';
+  }
+
+  /// 独立的实况图字段。万一上游把实况图单独列一份(而不是塞在 `image_list` 里),
+  /// 这里也收得下。
+  static List<LivePhoto> _liveList(Object? value) {
+    if (value is! List) return const [];
+    final photos = <LivePhoto>[];
+    for (final item in value) {
+      switch (item) {
+        case String text:
+          final url = _strOrNull(text);
+          if (url != null) photos.add(LivePhoto(videoUrl: url));
+        case Map map:
+          final live =
+              _strOrNull(map['live_photo_url']) ??
+              _strOrNull(map['video_url']) ??
+              _strOrNull(map['play_url']);
+          if (live != null) {
+            photos.add(
+              LivePhoto(
+                videoUrl: live,
+                thumbUrl:
+                    _strOrNull(map['url']) ?? _strOrNull(map['cover_url']),
+              ),
+            );
+          }
+        default:
+          break;
+      }
+    }
+    return photos;
+  }
+
+  /// 合集视频列表。元素和 `image_list` 一样脏:可能是地址字符串,也可能是对象。
+  /// 对象里的地址字段各家叫法不一(`url` / `play_url` / `video_url`),都收;
+  /// 没有可用地址的元素跳过,不让它变成一格点不动的空缩略图。
+  ///
+  /// 第二个上游在这里多给一份清晰度列表(见 [_qualityList]),归到
+  /// [VideoItem.qualities] 上 —— 那是下载前弹分辨率选择窗的唯一依据。
+  static List<VideoItem> _videoList(Object? value) {
+    if (value is! List) return const [];
+    final videos = <VideoItem>[];
+    for (final item in value) {
+      final (url: url, cover: cover) = switch (item) {
+        String text => (url: _strOrNull(text), cover: null),
+        Map map => (
+          url:
+              _strOrNull(map['url']) ??
+              _strOrNull(map['play_url']) ??
+              _strOrNull(map['video_url']),
+          cover: _strOrNull(map['cover_url']) ?? _strOrNull(map['cover']),
+        ),
+        _ => (url: null, cover: null),
+      };
+      final qualities = dedupeQualities(_qualityList(item));
+      // 主地址缺失时用最高那档顶上:单独给了一份清晰度列表、却没给 `url` 的
+      // 应答不该被整条丢掉。
+      final primary = url ?? (qualities.isEmpty ? null : qualities.first.url);
+      if (primary == null) continue;
+      videos.add(
+        VideoItem(url: primary, coverUrl: cover, qualities: qualities),
+      );
+    }
+    return videos;
+  }
+
+  static String? _strOrNull(Object? value) {
+    if (value is String) {
+      final trimmed = value.trim();
+      return trimmed.isEmpty ? null : trimmed;
+    }
+    return null;
+  }
+
+  /// 数字字段的兜底读法。上游可能是 int、double,也可能是字符串("1080"),
+  /// 读不出来一律当 0 —— 码率/体积这些字段缺失只是少一行说明,不该让页面崩。
+  static int _intOrZero(Object? value) {
+    switch (value) {
+      case int n:
+        return n;
+      case double n:
+        return n.isFinite ? n.toInt() : 0;
+      case String text:
+        return int.tryParse(text.trim()) ?? 0;
+      default:
+        return 0;
+    }
+  }
+}
+
+/// 平台拿「还没加载出来」的占位文案当正文回填时,这些话不是文案。
+///
+/// 今日头条实测:`desc` = `视频加载中...`,文案窗口和「复制文案」都会给出一句废话。
+/// 命中就当没有文案(见 [ParseResult.hasCopy])。
+const Set<String> _kPlaceholderCopies = <String>{
+  '视频加载中',
+  '视频加载中...',
+  '视频加载中…',
+  '分享视频',
+  '网页链接',
+  '暂无文案',
+  '暂无简介',
+};
+
+/// 清掉平台回填在文案里的噪声,并把双重转义的换行还原成真的换行。
+///
+/// 快手实测的 `desc`(jsonDecode 之后):
+/// `#媒体原创\n云南一名00后女孩…索赔15万元。（yn）\n#国红山泉 #农夫山泉`
+/// 原样显示出来就是文案里夹着 `（yn）` 和成串空行。
+///
+/// 有些链接上游是双重转义的 —— `\n` 是两个字符(反斜杠 + n),那种也要还原,
+/// 否则文案窗口里会明晃晃地打出 `\n`。这一条是**防御性**的:实测这几批真实应答
+/// (抖音/快手/微博/头条…)上游给的都是真换行,但中文文案里出现字面 `\n`
+/// 基本不可能是本意,顺手还原没有副作用。
+String cleanCopyText(String raw) {
+  var text = raw
+      // 双重转义先还原
+      .replaceAll(r'\r\n', '\n')
+      .replaceAll(r'\n', '\n')
+      .replaceAll(r'\t', '\t')
+      // 平台自己的标记:快手会在句尾塞一个「(yn)」
+      .replaceAll(RegExp(r'[（(]\s*yn\s*[)）]', caseSensitive: false), '')
+      // 统一换行
+      .replaceAll('\r\n', '\n')
+      .replaceAll('\r', '\n');
+  // 行尾空格清掉,连续空行压成一行
+  text = text.split('\n').map((line) => line.trimRight()).join('\n');
+  text = text.replaceAll(RegExp(r'\n{2,}'), '\n').trim();
+  // 占位文案当成没有文案
+  return _kPlaceholderCopies.contains(text) ? '' : text;
+}
