@@ -120,7 +120,7 @@ class _HotPageState extends State<HotPage> {
               '[hot-res] tab=${_tabs[idx].$3} type=${_tabs[idx].$1} board=${_tabs[idx].$2} '
               'null=${d == null} keys=${d?.keys.toList()} '
               'listLen=${((d?["list"] as List?) ?? []).length}',
-        ).catchError((_) {});
+        ).ignore();
       } catch (_) {}
       // 过期响应（用户已经切到别的板块了）→ 直接丢弃，不 setState
       if (!mounted || seq != _reqSeq || idx != _i) return;
@@ -168,7 +168,7 @@ class _HotPageState extends State<HotPage> {
                 SoftService.reportLogStatic(
                   tag: 'hot',
                   error: '[hot-tab] $i (${_tabs[i].$3})',
-                ).catchError((_) {});
+                ).ignore();
               } catch (_) {}
               setState(() => _i = i);
               _load();
