@@ -19,6 +19,7 @@ import 'package:flutter/foundation.dart';
 
 import 'jicun_api_host.dart';
 import 'jicun_config.dart';
+import '../api/user_service.dart';
 import 'jicun_platform.dart';
 import 'jicun_upstream_mapping.dart';
 
@@ -188,10 +189,16 @@ class JicunParseService {
         '未配置解析接口\n请在后台「解析配置」填写 api_host（需支持 /parse 协议）',
       );
     }
+    // 1109q：解析接口按用户分配配额，必须带上本站登录 token
+    String _token = '';
+    try {
+      _token = UserService.instance.token;
+    } catch (_) {}
     final uri = Uri.parse(endpoint).replace(
       queryParameters: <String, String>{
         ...Uri.parse(endpoint).queryParameters,
         'url': shareUrl,
+        if (_token.isNotEmpty) 'token': _token,
       },
     );
     final req = await _client.getUrl(uri);
