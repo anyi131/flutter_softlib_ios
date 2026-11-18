@@ -18,6 +18,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 import 'jicun_api_host.dart';
+import '../api/api_host.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'jicun_config.dart';
 import '../api/user_service.dart';
 import 'jicun_platform.dart';
