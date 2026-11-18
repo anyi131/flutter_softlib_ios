@@ -87,7 +87,7 @@ class JicunParseService {
 
   /// 解析一条分享链接。
   // ─────────────── 1109s：解析监控上报（fire-and-forget） ───────────────
-  static Future<void> _reportStat(String url, bool ok, String route,
+  static Future<void> reportStat(String url, bool ok, String route,
       int ms, String err, String platform) async {
     HttpClient? c;
     try {
