@@ -163,7 +163,7 @@ class AppDownloadLogic extends GetxController {
                 error:
                     '[下载卡住] 任务 ${secs}s 停在 ${((t.progress) * 100).floor()}% 无增长（线路断流）',
               )
-              .catchError((_) {});
+              .ignore();
         }
       } else {
         _stallSince.remove(t.taskId);
