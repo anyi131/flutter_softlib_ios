@@ -159,6 +159,11 @@ class _JicunPageState extends State<JicunPage> with WidgetsBindingObserver {
       if (!mounted) return;
       setState(() {
         _result = r;
+        // 1109r：解析成功后提示今日剩余次数
+        if (JicunParseService.lastRemaining >= 0) {
+          ToastUtil.info(
+              '解析成功 · 今日剩余 ${JicunParseService.lastRemaining} 次');
+        }
         // 后台 quality_default: highest 直接取最高档,ask 交给用户在结果卡里选
         _pickedQuality = _settings.cfg.qualityDefault == 'ask'
             ? null
