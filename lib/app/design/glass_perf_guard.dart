@@ -96,7 +96,7 @@ class GlassPerfGuard {
         error: '[玻璃降级 ${from.name}→${GlassTheme.level.name}] 最长帧 '
             '${worst.toStringAsFixed(0)}ms | route=$route',
         version: '',
-      ).catchError((_) {});
+      ).ignore();
     } catch (_) {}
   }
 }
