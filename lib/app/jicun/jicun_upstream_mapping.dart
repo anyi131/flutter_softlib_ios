@@ -703,7 +703,11 @@ class ParseResult {
     this.primaryQualities = const [],
     this.lyrics = '',
     this.coverFromFallback = false,
+    this.remaining = -1,
   });
+
+  /// 今日剩余解析次数（-1 = 接口没给）
+  final int remaining;
 
   factory ParseResult.fromJson(Map<String, dynamic> json) {
     // 接口字段可能缺、可能是 null,也可能类型不符(上游是第三方解析站),
@@ -789,6 +793,14 @@ class ParseResult {
     String platform = '',
   }) {
     if (!_isUpstreamFormat(data)) return ParseResult.fromJson(data);
+
+    var _remain = -1;
+    try {
+      final q = data['quota'];
+      if (q is Map && q['remaining'] is num) {
+        _remain = (q['remaining'] as num).toInt();
+      }
+    } catch (_) {}
 
     final videoUrl = _strOrNull(data['url']);
     final coverUrl = _strOrNull(data['cover']);
