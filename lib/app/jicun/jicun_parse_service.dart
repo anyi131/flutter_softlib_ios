@@ -180,8 +180,13 @@ class JicunParseService {
     ParsePlatform? platform,
     required bool fromUpstream,
   }) async {
-    if (endpoint.trim().isEmpty) {
-      throw ParseException('未配置解析接口:请在后台「解析配置」填写 api_host');
+    if (endpoint.trim().isEmpty || endpoint.contains('example.com')) {
+      // 1109n：默认 host 是占位域名 media-parser.example.com，
+      //   请求过去只会拿回一段 HTML，最后报「返回内容无法识别」——用户根本看不懂。
+      //   这里直接说清楚：后台没配解析接口。
+      throw ParseException(
+        '未配置解析接口\n请在后台「解析配置」填写 api_host（需支持 /parse 协议）',
+      );
     }
     final uri = Uri.parse(endpoint).replace(
       queryParameters: <String, String>{
