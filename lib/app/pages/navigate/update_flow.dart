@@ -81,7 +81,7 @@ class UpdateFlow {
       SoftService.reportLogStatic(
         tag: 'update',
         error: '[update] 准备弹窗 tpl=$template ver=$ver',
-      ).catchError((_) {});
+      ).ignore();
     } catch (_) {}
     // ★ 1016：安全取 context（启动阶段可能为 null，绝不能崩）
     final ctx = Get.context ?? Get.key.currentContext;
@@ -116,7 +116,7 @@ class UpdateFlow {
       SoftService.reportLogStatic(
         tag: 'update',
         error: '[update] 弹窗已显示 tpl=$template',
-      ).catchError((_) {});
+      ).ignore();
     } catch (_) {}
   }
 }
@@ -503,7 +503,7 @@ class _UpdateCardState extends State<_UpdateCard> {
       SoftService.reportLogStatic(
         tag: 'update',
         error: '[update-install] ' + msg,
-      ).catchError((_) {});
+      ).ignore();
     } catch (_) {}
   }
 
