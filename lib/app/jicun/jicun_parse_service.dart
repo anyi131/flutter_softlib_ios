@@ -86,7 +86,33 @@ class JicunParseService {
       JicunSettings.instance.cfg.overrideMap();
 
   /// 解析一条分享链接。
+  // ─────────────── 1109s：解析监控上报（fire-and-forget） ───────────────
+  static Future<void> _reportStat(String url, bool ok, String route,
+      int ms, String err, String platform) async {
+    HttpClient? c;
+    try {
+      c = HttpClient()..connectionTimeout = const Duration(seconds: 5);
+      final req = await c.postUrl(Uri.parse('${ApiHost.base}/api/softlib/jicun/report'));
+      req.headers.set('Content-Type', 'application/x-www-form-urlencoded');
+      req.add(utf8.encode(Uri(queryParameters: {
+        'url': url,
+        'ok': ok ? '1' : '0',
+        'route': route,
+        'ms': '$ms',
+        'err': err,
+        'platform': platform,
+      }).query));
+      await req.close().timeout(const Duration(seconds: 6));
+    } catch (_) {
+    } finally {
+      try {
+        c?.close(force: true);
+      } catch (_) {}
+    }
+  }
+
   Future<ParseResult> parse(String shareUrl) async {
+    final _sw = Stopwatch()..start();
     final platform = detectPlatform(shareUrl);
     final label = platform.label;
     final enableMap = _platformEnable;
@@ -99,6 +125,8 @@ class JicunParseService {
         throw ParseException('「$label」已被后台关闭,暂不支持解析');
       }
     }
+
+    lastRoute = '';
 
     // 1.5 1109s：先直连 MeowSave（用各自 IP，不经过本站服务器）
     //   成功就直接返回；失败（网络/配额/风控）静默回落到服务端链路。
