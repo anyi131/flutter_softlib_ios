@@ -1238,7 +1238,7 @@ class AppDetailsLogic extends GetxController {
       SoftService.reportLogStatic(
         tag: 'proxy',
         error: '[proxy] 预取 proxyUrl=${_proxyFallbackUrl.isEmpty ? "EMPTY" : "OK"}',
-      ).catchError((_) {});
+      ).ignore();
     }
 
     // ★ 需求1：标记「刚点过下载」，3 秒内 UI 保持进度条初始态不闪回按钮
@@ -1291,7 +1291,7 @@ class AppDetailsLogic extends GetxController {
       } catch (_) {}
     }
     // 1109g：入队前跑一次 1MB 自检，把设备侧真实网络情况上报（不阻塞）
-    DlEngine.diagnose(dlUrl).catchError((_) {});
+    DlEngine.diagnose(dlUrl).ignore();
     final _savedDir0 = await DownloadDir.path();
     // ★ 1109：优先多连接分段下载（background_downloader），失败自动回退旧引擎
     // 1109e：优先用「已解析到 IPv4」的地址 + Host 头，绕开 CDN 的 IPv6 死节点。
@@ -1326,7 +1326,7 @@ class AppDetailsLogic extends GetxController {
       SoftService.reportLogStatic(
         tag: 'dl',
         error: '[enqueue-fail] 下载任务创建失败 url=${dlUrl.length > 80 ? dlUrl.substring(0, 80) : dlUrl}',
-      ).catchError((_) {});
+      ).ignore();
       try {
         await SoftService.instance.reportDownloadResult(
           appId: appIdInt,
@@ -1391,7 +1391,7 @@ class AppDetailsLogic extends GetxController {
             tag: 'dl',
             error:
                 '[no-task] 轮询 6 次仍未拿到任务对象 taskId=${taskId ?? "null"}',
-          ).catchError((_) {});
+          ).ignore();
         }
         // ★ 1012b：任务瞬时查不到不停止轮询（状态机粘滞由 getTaskInfo 负责），
         //   避免查空一次后轮询停摆、进度条永远卡住
@@ -1430,7 +1430,7 @@ class AppDetailsLogic extends GetxController {
               tag: 'dl',
               error:
                   '[stall] 界面停在 ${(t0.progress * 100).toStringAsFixed(1)}% 12s 无变化（仅记录，不干预）',
-            ).catchError((_) {});
+            ).ignore();
           }
         }
       }
@@ -1708,7 +1708,7 @@ class AppDetailsLogic extends GetxController {
         tag: 'proxy',
         error:
             '[proxy] skip empty=${_proxyFallbackUrl.isEmpty} retried=$_proxyRetryCount/$_proxyRetryMax',
-      ).catchError((_) {});
+      ).ignore();
       return false;
     }
     _proxyRetryCount++;
@@ -1765,13 +1765,13 @@ class AppDetailsLogic extends GetxController {
       SoftService.reportLogStatic(
         tag: 'proxy',
         error: '[proxy] 已切换中转重下',
-      ).catchError((_) {});
+      ).ignore();
       return true;
     } catch (e) {
       SoftService.reportLogStatic(
         tag: 'proxy',
         error: '[proxy] 中转重下失败 $e',
-      ).catchError((_) {});
+      ).ignore();
       logger.e('proxy retry: $e');
       return false;
     }
