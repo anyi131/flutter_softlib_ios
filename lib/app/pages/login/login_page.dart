@@ -114,7 +114,7 @@ class _LoginPageState extends State<LoginPage> {
         SoftService.reportLogStatic(
           tag: 'mine_refresh',
           error: '[mine] 未找到 MineLogic 实例，无法刷新「我的」',
-        ).catchError((_) {});
+        ).ignore();
       } catch (_) {}
       return;
     }
@@ -125,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
         SoftService.reportLogStatic(
           tag: 'mine_refresh',
           error: '[mine] load() 失败: $e',
-        ).catchError((_) {});
+        ).ignore();
       } catch (_) {}
     }
   }
@@ -257,7 +257,7 @@ class _LoginPageState extends State<LoginPage> {
       SoftService.reportLogStatic(
         tag: 'qq',
         error: '[qq-native] $err',
-      ).catchError((_) {});
+      ).ignore();
     } catch (_) {}
     ToastUtil.info('原生登录不可用（$err），改用网页授权');
 
@@ -281,7 +281,7 @@ class _LoginPageState extends State<LoginPage> {
       SoftService.reportLogStatic(
         tag: 'qq-time',
         error: '[qq-time] $detail',
-      ).catchError((_) {});
+      ).ignore();
     } catch (_) {}
   }
 
@@ -319,7 +319,7 @@ class _LoginPageState extends State<LoginPage> {
         SoftService.reportLogStatic(
           tag: 'login',
           error: '[login-fail] ${e.toString()}',
-        ).catchError((_) {});
+        ).ignore();
       } catch (_) {}
       if (!mounted) return;
       setState(() => _errServer = ErrText.of(e));
