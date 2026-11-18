@@ -384,7 +384,7 @@ class MineLogic extends GetxController {
         SoftService.reportLogStatic(
           tag: 'unread',
           error: '[unread] 刷新未读数失败（已重试 2 次）: $e',
-        ).catchError((_) {});
+        ).ignore();
       }
     }
   }
